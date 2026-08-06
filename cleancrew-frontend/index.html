@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CleanCrew — Cleaning Business Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --blue: #1A6DDB;
+            --blue-dark: #1258B8;
+            --blue-light: #EBF3FE;
+            --ink: #0F1F40;
+            --white: #FFFFFF;
+            --slate: #6B7FA3;
+            --soft: #F4F7FC;
+            --border: #DDE6F5;
+            --shadow: 0 4px 24px rgba(0,0,0,0.06);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --green: #16A34A;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            background: var(--white);
+            color: var(--ink);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* ─── HEADER ─── */
+        .header {
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(12px);
+            z-index: 100;
+        }
+
+        .header .inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .header .logo {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--ink);
+            letter-spacing: -0.5px;
+            text-decoration: none;
+        }
+        .header .logo span {
+            color: var(--blue);
+        }
+
+        .header .nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .header .nav a {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--slate);
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            transition: all 0.15s;
+        }
+        .header .nav a:hover {
+            color: var(--blue);
+            background: var(--blue-light);
+        }
+        .header .nav a.cta {
+            background: var(--blue);
+            color: #fff;
+            padding: 8px 20px;
+        }
+        .header .nav a.cta:hover {
+            background: var(--blue-dark);
+        }
+
+        /* ─── HERO ─── */
+        .hero {
+            padding: 80px 0 60px;
+            text-align: center;
+        }
+
+        .hero .tag {
+            display: inline-block;
+            background: var(--blue-light);
+            color: var(--blue);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            padding: 6px 16px;
+            border-radius: 100px;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 {
+            font-size: 52px;
+            font-weight: 800;
+            letter-spacing: -2px;
+            line-height: 1.1;
+            margin-bottom: 16px;
+        }
+        .hero h1 span {
+            color: var(--blue);
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: var(--slate);
+            max-width: 600px;
+            margin: 0 auto 32px;
+        }
+
+        .hero .buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-primary {
+            background: var(--blue);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: var(--blue-dark);
+            transform: translateY(-2px);
+        }
+        .btn-outline {
+            background: transparent;
+            color: var(--blue);
+            border: 2px solid var(--blue);
+        }
+        .btn-outline:hover {
+            background: var(--blue-light);
+        }
+
+        .hero .trust {
+            margin-top: 48px;
+            display: flex;
+            justify-content: center;
+            gap: 48px;
+            flex-wrap: wrap;
+        }
+        .hero .trust .item {
+            text-align: center;
+        }
+        .hero .trust .item .num {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--ink);
+        }
+        .hero .trust .item .label {
+            font-size: 12px;
+            color: var(--slate);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ─── FEATURES ─── */
+        .features {
+            padding: 60px 0;
+            background: var(--soft);
+        }
+
+        .features .section-title {
+            text-align: center;
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        .features .section-sub {
+            text-align: center;
+            color: var(--slate);
+            font-size: 16px;
+            margin-bottom: 40px;
+        }
+
+        .features .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .features .card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 24px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            transition: transform 0.15s;
+        }
+        .features .card:hover {
+            transform: translateY(-4px);
+        }
+        .features .card .icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+        .features .card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .features .card p {
+            font-size: 14px;
+            color: var(--slate);
+        }
+
+        /* ─── PRICING ─── */
+        .pricing {
+            padding: 60px 0;
+        }
+
+        .pricing .section-title {
+            text-align: center;
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        .pricing .section-sub {
+            text-align: center;
+            color: var(--slate);
+            font-size: 16px;
+            margin-bottom: 40px;
+        }
+
+        .pricing .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .pricing .card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 32px 24px;
+            border: 2px solid var(--border);
+            text-align: center;
+            transition: all 0.15s;
+        }
+        .pricing .card:hover {
+            border-color: var(--blue);
+            transform: translateY(-4px);
+        }
+        .pricing .card.popular {
+            border-color: var(--blue);
+            background: var(--blue-light);
+        }
+        .pricing .card .badge {
+            display: inline-block;
+            background: var(--orange);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 12px;
+            border-radius: 100px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+        .pricing .card .price {
+            font-size: 36px;
+            font-weight: 800;
+        }
+        .pricing .card .price span {
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--slate);
+        }
+        .pricing .card .price .strikethrough {
+            text-decoration: line-through;
+            color: var(--red);
+            font-size: 18px;
+            opacity: 0.6;
+        }
+        .pricing .card .desc {
+            color: var(--slate);
+            font-size: 13px;
+            margin: 8px 0 16px;
+        }
+        .pricing .card .features-list {
+            list-style: none;
+            text-align: left;
+            margin: 16px 0;
+        }
+        .pricing .card .features-list li {
+            padding: 6px 0;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--ink);
+        }
+        .pricing .card .features-list li .check {
+            color: var(--green);
+            font-weight: 700;
+        }
+
+        /* ─── OFFER BANNER ─── */
+        .offer-banner {
+            background: linear-gradient(135deg, #1A6DDB 0%, #1258B8 100%);
+            color: #fff;
+            padding: 20px 24px;
+            border-radius: var(--radius);
+            text-align: center;
+            margin-bottom: 32px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .offer-banner h3 {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+        .offer-banner p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 12px;
+        }
+        .offer-banner .btn-small {
+            padding: 8px 24px;
+            background: #fff;
+            color: var(--blue);
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 14px;
+            display: inline-block;
+            transition: all 0.15s;
+        }
+        .offer-banner .btn-small:hover {
+            transform: scale(1.02);
+        }
+
+        /* ─── CTA ─── */
+        .cta-section {
+            padding: 60px 0;
+            background: var(--ink);
+            text-align: center;
+            color: #fff;
+        }
+
+        .cta-section h2 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        .cta-section p {
+            color: rgba(255,255,255,0.6);
+            font-size: 16px;
+            margin-bottom: 24px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .cta-section .btn-white {
+            background: #fff;
+            color: var(--ink);
+        }
+        .cta-section .btn-white:hover {
+            background: var(--soft);
+            transform: translateY(-2px);
+        }
+
+        /* ─── FOOTER ─── */
+        .footer {
+            padding: 32px 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .footer p {
+            font-size: 13px;
+            color: var(--slate-light);
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 36px;
+            }
+            .hero p {
+                font-size: 16px;
+            }
+            .features .grid,
+            .pricing .grid {
+                grid-template-columns: 1fr;
+                max-width: 400px;
+                margin: 0 auto;
+            }
+            .header .nav a {
+                font-size: 12px;
+                padding: 4px 10px;
+            }
+            .header .nav a.cta {
+                padding: 6px 14px;
+            }
+            .hero .trust {
+                gap: 24px;
+            }
+            .hero .trust .item .num {
+                font-size: 20px;
+            }
+            .pricing .card .price {
+                font-size: 28px;
+            }
+            .cta-section h2 {
+                font-size: 24px;
+            }
+            .offer-banner h3 {
+                font-size: 18px;
+            }
+            .header .inner {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header .logo {
+                font-size: 18px;
+            }
+            .header .nav a {
+                font-size: 10px;
+                padding: 4px 8px;
+            }
+            .header .nav a.cta {
+                padding: 4px 10px;
+                font-size: 10px;
+            }
+            .hero h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ─── HEADER ─── -->
+    <header class="header">
+        <div class="container">
+            <div class="inner">
+                <div class="logo">🧹 Clean<span>Crew</span>.</div>
+                <nav class="nav">
+                    <a href="#features">Features</a>
+                    <a href="#pricing">Pricing</a>
+                    <a href="login.html" class="cta">Login</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- ─── HERO ─── -->
+    <section class="hero">
+        <div class="container">
+            <div class="tag">🚀 Launching Soon — Early Adopters Welcome</div>
+            <h1>Your Cleaning Business,<br><span>Organized.</span></h1>
+            <p>CleanCrew is the all-in-one dashboard for cleaning businesses — track jobs, manage clients, send bulk WhatsApp messages, and see your revenue clearly.</p>
+            <div class="buttons">
+                <a href="signup.html" class="btn btn-primary">📩 Get Started Free</a>
+                <a href="#features" class="btn btn-outline">Learn More ↓</a>
+            </div>
+            <div class="trust">
+                <div class="item">
+                    <div class="num">500+</div>
+                    <div class="label">Jobs Managed</div>
+                </div>
+                <div class="item">
+                    <div class="num">4.9★</div>
+                    <div class="label">Cleaner Rating</div>
+                </div>
+                <div class="item">
+                    <div class="num">100%</div>
+                    <div class="label">Vetted Cleaners</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── FEATURES ─── -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-title">Everything You Need</div>
+            <div class="section-sub">CleanCrew helps you run your cleaning business like a pro</div>
+
+            <div class="grid">
+                <div class="card">
+                    <div class="icon">📋</div>
+                    <h3>Track Jobs</h3>
+                    <p>Every job, every client, every detail — all in one place.</p>
+                </div>
+                <div class="card">
+                    <div class="icon">👤</div>
+                    <h3>Manage Clients</h3>
+                    <p>Store client details, history, and preferences easily.</p>
+                </div>
+                <div class="card">
+                    <div class="icon">💬</div>
+                    <h3>Bulk WhatsApp</h3>
+                    <p>Send messages to all your clients in seconds.</p>
+                </div>
+                <div class="card">
+                    <div class="icon">📄</div>
+                    <h3>Generate Invoices</h3>
+                    <p>Professional invoices sent instantly via WhatsApp.</p>
+                </div>
+                <div class="card">
+                    <div class="icon">📊</div>
+                    <h3>Track Revenue</h3>
+                    <p>See exactly what you're earning — clearly and simply.</p>
+                </div>
+                <div class="card">
+                    <div class="icon">📦</div>
+                    <h3>Inventory Tracking</h3>
+                    <p>Never run out of cleaning supplies again.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── PRICING ─── -->
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <div class="section-title">Simple, Transparent Pricing</div>
+            <div class="section-sub">Start with a free trial. Cancel anytime.</div>
+
+            <div class="offer-banner">
+                <h3>🎉 Special Early Adopter Offer</h3>
+                <p>Get <strong>50% off</strong> for your first 3 months. No commitment. Cancel anytime.</p>
+                <a href="signup.html" class="btn-small">Claim This Offer →</a>
+            </div>
+
+            <div class="grid">
+                <!-- Starter -->
+                <div class="card">
+                    <h4>Starter</h4>
+                    <div class="price">
+                        <span class="strikethrough">₦20,000</span><br>
+                        ₦10,000 <span>/month</span>
+                    </div>
+                    <div class="desc" style="color:var(--green);font-weight:600;">50% off — first 3 months</div>
+                    <div class="desc">Perfect for solo cleaners</div>
+                    <ul class="features-list">
+                        <li><span class="check">✅</span> Track up to 50 jobs</li>
+                        <li><span class="check">✅</span> Manage 50 clients</li>
+                        <li><span class="check">✅</span> Bulk WhatsApp messages</li>
+                        <li><span class="check">✅</span> Basic reporting</li>
+                    </ul>
+                    <a href="signup.html" class="btn btn-primary" style="width:100%; text-align:center;">Get Started</a>
+                </div>
+
+                <!-- Professional (Popular) -->
+                <div class="card popular">
+                    <div class="badge">🔥 Best Value</div>
+                    <h4>Professional</h4>
+                    <div class="price">
+                        <span class="strikethrough">₦35,000</span><br>
+                        ₦17,500 <span>/month</span>
+                    </div>
+                    <div class="desc" style="color:var(--green);font-weight:600;">50% off — first 3 months</div>
+                    <div class="desc">For growing cleaning businesses</div>
+                    <ul class="features-list">
+                        <li><span class="check">✅</span> Unlimited jobs</li>
+                        <li><span class="check">✅</span> Unlimited clients</li>
+                        <li><span class="check">✅</span> Bulk WhatsApp messages</li>
+                        <li><span class="check">✅</span> Invoice generation</li>
+                        <li><span class="check">✅</span> Revenue tracking</li>
+                        <li><span class="check">✅</span> Inventory tracking</li>
+                        <li><span class="check">✅</span> Priority support</li>
+                    </ul>
+                    <a href="signup.html" class="btn btn-primary" style="width:100%; text-align:center;">Get Started</a>
+                </div>
+
+                <!-- Enterprise -->
+                <div class="card">
+                    <h4>Enterprise</h4>
+                    <div class="price">
+                        <span class="strikethrough">₦70,000</span><br>
+                        ₦35,000 <span>/month</span>
+                    </div>
+                    <div class="desc" style="color:var(--green);font-weight:600;">50% off — first 3 months</div>
+                    <div class="desc">For teams and agencies</div>
+                    <ul class="features-list">
+                        <li><span class="check">✅</span> Everything in Professional</li>
+                        <li><span class="check">✅</span> Team member access</li>
+                        <li><span class="check">✅</span> Advanced reporting</li>
+                        <li><span class="check">✅</span> Dedicated account manager</li>
+                        <li><span class="check">✅</span> Custom features</li>
+                    </ul>
+                    <a href="signup.html" class="btn btn-primary" style="width:100%; text-align:center;">Contact Us</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── CTA ─── -->
+    <section class="cta-section" id="cta">
+        <div class="container">
+            <h2>🚀 Ready to Get Organized?</h2>
+            <p>Join the waitlist for early access. Be among the first to try CleanCrew and get special early adopter pricing.</p>
+            <a href="signup.html" class="btn btn-white" style="display:inline-block;">Get Early Access →</a>
+            <p style="font-size:12px; color:rgba(255,255,255,0.4); margin-top:12px;">No spam. Unsubscribe anytime. We'll keep you updated on our launch.</p>
+        </div>
+    </section>
+
+    <!-- ─── FOOTER ─── -->
+    <footer class="footer">
+        <div class="container">
+            <p>🧹 CleanCrew — Your cleaning business dashboard. Made in Nigeria 🇳🇬</p>
+            <p style="margin-top:4px;">© 2026 CleanCrew. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+</html>

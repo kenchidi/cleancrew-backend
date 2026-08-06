@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🧹 CleanCrew — Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --blue: #1A6DDB;
+            --blue-dark: #1258B8;
+            --blue-light: #EBF3FE;
+            --ink: #0F1F40;
+            --white: #FFFFFF;
+            --slate: #6B7FA3;
+            --slate-light: #94A3B8;
+            --soft: #F4F7FC;
+            --border: #DDE6F5;
+            --shadow: 0 2px 0 rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.06);
+            --shadow-lg: 0 8px 40px rgba(15,31,64,0.12);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --orange: #F5A623;
+            --red: #DC2626;
+            --green: #16A34A;
+            --whatsapp: #25D366;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            background: var(--soft);
+            color: var(--ink);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 16px 24px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .header .logo {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--ink);
+            letter-spacing: -0.5px;
+            text-decoration: none;
+        }
+        .header .logo span {
+            color: var(--blue);
+        }
+
+        .header .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .header .user-info span {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--slate);
+        }
+        .header .user-info .logout-btn {
+            padding: 6px 16px;
+            background: var(--red);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        .header .user-info .logout-btn:hover {
+            opacity: 0.85;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            background: var(--white);
+            padding: 6px 10px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+        .nav-tabs button {
+            padding: 8px 14px;
+            border: none;
+            background: transparent;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            color: var(--slate);
+        }
+        .nav-tabs button:hover {
+            background: var(--soft);
+            color: var(--ink);
+        }
+        .nav-tabs button.active {
+            background: var(--blue);
+            color: #fff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .card-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-primary {
+            background: var(--blue);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: var(--blue-dark);
+            transform: translateY(-1px);
+        }
+        .btn-success {
+            background: var(--green);
+            color: #fff;
+        }
+        .btn-success:hover {
+            opacity: 0.85;
+        }
+        .btn-danger {
+            background: var(--red);
+            color: #fff;
+        }
+        .btn-danger:hover {
+            opacity: 0.85;
+        }
+        .btn-outline {
+            background: transparent;
+            color: var(--slate);
+            border: 1.5px solid var(--border);
+        }
+        .btn-outline:hover {
+            background: var(--soft);
+        }
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 12px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            box-shadow: var(--shadow);
+        }
+        .stat-card .stat-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--slate);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-card .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            margin-top: 2px;
+        }
+        .stat-card .stat-icon {
+            float: right;
+            font-size: 24px;
+            opacity: 0.4;
+        }
+        .stat-card.primary .stat-value {
+            color: var(--blue);
+        }
+        .stat-card.green .stat-value {
+            color: var(--green);
+        }
+        .stat-card.orange .stat-value {
+            color: var(--orange);
+        }
+        .stat-card.blue .stat-value {
+            color: var(--blue);
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        th {
+            text-align: left;
+            padding: 10px 12px;
+            background: var(--soft);
+            font-weight: 600;
+            color: var(--slate);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+        }
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        tr:hover td {
+            background: var(--soft);
+        }
+
+        .status-badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 12px;
+            border-radius: 100px;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+        .status-badge.pending {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+        .status-badge.completed {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        .status-badge.in-progress {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .form-grid .full-width {
+            grid-column: 1 / -1;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .form-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--slate);
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 10px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 13px;
+            transition: all 0.15s;
+            outline: none;
+            background: var(--white);
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(26,109,219,0.12);
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 31, 64, 0.5);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-box {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 32px;
+            max-width: 520px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+        .modal-box .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-box .modal-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .modal-box .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--slate);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--ink);
+            color: #fff;
+            padding: 14px 24px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 999;
+            transform: translateY(80px);
+            opacity: 0;
+            transition: all 0.3s;
+            max-width: 400px;
+            box-shadow: var(--shadow-lg);
+        }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .toast.success {
+            background: var(--green);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 12px;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .nav-tabs {
+                padding: 6px 8px;
+            }
+            .nav-tabs button {
+                font-size: 10px;
+                padding: 6px 10px;
+            }
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+            .header .logo {
+                font-size: 18px;
+            }
+            .card {
+                padding: 16px;
+            }
+            .stat-card .stat-value {
+                font-size: 22px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .nav-tabs button {
+                font-size: 9px;
+                padding: 4px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <div class="header">
+            <div class="logo">🧹 Clean<span>Crew</span>.</div>
+            <div class="user-info">
+                <span id="userEmail">Loading...</span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="active" onclick="switchTab('overview')">📊 Overview</button>
+            <button onclick="switchTab('jobs')">📋 Jobs</button>
+            <button onclick="switchTab('clients')">👤 Clients</button>
+        </div>
+
+        <div class="tab-content active" id="tab-overview">
+            <div class="stats-grid">
+                <div class="stat-card primary"><span class="stat-icon">📋</span><div class="stat-label">Total Jobs</div><div class="stat-value" id="ovJobs">0</div></div>
+                <div class="stat-card green"><span class="stat-icon">💰</span><div class="stat-label">Revenue</div><div class="stat-value" id="ovRevenue">₦0</div></div>
+                <div class="stat-card orange"><span class="stat-icon">⏳</span><div class="stat-label">Pending</div><div class="stat-value" id="ovPending">0</div></div>
+                <div class="stat-card blue"><span class="stat-icon">👤</span><div class="stat-label">Clients</div><div class="stat-value" id="ovClients">0</div></div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3>📋 Recent Jobs</h3><button class="btn btn-sm btn-primary" onclick="openModal('job')">+ New Job</button></div>
+                <div id="recentJobs"><p style="color:var(--slate);">No jobs yet</p></div>
+            </div>
+
+            <!-- ─── SUBSCRIPTION / PLANS SECTION ─── -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>💳 Choose Your Plan</h3>
+                </div>
+                <div id="subscriptionStatus">
+                    <p style="color:var(--slate);">Loading...</p>
+                </div>
+                <div id="plansContainer" style="margin-top:16px;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
+                        
+                        <!-- Starter Plan -->
+                        <div id="planStarter" style="border:2px solid var(--border); border-radius:var(--radius); padding:16px; text-align:center; cursor:pointer;" onclick="selectPlan('starter')">
+                            <h4 style="font-size:18px; font-weight:800;">Starter</h4>
+                            <p style="font-size:28px; font-weight:800; color:var(--blue);">₦10,000 <span style="font-size:14px; font-weight:400; color:var(--slate);">/month</span></p>
+                            <ul style="list-style:none; text-align:left; margin:12px 0; font-size:13px; color:var(--slate);">
+                                <li>✅ Up to 50 jobs</li>
+                                <li>✅ Up to 50 clients</li>
+                                <li>✅ Bulk WhatsApp</li>
+                                <li>✅ Basic reporting</li>
+                            </ul>
+                            <button class="btn btn-primary" style="width:100%;" onclick="subscribeToPlan('starter')">Subscribe</button>
+                        </div>
+                        
+                        <!-- Professional Plan (Popular) -->
+                        <div id="planProfessional" style="border:2px solid var(--blue); border-radius:var(--radius); padding:16px; text-align:center; cursor:pointer; background:var(--blue-light);" onclick="selectPlan('professional')">
+                            <span style="display:inline-block; background:var(--orange); color:#fff; font-size:10px; font-weight:700; padding:2px 12px; border-radius:100px; text-transform:uppercase; margin-bottom:8px;">🔥 Best Value</span>
+                            <h4 style="font-size:18px; font-weight:800;">Professional</h4>
+                            <p style="font-size:28px; font-weight:800; color:var(--blue);">₦17,500 <span style="font-size:14px; font-weight:400; color:var(--slate);">/month</span></p>
+                            <ul style="list-style:none; text-align:left; margin:12px 0; font-size:13px; color:var(--slate);">
+                                <li>✅ Unlimited jobs</li>
+                                <li>✅ Unlimited clients</li>
+                                <li>✅ Bulk WhatsApp</li>
+                                <li>✅ Invoice generation</li>
+                                <li>✅ Revenue tracking</li>
+                            </ul>
+                            <button class="btn btn-primary" style="width:100%;" onclick="subscribeToPlan('professional')">Subscribe</button>
+                        </div>
+                        
+                        <!-- Enterprise Plan -->
+                        <div id="planEnterprise" style="border:2px solid var(--border); border-radius:var(--radius); padding:16px; text-align:center; cursor:pointer;" onclick="selectPlan('enterprise')">
+                            <h4 style="font-size:18px; font-weight:800;">Enterprise</h4>
+                            <p style="font-size:28px; font-weight:800; color:var(--blue);">₦35,000 <span style="font-size:14px; font-weight:400; color:var(--slate);">/month</span></p>
+                            <ul style="list-style:none; text-align:left; margin:12px 0; font-size:13px; color:var(--slate);">
+                                <li>✅ Everything in Professional</li>
+                                <li>✅ Team member access</li>
+                                <li>✅ Advanced reporting</li>
+                                <li>✅ Dedicated support</li>
+                            </ul>
+                            <button class="btn btn-primary" style="width:100%;" onclick="subscribeToPlan('enterprise')">Subscribe</button>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            <!-- ─── END SUBSCRIPTION SECTION ─── -->
+
+        </div>
+
+        <div class="tab-content" id="tab-jobs">
+            <div class="card">
+                <div class="card-header"><h3>📋 All Jobs</h3><button class="btn btn-sm btn-primary" onclick="openModal('job')">+ New Job</button></div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>#</th><th>Client</th><th>Service</th><th>Date</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+                        <tbody id="jobsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tab-clients">
+            <div class="card">
+                <div class="card-header"><h3>👤 All Clients</h3><button class="btn btn-sm btn-primary" onclick="openModal('client')">+ Add Client</button></div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>#</th><th>Name</th><th>Phone</th><th>Location</th><th>Jobs</th><th>Action</th></tr></thead>
+                        <tbody id="clientsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+        <div class="modal-box">
+            <div class="modal-header"><h3 id="modalTitle">New Job</h3><button class="modal-close" onclick="closeModal()">×</button></div>
+            <form id="modalForm" onsubmit="saveModalForm(event)">
+                <div class="form-grid" id="modalFormFields"></div>
+                <button type="submit" class="btn btn-primary" style="width:100%; margin-top:16px;">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ─── CONFIG ──────────────────────────────────────────
+        const API_URL = 'https://cleancrew-backend.onrender.com/api';
+        const TOKEN = localStorage.getItem('cleancrew_token');
+
+        if (!TOKEN) {
+            window.location.href = 'index.html';
+        }
+
+        function getHeaders() {
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${TOKEN}`
+            };
+        }
+
+        // ─── USER INFO ──────────────────────────────────────
+        async function loadUserInfo() {
+            try {
+                const res = await fetch(`${API_URL}/user`, { headers: getHeaders() });
+                const data = await res.json();
+                if (res.ok) {
+                    document.getElementById('userEmail').textContent = data.email || 'User';
+                }
+            } catch (e) {
+                console.error('Failed to load user info');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('cleancrew_token');
+            localStorage.removeItem('cleancrew_user');
+            window.location.href = 'index.html';
+        }
+
+        function showToast(msg, type = '') {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = 'toast ' + type;
+            toast.classList.add('show');
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+            document.querySelectorAll('.nav-tabs button').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-tabs button').forEach(el => {
+                if (el.textContent.toLowerCase().includes(tab)) el.classList.add('active');
+            });
+            renderAll();
+        }
+
+        // ─── API FUNCTIONS ──────────────────────────────────
+        async function getJobs() {
+            const res = await fetch(`${API_URL}/jobs`, { headers: getHeaders() });
+            if (!res.ok) throw new Error('Failed to fetch jobs');
+            return res.json();
+        }
+
+        async function getClients() {
+            const res = await fetch(`${API_URL}/clients`, { headers: getHeaders() });
+            if (!res.ok) throw new Error('Failed to fetch clients');
+            return res.json();
+        }
+
+        async function createJob(job) {
+            const res = await fetch(`${API_URL}/jobs`, {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify(job)
+            });
+            if (!res.ok) throw new Error('Failed to create job');
+            return res.json();
+        }
+
+        async function createClient(client) {
+            const res = await fetch(`${API_URL}/clients`, {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify(client)
+            });
+            if (!res.ok) throw new Error('Failed to create client');
+            return res.json();
+        }
+
+        async function updateJob(id, data) {
+            const res = await fetch(`${API_URL}/jobs/${id}`, {
+                method: 'PUT',
+                headers: getHeaders(),
+                body: JSON.stringify(data)
+            });
+            if (!res.ok) throw new Error('Failed to update job');
+            return res.json();
+        }
+
+        async function deleteJob(id) {
+            const res = await fetch(`${API_URL}/jobs/${id}`, {
+                method: 'DELETE',
+                headers: getHeaders()
+            });
+            if (!res.ok) throw new Error('Failed to delete job');
+            return res.json();
+        }
+
+        async function deleteClient(id) {
+            const res = await fetch(`${API_URL}/clients/${id}`, {
+                method: 'DELETE',
+                headers: getHeaders()
+            });
+            if (!res.ok) throw new Error('Failed to delete client');
+            return res.json();
+        }
+
+        // ─── RENDER FUNCTIONS ───────────────────────────────
+        async function renderAll() {
+            try {
+                const [jobs, clients] = await Promise.all([getJobs(), getClients()]);
+                jobsData = jobs;
+                renderOverview(jobs, clients);
+                renderJobs(jobs);
+                renderClients(clients);
+            } catch (e) {
+                console.error('Render error:', e);
+                showToast('⚠️ Failed to load data');
+            }
+        }
+
+        function renderOverview(jobs, clients) {
+            const total = jobs.length;
+            const completed = jobs.filter(j => j.status === 'completed').length;
+            const pending = jobs.filter(j => j.status === 'pending' || j.status === 'in-progress').length;
+            const revenue = jobs.filter(j => j.status === 'completed').reduce((sum, j) => sum + (j.amount || 0), 0);
+
+            document.getElementById('ovJobs').textContent = total;
+            document.getElementById('ovRevenue').textContent = '₦' + revenue.toLocaleString();
+            document.getElementById('ovPending').textContent = pending;
+            document.getElementById('ovClients').textContent = clients.length;
+
+            const recent = jobs.slice(0, 5);
+            const container = document.getElementById('recentJobs');
+            if (recent.length === 0) {
+                container.innerHTML = '<p style="color:var(--slate);">No jobs yet</p>';
+            } else {
+                container.innerHTML = recent.map(j =>
+                    `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);">
+                        <div><strong>${j.client}</strong><br><span style="font-size:12px;color:var(--slate);">${j.service}</span></div>
+                        <div style="text-align:right;"><span style="font-weight:700;">₦${(j.amount||0).toLocaleString()}</span><br><span class="status-badge ${j.status}">${j.status}</span></div>
+                    </div>`
+                ).join('');
+            }
+        }
+
+        function renderJobs(jobs) {
+            const tbody = document.getElementById('jobsTable');
+            if (jobs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);">No jobs yet</td></tr>';
+                return;
+            }
+            tbody.innerHTML = jobs.map((j, i) =>
+                `<tr>
+                    <td>${i + 1}</td>
+                    <td><strong>${j.client}</strong></td>
+                    <td>${j.service}</td>
+                    <td>${j.date || 'N/A'}</td>
+                    <td><strong>₦${(j.amount || 0).toLocaleString()}</strong></td>
+                    <td><span class="status-badge ${j.status}">${j.status}</span></td>
+                    <td>
+                        ${j.status === 'pending' ? `<button class="btn btn-sm btn-success" onclick="updateJobStatus('${j.id}', 'in-progress')">Start</button>` : ''}
+                        ${j.status === 'in-progress' ? `<button class="btn btn-sm btn-success" onclick="updateJobStatus('${j.id}', 'completed')">✅</button>` : ''}
+                        ${j.status === 'pending' || j.status === 'in-progress' ? `<button class="btn btn-sm btn-danger" onclick="updateJobStatus('${j.id}', 'cancelled')">Cancel</button>` : ''}
+                        <button class="btn btn-sm btn-danger" onclick="deleteJobItem('${j.id}')">🗑️</button>
+                    </td>
+                </tr>`
+            ).join('');
+        }
+
+        let jobsData = [];
+
+        function renderClients(clients) {
+            const tbody = document.getElementById('clientsTable');
+            if (clients.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--slate);">No clients yet</td></tr>';
+                return;
+            }
+            tbody.innerHTML = clients.map((c, i) =>
+                `<tr>
+                    <td>${i + 1}</td>
+                    <td><strong>${c.name}</strong></td>
+                    <td>${c.phone || 'N/A'}</td>
+                    <td>${c.location || 'N/A'}</td>
+                    <td>${jobsData ? jobsData.filter(j => j.client === c.name).length : 0}</td>
+                    <td><button class="btn btn-sm btn-danger" onclick="deleteClientItem('${c.id}')">🗑️</button></td>
+                </tr>`
+            ).join('');
+        }
+
+        // ─── ACTIONS ─────────────────────────────────────────
+        async function updateJobStatus(id, status) {
+            try {
+                await updateJob(id, { status });
+                showToast(`✅ Job ${status}`, 'success');
+                renderAll();
+            } catch (e) {
+                showToast('⚠️ Failed to update job');
+            }
+        }
+
+        async function deleteJobItem(id) {
+            if (!confirm('Delete this job?')) return;
+            try {
+                await deleteJob(id);
+                showToast('🗑️ Job deleted');
+                renderAll();
+            } catch (e) {
+                showToast('⚠️ Failed to delete job');
+            }
+        }
+
+        async function deleteClientItem(id) {
+            if (!confirm('Delete this client?')) return;
+            try {
+                await deleteClient(id);
+                showToast('🗑️ Client deleted');
+                renderAll();
+            } catch (e) {
+                showToast('⚠️ Failed to delete client');
+            }
+        }
+
+        // ─── MODAL ───────────────────────────────────────────
+        let modalType = '';
+
+        function openModal(type) {
+            modalType = type;
+            const titles = { job: '📋 New Job', client: '👤 New Client' };
+            document.getElementById('modalTitle').textContent = titles[type] || 'New';
+            document.getElementById('modalForm').reset();
+
+            const f = document.getElementById('modalFormFields');
+
+            if (type === 'job') {
+                f.innerHTML = `
+                    <div class="form-group"><label>Client Name</label><input type="text" id="jClient" required /></div>
+                    <div class="form-group"><label>Phone</label><input type="tel" id="jPhone" /></div>
+                    <div class="form-group"><label>Service</label>
+                        <select id="jService">
+                            <option>Home Cleaning</option>
+                            <option>Office Cleaning</option>
+                            <option>Deep Cleaning</option>
+                            <option>Post-Construction</option>
+                            <option>Move In/Out</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Amount (₦)</label><input type="number" id="jAmount" required /></div>
+                    <div class="form-group"><label>Date</label><input type="date" id="jDate" required /></div>
+                    <div class="form-group"><label>Status</label>
+                        <select id="jStatus">
+                            <option value="pending">Pending</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width"><label>Notes</label><textarea id="jNotes"></textarea></div>
+                `;
+            } else if (type === 'client') {
+                f.innerHTML = `
+                    <div class="form-group"><label>Name *</label><input type="text" id="cName" required /></div>
+                    <div class="form-group"><label>Phone</label><input type="tel" id="cPhone" /></div>
+                    <div class="form-group"><label>Email</label><input type="email" id="cEmail" /></div>
+                    <div class="form-group"><label>Location</label><input type="text" id="cLocation" /></div>
+                    <div class="form-group full-width"><label>Notes</label><textarea id="cNotes"></textarea></div>
+                `;
+            }
+
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        async function saveModalForm(e) {
+            e.preventDefault();
+
+            if (modalType === 'job') {
+                const client = document.getElementById('jClient').value.trim();
+                const phone = document.getElementById('jPhone').value.trim();
+                const service = document.getElementById('jService').value;
+                const amount = parseFloat(document.getElementById('jAmount').value);
+                const date = document.getElementById('jDate').value;
+                const status = document.getElementById('jStatus').value;
+                const notes = document.getElementById('jNotes').value.trim();
+
+                if (!client || !amount || !date) { showToast('⚠️ Fill all fields'); return; }
+
+                try {
+                    await createJob({ client, phone: phone || 'N/A', service, amount, date, status, notes: notes || 'None' });
+                    showToast('✅ Job added!', 'success');
+                    closeModal();
+                    renderAll();
+                } catch (e) {
+                    showToast('⚠️ Failed to add job');
+                }
+            } else if (modalType === 'client') {
+                const name = document.getElementById('cName').value.trim();
+                const phone = document.getElementById('cPhone').value.trim();
+                const email = document.getElementById('cEmail').value.trim();
+                const location = document.getElementById('cLocation').value.trim();
+                const notes = document.getElementById('cNotes').value.trim();
+
+                if (!name) { showToast('⚠️ Enter name'); return; }
+
+                try {
+                    await createClient({ name, phone: phone || 'N/A', email: email || '', location: location || '',
+                        notes: notes || '' });
+                    showToast('✅ Client added!', 'success');
+                    closeModal();
+                    renderAll();
+                } catch (e) {
+                    showToast('⚠️ Failed to add client');
+                }
+            }
+        }
+
+        // ─── PAYSTACK SUBSCRIPTION ────────────────────────────
+
+        let selectedPlan = 'professional';
+
+        function selectPlan(plan) {
+            selectedPlan = plan;
+            
+            ['starter', 'professional', 'enterprise'].forEach(p => {
+                const el = document.getElementById(`plan${p.charAt(0).toUpperCase() + p.slice(1)}`);
+                if (el) {
+                    el.style.borderColor = 'var(--border)';
+                    el.style.background = 'transparent';
+                }
+            });
+            
+            const el = document.getElementById(`plan${plan.charAt(0).toUpperCase() + plan.slice(1)}`);
+            if (el) {
+                el.style.borderColor = 'var(--blue)';
+                el.style.background = 'var(--blue-light)';
+            }
+        }
+
+        async function subscribeToPlan(plan) {
+            if (!plan) plan = selectedPlan;
+            
+            try {
+                const res = await fetch(`${API_URL}/paystack/initialize`, {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ plan: plan })
+                });
+                const data = await res.json();
+                
+                if (data.authorization_url) {
+                    window.location.href = data.authorization_url;
+                } else {
+                    showToast('⚠️ Failed to initialize payment: ' + (data.error || 'Unknown error'));
+                }
+            } catch (e) {
+                console.error('Paystack init error:', e);
+                showToast('⚠️ Payment initialization failed');
+            }
+        }
+
+        async function checkSubscription() {
+            try {
+                const res = await fetch(`${API_URL}/subscription/status`, {
+                    headers: getHeaders()
+                });
+                const data = await res.json();
+                
+                const container = document.getElementById('subscriptionStatus');
+                if (!container) return;
+                
+                const plansContainer = document.getElementById('plansContainer');
+                if (!plansContainer) return;
+                
+                if (data.status === 'active') {
+                    container.innerHTML = `
+                        <div style="background:#D1FAE5; padding:16px; border-radius:var(--radius-sm);">
+                            <p style="color:#065F46; font-weight:700;">✅ Active — ${data.plan || 'Professional'} Plan</p>
+                            <p style="font-size:13px; color:#065F46;">Your subscription is active. Thank you for your support!</p>
+                        </div>
+                    `;
+                    plansContainer.style.display = 'none';
+                } else if (data.status === 'trial') {
+                    const trialEnd = new Date(data.trial_end);
+                    const daysLeft = Math.ceil((trialEnd - new Date()) / (1000 * 60 * 60 * 24));
+                    container.innerHTML = `
+                        <div style="background:#FEF3C7; padding:16px; border-radius:var(--radius-sm);">
+                            <p style="color:#92400E; font-weight:700;">📅 Trial — ${daysLeft} days left</p>
+                            <p style="font-size:13px; color:#92400E;">Choose a plan below to continue using CleanCrew after your trial ends.</p>
+                        </div>
+                    `;
+                    plansContainer.style.display = 'block';
+                } else {
+                    container.innerHTML = `
+                        <div style="background:#FEE2E2; padding:16px; border-radius:var(--radius-sm);">
+                            <p style="color:#991B1B; font-weight:700;">🔒 Subscription Expired</p>
+                            <p style="font-size:13px; color:#991B1B;">Your subscription has expired. Please choose a plan below to renew.</p>
+                        </div>
+                    `;
+                    plansContainer.style.display = 'block';
+                }
+            } catch (e) {
+                console.error('Subscription check error:', e);
+                document.getElementById('subscriptionStatus').innerHTML = `<p style="color:var(--slate);">⚠️ Failed to load subscription status</p>`;
+            }
+        }
+
+        function checkPaystackReturn() {
+            const params = new URLSearchParams(window.location.search);
+            const reference = params.get('reference');
+            
+            if (reference) {
+                fetch(`${API_URL}/paystack/verify/${reference}`, {
+                    method: 'POST',
+                    headers: getHeaders()
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('✅ Payment successful! Subscription activated.', 'success');
+                        setTimeout(() => {
+                            window.location.href = '/dashboard.html';
+                        }, 2000);
+                    }
+                })
+                .catch(err => console.error('Verification error:', err));
+            }
+        }
+
+        // ─── INIT ────────────────────────────────────────────
+        async function init() {
+            await loadUserInfo();
+            await renderAll();
+            await checkSubscription();
+            checkPaystackReturn();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            init();
+        });
+    </script>
+
+</body>
+</html>

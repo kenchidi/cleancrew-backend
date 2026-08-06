@@ -1,12 +1,15 @@
+// ─── server.js ──────────────────────────────────────────────
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const crypto = require('crypto');
 const { createClient } = require('@supabase/supabase-js');
 
 dotenv.config();
 
 const app = express();
 
+// ─── CORS ──────────────────────────────────────────────────
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -16,10 +19,34 @@ app.use(cors({
 app.use(express.json());
 app.use(express.static(__dirname));
 
+// ─── Supabase Client ──────────────────────────────────────
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
+
+// ─── Paystack config ──────────────────────────────────────
+const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+const PAYSTACK_PUBLIC_KEY = process.env.PAYSTACK_PUBLIC_KEY;
+
+// ─── Paystack plans ──────────────────────────────────────
+const PLANS = {
+  starter: { 
+    amount: 100000, // ₦10,000 in kobo
+    name: 'Starter',
+    features: 'Up to 50 jobs, 50 clients'
+  },
+  professional: { 
+    amount: 175000, // ₦17,500 in kobo
+    name: 'Professional',
+    features: 'Unlimited jobs & clients, invoicing'
+  },
+  enterprise: { 
+    amount: 350000, // ₦35,000 in kobo
+    name: 'Enterprise',
+    features: 'Everything + team access'
+  }
+};
 
 // ─── AUTHENTICATION MIDDLEWARE ──────────────────────────
 const authenticate = async (req, res, next) => {
@@ -123,9 +150,180 @@ app.get('/api/user', authenticate, async (req, res) => {
 });
 
 // ─── ──────────────────────────────────────────────────────
-// ─── JOBS ROUTES ──────────────────────────────────────────
+// ─── SUBSCRIPTION ROUTES ──────────────────────────────────
 // ─── ──────────────────────────────────────────────────────
 
+// ─── Check subscription status ─────────────────────────────
+app.get('/api/subscription/status', authenticate, async (req, res) => {
+  try {
+    const { data: sub } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', req.user.id)
+      .single();
+    
+    res.json({
+      status: sub?.status || 'trial',
+      trial_end: sub?.trial_end || new Date(Date.now() + 14 * 86400000),
+      plan: sub?.plan || 'professional'
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ─── Initialize Paystack payment ───────────────────────────
+app.post('/api/paystack/initialize', authenticate, async (req, res) => {
+  try {
+    const { plan = 'professional' } = req.body;
+    const { email } = req.user;
+    const userId = req.user.id;
+    
+    // Validate plan
+    if (!PLANS[plan]) {
+      return res.status(400).json({ error: 'Invalid plan selected' });
+    }
+    
+    const planData = PLANS[plan];
+    const reference = `cleancrew_${userId}_${Date.now()}`;
+    
+    const response = await fetch('https://api.paystack.co/transaction/initialize', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: email,
+        amount: planData.amount,
+        currency: 'NGN',
+        reference: reference,
+        callback_url: 'https://cleancrew-frontend.vercel.app/dashboard.html',
+        metadata: {
+          user_id: userId,
+          plan: plan,
+          plan_name: planData.name,
+          amount: planData.amount / 100
+        }
+      })
+    });
+    
+    const data = await response.json();
+    
+    if (data.status) {
+      await supabase
+        .from('transactions')
+        .insert({
+          user_id: userId,
+          reference: reference,
+          amount: planData.amount / 100,
+          plan: plan,
+          status: 'pending'
+        });
+      
+      res.json({ 
+        authorization_url: data.data.authorization_url,
+        reference: reference,
+        plan: plan,
+        amount: planData.amount / 100
+      });
+    } else {
+      res.status(400).json({ error: data.message });
+    }
+  } catch (error) {
+    console.error('Paystack error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ─── Verify Paystack transaction ────────────────────────────
+app.post('/api/paystack/verify/:reference', authenticate, async (req, res) => {
+  try {
+    const { reference } = req.params;
+    
+    const response = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
+      headers: {
+        'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`
+      }
+    });
+    
+    const data = await response.json();
+    
+    if (data.status && data.data.status === 'success') {
+      const userId = req.user.id;
+      const plan = data.data.metadata?.plan || 'professional';
+      
+      await supabase
+        .from('subscriptions')
+        .upsert({
+          user_id: userId,
+          status: 'active',
+          plan: plan,
+          trial_end: new Date(Date.now() + 365 * 86400000).toISOString()
+        });
+      
+      await supabase
+        .from('transactions')
+        .update({ status: 'completed' })
+        .eq('reference', reference);
+      
+      res.json({ success: true, message: 'Subscription activated!' });
+    } else {
+      res.status(400).json({ error: 'Payment verification failed' });
+    }
+  } catch (error) {
+    console.error('Verify error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ─── Paystack Webhook ──────────────────────────────────────
+app.post('/api/paystack/webhook', async (req, res) => {
+  try {
+    const hash = crypto
+      .createHmac('sha512', PAYSTACK_SECRET_KEY)
+      .update(JSON.stringify(req.body))
+      .digest('hex');
+    
+    if (hash !== req.headers['x-paystack-signature']) {
+      return res.status(401).send('Unauthorized');
+    }
+    
+    const event = req.body;
+    
+    if (event.event === 'charge.success') {
+      const { reference } = event.data;
+      const { user_id, plan } = event.data.metadata;
+      
+      await supabase
+        .from('subscriptions')
+        .upsert({
+          user_id: user_id,
+          status: 'active',
+          plan: plan || 'professional',
+          trial_end: new Date(Date.now() + 365 * 86400000).toISOString()
+        });
+      
+      await supabase
+        .from('transactions')
+        .update({ status: 'completed' })
+        .eq('reference', reference);
+      
+      console.log(`✅ Subscription activated for user ${user_id} (${plan})`);
+    }
+    
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('Webhook error:', error);
+    res.sendStatus(500);
+  }
+});
+
+// ─── ──────────────────────────────────────────────────────
+// ─── CRUD ROUTES ─────────────────────────────────────────
+// ─── ──────────────────────────────────────────────────────
+
+// ─── JOBS ──────────────────────────────────────────────────
 app.get('/api/jobs', authenticate, async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -191,10 +389,7 @@ app.delete('/api/jobs/:id', authenticate, async (req, res) => {
   }
 });
 
-// ─── ──────────────────────────────────────────────────────
-// ─── CLIENTS ROUTES ────────────────────────────────────────
-// ─── ──────────────────────────────────────────────────────
-
+// ─── CLIENTS ──────────────────────────────────────────────
 app.get('/api/clients', authenticate, async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -242,13 +437,9 @@ app.delete('/api/clients/:id', authenticate, async (req, res) => {
   }
 });
 
-// ─── ──────────────────────────────────────────────────────
 // ─── START SERVER ──────────────────────────────────────────
-// ─── ──────────────────────────────────────────────────────
-
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ CleanCrew server running on port ${PORT}`);
   console.log(`   Local: http://localhost:${PORT}`);
-  console.log(`   Network: http://10.5.0.2:${PORT}`);
 });

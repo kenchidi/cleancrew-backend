@@ -191,13 +191,13 @@
         </form>
 
         <div class="link">
-            Already have an account? <a href="login.html">Login</a>
+            Already have an account? <a href="index.html">Login</a>
         </div>
     </div>
 
     <script>
         // ─── SERVER URL ──────────────────────────────────────
-        // ✅ UPDATED: Using live Render backend
+        // ✅ LIVE BACKEND ON RENDER
         const SERVER_URL = 'https://cleancrew-backend.onrender.com';
 
         // ─── SIGNUP ──────────────────────────────────────────
@@ -231,7 +231,7 @@
                     successMsg.classList.add('show');
 
                     setTimeout(() => {
-                        window.location.href = 'login.html';
+                        window.location.href = 'index.html';
                     }, 1500);
                 } else {
                     errorMsg.textContent = data.error || 'Signup failed. Please try again.';
