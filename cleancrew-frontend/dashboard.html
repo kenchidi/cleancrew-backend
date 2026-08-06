@@ -198,6 +198,13 @@
         .btn-outline:hover {
             background: var(--soft);
         }
+        .btn-whatsapp {
+            background: var(--whatsapp);
+            color: #fff;
+        }
+        .btn-whatsapp:hover {
+            opacity: 0.85;
+        }
         .btn-sm {
             padding: 6px 14px;
             font-size: 12px;
@@ -397,6 +404,19 @@
         .toast.success {
             background: var(--green);
         }
+        .toast.whatsapp {
+            background: var(--whatsapp);
+        }
+
+        .message-preview {
+            background: var(--soft);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            margin: 8px 0;
+            border-left: 3px solid var(--whatsapp);
+            white-space: pre-wrap;
+            font-size: 13px;
+        }
 
         @media (max-width: 768px) {
             .container {
@@ -457,6 +477,7 @@
             <button class="active" onclick="switchTab('overview')">📊 Overview</button>
             <button onclick="switchTab('jobs')">📋 Jobs</button>
             <button onclick="switchTab('clients')">👤 Clients</button>
+            <button onclick="switchTab('messages')">💬 Messages</button>
         </div>
 
         <div class="tab-content active" id="tab-overview">
@@ -554,6 +575,90 @@
             </div>
         </div>
 
+        <!-- ─── MESSAGES TAB ─── -->
+        <div class="tab-content" id="tab-messages">
+            <div class="card">
+                <div class="card-header">
+                    <h3>💬 Bulk WhatsApp Messaging</h3>
+                    <div>
+                        <button class="btn btn-sm btn-whatsapp" onclick="sendBulkWhatsApp()">📤 Send Now</button>
+                    </div>
+                </div>
+
+                <!-- Quick Templates -->
+                <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:16px;">
+                    <button class="btn btn-sm btn-outline" onclick="setTemplate('newmonth')">🎉 Happy New Month</button>
+                    <button class="btn btn-sm btn-outline" onclick="setTemplate('festival')">🎄 Festival Greeting</button>
+                    <button class="btn btn-sm btn-outline" onclick="setTemplate('birthday')">🎂 Birthday</button>
+                    <button class="btn btn-sm btn-outline" onclick="setTemplate('promo')">📢 Promo Offer</button>
+                </div>
+
+                <div class="form-group">
+                    <label>📨 Select Recipients</label>
+                    <select id="msgRecipients" multiple style="height:100px; width:100%; padding:8px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit;">
+                        <option value="all" style="font-weight:700; color:var(--blue);">📨 All Clients</option>
+                    </select>
+                    <span style="font-size:11px; color:var(--slate);">Hold Ctrl/Cmd to select multiple clients</span>
+                </div>
+
+                <div class="form-group" style="margin-top:12px;">
+                    <label>💬 Message</label>
+                    <textarea id="msgBody" rows="5" placeholder="Type your message here..." style="width:100%; padding:10px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:13px; resize:vertical;"></textarea>
+                </div>
+
+                <div class="form-group" style="margin-top:12px;">
+                    <label>📋 Message Type</label>
+                    <select id="messageType" style="width:100%; padding:10px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:13px;">
+                        <option value="custom">✏️ Custom</option>
+                        <option value="newmonth">🎉 Happy New Month</option>
+                        <option value="festival">🎄 Festival Greeting</option>
+                        <option value="birthday">🎂 Birthday</option>
+                        <option value="promo">📢 Promotional Offer</option>
+                    </select>
+                </div>
+
+                <!-- Message Preview -->
+                <div id="messagePreview" style="margin-top:12px; display:none;">
+                    <div class="message-preview">
+                        <div style="font-size:13px; white-space:pre-wrap; color:var(--ink);" id="previewText"></div>
+                    </div>
+                </div>
+
+                <button class="btn btn-whatsapp" onclick="sendBulkWhatsApp()" style="margin-top:16px; width:100%; justify-content:center;">
+                    💬 Send via WhatsApp
+                </button>
+
+                <div style="margin-top:16px;">
+                    <p style="font-size:12px; color:var(--slate);">📌 Messages are sent individually to each selected client. WhatsApp will open for each client.</p>
+                </div>
+            </div>
+
+            <!-- Message History -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>📋 Message History</h3>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Date</th>
+                                <th>To</th>
+                                <th>Message</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="messagesTable">
+                            <tr><td colspan="6" style="text-align:center;color:var(--slate);">No messages sent yet</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- ─── END MESSAGES TAB ─── -->
+
     </div>
 
     <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
@@ -619,6 +724,10 @@
             document.querySelectorAll('.nav-tabs button').forEach(el => {
                 if (el.textContent.toLowerCase().includes(tab)) el.classList.add('active');
             });
+            if (tab === 'messages') {
+                loadClientsForMessages();
+                renderMessages();
+            }
             renderAll();
         }
 
@@ -761,7 +870,10 @@
                     <td>${c.phone || 'N/A'}</td>
                     <td>${c.location || 'N/A'}</td>
                     <td>${jobsData ? jobsData.filter(j => j.client === c.name).length : 0}</td>
-                    <td><button class="btn btn-sm btn-danger" onclick="deleteClientItem('${c.id}')">🗑️</button></td>
+                    <td>
+                        <button class="btn btn-sm btn-whatsapp" onclick="sendSingleWhatsApp('${c.name}', '${c.phone}')">💬</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteClientItem('${c.id}')">🗑️</button>
+                    </td>
                 </tr>`
             ).join('');
         }
@@ -1006,12 +1118,236 @@
             }
         }
 
+        // ─── ──────────────────────────────────────────────────────
+        // ─── WHATSAPP MESSAGING ──────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+
+        // ─── Templates ──────────────────────────────────────────
+        const TEMPLATES = {
+            newmonth: 'Happy New Month! 🎉\n\nWe hope this new month brings you joy, success, and a spotless home.\n\nThank you for choosing CleanCrew! 🧹',
+            festival: '🎄 Happy Holidays! 🎄\n\nFrom our family to yours, we wish you a wonderful celebration.\n\nThank you for being a valued client. ✨',
+            birthday: '🎂 Happy Birthday! 🎉\n\nWishing you a day filled with joy and a year full of blessings.\n\nFrom the CleanCrew team 🧹',
+            promo: '✨ Special Offer Just For You! ✨\n\nBook a deep cleaning this month and get 10% off!\n\nMention this message when you book.\n\nValid for new bookings only. 🧹'
+        };
+
+        let messageData = [];
+
+        // ─── Load clients for messages ────────────────────────
+        async function loadClientsForMessages() {
+            try {
+                const clients = await getClients();
+                const select = document.getElementById('msgRecipients');
+                // Clear existing options except "All Clients"
+                select.innerHTML = '<option value="all" style="font-weight:700; color:var(--blue);">📨 All Clients</option>';
+                clients.forEach(c => {
+                    const option = document.createElement('option');
+                    option.value = c.name;
+                    option.textContent = c.name + (c.phone ? ` (${c.phone})` : '');
+                    select.appendChild(option);
+                });
+            } catch (e) {
+                console.error('Failed to load clients for messages:', e);
+            }
+        }
+
+        // ─── Set template ──────────────────────────────────────
+        function setTemplate(type) {
+            const body = document.getElementById('msgBody');
+            const typeSelect = document.getElementById('messageType');
+            if (body && TEMPLATES[type]) {
+                body.value = TEMPLATES[type];
+                typeSelect.value = type;
+                // Show preview
+                document.getElementById('previewText').textContent = TEMPLATES[type];
+                document.getElementById('messagePreview').style.display = 'block';
+            }
+        }
+
+        // ─── Send single WhatsApp ──────────────────────────────
+        function sendSingleWhatsApp(name, phone) {
+            if (!phone || phone === 'N/A' || phone === '') {
+                showToast('⚠️ No phone number available for this contact', '');
+                return;
+            }
+
+            const message = `🧹 Hello ${name}! 👋\n\nThis is a reminder about your upcoming cleaning service.\n\nThank you for choosing CleanCrew! 🧹`;
+
+            const url = `https://wa.me/234${phone.replace(/^0+/, '')}?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+            showToast('💬 Opening WhatsApp...', 'whatsapp');
+        }
+
+        // ─── Send Bulk WhatsApp ────────────────────────────────
+        async function sendBulkWhatsApp() {
+            const recipients = document.getElementById('msgRecipients');
+            const selected = Array.from(recipients.selectedOptions).map(opt => opt.value);
+            const body = document.getElementById('msgBody').value.trim();
+            const type = document.getElementById('messageType').value;
+
+            if (!body) {
+                showToast('⚠️ Please enter a message', '');
+                return;
+            }
+
+            if (selected.length === 0 || (selected.length === 1 && selected[0] === '')) {
+                showToast('⚠️ Please select at least one recipient', '');
+                return;
+            }
+
+            let recipientNames = [];
+            if (selected.includes('all')) {
+                try {
+                    const clients = await getClients();
+                    recipientNames = clients.map(c => c.name);
+                } catch (e) {
+                    showToast('⚠️ Failed to load clients', '');
+                    return;
+                }
+            } else {
+                recipientNames = selected;
+            }
+
+            if (recipientNames.length === 0) {
+                showToast('⚠️ No clients found to message', '');
+                return;
+            }
+
+            // Get phone numbers
+            let phones = [];
+            try {
+                const clients = await getClients();
+                phones = recipientNames.map(name => {
+                    const client = clients.find(c => c.name === name);
+                    return client ? client.phone : null;
+                }).filter(p => p && p !== 'N/A' && p !== '');
+            } catch (e) {
+                showToast('⚠️ Failed to get client phone numbers', '');
+                return;
+            }
+
+            if (phones.length === 0) {
+                showToast('⚠️ No phone numbers found for selected clients', '');
+                return;
+            }
+
+            // Save message
+            const message = {
+                id: Date.now(),
+                type: type || 'custom',
+                recipients: recipientNames,
+                body: body,
+                sentAt: new Date().toISOString(),
+                status: 'sent'
+            };
+
+            // Save to localStorage for history
+            messageData = JSON.parse(localStorage.getItem('cleancrew_message_history') || '[]');
+            messageData.unshift(message);
+            localStorage.setItem('cleancrew_message_history', JSON.stringify(messageData));
+
+            renderMessages();
+            showToast(`💬 Sending to ${recipientNames.length} client(s)`, 'whatsapp');
+
+            // Open WhatsApp for first client (user will need to send to each)
+            if (phones.length > 0) {
+                const url = `https://wa.me/234${phones[0].replace(/^0+/, '')}?text=${encodeURIComponent(body)}`;
+                window.open(url, '_blank');
+                showToast(`💬 Opening WhatsApp for ${phones.length} client(s)`, 'whatsapp');
+            }
+        }
+
+        // ─── Render Messages History ──────────────────────────
+        function renderMessages() {
+            const tbody = document.getElementById('messagesTable');
+            messageData = JSON.parse(localStorage.getItem('cleancrew_message_history') || '[]');
+
+            if (messageData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--slate);">No messages sent yet</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = messageData.map((m, i) => {
+                const date = new Date(m.sentAt).toLocaleDateString('en-NG', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                const recipientCount = m.recipients ? m.recipients.length : 0;
+                const recipientNames = m.recipients ? m.recipients.slice(0, 3).join(', ') + (recipientCount > 3 ? ` +${recipientCount - 3} more` : '') : 'All clients';
+
+                return `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td style="font-size:12px;">${date}</td>
+                        <td><strong>${recipientCount} client(s)</strong><br><span style="font-size:11px;color:var(--slate);">${recipientNames}</span></td>
+                        <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${m.body ? m.body.substring(0, 60) + (m.body.length > 60 ? '...' : '') : 'N/A'}</td>
+                        <td><span class="status-badge sent" style="background:#D1FAE5;color:#065F46;">✓ Sent</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-whatsapp" onclick="resendMessage(${i})">📤 Resend</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteMessage(${i})">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ─── Resend Message ────────────────────────────────────
+        async function resendMessage(index) {
+            const m = messageData[index];
+            if (!m) return;
+
+            // Get phone numbers
+            try {
+                const clients = await getClients();
+                const phones = m.recipients.map(name => {
+                    const client = clients.find(c => c.name === name);
+                    return client ? client.phone : null;
+                }).filter(p => p && p !== 'N/A' && p !== '');
+
+                if (phones.length === 0) {
+                    showToast('⚠️ No phone numbers found for these clients', '');
+                    return;
+                }
+
+                const url = `https://wa.me/234${phones[0].replace(/^0+/, '')}?text=${encodeURIComponent(m.body)}`;
+                window.open(url, '_blank');
+                showToast(`💬 Resending to ${phones.length} client(s)`, 'whatsapp');
+            } catch (e) {
+                showToast('⚠️ Failed to resend message', '');
+            }
+        }
+
+        // ─── Delete Message ────────────────────────────────────
+        function deleteMessage(index) {
+            if (!confirm('Delete this message?')) return;
+            messageData.splice(index, 1);
+            localStorage.setItem('cleancrew_message_history', JSON.stringify(messageData));
+            renderMessages();
+            showToast('🗑️ Message deleted');
+        }
+
         // ─── INIT ────────────────────────────────────────────
         async function init() {
             await loadUserInfo();
             await renderAll();
             await checkSubscription();
             checkPaystackReturn();
+            loadClientsForMessages();
+            renderMessages();
+
+            // Auto-show preview when typing
+            document.getElementById('msgBody').addEventListener('input', function() {
+                const preview = document.getElementById('previewText');
+                const previewContainer = document.getElementById('messagePreview');
+                if (this.value.trim()) {
+                    preview.textContent = this.value;
+                    previewContainer.style.display = 'block';
+                } else {
+                    previewContainer.style.display = 'none';
+                }
+            });
         }
 
         document.addEventListener('DOMContentLoaded', function() {

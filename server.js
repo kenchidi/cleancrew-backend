@@ -32,19 +32,19 @@ const PAYSTACK_PUBLIC_KEY = process.env.PAYSTACK_PUBLIC_KEY;
 // ─── Paystack plans ──────────────────────────────────────
 const PLANS = {
   starter: { 
-    amount: 100000, // ₦10,000 in kobo
+    amount: 1000000, // ₦10,000 in kobo (10000 * 100)
     name: 'Starter',
     features: 'Up to 50 jobs, 50 clients',
     limits: { jobs: 50, clients: 50 }
   },
   professional: { 
-    amount: 175000, // ₦17,500 in kobo
+    amount: 1750000, // ₦17,500 in kobo (17500 * 100)
     name: 'Professional',
     features: 'Unlimited jobs & clients, invoicing',
     limits: { jobs: Infinity, clients: Infinity }
   },
   enterprise: { 
-    amount: 350000, // ₦35,000 in kobo
+    amount: 3500000, // ₦35,000 in kobo (35000 * 100)
     name: 'Enterprise',
     features: 'Everything + team access',
     limits: { jobs: Infinity, clients: Infinity }
