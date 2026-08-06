@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign Up — CleanCrew</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #F4F7FC;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .auth-container {
+            max-width: 400px;
+            width: 100%;
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 40px 32px;
+            border: 1px solid #DDE6F5;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.06);
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 4px;
+            color: #0F1F40;
+        }
+        .logo span { color: #1A6DDB; }
+        .sub {
+            text-align: center;
+            color: #6B7FA3;
+            font-size: 14px;
+            margin-bottom: 28px;
+        }
+        .form-group { margin-bottom: 16px; }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #6B7FA3;
+            margin-bottom: 6px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid #DDE6F5;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+        }
+        .form-group input:focus {
+            border-color: #1A6DDB;
+            box-shadow: 0 0 0 3px rgba(26,109,219,0.12);
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: #1A6DDB;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .btn:hover { background: #1258B8; }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .link {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 14px;
+            color: #6B7FA3;
+        }
+        .link a {
+            color: #1A6DDB;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .link a:hover { text-decoration: underline; }
+        .error-msg {
+            background: #FEE2E2;
+            color: #991B1B;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-bottom: 16px;
+            display: none;
+        }
+        .error-msg.show { display: block; }
+        .success-msg {
+            background: #D1FAE5;
+            color: #065F46;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-bottom: 16px;
+            display: none;
+        }
+        .success-msg.show { display: block; }
+        .password-hint {
+            font-size: 12px;
+            color: #6B7FA3;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <div class="logo">🧹 Clean<span>Crew</span>.</div>
+        <div class="sub">Create your account</div>
+
+        <div class="error-msg" id="errorMsg"></div>
+        <div class="success-msg" id="successMsg"></div>
+
+        <form id="signupForm">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="name" placeholder="e.g. Amaka O." required />
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="email" placeholder="you@email.com" required />
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="Create a password" required minlength="6" />
+                <div class="password-hint">Minimum 6 characters</div>
+            </div>
+            <button type="submit" class="btn" id="signupBtn">Create Account →</button>
+        </form>
+
+        <div class="link">
+            Already have an account? <a href="login.html">Login</a>
+        </div>
+    </div>
+
+    <script>
+        // ─── SERVER URL ──────────────────────────────────────
+        const SERVER_URL = 'http://10.5.0.2:5000';
+
+        // ─── SIGNUP ──────────────────────────────────────────
+        const form = document.getElementById('signupForm');
+        const errorMsg = document.getElementById('errorMsg');
+        const successMsg = document.getElementById('successMsg');
+        const signupBtn = document.getElementById('signupBtn');
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            errorMsg.classList.remove('show');
+            successMsg.classList.remove('show');
+            signupBtn.disabled = true;
+            signupBtn.textContent = 'Creating account...';
+
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            try {
+                const response = await fetch(`${SERVER_URL}/api/auth/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    successMsg.textContent = '✅ Account created! Redirecting to login...';
+                    successMsg.classList.add('show');
+
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 1500);
+                } else {
+                    errorMsg.textContent = data.error || 'Signup failed. Please try again.';
+                    errorMsg.classList.add('show');
+                    console.error('Error:', data);
+                }
+            } catch (error) {
+                errorMsg.textContent = '⚠️ Could not connect to server.';
+                errorMsg.classList.add('show');
+                console.error('Fetch error:', error);
+            }
+
+            signupBtn.disabled = false;
+            signupBtn.textContent = 'Create Account →';
+        });
+    </script>
+
+</body>
+</html>
