@@ -34,17 +34,20 @@ const PLANS = {
   starter: { 
     amount: 100000, // ₦10,000 in kobo
     name: 'Starter',
-    features: 'Up to 50 jobs, 50 clients'
+    features: 'Up to 50 jobs, 50 clients',
+    limits: { jobs: 50, clients: 50 }
   },
   professional: { 
     amount: 175000, // ₦17,500 in kobo
     name: 'Professional',
-    features: 'Unlimited jobs & clients, invoicing'
+    features: 'Unlimited jobs & clients, invoicing',
+    limits: { jobs: Infinity, clients: Infinity }
   },
   enterprise: { 
     amount: 350000, // ₦35,000 in kobo
     name: 'Enterprise',
-    features: 'Everything + team access'
+    features: 'Everything + team access',
+    limits: { jobs: Infinity, clients: Infinity }
   }
 };
 
@@ -63,6 +66,52 @@ const authenticate = async (req, res, next) => {
   req.user = user;
   next();
 };
+
+// ─── PLAN LIMIT CHECK ──────────────────────────────────
+async function checkPlanLimit(userId, type) {
+  // Get user's subscription plan
+  const { data: sub, error: subError } = await supabase
+    .from('subscriptions')
+    .select('plan')
+    .eq('user_id', userId)
+    .single();
+
+  if (subError && subError.code !== 'PGRST116') {
+    throw new Error('Error checking subscription');
+  }
+
+  const planName = sub?.plan || 'starter';
+  const limit = PLANS[planName]?.limits?.[type] || 50;
+
+  // If plan has no limit (Professional/Enterprise), skip check
+  if (limit === Infinity) {
+    return { allowed: true, limit: Infinity, plan: planName, count: 0 };
+  }
+
+  // Count current items
+  const { count, error: countError } = await supabase
+    .from(type)
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId);
+
+  if (countError) {
+    throw new Error('Error counting items');
+  }
+
+  const currentCount = count || 0;
+
+  if (currentCount >= limit) {
+    return { 
+      allowed: false, 
+      limit, 
+      count: currentCount, 
+      plan: planName,
+      message: `You've reached your ${planName} plan limit of ${limit} ${type}. Upgrade to Professional for unlimited ${type}.`
+    };
+  }
+
+  return { allowed: true, limit, count: currentCount, plan: planName };
+}
 
 // ─── ──────────────────────────────────────────────────────
 // ─── AUTH ROUTES ──────────────────────────────────────────
@@ -179,7 +228,6 @@ app.post('/api/paystack/initialize', authenticate, async (req, res) => {
     const { email } = req.user;
     const userId = req.user.id;
     
-    // Validate plan
     if (!PLANS[plan]) {
       return res.status(400).json({ error: 'Invalid plan selected' });
     }
@@ -320,7 +368,7 @@ app.post('/api/paystack/webhook', async (req, res) => {
 });
 
 // ─── ──────────────────────────────────────────────────────
-// ─── CRUD ROUTES ─────────────────────────────────────────
+// ─── CRUD ROUTES WITH PLAN LIMITS ──────────────────────
 // ─── ──────────────────────────────────────────────────────
 
 // ─── JOBS ──────────────────────────────────────────────────
@@ -341,6 +389,18 @@ app.get('/api/jobs', authenticate, async (req, res) => {
 
 app.post('/api/jobs', authenticate, async (req, res) => {
   try {
+    // Check plan limit
+    const limitCheck = await checkPlanLimit(req.user.id, 'jobs');
+    
+    if (!limitCheck.allowed) {
+      return res.status(403).json({ 
+        error: limitCheck.message,
+        limit: limitCheck.limit,
+        count: limitCheck.count,
+        plan: limitCheck.plan
+      });
+    }
+
     const job = { ...req.body, user_id: req.user.id };
     const { data, error } = await supabase
       .from('jobs')
@@ -407,6 +467,18 @@ app.get('/api/clients', authenticate, async (req, res) => {
 
 app.post('/api/clients', authenticate, async (req, res) => {
   try {
+    // Check plan limit
+    const limitCheck = await checkPlanLimit(req.user.id, 'clients');
+    
+    if (!limitCheck.allowed) {
+      return res.status(403).json({ 
+        error: limitCheck.message,
+        limit: limitCheck.limit,
+        count: limitCheck.count,
+        plan: limitCheck.plan
+      });
+    }
+
     const client = { ...req.body, user_id: req.user.id };
     const { data, error } = await supabase
       .from('clients')

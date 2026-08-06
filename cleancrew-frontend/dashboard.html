@@ -684,6 +684,8 @@
         }
 
         // ─── RENDER FUNCTIONS ───────────────────────────────
+        let jobsData = [];
+
         async function renderAll() {
             try {
                 const [jobs, clients] = await Promise.all([getJobs(), getClients()]);
@@ -745,8 +747,6 @@
                 </tr>`
             ).join('');
         }
-
-        let jobsData = [];
 
         function renderClients(clients) {
             const tbody = document.getElementById('clientsTable');
