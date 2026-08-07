@@ -221,18 +221,39 @@ app.post('/api/auth/reset-password', async (req, res) => {
   }
 });
 
-// ─── Confirm Reset Password ──────────────────────────────
-app.post('/api/auth/reset-password/confirm', async (req, res) => {
+// ─── Exchange token for session ──────────────────────────
+app.post('/api/auth/reset-session', async (req, res) => {
   try {
-    const { access_token, new_password } = req.body;
+    const { access_token } = req.body;
 
-    if (!access_token || !new_password) {
-      return res.status(400).json({ error: 'Token and new password are required' });
+    if (!access_token) {
+      return res.status(400).json({ error: 'Access token is required' });
+    }
+
+    const { data, error } = await supabase.auth.setSession({
+      access_token: access_token,
+      refresh_token: ''
+    });
+
+    if (error) throw error;
+
+    res.json({ session: data.session });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// ─── Confirm Reset Password ──────────────────────────────
+app.post('/api/auth/reset-password/confirm', authenticate, async (req, res) => {
+  try {
+    const { new_password } = req.body;
+
+    if (!new_password || new_password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
     }
 
     const { data, error } = await supabase.auth.updateUser({
-      password: new_password,
-      access_token: access_token
+      password: new_password
     });
 
     if (error) throw error;

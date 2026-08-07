@@ -45,7 +45,6 @@
             padding: 20px;
         }
 
-        /* ─── HEADER ─── */
         .header {
             background: var(--white);
             border-radius: var(--radius);
@@ -95,7 +94,6 @@
             opacity: 0.85;
         }
 
-        /* ─── NAV ─── */
         .nav-tabs {
             display: flex;
             gap: 4px;
@@ -135,7 +133,6 @@
             display: block;
         }
 
-        /* ─── CARDS ─── */
         .card {
             background: var(--white);
             border-radius: var(--radius);
@@ -158,7 +155,6 @@
             font-weight: 700;
         }
 
-        /* ─── BUTTONS ─── */
         .btn {
             padding: 10px 20px;
             border: none;
@@ -202,12 +198,18 @@
         .btn-outline:hover {
             background: var(--soft);
         }
+        .btn-whatsapp {
+            background: var(--whatsapp);
+            color: #fff;
+        }
+        .btn-whatsapp:hover {
+            opacity: 0.85;
+        }
         .btn-sm {
             padding: 6px 14px;
             font-size: 12px;
         }
 
-        /* ─── STATS GRID ─── */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -252,7 +254,6 @@
             color: var(--blue);
         }
 
-        /* ─── TABLES ─── */
         .table-wrap {
             overflow-x: auto;
         }
@@ -301,7 +302,6 @@
             color: #1E40AF;
         }
 
-        /* ─── FORMS ─── */
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -339,13 +339,6 @@
             box-shadow: 0 0 0 3px rgba(26,109,219,0.12);
         }
 
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: var(--slate);
-        }
-
-        /* ─── MODAL ─── */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -411,6 +404,19 @@
         .toast.success {
             background: var(--green);
         }
+        .toast.whatsapp {
+            background: var(--whatsapp);
+        }
+
+        .message-preview {
+            background: var(--soft);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            margin: 8px 0;
+            border-left: 3px solid var(--whatsapp);
+            white-space: pre-wrap;
+            font-size: 13px;
+        }
 
         @media (max-width: 768px) {
             .container {
@@ -459,7 +465,6 @@
 
     <div class="container">
 
-        <!-- ─── HEADER ─── -->
         <div class="header">
             <div class="logo">🧹 Clean<span>Crew</span>.</div>
             <div class="user-info">
@@ -468,18 +473,17 @@
             </div>
         </div>
 
-        <!-- ─── NAV ─── -->
         <div class="nav-tabs">
             <button class="active" onclick="switchTab('overview')">📊 Overview</button>
             <button onclick="switchTab('jobs')">📋 Jobs</button>
             <button onclick="switchTab('clients')">👤 Clients</button>
+            <button onclick="switchTab('messages')">💬 Messages</button>
         </div>
 
-        <!-- ════ OVERVIEW ════ -->
         <div class="tab-content active" id="tab-overview">
             <div class="stats-grid">
                 <div class="stat-card primary"><span class="stat-icon">📋</span><div class="stat-label">Total Jobs</div><div class="stat-value" id="ovJobs">0</div></div>
-                <div class="stat-card green"><span class="stat-icon">💰</span><div class="stat-label">Revenue</div><div class="stat-value" id="ovRevenue">₦0</div></div>
+                <div class="stat-card green"><span class="stat-icon">💰</span><div class="stat-label">Revenue</div><div class="stat-value" id="ovRevenue">&#8358;0</div></div>
                 <div class="stat-card orange"><span class="stat-icon">⏳</span><div class="stat-label">Pending</div><div class="stat-value" id="ovPending">0</div></div>
                 <div class="stat-card blue"><span class="stat-icon">👤</span><div class="stat-label">Clients</div><div class="stat-value" id="ovClients">0</div></div>
             </div>
@@ -487,9 +491,66 @@
                 <div class="card-header"><h3>📋 Recent Jobs</h3><button class="btn btn-sm btn-primary" onclick="openModal('job')">+ New Job</button></div>
                 <div id="recentJobs"><p style="color:var(--slate);">No jobs yet</p></div>
             </div>
+
+            <!-- ─── SUBSCRIPTION / PLANS SECTION ─── -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>💳 Choose Your Plan</h3>
+                </div>
+                <div id="subscriptionStatus">
+                    <p style="color:var(--slate);">Loading...</p>
+                </div>
+                <div id="plansContainer" style="margin-top:16px;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
+                        
+                        <!-- Starter Plan -->
+                        <div id="planStarter" style="border:2px solid var(--border); border-radius:var(--radius); padding:16px; text-align:center; cursor:pointer;" onclick="selectPlan('starter')">
+                            <h4 style="font-size:18px; font-weight:800;">Starter</h4>
+                            <p style="font-size:28px; font-weight:800; color:var(--blue);">&#8358;10,000 <span style="font-size:14px; font-weight:400; color:var(--slate);">/month</span></p>
+                            <ul style="list-style:none; text-align:left; margin:12px 0; font-size:13px; color:var(--slate);">
+                                <li>✅ Up to 50 jobs</li>
+                                <li>✅ Up to 50 clients</li>
+                                <li>✅ Bulk WhatsApp</li>
+                                <li>✅ Basic reporting</li>
+                            </ul>
+                            <button class="btn btn-primary" style="width:100%;" onclick="subscribeToPlan('starter')">Subscribe</button>
+                        </div>
+                        
+                        <!-- Professional Plan (Popular) -->
+                        <div id="planProfessional" style="border:2px solid var(--blue); border-radius:var(--radius); padding:16px; text-align:center; cursor:pointer; background:var(--blue-light);" onclick="selectPlan('professional')">
+                            <span style="display:inline-block; background:var(--orange); color:#fff; font-size:10px; font-weight:700; padding:2px 12px; border-radius:100px; text-transform:uppercase; margin-bottom:8px;">🔥 Best Value</span>
+                            <h4 style="font-size:18px; font-weight:800;">Professional</h4>
+                            <p style="font-size:28px; font-weight:800; color:var(--blue);">&#8358;17,500 <span style="font-size:14px; font-weight:400; color:var(--slate);">/month</span></p>
+                            <ul style="list-style:none; text-align:left; margin:12px 0; font-size:13px; color:var(--slate);">
+                                <li>✅ Unlimited jobs</li>
+                                <li>✅ Unlimited clients</li>
+                                <li>✅ Bulk WhatsApp</li>
+                                <li>✅ Invoice generation</li>
+                                <li>✅ Revenue tracking</li>
+                            </ul>
+                            <button class="btn btn-primary" style="width:100%;" onclick="subscribeToPlan('professional')">Subscribe</button>
+                        </div>
+                        
+                        <!-- Enterprise Plan -->
+                        <div id="planEnterprise" style="border:2px solid var(--border); border-radius:var(--radius); padding:16px; text-align:center; cursor:pointer;" onclick="selectPlan('enterprise')">
+                            <h4 style="font-size:18px; font-weight:800;">Enterprise</h4>
+                            <p style="font-size:28px; font-weight:800; color:var(--blue);">&#8358;35,000 <span style="font-size:14px; font-weight:400; color:var(--slate);">/month</span></p>
+                            <ul style="list-style:none; text-align:left; margin:12px 0; font-size:13px; color:var(--slate);">
+                                <li>✅ Everything in Professional</li>
+                                <li>✅ Team member access</li>
+                                <li>✅ Advanced reporting</li>
+                                <li>✅ Dedicated support</li>
+                            </ul>
+                            <button class="btn btn-primary" style="width:100%;" onclick="subscribeToPlan('enterprise')">Subscribe</button>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            <!-- ─── END SUBSCRIPTION SECTION ─── -->
+
         </div>
 
-        <!-- ════ JOBS ════ -->
         <div class="tab-content" id="tab-jobs">
             <div class="card">
                 <div class="card-header"><h3>📋 All Jobs</h3><button class="btn btn-sm btn-primary" onclick="openModal('job')">+ New Job</button></div>
@@ -502,7 +563,6 @@
             </div>
         </div>
 
-        <!-- ════ CLIENTS ════ -->
         <div class="tab-content" id="tab-clients">
             <div class="card">
                 <div class="card-header"><h3>👤 All Clients</h3><button class="btn btn-sm btn-primary" onclick="openModal('client')">+ Add Client</button></div>
@@ -515,9 +575,92 @@
             </div>
         </div>
 
+        <!-- ─── MESSAGES TAB ─── -->
+        <div class="tab-content" id="tab-messages">
+            <div class="card">
+                <div class="card-header">
+                    <h3>💬 Bulk WhatsApp Messaging</h3>
+                    <div>
+                        <button class="btn btn-sm btn-whatsapp" onclick="sendBulkWhatsApp()">📤 Send Now</button>
+                    </div>
+                </div>
+
+                <!-- Quick Templates -->
+                <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:16px;">
+                    <button class="btn btn-sm btn-outline" onclick="setTemplate('newmonth')">🎉 Happy New Month</button>
+                    <button class="btn btn-sm btn-outline" onclick="setTemplate('festival')">🎄 Festival Greeting</button>
+                    <button class="btn btn-sm btn-outline" onclick="setTemplate('birthday')">🎂 Birthday</button>
+                    <button class="btn btn-sm btn-outline" onclick="setTemplate('promo')">📢 Promo Offer</button>
+                </div>
+
+                <div class="form-group">
+                    <label>📨 Select Recipients</label>
+                    <select id="msgRecipients" multiple style="height:100px; width:100%; padding:8px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit;">
+                        <option value="all" style="font-weight:700; color:var(--blue);">📨 All Clients</option>
+                    </select>
+                    <span style="font-size:11px; color:var(--slate);">Hold Ctrl/Cmd to select multiple clients</span>
+                </div>
+
+                <div class="form-group" style="margin-top:12px;">
+                    <label>💬 Message</label>
+                    <textarea id="msgBody" rows="5" placeholder="Type your message here..." style="width:100%; padding:10px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:13px; resize:vertical;"></textarea>
+                </div>
+
+                <div class="form-group" style="margin-top:12px;">
+                    <label>📋 Message Type</label>
+                    <select id="messageType" style="width:100%; padding:10px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:13px;">
+                        <option value="custom">✏️ Custom</option>
+                        <option value="newmonth">🎉 Happy New Month</option>
+                        <option value="festival">🎄 Festival Greeting</option>
+                        <option value="birthday">🎂 Birthday</option>
+                        <option value="promo">📢 Promotional Offer</option>
+                    </select>
+                </div>
+
+                <!-- Message Preview -->
+                <div id="messagePreview" style="margin-top:12px; display:none;">
+                    <div class="message-preview">
+                        <div style="font-size:13px; white-space:pre-wrap; color:var(--ink);" id="previewText"></div>
+                    </div>
+                </div>
+
+                <button class="btn btn-whatsapp" onclick="sendBulkWhatsApp()" style="margin-top:16px; width:100%; justify-content:center;">
+                    💬 Send via WhatsApp
+                </button>
+
+                <div style="margin-top:16px;">
+                    <p style="font-size:12px; color:var(--slate);">📌 Messages are sent individually to each selected client. WhatsApp will open for each client.</p>
+                </div>
+            </div>
+
+            <!-- Message History -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>📋 Message History</h3>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Date</th>
+                                <th>To</th>
+                                <th>Message</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="messagesTable">
+                            <tr><td colspan="6" style="text-align:center;color:var(--slate);">No messages sent yet</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- ─── END MESSAGES TAB ─── -->
+
     </div>
 
-    <!-- ─── MODAL ─── -->
     <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
         <div class="modal-box">
             <div class="modal-header"><h3 id="modalTitle">New Job</h3><button class="modal-close" onclick="closeModal()">×</button></div>
@@ -532,15 +675,13 @@
 
     <script>
         // ─── CONFIG ──────────────────────────────────────────
-        const API_URL = 'http://10.5.0.2:5000/api';
+        const API_URL = 'https://cleancrew-backend.onrender.com/api';
         const TOKEN = localStorage.getItem('cleancrew_token');
 
-        // ─── AUTH CHECK ──────────────────────────────────────
         if (!TOKEN) {
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         }
 
-        // ─── HEADERS ─────────────────────────────────────────
         function getHeaders() {
             return {
                 'Content-Type': 'application/json',
@@ -561,14 +702,12 @@
             }
         }
 
-        // ─── LOGOUT ──────────────────────────────────────────
         function logout() {
             localStorage.removeItem('cleancrew_token');
             localStorage.removeItem('cleancrew_user');
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         }
 
-        // ─── TOAST ──────────────────────────────────────────
         function showToast(msg, type = '') {
             const toast = document.getElementById('toast');
             toast.textContent = msg;
@@ -578,7 +717,6 @@
             toast._timer = setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
-        // ─── TAB SWITCH ──────────────────────────────────────
         function switchTab(tab) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + tab).classList.add('active');
@@ -586,20 +724,23 @@
             document.querySelectorAll('.nav-tabs button').forEach(el => {
                 if (el.textContent.toLowerCase().includes(tab)) el.classList.add('active');
             });
+            if (tab === 'messages') {
+                loadClientsForMessages();
+                renderMessages();
+            }
             renderAll();
         }
 
-        // ─── GENERATE ID ─────────────────────────────────────
-        function genId() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 5); }
-
-        // ─── ─────────────────────────────────────────────────
-        // ─── CRUD OPERATIONS ────────────────────────────────
-        // ─── ─────────────────────────────────────────────────
-
-        // ─── JOBS ────────────────────────────────────────────
+        // ─── API FUNCTIONS ──────────────────────────────────
         async function getJobs() {
             const res = await fetch(`${API_URL}/jobs`, { headers: getHeaders() });
             if (!res.ok) throw new Error('Failed to fetch jobs');
+            return res.json();
+        }
+
+        async function getClients() {
+            const res = await fetch(`${API_URL}/clients`, { headers: getHeaders() });
+            if (!res.ok) throw new Error('Failed to fetch clients');
             return res.json();
         }
 
@@ -610,6 +751,16 @@
                 body: JSON.stringify(job)
             });
             if (!res.ok) throw new Error('Failed to create job');
+            return res.json();
+        }
+
+        async function createClient(client) {
+            const res = await fetch(`${API_URL}/clients`, {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify(client)
+            });
+            if (!res.ok) throw new Error('Failed to create client');
             return res.json();
         }
 
@@ -632,23 +783,6 @@
             return res.json();
         }
 
-        // ─── CLIENTS ─────────────────────────────────────────
-        async function getClients() {
-            const res = await fetch(`${API_URL}/clients`, { headers: getHeaders() });
-            if (!res.ok) throw new Error('Failed to fetch clients');
-            return res.json();
-        }
-
-        async function createClient(client) {
-            const res = await fetch(`${API_URL}/clients`, {
-                method: 'POST',
-                headers: getHeaders(),
-                body: JSON.stringify(client)
-            });
-            if (!res.ok) throw new Error('Failed to create client');
-            return res.json();
-        }
-
         async function deleteClient(id) {
             const res = await fetch(`${API_URL}/clients/${id}`, {
                 method: 'DELETE',
@@ -658,19 +792,19 @@
             return res.json();
         }
 
-        // ─── ─────────────────────────────────────────────────
         // ─── RENDER FUNCTIONS ───────────────────────────────
-        // ─── ─────────────────────────────────────────────────
+        let jobsData = [];
 
         async function renderAll() {
             try {
                 const [jobs, clients] = await Promise.all([getJobs(), getClients()]);
+                jobsData = jobs;
                 renderOverview(jobs, clients);
                 renderJobs(jobs);
                 renderClients(clients);
             } catch (e) {
                 console.error('Render error:', e);
-                showToast('⚠️ Failed to load data', '');
+                showToast('⚠️ Failed to load data');
             }
         }
 
@@ -685,7 +819,6 @@
             document.getElementById('ovPending').textContent = pending;
             document.getElementById('ovClients').textContent = clients.length;
 
-            // Recent jobs (last 5)
             const recent = jobs.slice(0, 5);
             const container = document.getElementById('recentJobs');
             if (recent.length === 0) {
@@ -736,23 +869,23 @@
                     <td><strong>${c.name}</strong></td>
                     <td>${c.phone || 'N/A'}</td>
                     <td>${c.location || 'N/A'}</td>
-                    <td>${data.jobs ? data.jobs.filter(j => j.client === c.name).length : 0}</td>
-                    <td><button class="btn btn-sm btn-danger" onclick="deleteClientItem('${c.id}')">🗑️</button></td>
+                    <td>${jobsData ? jobsData.filter(j => j.client === c.name).length : 0}</td>
+                    <td>
+                        <button class="btn btn-sm btn-whatsapp" onclick="sendSingleWhatsApp('${c.name}', '${c.phone}')">💬</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteClientItem('${c.id}')">🗑️</button>
+                    </td>
                 </tr>`
             ).join('');
         }
 
-        // ─── ─────────────────────────────────────────────────
         // ─── ACTIONS ─────────────────────────────────────────
-        // ─── ─────────────────────────────────────────────────
-
         async function updateJobStatus(id, status) {
             try {
                 await updateJob(id, { status });
                 showToast(`✅ Job ${status}`, 'success');
                 renderAll();
             } catch (e) {
-                showToast('⚠️ Failed to update job', '');
+                showToast('⚠️ Failed to update job');
             }
         }
 
@@ -760,10 +893,10 @@
             if (!confirm('Delete this job?')) return;
             try {
                 await deleteJob(id);
-                showToast('🗑️ Job deleted', '');
+                showToast('🗑️ Job deleted');
                 renderAll();
             } catch (e) {
-                showToast('⚠️ Failed to delete job', '');
+                showToast('⚠️ Failed to delete job');
             }
         }
 
@@ -771,17 +904,14 @@
             if (!confirm('Delete this client?')) return;
             try {
                 await deleteClient(id);
-                showToast('🗑️ Client deleted', '');
+                showToast('🗑️ Client deleted');
                 renderAll();
             } catch (e) {
-                showToast('⚠️ Failed to delete client', '');
+                showToast('⚠️ Failed to delete client');
             }
         }
 
-        // ─── ─────────────────────────────────────────────────
         // ─── MODAL ───────────────────────────────────────────
-        // ─── ─────────────────────────────────────────────────
-
         let modalType = '';
 
         function openModal(type) {
@@ -845,7 +975,7 @@
                 const status = document.getElementById('jStatus').value;
                 const notes = document.getElementById('jNotes').value.trim();
 
-                if (!client || !amount || !date) { showToast('⚠️ Fill all fields', ''); return; }
+                if (!client || !amount || !date) { showToast('⚠️ Fill all fields'); return; }
 
                 try {
                     await createJob({ client, phone: phone || 'N/A', service, amount, date, status, notes: notes || 'None' });
@@ -853,7 +983,7 @@
                     closeModal();
                     renderAll();
                 } catch (e) {
-                    showToast('⚠️ Failed to add job', '');
+                    showToast('⚠️ Failed to add job');
                 }
             } else if (modalType === 'client') {
                 const name = document.getElementById('cName').value.trim();
@@ -862,7 +992,7 @@
                 const location = document.getElementById('cLocation').value.trim();
                 const notes = document.getElementById('cNotes').value.trim();
 
-                if (!name) { showToast('⚠️ Enter name', ''); return; }
+                if (!name) { showToast('⚠️ Enter name'); return; }
 
                 try {
                     await createClient({ name, phone: phone || 'N/A', email: email || '', location: location || '',
@@ -871,59 +1001,367 @@
                     closeModal();
                     renderAll();
                 } catch (e) {
-                    showToast('⚠️ Failed to add client', '');
+                    showToast('⚠️ Failed to add client');
                 }
             }
         }
 
-        // ─── ─────────────────────────────────────────────────
-        // ─── INIT ────────────────────────────────────────────
-        // ─── ─────────────────────────────────────────────────
+        // ─── PAYSTACK SUBSCRIPTION ────────────────────────────
 
-        let data = { jobs: [], clients: [] };
+        let selectedPlan = 'professional';
 
-        // ─── Override renderClients to use data ──────────────
-        const originalRenderClients = renderClients;
-        renderClients = function(clients) {
-            const tbody = document.getElementById('clientsTable');
-            if (clients.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--slate);">No clients yet</td></tr>';
-                return;
-            }
-            tbody.innerHTML = clients.map((c, i) =>
-                `<tr>
-                    <td>${i + 1}</td>
-                    <td><strong>${c.name}</strong></td>
-                    <td>${c.phone || 'N/A'}</td>
-                    <td>${c.location || 'N/A'}</td>
-                    <td>${data.jobs ? data.jobs.filter(j => j.client === c.name).length : 0}</td>
-                    <td><button class="btn btn-sm btn-danger" onclick="deleteClientItem('${c.id}')">🗑️</button></td>
-                </tr>`
-            ).join('');
-        };
-
-        // ─── Start ───────────────────────────────────────────
-        loadUserInfo();
-        renderAll();
-
-        // ─── Make data accessible for client counts ──────────
-        async function renderAllWithData() {
-            try {
-                const [jobs, clients] = await Promise.all([getJobs(), getClients()]);
-                data.jobs = jobs;
-                data.clients = clients;
-                renderOverview(jobs, clients);
-                renderJobs(jobs);
-                renderClients(clients);
-            } catch (e) {
-                console.error('Render error:', e);
-                showToast('⚠️ Failed to load data', '');
+        function selectPlan(plan) {
+            selectedPlan = plan;
+            
+            ['starter', 'professional', 'enterprise'].forEach(p => {
+                const el = document.getElementById(`plan${p.charAt(0).toUpperCase() + p.slice(1)}`);
+                if (el) {
+                    el.style.borderColor = 'var(--border)';
+                    el.style.background = 'transparent';
+                }
+            });
+            
+            const el = document.getElementById(`plan${plan.charAt(0).toUpperCase() + plan.slice(1)}`);
+            if (el) {
+                el.style.borderColor = 'var(--blue)';
+                el.style.background = 'var(--blue-light)';
             }
         }
 
-        // Override renderAll
-        renderAll = renderAllWithData;
-        renderAll();
+        async function subscribeToPlan(plan) {
+            if (!plan) plan = selectedPlan;
+            
+            try {
+                const res = await fetch(`${API_URL}/paystack/initialize`, {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ plan: plan })
+                });
+                const data = await res.json();
+                
+                if (data.authorization_url) {
+                    window.location.href = data.authorization_url;
+                } else {
+                    showToast('⚠️ Failed to initialize payment: ' + (data.error || 'Unknown error'));
+                }
+            } catch (e) {
+                console.error('Paystack init error:', e);
+                showToast('⚠️ Payment initialization failed');
+            }
+        }
+
+        // ─── ✅ FIXED: Trial countdown (days remaining, not days used) ───
+        async function checkSubscription() {
+            try {
+                const res = await fetch(`${API_URL}/subscription/status`, {
+                    headers: getHeaders()
+                });
+                const data = await res.json();
+                
+                const container = document.getElementById('subscriptionStatus');
+                if (!container) return;
+                
+                const plansContainer = document.getElementById('plansContainer');
+                if (!plansContainer) return;
+                
+                if (data.status === 'active') {
+                    container.innerHTML = `
+                        <div style="background:#D1FAE5; padding:16px; border-radius:var(--radius-sm);">
+                            <p style="color:#065F46; font-weight:700;">✅ Active — ${data.plan || 'Professional'} Plan</p>
+                            <p style="font-size:13px; color:#065F46;">Your subscription is active. Thank you for your support!</p>
+                        </div>
+                    `;
+                    plansContainer.style.display = 'none';
+                } else if (data.status === 'trial') {
+                    const trialEnd = new Date(data.trial_end);
+                    const now = new Date();
+                    
+                    // ✅ Calculate days remaining (NOT days used)
+                    const daysLeft = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
+                    
+                    // ✅ If daysLeft is negative, trial has expired
+                    if (daysLeft <= 0) {
+                        container.innerHTML = `
+                            <div style="background:#FEE2E2; padding:16px; border-radius:var(--radius-sm);">
+                                <p style="color:#991B1B; font-weight:700;">🔒 Trial Expired</p>
+                                <p style="font-size:13px; color:#991B1B;">Your trial has ended. Please choose a plan below to continue using CleanCrew.</p>
+                            </div>
+                        `;
+                        plansContainer.style.display = 'block';
+                        return;
+                    }
+                    
+                    container.innerHTML = `
+                        <div style="background:#FEF3C7; padding:16px; border-radius:var(--radius-sm);">
+                            <p style="color:#92400E; font-weight:700;">📅 Trial — ${daysLeft} days left</p>
+                            <p style="font-size:13px; color:#92400E;">Choose a plan below to continue using CleanCrew after your trial ends.</p>
+                        </div>
+                    `;
+                    plansContainer.style.display = 'block';
+                } else {
+                    container.innerHTML = `
+                        <div style="background:#FEE2E2; padding:16px; border-radius:var(--radius-sm);">
+                            <p style="color:#991B1B; font-weight:700;">🔒 Subscription Expired</p>
+                            <p style="font-size:13px; color:#991B1B;">Your subscription has expired. Please choose a plan below to renew.</p>
+                        </div>
+                    `;
+                    plansContainer.style.display = 'block';
+                }
+            } catch (e) {
+                console.error('Subscription check error:', e);
+                document.getElementById('subscriptionStatus').innerHTML = `<p style="color:var(--slate);">⚠️ Failed to load subscription status</p>`;
+            }
+        }
+
+        function checkPaystackReturn() {
+            const params = new URLSearchParams(window.location.search);
+            const reference = params.get('reference');
+            
+            if (reference) {
+                fetch(`${API_URL}/paystack/verify/${reference}`, {
+                    method: 'POST',
+                    headers: getHeaders()
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('✅ Payment successful! Subscription activated.', 'success');
+                        setTimeout(() => {
+                            window.location.href = '/dashboard.html';
+                        }, 2000);
+                    }
+                })
+                .catch(err => console.error('Verification error:', err));
+            }
+        }
+
+        // ─── ──────────────────────────────────────────────────────
+        // ─── WHATSAPP MESSAGING ──────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+
+        // ─── Templates ──────────────────────────────────────────
+        const TEMPLATES = {
+            newmonth: 'Happy New Month! 🎉\n\nWe hope this new month brings you joy, success, and a spotless home.\n\nThank you for choosing CleanCrew! 🧹',
+            festival: '🎄 Happy Holidays! 🎄\n\nFrom our family to yours, we wish you a wonderful celebration.\n\nThank you for being a valued client. ✨',
+            birthday: '🎂 Happy Birthday! 🎉\n\nWishing you a day filled with joy and a year full of blessings.\n\nFrom the CleanCrew team 🧹',
+            promo: '✨ Special Offer Just For You! ✨\n\nBook a deep cleaning this month and get 10% off!\n\nMention this message when you book.\n\nValid for new bookings only. 🧹'
+        };
+
+        let messageData = [];
+
+        // ─── Load clients for messages ────────────────────────
+        async function loadClientsForMessages() {
+            try {
+                const clients = await getClients();
+                const select = document.getElementById('msgRecipients');
+                select.innerHTML = '<option value="all" style="font-weight:700; color:var(--blue);">📨 All Clients</option>';
+                clients.forEach(c => {
+                    const option = document.createElement('option');
+                    option.value = c.name;
+                    option.textContent = c.name + (c.phone ? ` (${c.phone})` : '');
+                    select.appendChild(option);
+                });
+            } catch (e) {
+                console.error('Failed to load clients for messages:', e);
+            }
+        }
+
+        // ─── Set template ──────────────────────────────────────
+        function setTemplate(type) {
+            const body = document.getElementById('msgBody');
+            const typeSelect = document.getElementById('messageType');
+            if (body && TEMPLATES[type]) {
+                body.value = TEMPLATES[type];
+                typeSelect.value = type;
+                document.getElementById('previewText').textContent = TEMPLATES[type];
+                document.getElementById('messagePreview').style.display = 'block';
+            }
+        }
+
+        // ─── Send single WhatsApp ──────────────────────────────
+        function sendSingleWhatsApp(name, phone) {
+            if (!phone || phone === 'N/A' || phone === '') {
+                showToast('⚠️ No phone number available for this contact', '');
+                return;
+            }
+
+            const message = `🧹 Hello ${name}! 👋\n\nThis is a reminder about your upcoming cleaning service.\n\nThank you for choosing CleanCrew! 🧹`;
+
+            const url = `https://wa.me/234${phone.replace(/^0+/, '')}?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+            showToast('💬 Opening WhatsApp...', 'whatsapp');
+        }
+
+        // ─── Send Bulk WhatsApp ────────────────────────────────
+        async function sendBulkWhatsApp() {
+            const recipients = document.getElementById('msgRecipients');
+            const selected = Array.from(recipients.selectedOptions).map(opt => opt.value);
+            const body = document.getElementById('msgBody').value.trim();
+            const type = document.getElementById('messageType').value;
+
+            if (!body) {
+                showToast('⚠️ Please enter a message', '');
+                return;
+            }
+
+            if (selected.length === 0 || (selected.length === 1 && selected[0] === '')) {
+                showToast('⚠️ Please select at least one recipient', '');
+                return;
+            }
+
+            let recipientNames = [];
+            if (selected.includes('all')) {
+                try {
+                    const clients = await getClients();
+                    recipientNames = clients.map(c => c.name);
+                } catch (e) {
+                    showToast('⚠️ Failed to load clients', '');
+                    return;
+                }
+            } else {
+                recipientNames = selected;
+            }
+
+            if (recipientNames.length === 0) {
+                showToast('⚠️ No clients found to message', '');
+                return;
+            }
+
+            let phones = [];
+            try {
+                const clients = await getClients();
+                phones = recipientNames.map(name => {
+                    const client = clients.find(c => c.name === name);
+                    return client ? client.phone : null;
+                }).filter(p => p && p !== 'N/A' && p !== '');
+            } catch (e) {
+                showToast('⚠️ Failed to get client phone numbers', '');
+                return;
+            }
+
+            if (phones.length === 0) {
+                showToast('⚠️ No phone numbers found for selected clients', '');
+                return;
+            }
+
+            const message = {
+                id: Date.now(),
+                type: type || 'custom',
+                recipients: recipientNames,
+                body: body,
+                sentAt: new Date().toISOString(),
+                status: 'sent'
+            };
+
+            messageData = JSON.parse(localStorage.getItem('cleancrew_message_history') || '[]');
+            messageData.unshift(message);
+            localStorage.setItem('cleancrew_message_history', JSON.stringify(messageData));
+
+            renderMessages();
+            showToast(`💬 Sending to ${recipientNames.length} client(s)`, 'whatsapp');
+
+            if (phones.length > 0) {
+                const url = `https://wa.me/234${phones[0].replace(/^0+/, '')}?text=${encodeURIComponent(body)}`;
+                window.open(url, '_blank');
+                showToast(`💬 Opening WhatsApp for ${phones.length} client(s)`, 'whatsapp');
+            }
+        }
+
+        // ─── Render Messages History ──────────────────────────
+        function renderMessages() {
+            const tbody = document.getElementById('messagesTable');
+            messageData = JSON.parse(localStorage.getItem('cleancrew_message_history') || '[]');
+
+            if (messageData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--slate);">No messages sent yet</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = messageData.map((m, i) => {
+                const date = new Date(m.sentAt).toLocaleDateString('en-NG', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                const recipientCount = m.recipients ? m.recipients.length : 0;
+                const recipientNames = m.recipients ? m.recipients.slice(0, 3).join(', ') + (recipientCount > 3 ? ` +${recipientCount - 3} more` : '') : 'All clients';
+
+                return `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td style="font-size:12px;">${date}</td>
+                        <td><strong>${recipientCount} client(s)</strong><br><span style="font-size:11px;color:var(--slate);">${recipientNames}</span></td>
+                        <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${m.body ? m.body.substring(0, 60) + (m.body.length > 60 ? '...' : '') : 'N/A'}</td>
+                        <td><span class="status-badge sent" style="background:#D1FAE5;color:#065F46;">✓ Sent</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-whatsapp" onclick="resendMessage(${i})">📤 Resend</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteMessage(${i})">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ─── Resend Message ────────────────────────────────────
+        async function resendMessage(index) {
+            const m = messageData[index];
+            if (!m) return;
+
+            try {
+                const clients = await getClients();
+                const phones = m.recipients.map(name => {
+                    const client = clients.find(c => c.name === name);
+                    return client ? client.phone : null;
+                }).filter(p => p && p !== 'N/A' && p !== '');
+
+                if (phones.length === 0) {
+                    showToast('⚠️ No phone numbers found for these clients', '');
+                    return;
+                }
+
+                const url = `https://wa.me/234${phones[0].replace(/^0+/, '')}?text=${encodeURIComponent(m.body)}`;
+                window.open(url, '_blank');
+                showToast(`💬 Resending to ${phones.length} client(s)`, 'whatsapp');
+            } catch (e) {
+                showToast('⚠️ Failed to resend message', '');
+            }
+        }
+
+        // ─── Delete Message ────────────────────────────────────
+        function deleteMessage(index) {
+            if (!confirm('Delete this message?')) return;
+            messageData.splice(index, 1);
+            localStorage.setItem('cleancrew_message_history', JSON.stringify(messageData));
+            renderMessages();
+            showToast('🗑️ Message deleted');
+        }
+
+        // ─── INIT ────────────────────────────────────────────
+        async function init() {
+            await loadUserInfo();
+            await renderAll();
+            await checkSubscription();
+            checkPaystackReturn();
+            loadClientsForMessages();
+            renderMessages();
+
+            document.getElementById('msgBody').addEventListener('input', function() {
+                const preview = document.getElementById('previewText');
+                const previewContainer = document.getElementById('messagePreview');
+                if (this.value.trim()) {
+                    preview.textContent = this.value;
+                    previewContainer.style.display = 'block';
+                } else {
+                    previewContainer.style.display = 'none';
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            init();
+        });
     </script>
 
 </body>
