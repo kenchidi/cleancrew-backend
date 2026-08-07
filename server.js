@@ -32,19 +32,19 @@ const PAYSTACK_PUBLIC_KEY = process.env.PAYSTACK_PUBLIC_KEY;
 // ─── Paystack plans ──────────────────────────────────────
 const PLANS = {
   starter: { 
-    amount: 1000000, // ₦10,000 in kobo (10000 * 100)
+    amount: 1000000, // ₦10,000 in kobo
     name: 'Starter',
     features: 'Up to 50 jobs, 50 clients',
     limits: { jobs: 50, clients: 50 }
   },
   professional: { 
-    amount: 1750000, // ₦17,500 in kobo (17500 * 100)
+    amount: 1750000, // ₦17,500 in kobo
     name: 'Professional',
     features: 'Unlimited jobs & clients, invoicing',
     limits: { jobs: Infinity, clients: Infinity }
   },
   enterprise: { 
-    amount: 3500000, // ₦35,000 in kobo (35000 * 100)
+    amount: 3500000, // ₦35,000 in kobo
     name: 'Enterprise',
     features: 'Everything + team access',
     limits: { jobs: Infinity, clients: Infinity }
@@ -69,7 +69,6 @@ const authenticate = async (req, res, next) => {
 
 // ─── PLAN LIMIT CHECK ──────────────────────────────────
 async function checkPlanLimit(userId, type) {
-  // Get user's subscription plan
   const { data: sub, error: subError } = await supabase
     .from('subscriptions')
     .select('plan')
@@ -83,12 +82,10 @@ async function checkPlanLimit(userId, type) {
   const planName = sub?.plan || 'starter';
   const limit = PLANS[planName]?.limits?.[type] || 50;
 
-  // If plan has no limit (Professional/Enterprise), skip check
   if (limit === Infinity) {
     return { allowed: true, limit: Infinity, plan: planName, count: 0 };
   }
 
-  // Count current items
   const { count, error: countError } = await supabase
     .from(type)
     .select('*', { count: 'exact', head: true })
@@ -133,7 +130,8 @@ app.post('/api/auth/signup', async (req, res) => {
 
     if (authError) throw authError;
 
-    const trialEnd = new Date(Date.now() + 14 * 86400000);
+    const trialEnd = new Date();
+    trialEnd.setDate(trialEnd.getDate() + 14);
 
     await supabase
       .from('subscriptions')
@@ -199,10 +197,56 @@ app.get('/api/user', authenticate, async (req, res) => {
 });
 
 // ─── ──────────────────────────────────────────────────────
+// ─── PASSWORD RESET ROUTES ──────────────────────────────
+// ─── ──────────────────────────────────────────────────────
+
+// ─── Forgot Password ──────────────────────────────────────
+app.post('/api/auth/reset-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://cleancrew-frontend.vercel.app/reset-password.html'
+    });
+
+    if (error) throw error;
+
+    res.json({ success: true, message: 'Password reset email sent' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// ─── Confirm Reset Password ──────────────────────────────
+app.post('/api/auth/reset-password/confirm', async (req, res) => {
+  try {
+    const { access_token, new_password } = req.body;
+
+    if (!access_token || !new_password) {
+      return res.status(400).json({ error: 'Token and new password are required' });
+    }
+
+    const { data, error } = await supabase.auth.updateUser({
+      password: new_password,
+      access_token: access_token
+    });
+
+    if (error) throw error;
+
+    res.json({ success: true, message: 'Password updated successfully' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// ─── ──────────────────────────────────────────────────────
 // ─── SUBSCRIPTION ROUTES ──────────────────────────────────
 // ─── ──────────────────────────────────────────────────────
 
-// ─── Check subscription status ─────────────────────────────
 app.get('/api/subscription/status', authenticate, async (req, res) => {
   try {
     const { data: sub } = await supabase
@@ -389,7 +433,6 @@ app.get('/api/jobs', authenticate, async (req, res) => {
 
 app.post('/api/jobs', authenticate, async (req, res) => {
   try {
-    // Check plan limit
     const limitCheck = await checkPlanLimit(req.user.id, 'jobs');
     
     if (!limitCheck.allowed) {
@@ -467,7 +510,6 @@ app.get('/api/clients', authenticate, async (req, res) => {
 
 app.post('/api/clients', authenticate, async (req, res) => {
   try {
-    // Check plan limit
     const limitCheck = await checkPlanLimit(req.user.id, 'clients');
     
     if (!limitCheck.allowed) {
