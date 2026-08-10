@@ -200,7 +200,6 @@ app.get('/api/user', authenticate, async (req, res) => {
 // ─── PASSWORD RESET ROUTES ──────────────────────────────
 // ─── ──────────────────────────────────────────────────────
 
-// ─── Forgot Password ──────────────────────────────────────
 app.post('/api/auth/reset-password', async (req, res) => {
   try {
     const { email } = req.body;
@@ -221,7 +220,6 @@ app.post('/api/auth/reset-password', async (req, res) => {
   }
 });
 
-// ─── Exchange token for session ──────────────────────────
 app.post('/api/auth/reset-session', async (req, res) => {
   try {
     const { access_token } = req.body;
@@ -243,7 +241,6 @@ app.post('/api/auth/reset-session', async (req, res) => {
   }
 });
 
-// ─── Confirm Reset Password ──────────────────────────────
 app.post('/api/auth/reset-password/confirm', authenticate, async (req, res) => {
   try {
     const { new_password } = req.body;
@@ -433,10 +430,9 @@ app.post('/api/paystack/webhook', async (req, res) => {
 });
 
 // ─── ──────────────────────────────────────────────────────
-// ─── CRUD ROUTES WITH PLAN LIMITS ──────────────────────
+// ─── JOBS ROUTES ──────────────────────────────────────────
 // ─── ──────────────────────────────────────────────────────
 
-// ─── JOBS ──────────────────────────────────────────────────
 app.get('/api/jobs', authenticate, async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -448,6 +444,7 @@ app.get('/api/jobs', authenticate, async (req, res) => {
     if (error) throw error;
     res.json(data);
   } catch (error) {
+    console.error('Error fetching jobs:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -465,7 +462,17 @@ app.post('/api/jobs', authenticate, async (req, res) => {
       });
     }
 
-    const job = { ...req.body, user_id: req.user.id };
+    const job = { 
+      ...req.body, 
+      user_id: req.user.id,
+      service_type: req.body.service_type || 'cleaning',
+      laundry_items: req.body.laundry_items || null,
+      pickup_date: req.body.pickup_date || null,
+      delivery_date: req.body.delivery_date || null,
+      pickup_address: req.body.pickup_address || null,
+      delivery_address: req.body.delivery_address || null
+    };
+
     const { data, error } = await supabase
       .from('jobs')
       .insert(job)
@@ -475,6 +482,7 @@ app.post('/api/jobs', authenticate, async (req, res) => {
     if (error) throw error;
     res.json(data);
   } catch (error) {
+    console.error('Error creating job:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -493,6 +501,7 @@ app.put('/api/jobs/:id', authenticate, async (req, res) => {
     if (error) throw error;
     res.json(data);
   } catch (error) {
+    console.error('Error updating job:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -509,11 +518,15 @@ app.delete('/api/jobs/:id', authenticate, async (req, res) => {
     if (error) throw error;
     res.json({ success: true });
   } catch (error) {
+    console.error('Error deleting job:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// ─── CLIENTS ──────────────────────────────────────────────
+// ─── ──────────────────────────────────────────────────────
+// ─── CLIENTS ROUTES ──────────────────────────────────────
+// ─── ──────────────────────────────────────────────────────
+
 app.get('/api/clients', authenticate, async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -525,23 +538,13 @@ app.get('/api/clients', authenticate, async (req, res) => {
     if (error) throw error;
     res.json(data);
   } catch (error) {
+    console.error('Error fetching clients:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 app.post('/api/clients', authenticate, async (req, res) => {
   try {
-    const limitCheck = await checkPlanLimit(req.user.id, 'clients');
-    
-    if (!limitCheck.allowed) {
-      return res.status(403).json({ 
-        error: limitCheck.message,
-        limit: limitCheck.limit,
-        count: limitCheck.count,
-        plan: limitCheck.plan
-      });
-    }
-
     const client = { ...req.body, user_id: req.user.id };
     const { data, error } = await supabase
       .from('clients')
@@ -552,6 +555,7 @@ app.post('/api/clients', authenticate, async (req, res) => {
     if (error) throw error;
     res.json(data);
   } catch (error) {
+    console.error('Error creating client:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -568,11 +572,92 @@ app.delete('/api/clients/:id', authenticate, async (req, res) => {
     if (error) throw error;
     res.json({ success: true });
   } catch (error) {
+    console.error('Error deleting client:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
+// ─── ──────────────────────────────────────────────────────
+// ─── INVENTORY ROUTES ──────────────────────────────────────
+// ─── ──────────────────────────────────────────────────────
+
+app.get('/api/inventory', authenticate, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('inventory')
+      .select('*')
+      .eq('user_id', req.user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching inventory:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/inventory', authenticate, async (req, res) => {
+  try {
+    const item = { 
+      ...req.body, 
+      user_id: req.user.id,
+      category: req.body.category || 'cleaning'
+    };
+    const { data, error } = await supabase
+      .from('inventory')
+      .insert(item)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    console.error('Error creating inventory item:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/inventory/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase
+      .from('inventory')
+      .update(req.body)
+      .eq('id', id)
+      .eq('user_id', req.user.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    console.error('Error updating inventory item:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/inventory/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabase
+      .from('inventory')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', req.user.id);
+
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting inventory item:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ─── ──────────────────────────────────────────────────────
 // ─── START SERVER ──────────────────────────────────────────
+// ─── ──────────────────────────────────────────────────────
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ CleanCrew server running on port ${PORT}`);
