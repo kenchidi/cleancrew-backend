@@ -30,6 +30,8 @@
             --red: #DC2626;
             --green: #16A34A;
             --whatsapp: #25D366;
+            --laundry: #8B5CF6;
+            --laundry-light: #EDE9FE;
         }
 
         body {
@@ -74,11 +76,42 @@
             display: flex;
             align-items: center;
             gap: 12px;
+            flex-wrap: wrap;
         }
         .header .user-info span {
             font-size: 14px;
             font-weight: 600;
             color: var(--slate);
+        }
+        .header .user-info .badge-active {
+            background: #D1FAE5;
+            color: #065F46;
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-left: 8px;
+            display: none;
+        }
+        .header .user-info .badge-trial {
+            background: #FEF3C7;
+            color: #92400E;
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-left: 8px;
+            display: none;
+        }
+        .header .user-info .badge-expired {
+            background: #FEE2E2;
+            color: #991B1B;
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-left: 8px;
+            display: none;
         }
         .header .user-info .logout-btn {
             padding: 6px 16px;
@@ -92,6 +125,38 @@
         }
         .header .user-info .logout-btn:hover {
             opacity: 0.85;
+        }
+
+        .service-toggle {
+            display: flex;
+            gap: 8px;
+            background: var(--soft);
+            border-radius: var(--radius-sm);
+            padding: 4px;
+            border: 1px solid var(--border);
+        }
+        .service-toggle button {
+            padding: 6px 16px;
+            border: none;
+            background: transparent;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            color: var(--slate);
+        }
+        .service-toggle button.active {
+            background: var(--white);
+            color: var(--ink);
+            box-shadow: var(--shadow);
+        }
+        .service-toggle button.cleaning.active {
+            color: var(--blue);
+        }
+        .service-toggle button.laundry.active {
+            color: var(--laundry);
         }
 
         .nav-tabs {
@@ -253,6 +318,9 @@
         .stat-card.blue .stat-value {
             color: var(--blue);
         }
+        .stat-card.laundry .stat-value {
+            color: var(--laundry);
+        }
 
         .table-wrap {
             overflow-x: auto;
@@ -300,6 +368,34 @@
         .status-badge.in-progress {
             background: #DBEAFE;
             color: #1E40AF;
+        }
+        .status-badge.collected {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+        .status-badge.washed {
+            background: #E0E7FF;
+            color: #3730A3;
+        }
+        .status-badge.dried {
+            background: #EDE9FE;
+            color: #5B21B6;
+        }
+        .status-badge.folded {
+            background: #FCE7F3;
+            color: #9D174D;
+        }
+        .status-badge.ready {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        .status-badge.delivered {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        .status-badge.cancelled {
+            background: #FEE2E2;
+            color: #991B1B;
         }
 
         .form-grid {
@@ -418,45 +514,264 @@
             font-size: 13px;
         }
 
+        .laundry-items {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 8px 0;
+        }
+        .laundry-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 10px;
+            background: var(--soft);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+        }
+        .laundry-item .remove-item {
+            background: none;
+            border: none;
+            color: var(--red);
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        .plan-card {
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            background: var(--white);
+        }
+        .plan-card:hover {
+            transform: translateY(-2px);
+        }
+        .plan-card.popular {
+            border-color: var(--blue);
+            background: var(--blue-light);
+        }
+        .plan-card .badge {
+            display: inline-block;
+            background: var(--orange);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 12px;
+            border-radius: 100px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .plan-card h4 {
+            font-size: 18px;
+            font-weight: 800;
+        }
+        .plan-card .price {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--blue);
+        }
+        .plan-card .price span {
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--slate);
+        }
+        .plan-card ul {
+            list-style: none;
+            text-align: left;
+            margin: 12px 0;
+            font-size: 13px;
+            color: var(--slate);
+        }
+        .plan-card ul li {
+            padding: 4px 0;
+        }
+        .plan-card .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        #subscriptionStatus .status-box {
+            padding: 16px;
+            border-radius: var(--radius-sm);
+        }
+        #subscriptionStatus .status-box.active {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        #subscriptionStatus .status-box.trial {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+        #subscriptionStatus .status-box.expired {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+        #subscriptionStatus .status-box p {
+            font-weight: 700;
+        }
+        #subscriptionStatus .status-box .sub-text {
+            font-weight: 400;
+            font-size: 13px;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 12px;
             }
             .stats-grid {
                 grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+            .stat-card {
+                padding: 12px 14px;
+            }
+            .stat-card .stat-value {
+                font-size: 20px !important;
+            }
+            .stat-card .stat-label {
+                font-size: 9px !important;
             }
             .form-grid {
                 grid-template-columns: 1fr;
             }
             .nav-tabs {
-                padding: 6px 8px;
+                padding: 4px 6px;
+                gap: 2px;
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                -webkit-overflow-scrolling: touch;
             }
             .nav-tabs button {
-                font-size: 10px;
-                padding: 6px 10px;
+                font-size: 9px !important;
+                padding: 4px 10px !important;
+                white-space: nowrap;
+                flex-shrink: 0;
             }
             .header {
                 flex-direction: column;
                 text-align: center;
+                padding: 12px 16px;
             }
             .header .logo {
                 font-size: 18px;
             }
-            .card {
-                padding: 16px;
+            .header .user-info {
+                flex-wrap: wrap;
+                justify-content: center;
             }
-            .stat-card .stat-value {
-                font-size: 22px;
+            .header .user-info span {
+                font-size: 12px;
+            }
+            .card {
+                padding: 14px 16px;
+            }
+            .card-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .card-header h3 {
+                font-size: 15px;
+            }
+            .card-header .btn {
+                width: 100%;
+                justify-content: center;
+                font-size: 12px;
+                padding: 8px 12px;
+            }
+            .plans-grid {
+                grid-template-columns: 1fr !important;
+                gap: 12px !important;
+            }
+            .plan-card {
+                padding: 14px !important;
+            }
+            .plan-card .price {
+                font-size: 22px !important;
+            }
+            .plan-card .btn {
+                font-size: 14px !important;
+                padding: 10px !important;
+            }
+            .plan-card ul {
+                font-size: 12px !important;
+            }
+            .plan-card h4 {
+                font-size: 16px !important;
+            }
+            #subscriptionStatus .status-box {
+                padding: 12px 14px !important;
+                font-size: 13px !important;
+            }
+            .table-wrap {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            table {
+                font-size: 11px !important;
+                min-width: 500px;
+            }
+            table th,
+            table td {
+                padding: 6px 8px !important;
+            }
+            .laundry-items {
+                grid-template-columns: 1fr;
+            }
+            .service-toggle button {
+                font-size: 10px !important;
+                padding: 4px 10px !important;
             }
         }
 
         @media (max-width: 480px) {
             .stats-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            .stat-card {
+                padding: 10px 12px;
+            }
+            .stat-card .stat-value {
+                font-size: 18px !important;
+            }
+            .stat-card .stat-icon {
+                font-size: 18px !important;
+            }
+            .card {
+                padding: 12px 14px;
+            }
+            .card-header h3 {
+                font-size: 14px;
             }
             .nav-tabs button {
-                font-size: 9px;
-                padding: 4px 8px;
+                font-size: 8px !important;
+                padding: 3px 8px !important;
+            }
+            .header .logo {
+                font-size: 16px;
+            }
+            .plan-card {
+                padding: 12px !important;
+            }
+            .plan-card .price {
+                font-size: 18px !important;
+            }
+            .plan-card .btn {
+                font-size: 12px !important;
+                padding: 8px !important;
+            }
+            #subscriptionStatus .status-box {
+                padding: 10px 12px !important;
+                font-size: 12px !important;
             }
         }
     </style>
@@ -465,30 +780,59 @@
 
     <div class="container">
 
+        <!-- ─── HEADER ─── -->
         <div class="header">
             <div class="logo">🧹 Clean<span>Crew</span>.</div>
             <div class="user-info">
                 <span id="userEmail">Loading...</span>
+                <span id="planBadge" class="badge-active" style="display:none;"></span>
+                <div class="service-toggle">
+                    <button class="cleaning active" onclick="setServiceType('cleaning')">🧹 Cleaning</button>
+                    <button class="laundry" onclick="setServiceType('laundry')">🧺 Laundry</button>
+                </div>
                 <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
         </div>
 
+        <!-- ─── NAV TABS ─── -->
         <div class="nav-tabs">
             <button class="active" onclick="switchTab('overview')">📊 Overview</button>
-            <button onclick="switchTab('jobs')">📋 Jobs</button>
+            <button onclick="switchTab('jobs')" id="tabJobs">📋 Jobs</button>
             <button onclick="switchTab('clients')">👤 Clients</button>
             <button onclick="switchTab('messages')">💬 Messages</button>
+            <button onclick="switchTab('inventory')">📦 Inventory</button>
         </div>
 
+        <!-- ════ OVERVIEW TAB ════ -->
         <div class="tab-content active" id="tab-overview">
             <div class="stats-grid">
-                <div class="stat-card primary"><span class="stat-icon">📋</span><div class="stat-label">Total Jobs</div><div class="stat-value" id="ovJobs">0</div></div>
-                <div class="stat-card green"><span class="stat-icon">💰</span><div class="stat-label">Revenue</div><div class="stat-value" id="ovRevenue">₦0</div></div>
-                <div class="stat-card orange"><span class="stat-icon">⏳</span><div class="stat-label">Pending</div><div class="stat-value" id="ovPending">0</div></div>
-                <div class="stat-card blue"><span class="stat-icon">👤</span><div class="stat-label">Clients</div><div class="stat-value" id="ovClients">0</div></div>
+                <div class="stat-card primary">
+                    <span class="stat-icon">📋</span>
+                    <div class="stat-label">Total Jobs</div>
+                    <div class="stat-value" id="ovJobs">0</div>
+                </div>
+                <div class="stat-card green">
+                    <span class="stat-icon">💰</span>
+                    <div class="stat-label">Revenue</div>
+                    <div class="stat-value" id="ovRevenue">₦0</div>
+                </div>
+                <div class="stat-card orange">
+                    <span class="stat-icon">⏳</span>
+                    <div class="stat-label">Pending</div>
+                    <div class="stat-value" id="ovPending">0</div>
+                </div>
+                <div class="stat-card laundry">
+                    <span class="stat-icon">🧺</span>
+                    <div class="stat-label">Laundry Orders</div>
+                    <div class="stat-value" id="ovLaundry">0</div>
+                </div>
             </div>
+
             <div class="card">
-                <div class="card-header"><h3>📋 Recent Jobs</h3><button class="btn btn-sm btn-primary" onclick="openModal('job')">+ New Job</button></div>
+                <div class="card-header">
+                    <h3 id="recentJobsTitle">📋 Recent Cleaning Jobs</h3>
+                    <button class="btn btn-sm btn-primary" onclick="openModal('job')">+ New Job</button>
+                </div>
                 <div id="recentJobs"><p style="color:var(--slate);">No jobs yet</p></div>
             </div>
 
@@ -500,82 +844,117 @@
                 <div id="subscriptionStatus">
                     <p style="color:var(--slate);">Loading...</p>
                 </div>
-                <div id="plansContainer" style="margin-top:16px;">
-                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
-                        
-                        <!-- Starter Plan -->
-                        <div id="planStarter" style="border:2px solid var(--border); border-radius:var(--radius); padding:16px; text-align:center; cursor:pointer;" onclick="selectPlan('starter')">
-                            <h4 style="font-size:18px; font-weight:800;">Starter</h4>
-                            <p style="font-size:28px; font-weight:800; color:var(--blue);">₦10,000 <span style="font-size:14px; font-weight:400; color:var(--slate);">/month</span></p>
-                            <ul style="list-style:none; text-align:left; margin:12px 0; font-size:13px; color:var(--slate);">
+                <div id="plansContainer">
+                    <div class="plans-grid">
+                        <div class="plan-card" id="planStarter" onclick="selectPlan('starter')">
+                            <h4>Starter</h4>
+                            <p class="price">₦10,000 <span>/month</span></p>
+                            <ul>
                                 <li>✅ Up to 50 jobs</li>
                                 <li>✅ Up to 50 clients</li>
                                 <li>✅ Bulk WhatsApp</li>
                                 <li>✅ Basic reporting</li>
                             </ul>
-                            <button class="btn btn-primary" style="width:100%;" onclick="subscribeToPlan('starter')">Subscribe</button>
+                            <button class="btn btn-primary" onclick="event.stopPropagation(); subscribeToPlan('starter')">Subscribe</button>
                         </div>
-                        
-                        <!-- Professional Plan (Popular) -->
-                        <div id="planProfessional" style="border:2px solid var(--blue); border-radius:var(--radius); padding:16px; text-align:center; cursor:pointer; background:var(--blue-light);" onclick="selectPlan('professional')">
-                            <span style="display:inline-block; background:var(--orange); color:#fff; font-size:10px; font-weight:700; padding:2px 12px; border-radius:100px; text-transform:uppercase; margin-bottom:8px;">🔥 Best Value</span>
-                            <h4 style="font-size:18px; font-weight:800;">Professional</h4>
-                            <p style="font-size:28px; font-weight:800; color:var(--blue);">₦17,500 <span style="font-size:14px; font-weight:400; color:var(--slate);">/month</span></p>
-                            <ul style="list-style:none; text-align:left; margin:12px 0; font-size:13px; color:var(--slate);">
+                        <div class="plan-card popular" id="planProfessional" onclick="selectPlan('professional')">
+                            <div class="badge">🔥 Best Value</div>
+                            <h4>Professional</h4>
+                            <p class="price">₦17,500 <span>/month</span></p>
+                            <ul>
                                 <li>✅ Unlimited jobs</li>
                                 <li>✅ Unlimited clients</li>
                                 <li>✅ Bulk WhatsApp</li>
                                 <li>✅ Invoice generation</li>
                                 <li>✅ Revenue tracking</li>
                             </ul>
-                            <button class="btn btn-primary" style="width:100%;" onclick="subscribeToPlan('professional')">Subscribe</button>
+                            <button class="btn btn-primary" onclick="event.stopPropagation(); subscribeToPlan('professional')">Subscribe</button>
                         </div>
-                        
-                        <!-- Enterprise Plan -->
-                        <div id="planEnterprise" style="border:2px solid var(--border); border-radius:var(--radius); padding:16px; text-align:center; cursor:pointer;" onclick="selectPlan('enterprise')">
-                            <h4 style="font-size:18px; font-weight:800;">Enterprise</h4>
-                            <p style="font-size:28px; font-weight:800; color:var(--blue);">₦35,000 <span style="font-size:14px; font-weight:400; color:var(--slate);">/month</span></p>
-                            <ul style="list-style:none; text-align:left; margin:12px 0; font-size:13px; color:var(--slate);">
+                        <div class="plan-card" id="planEnterprise" onclick="selectPlan('enterprise')">
+                            <h4>Enterprise</h4>
+                            <p class="price">₦35,000 <span>/month</span></p>
+                            <ul>
                                 <li>✅ Everything in Professional</li>
                                 <li>✅ Team member access</li>
                                 <li>✅ Advanced reporting</li>
                                 <li>✅ Dedicated support</li>
                             </ul>
-                            <button class="btn btn-primary" style="width:100%;" onclick="subscribeToPlan('enterprise')">Subscribe</button>
+                            <button class="btn btn-primary" onclick="event.stopPropagation(); subscribeToPlan('enterprise')">Subscribe</button>
                         </div>
-                        
                     </div>
                 </div>
             </div>
-            <!-- ─── END SUBSCRIPTION SECTION ─── -->
-
         </div>
 
+        <!-- ════ JOBS TAB ════ -->
         <div class="tab-content" id="tab-jobs">
             <div class="card">
-                <div class="card-header"><h3>📋 All Jobs</h3><button class="btn btn-sm btn-primary" onclick="openModal('job')">+ New Job</button></div>
+                <div class="card-header">
+                    <h3 id="jobsTitle">📋 All Jobs</h3>
+                    <div class="card-actions" style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button class="btn btn-sm btn-primary" onclick="openModal('job')">+ New Job</button>
+                        <select id="jobFilter" onchange="renderJobs()" style="padding:6px 12px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-size:12px; font-family:inherit;">
+                            <option value="all">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                            <option value="collected">Collected</option>
+                            <option value="washed">Washed</option>
+                            <option value="dried">Dried</option>
+                            <option value="folded">Folded</option>
+                            <option value="ready">Ready</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="table-wrap">
                     <table>
-                        <thead><tr><th>#</th><th>Client</th><th>Service</th><th>Date</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Client</th>
+                                <th>Service</th>
+                                <th>Items</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
                         <tbody id="jobsTable"></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
+        <!-- ════ CLIENTS TAB ════ -->
         <div class="tab-content" id="tab-clients">
             <div class="card">
-                <div class="card-header"><h3>👤 All Clients</h3><button class="btn btn-sm btn-primary" onclick="openModal('client')">+ Add Client</button></div>
+                <div class="card-header">
+                    <h3>👤 All Clients</h3>
+                    <button class="btn btn-sm btn-primary" onclick="openModal('client')">+ Add Client</button>
+                </div>
                 <div class="table-wrap">
                     <table>
-                        <thead><tr><th>#</th><th>Name</th><th>Phone</th><th>Location</th><th>Jobs</th><th>Action</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Location</th>
+                                <th>Jobs</th>
+                                <th>Total Spent</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
                         <tbody id="clientsTable"></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <!-- ─── MESSAGES TAB ─── -->
+        <!-- ════ MESSAGES TAB ════ -->
         <div class="tab-content" id="tab-messages">
             <div class="card">
                 <div class="card-header">
@@ -585,7 +964,6 @@
                     </div>
                 </div>
 
-                <!-- Quick Templates -->
                 <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:16px;">
                     <button class="btn btn-sm btn-outline" onclick="setTemplate('newmonth')">🎉 Happy New Month</button>
                     <button class="btn btn-sm btn-outline" onclick="setTemplate('festival')">🎄 Festival Greeting</button>
@@ -617,7 +995,6 @@
                     </select>
                 </div>
 
-                <!-- Message Preview -->
                 <div id="messagePreview" style="margin-top:12px; display:none;">
                     <div class="message-preview">
                         <div style="font-size:13px; white-space:pre-wrap; color:var(--ink);" id="previewText"></div>
@@ -633,7 +1010,6 @@
                 </div>
             </div>
 
-            <!-- Message History -->
             <div class="card">
                 <div class="card-header">
                     <h3>📋 Message History</h3>
@@ -657,10 +1033,21 @@
                 </div>
             </div>
         </div>
-        <!-- ─── END MESSAGES TAB ─── -->
+
+        <!-- ════ INVENTORY TAB ════ -->
+        <div class="tab-content" id="tab-inventory">
+            <div class="card">
+                <div class="card-header">
+                    <h3 id="inventoryTitle">📦 Inventory</h3>
+                    <button class="btn btn-sm btn-primary" onclick="openModal('inventory')">+ Add Item</button>
+                </div>
+                <div id="inventoryList"></div>
+            </div>
+        </div>
 
     </div>
 
+    <!-- ─── MODAL ─── -->
     <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
         <div class="modal-box">
             <div class="modal-header"><h3 id="modalTitle">New Job</h3><button class="modal-close" onclick="closeModal()">×</button></div>
@@ -674,13 +1061,17 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        // ─── CONFIG ──────────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+        // ─── CONFIG ──────────────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
         const API_URL = 'https://cleancrew-backend.onrender.com/api';
         const TOKEN = localStorage.getItem('cleancrew_token');
 
         if (!TOKEN) {
             window.location.href = 'index.html';
         }
+
+        let currentServiceType = 'cleaning';
 
         function getHeaders() {
             return {
@@ -689,7 +1080,9 @@
             };
         }
 
-        // ─── USER INFO ──────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+        // ─── USER INFO ────────────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
         async function loadUserInfo() {
             try {
                 const res = await fetch(`${API_URL}/user`, { headers: getHeaders() });
@@ -717,21 +1110,58 @@
             toast._timer = setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
+        // ─── ──────────────────────────────────────────────────────
+        // ─── SERVICE TYPE ────────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+        function setServiceType(type) {
+            currentServiceType = type;
+            document.querySelectorAll('.service-toggle button').forEach(btn => btn.classList.remove('active'));
+            if (type === 'cleaning') {
+                document.querySelector('.service-toggle .cleaning').classList.add('active');
+                document.getElementById('recentJobsTitle').textContent = '📋 Recent Cleaning Jobs';
+                document.getElementById('jobsTitle').textContent = '📋 All Cleaning Jobs';
+                document.getElementById('inventoryTitle').textContent = '📦 Cleaning Inventory';
+                document.getElementById('tabJobs').innerHTML = '📋 Jobs';
+            } else {
+                document.querySelector('.service-toggle .laundry').classList.add('active');
+                document.getElementById('recentJobsTitle').textContent = '🧺 Recent Laundry Orders';
+                document.getElementById('jobsTitle').textContent = '🧺 All Laundry Orders';
+                document.getElementById('inventoryTitle').textContent = '🧺 Laundry Inventory';
+                document.getElementById('tabJobs').innerHTML = '🧺 Orders';
+            }
+            renderAll();
+        }
+
+        // ─── ──────────────────────────────────────────────────────
+        // ─── NAVIGATION ──────────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
         function switchTab(tab) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + tab).classList.add('active');
             document.querySelectorAll('.nav-tabs button').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-tabs button').forEach(el => {
-                if (el.textContent.toLowerCase().includes(tab)) el.classList.add('active');
+                if (el.textContent.toLowerCase().includes(tab) ||
+                    (tab === 'overview' && el.textContent.includes('Overview')) ||
+                    (tab === 'jobs' && el.textContent.includes('Jobs')) ||
+                    (tab === 'clients' && el.textContent.includes('Clients')) ||
+                    (tab === 'messages' && el.textContent.includes('Messages')) ||
+                    (tab === 'inventory' && el.textContent.includes('Inventory'))) {
+                    el.classList.add('active');
+                }
             });
             if (tab === 'messages') {
                 loadClientsForMessages();
                 renderMessages();
             }
+            if (tab === 'inventory') {
+                renderInventory();
+            }
             renderAll();
         }
 
-        // ─── API FUNCTIONS ──────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+        // ─── API FUNCTIONS ────────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
         async function getJobs() {
             const res = await fetch(`${API_URL}/jobs`, { headers: getHeaders() });
             if (!res.ok) throw new Error('Failed to fetch jobs');
@@ -792,8 +1222,49 @@
             return res.json();
         }
 
-        // ─── RENDER FUNCTIONS ───────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+        // ─── INVENTORY API ───────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+        async function getInventory() {
+            const res = await fetch(`${API_URL}/inventory`, { headers: getHeaders() });
+            if (!res.ok) throw new Error('Failed to fetch inventory');
+            return res.json();
+        }
+
+        async function createInventoryItem(item) {
+            const res = await fetch(`${API_URL}/inventory`, {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify(item)
+            });
+            if (!res.ok) throw new Error('Failed to create inventory item');
+            return res.json();
+        }
+
+        async function updateInventoryItem(id, data) {
+            const res = await fetch(`${API_URL}/inventory/${id}`, {
+                method: 'PUT',
+                headers: getHeaders(),
+                body: JSON.stringify(data)
+            });
+            if (!res.ok) throw new Error('Failed to update inventory item');
+            return res.json();
+        }
+
+        async function deleteInventoryItem(id) {
+            const res = await fetch(`${API_URL}/inventory/${id}`, {
+                method: 'DELETE',
+                headers: getHeaders()
+            });
+            if (!res.ok) throw new Error('Failed to delete inventory item');
+            return res.json();
+        }
+
+        // ─── ──────────────────────────────────────────────────────
+        // ─── RENDER FUNCTIONS ────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
         let jobsData = [];
+        let inventoryData = [];
 
         async function renderAll() {
             try {
@@ -809,76 +1280,140 @@
         }
 
         function renderOverview(jobs, clients) {
-            const total = jobs.length;
-            const completed = jobs.filter(j => j.status === 'completed').length;
-            const pending = jobs.filter(j => j.status === 'pending' || j.status === 'in-progress').length;
-            const revenue = jobs.filter(j => j.status === 'completed').reduce((sum, j) => sum + (j.amount || 0), 0);
+            const filteredJobs = jobs.filter(j => j.service_type === currentServiceType);
+
+            const total = filteredJobs.length;
+            const completed = filteredJobs.filter(j => j.status === 'completed' || j.status === 'delivered').length;
+            const pending = filteredJobs.filter(j => j.status === 'pending' || j.status === 'in-progress' ||
+                j.status === 'collected' || j.status === 'washed' || j.status === 'dried' ||
+                j.status === 'folded').length;
+            const revenue = filteredJobs.filter(j => j.status === 'completed' || j.status === 'delivered')
+                .reduce((sum, j) => sum + (j.amount || 0), 0);
+            const laundryCount = jobs.filter(j => j.service_type === 'laundry').length;
 
             document.getElementById('ovJobs').textContent = total;
             document.getElementById('ovRevenue').textContent = '₦' + revenue.toLocaleString();
             document.getElementById('ovPending').textContent = pending;
-            document.getElementById('ovClients').textContent = clients.length;
+            document.getElementById('ovLaundry').textContent = laundryCount;
 
-            const recent = jobs.slice(0, 5);
+            const recent = filteredJobs.slice(0, 5);
             const container = document.getElementById('recentJobs');
             if (recent.length === 0) {
-                container.innerHTML = '<p style="color:var(--slate);">No jobs yet</p>';
+                container.innerHTML = `<p style="color:var(--slate);">No ${currentServiceType === 'laundry' ? 'laundry orders' : 'cleaning jobs'} yet</p>`;
             } else {
                 container.innerHTML = recent.map(j =>
                     `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);">
-                        <div><strong>${j.client}</strong><br><span style="font-size:12px;color:var(--slate);">${j.service}</span></div>
-                        <div style="text-align:right;"><span style="font-weight:700;">₦${(j.amount||0).toLocaleString()}</span><br><span class="status-badge ${j.status}">${j.status}</span></div>
+                        <div>
+                            <strong>${j.client}</strong>
+                            <br>
+                            <span style="font-size:12px;color:var(--slate);">
+                                ${j.service_type === 'laundry' ? '🧺 ' : '🧹 '}
+                                ${j.service || 'N/A'}
+                                ${j.laundry_items ? ' · ' + (JSON.parse(j.laundry_items || '{}').items?.length || 0) + ' items' : ''}
+                            </span>
+                        </div>
+                        <div style="text-align:right;">
+                            <span style="font-weight:700;">₦${(j.amount||0).toLocaleString()}</span>
+                            <br>
+                            <span class="status-badge ${j.status}">${j.status}</span>
+                        </div>
                     </div>`
                 ).join('');
             }
         }
 
         function renderJobs(jobs) {
+            const filter = document.getElementById('jobFilter')?.value || 'all';
+            let filtered = jobs;
+
+            filtered = filtered.filter(j => j.service_type === currentServiceType);
+
+            if (filter !== 'all') filtered = filtered.filter(j => j.status === filter);
+
             const tbody = document.getElementById('jobsTable');
-            if (jobs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);">No jobs yet</td></tr>';
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--slate);">
+                    No ${currentServiceType === 'laundry' ? 'laundry orders' : 'cleaning jobs'} found
+                </td></tr>`;
                 return;
             }
-            tbody.innerHTML = jobs.map((j, i) =>
-                `<tr>
-                    <td>${i + 1}</td>
-                    <td><strong>${j.client}</strong></td>
-                    <td>${j.service}</td>
-                    <td>${j.date || 'N/A'}</td>
-                    <td><strong>₦${(j.amount || 0).toLocaleString()}</strong></td>
-                    <td><span class="status-badge ${j.status}">${j.status}</span></td>
-                    <td>
-                        ${j.status === 'pending' ? `<button class="btn btn-sm btn-success" onclick="updateJobStatus('${j.id}', 'in-progress')">Start</button>` : ''}
-                        ${j.status === 'in-progress' ? `<button class="btn btn-sm btn-success" onclick="updateJobStatus('${j.id}', 'completed')">✅</button>` : ''}
-                        ${j.status === 'pending' || j.status === 'in-progress' ? `<button class="btn btn-sm btn-danger" onclick="updateJobStatus('${j.id}', 'cancelled')">Cancel</button>` : ''}
-                        <button class="btn btn-sm btn-danger" onclick="deleteJobItem('${j.id}')">🗑️</button>
-                    </td>
-                </tr>`
-            ).join('');
+
+            tbody.innerHTML = filtered.map((j, i) => {
+                let itemsDisplay = '';
+                if (j.laundry_items) {
+                    try {
+                        const items = JSON.parse(j.laundry_items);
+                        if (items.items && items.items.length > 0) {
+                            itemsDisplay = items.items.map(item => `${item.qty}x ${item.name}`).join(', ');
+                        }
+                    } catch (e) { /* ignore */ }
+                }
+
+                let actionButtons = '';
+                if (j.service_type === 'laundry') {
+                    if (j.status === 'collected') actionButtons = `<button class="btn btn-sm btn-success" onclick="updateJobStatus('${j.id}', 'washed')">Wash</button>`;
+                    else if (j.status === 'washed') actionButtons = `<button class="btn btn-sm btn-success" onclick="updateJobStatus('${j.id}', 'dried')">Dry</button>`;
+                    else if (j.status === 'dried') actionButtons = `<button class="btn btn-sm btn-success" onclick="updateJobStatus('${j.id}', 'folded')">Fold</button>`;
+                    else if (j.status === 'folded') actionButtons = `<button class="btn btn-sm btn-success" onclick="updateJobStatus('${j.id}', 'ready')">Ready</button>`;
+                    else if (j.status === 'ready') actionButtons = `<button class="btn btn-sm btn-success" onclick="updateJobStatus('${j.id}', 'delivered')">Deliver</button>`;
+                } else {
+                    if (j.status === 'pending') actionButtons = `<button class="btn btn-sm btn-success" onclick="updateJobStatus('${j.id}', 'in-progress')">Start</button>`;
+                    else if (j.status === 'in-progress') actionButtons = `<button class="btn btn-sm btn-success" onclick="updateJobStatus('${j.id}', 'completed')">Complete</button>`;
+                }
+
+                const cancelButton = (j.status === 'pending' || j.status === 'collected' || j.status === 'in-progress' || j.status === 'washed' || j.status === 'dried' || j.status === 'folded') ?
+                    `<button class="btn btn-sm btn-danger" onclick="updateJobStatus('${j.id}', 'cancelled')">Cancel</button>` : '';
+
+                return `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td><strong>${j.client}</strong><br><span style="font-size:11px;color:var(--slate);">${j.phone || ''}</span></td>
+                        <td>${j.service_type === 'laundry' ? '🧺 ' : '🧹 '}${j.service || 'N/A'}</td>
+                        <td style="font-size:12px;">${itemsDisplay || 'N/A'}</td>
+                        <td>${j.date || 'N/A'}</td>
+                        <td><strong>₦${(j.amount || 0).toLocaleString()}</strong></td>
+                        <td><span class="status-badge ${j.status}">${j.status}</span></td>
+                        <td>
+                            ${actionButtons}
+                            ${cancelButton}
+                            <button class="btn btn-sm btn-whatsapp" onclick="sendSingleWhatsApp('${j.client}', '${j.phone || ''}')">💬</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteJobItem('${j.id}')">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         function renderClients(clients) {
             const tbody = document.getElementById('clientsTable');
             if (clients.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--slate);">No clients yet</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);">No clients yet</td></tr>';
                 return;
             }
-            tbody.innerHTML = clients.map((c, i) =>
-                `<tr>
-                    <td>${i + 1}</td>
-                    <td><strong>${c.name}</strong></td>
-                    <td>${c.phone || 'N/A'}</td>
-                    <td>${c.location || 'N/A'}</td>
-                    <td>${jobsData ? jobsData.filter(j => j.client === c.name).length : 0}</td>
-                    <td>
-                        <button class="btn btn-sm btn-whatsapp" onclick="sendSingleWhatsApp('${c.name}', '${c.phone}')">💬</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteClientItem('${c.id}')">🗑️</button>
-                    </td>
-                </tr>`
-            ).join('');
+            tbody.innerHTML = clients.map((c, i) => {
+                const clientJobs = jobsData ? jobsData.filter(j => j.client === c.name) : [];
+                const totalSpent = clientJobs.filter(j => j.status === 'completed' || j.status === 'delivered')
+                    .reduce((sum, j) => sum + (j.amount || 0), 0);
+                return `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td><strong>${c.name}</strong></td>
+                        <td>${c.phone || 'N/A'}</td>
+                        <td>${c.location || 'N/A'}</td>
+                        <td>${clientJobs.length}</td>
+                        <td><strong>₦${totalSpent.toLocaleString()}</strong></td>
+                        <td>
+                            <button class="btn btn-sm btn-whatsapp" onclick="sendSingleWhatsApp('${c.name}', '${c.phone}')">💬</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteClientItem('${c.id}')">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
 
-        // ─── ACTIONS ─────────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+        // ─── ACTIONS ──────────────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
         async function updateJobStatus(id, status) {
             try {
                 await updateJob(id, { status });
@@ -911,41 +1446,84 @@
             }
         }
 
-        // ─── MODAL ───────────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+        // ─── MODAL ────────────────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
         let modalType = '';
+        let laundryItems = [];
 
         function openModal(type) {
             modalType = type;
-            const titles = { job: '📋 New Job', client: '👤 New Client' };
+            laundryItems = [];
+            const titles = {
+                job: '📋 New Job',
+                client: '👤 New Client',
+                inventory: '📦 New Inventory Item'
+            };
             document.getElementById('modalTitle').textContent = titles[type] || 'New';
             document.getElementById('modalForm').reset();
 
             const f = document.getElementById('modalFormFields');
 
             if (type === 'job') {
+                const isLaundry = currentServiceType === 'laundry';
                 f.innerHTML = `
                     <div class="form-group"><label>Client Name</label><input type="text" id="jClient" required /></div>
                     <div class="form-group"><label>Phone</label><input type="tel" id="jPhone" /></div>
+                    <div class="form-group"><label>Service Type</label>
+                        <select id="jServiceType" onchange="toggleJobFields()">
+                            <option value="cleaning" ${!isLaundry ? 'selected' : ''}>🧹 Cleaning</option>
+                            <option value="laundry" ${isLaundry ? 'selected' : ''}>🧺 Laundry</option>
+                        </select>
+                    </div>
                     <div class="form-group"><label>Service</label>
                         <select id="jService">
-                            <option>Home Cleaning</option>
-                            <option>Office Cleaning</option>
-                            <option>Deep Cleaning</option>
-                            <option>Post-Construction</option>
-                            <option>Move In/Out</option>
+                            ${isLaundry ? `
+                                <option>Laundry Pickup</option>
+                                <option>Dry Cleaning</option>
+                                <option>Ironing Only</option>
+                                <option>Bulk Laundry</option>
+                            ` : `
+                                <option>Home Cleaning</option>
+                                <option>Office Cleaning</option>
+                                <option>Deep Cleaning</option>
+                                <option>Post-Construction</option>
+                                <option>Move In/Out</option>
+                            `}
                         </select>
                     </div>
                     <div class="form-group"><label>Amount (₦)</label><input type="number" id="jAmount" required /></div>
                     <div class="form-group"><label>Date</label><input type="date" id="jDate" required /></div>
                     <div class="form-group"><label>Status</label>
                         <select id="jStatus">
-                            <option value="pending">Pending</option>
-                            <option value="in-progress">In Progress</option>
-                            <option value="completed">Completed</option>
+                            ${isLaundry ? `
+                                <option value="collected">Collected</option>
+                                <option value="washed">Washed</option>
+                                <option value="dried">Dried</option>
+                                <option value="folded">Folded</option>
+                                <option value="ready">Ready</option>
+                                <option value="delivered">Delivered</option>
+                            ` : `
+                                <option value="pending">Pending</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="completed">Completed</option>
+                            `}
                         </select>
+                    </div>
+                    <div class="form-group" id="laundryItemsGroup" ${!isLaundry ? 'style="display:none;"' : ''}>
+                        <label>🧺 Laundry Items</label>
+                        <div id="laundryItemsContainer">
+                            <div class="laundry-items" id="laundryItemsList"></div>
+                            <div style="display:flex; gap:8px; margin-top:8px;">
+                                <input type="text" id="itemName" placeholder="Item name (e.g. Shirt)" style="flex:1; padding:8px 12px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:13px;">
+                                <input type="number" id="itemQty" placeholder="Qty" style="width:60px; padding:8px 12px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:13px;">
+                                <button type="button" class="btn btn-sm btn-primary" onclick="addLaundryItem()">Add</button>
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group full-width"><label>Notes</label><textarea id="jNotes"></textarea></div>
                 `;
+                renderLaundryItems();
             } else if (type === 'client') {
                 f.innerHTML = `
                     <div class="form-group"><label>Name *</label><input type="text" id="cName" required /></div>
@@ -954,13 +1532,80 @@
                     <div class="form-group"><label>Location</label><input type="text" id="cLocation" /></div>
                     <div class="form-group full-width"><label>Notes</label><textarea id="cNotes"></textarea></div>
                 `;
+            } else if (type === 'inventory') {
+                f.innerHTML = `
+                    <div class="form-group"><label>Item Name *</label><input type="text" id="invName" required /></div>
+                    <div class="form-group"><label>Category</label>
+                        <select id="invCategory">
+                            <option value="cleaning">🧹 Cleaning</option>
+                            <option value="laundry">🧺 Laundry</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Quantity</label><input type="number" id="invQty" required /></div>
+                    <div class="form-group"><label>Min Stock Level</label><input type="number" id="invMin" value="3" /></div>
+                `;
             }
 
             document.getElementById('modalOverlay').classList.add('active');
         }
 
+        function toggleJobFields() {
+            const isLaundry = document.getElementById('jServiceType').value === 'laundry';
+            document.getElementById('laundryItemsGroup').style.display = isLaundry ? 'block' : 'none';
+            const statusSelect = document.getElementById('jStatus');
+            if (isLaundry) {
+                statusSelect.innerHTML = `
+                    <option value="collected">Collected</option>
+                    <option value="washed">Washed</option>
+                    <option value="dried">Dried</option>
+                    <option value="folded">Folded</option>
+                    <option value="ready">Ready</option>
+                    <option value="delivered">Delivered</option>
+                `;
+            } else {
+                statusSelect.innerHTML = `
+                    <option value="pending">Pending</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                `;
+            }
+        }
+
+        function addLaundryItem() {
+            const name = document.getElementById('itemName').value.trim();
+            const qty = parseInt(document.getElementById('itemQty').value);
+            if (!name || !qty || qty < 1) {
+                showToast('⚠️ Enter item name and quantity', '');
+                return;
+            }
+            laundryItems.push({ name, qty });
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemQty').value = '';
+            renderLaundryItems();
+        }
+
+        function removeLaundryItem(index) {
+            laundryItems.splice(index, 1);
+            renderLaundryItems();
+        }
+
+        function renderLaundryItems() {
+            const container = document.getElementById('laundryItemsList');
+            if (laundryItems.length === 0) {
+                container.innerHTML = '<p style="color:var(--slate); font-size:13px;">No items added</p>';
+                return;
+            }
+            container.innerHTML = laundryItems.map((item, i) =>
+                `<div class="laundry-item">
+                    <span>${item.qty}x ${item.name}</span>
+                    <button class="remove-item" onclick="removeLaundryItem(${i})">✕</button>
+                </div>`
+            ).join('');
+        }
+
         function closeModal() {
             document.getElementById('modalOverlay').classList.remove('active');
+            laundryItems = [];
         }
 
         async function saveModalForm(e) {
@@ -969,6 +1614,7 @@
             if (modalType === 'job') {
                 const client = document.getElementById('jClient').value.trim();
                 const phone = document.getElementById('jPhone').value.trim();
+                const serviceType = document.getElementById('jServiceType').value;
                 const service = document.getElementById('jService').value;
                 const amount = parseFloat(document.getElementById('jAmount').value);
                 const date = document.getElementById('jDate').value;
@@ -977,14 +1623,31 @@
 
                 if (!client || !amount || !date) { showToast('⚠️ Fill all fields'); return; }
 
+                const jobData = {
+                    client,
+                    phone: phone || 'N/A',
+                    service_type: serviceType,
+                    service,
+                    amount,
+                    date,
+                    status,
+                    notes: notes || 'None'
+                };
+
+                if (serviceType === 'laundry' && laundryItems.length > 0) {
+                    jobData.laundry_items = JSON.stringify({ items: laundryItems });
+                }
+
                 try {
-                    await createJob({ client, phone: phone || 'N/A', service, amount, date, status, notes: notes || 'None' });
+                    await createJob(jobData);
                     showToast('✅ Job added!', 'success');
                     closeModal();
                     renderAll();
                 } catch (e) {
-                    showToast('⚠️ Failed to add job');
+                    console.error('Error creating job:', e);
+                    showToast('⚠️ Failed to add job: ' + (e.message || 'Unknown error'));
                 }
+
             } else if (modalType === 'client') {
                 const name = document.getElementById('cName').value.trim();
                 const phone = document.getElementById('cPhone').value.trim();
@@ -1003,126 +1666,85 @@
                 } catch (e) {
                     showToast('⚠️ Failed to add client');
                 }
-            }
-        }
 
-        // ─── PAYSTACK SUBSCRIPTION ────────────────────────────
+            } else if (modalType === 'inventory') {
+                const name = document.getElementById('invName').value.trim();
+                const category = document.getElementById('invCategory').value;
+                const quantity = parseInt(document.getElementById('invQty').value);
+                const minStock = parseInt(document.getElementById('invMin').value);
 
-        let selectedPlan = 'professional';
+                if (!name || !quantity) { showToast('⚠️ Fill all fields'); return; }
 
-        function selectPlan(plan) {
-            selectedPlan = plan;
-            
-            ['starter', 'professional', 'enterprise'].forEach(p => {
-                const el = document.getElementById(`plan${p.charAt(0).toUpperCase() + p.slice(1)}`);
-                if (el) {
-                    el.style.borderColor = 'var(--border)';
-                    el.style.background = 'transparent';
+                try {
+                    await createInventoryItem({ name, category, quantity, min_stock: minStock || 3 });
+                    showToast('✅ Inventory item added!', 'success');
+                    closeModal();
+                    renderInventory();
+                } catch (e) {
+                    showToast('⚠️ Failed to add inventory item');
                 }
-            });
-            
-            const el = document.getElementById(`plan${plan.charAt(0).toUpperCase() + plan.slice(1)}`);
-            if (el) {
-                el.style.borderColor = 'var(--blue)';
-                el.style.background = 'var(--blue-light)';
             }
         }
 
-        async function subscribeToPlan(plan) {
-            if (!plan) plan = selectedPlan;
-            
+        // ─── ──────────────────────────────────────────────────────
+        // ─── INVENTORY ────────────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+        async function renderInventory() {
             try {
-                const res = await fetch(`${API_URL}/paystack/initialize`, {
-                    method: 'POST',
-                    headers: getHeaders(),
-                    body: JSON.stringify({ plan: plan })
-                });
-                const data = await res.json();
-                
-                if (data.authorization_url) {
-                    window.location.href = data.authorization_url;
-                } else {
-                    showToast('⚠️ Failed to initialize payment: ' + (data.error || 'Unknown error'));
+                const items = await getInventory();
+                inventoryData = items;
+
+                const filtered = items.filter(i => i.category === currentServiceType || !i.category);
+
+                const container = document.getElementById('inventoryList');
+                if (filtered.length === 0) {
+                    container.innerHTML = `<p style="color:var(--slate);">No ${currentServiceType} inventory items</p>`;
+                    return;
                 }
+
+                container.innerHTML = filtered.map((item, i) =>
+                    `<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border-bottom:1px solid var(--border);">
+                        <div><strong>${item.name}</strong> <span style="font-size:12px;color:var(--slate);">Min: ${item.min_stock || 3}</span></div>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <span style="font-weight:700;">${item.quantity}</span>
+                            <button class="btn btn-sm btn-primary" onclick="adjustInventory('${item.id}', 1)">+1</button>
+                            <button class="btn btn-sm btn-outline" onclick="adjustInventory('${item.id}', -1)">-1</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteInventory('${item.id}')">🗑️</button>
+                        </div>
+                    </div>`
+                ).join('');
             } catch (e) {
-                console.error('Paystack init error:', e);
-                showToast('⚠️ Payment initialization failed');
+                console.error('Failed to render inventory:', e);
+                document.getElementById('inventoryList').innerHTML = '<p style="color:var(--slate);">Failed to load inventory</p>';
             }
         }
 
-        async function checkSubscription() {
+        async function adjustInventory(id, delta) {
+            const item = inventoryData.find(i => i.id === id);
+            if (!item) return;
+            const newQty = Math.max(0, item.quantity + delta);
             try {
-                const res = await fetch(`${API_URL}/subscription/status`, {
-                    headers: getHeaders()
-                });
-                const data = await res.json();
-                
-                const container = document.getElementById('subscriptionStatus');
-                if (!container) return;
-                
-                const plansContainer = document.getElementById('plansContainer');
-                if (!plansContainer) return;
-                
-                if (data.status === 'active') {
-                    container.innerHTML = `
-                        <div style="background:#D1FAE5; padding:16px; border-radius:var(--radius-sm);">
-                            <p style="color:#065F46; font-weight:700;">✅ Active — ${data.plan || 'Professional'} Plan</p>
-                            <p style="font-size:13px; color:#065F46;">Your subscription is active. Thank you for your support!</p>
-                        </div>
-                    `;
-                    plansContainer.style.display = 'none';
-                } else if (data.status === 'trial') {
-                    const trialEnd = new Date(data.trial_end);
-                    const daysLeft = Math.ceil((trialEnd - new Date()) / (1000 * 60 * 60 * 24));
-                    container.innerHTML = `
-                        <div style="background:#FEF3C7; padding:16px; border-radius:var(--radius-sm);">
-                            <p style="color:#92400E; font-weight:700;">📅 Trial — ${daysLeft} days left</p>
-                            <p style="font-size:13px; color:#92400E;">Choose a plan below to continue using CleanCrew after your trial ends.</p>
-                        </div>
-                    `;
-                    plansContainer.style.display = 'block';
-                } else {
-                    container.innerHTML = `
-                        <div style="background:#FEE2E2; padding:16px; border-radius:var(--radius-sm);">
-                            <p style="color:#991B1B; font-weight:700;">🔒 Subscription Expired</p>
-                            <p style="font-size:13px; color:#991B1B;">Your subscription has expired. Please choose a plan below to renew.</p>
-                        </div>
-                    `;
-                    plansContainer.style.display = 'block';
-                }
+                await updateInventoryItem(id, { quantity: newQty });
+                renderInventory();
             } catch (e) {
-                console.error('Subscription check error:', e);
-                document.getElementById('subscriptionStatus').innerHTML = `<p style="color:var(--slate);">⚠️ Failed to load subscription status</p>`;
+                showToast('⚠️ Failed to update inventory');
             }
         }
 
-        function checkPaystackReturn() {
-            const params = new URLSearchParams(window.location.search);
-            const reference = params.get('reference');
-            
-            if (reference) {
-                fetch(`${API_URL}/paystack/verify/${reference}`, {
-                    method: 'POST',
-                    headers: getHeaders()
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        showToast('✅ Payment successful! Subscription activated.', 'success');
-                        setTimeout(() => {
-                            window.location.href = '/dashboard.html';
-                        }, 2000);
-                    }
-                })
-                .catch(err => console.error('Verification error:', err));
+        async function deleteInventory(id) {
+            if (!confirm('Delete this item?')) return;
+            try {
+                await deleteInventoryItem(id);
+                renderInventory();
+                showToast('🗑️ Item deleted');
+            } catch (e) {
+                showToast('⚠️ Failed to delete item');
             }
         }
 
         // ─── ──────────────────────────────────────────────────────
         // ─── WHATSAPP MESSAGING ──────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
-
-        // ─── Templates ──────────────────────────────────────────
         const TEMPLATES = {
             newmonth: 'Happy New Month! 🎉\n\nWe hope this new month brings you joy, success, and a spotless home.\n\nThank you for choosing CleanCrew! 🧹',
             festival: '🎄 Happy Holidays! 🎄\n\nFrom our family to yours, we wish you a wonderful celebration.\n\nThank you for being a valued client. ✨',
@@ -1132,63 +1754,39 @@
 
         let messageData = [];
 
-        // ─── Load clients for messages ────────────────────────
-        async function loadClientsForMessages() {
-            try {
-                const clients = await getClients();
-                const select = document.getElementById('msgRecipients');
-                // Clear existing options except "All Clients"
-                select.innerHTML = '<option value="all" style="font-weight:700; color:var(--blue);">📨 All Clients</option>';
-                clients.forEach(c => {
-                    const option = document.createElement('option');
-                    option.value = c.name;
-                    option.textContent = c.name + (c.phone ? ` (${c.phone})` : '');
-                    select.appendChild(option);
-                });
-            } catch (e) {
-                console.error('Failed to load clients for messages:', e);
-            }
+        function loadClientsForMessages() {
+            // handled by renderClients
         }
 
-        // ─── Set template ──────────────────────────────────────
         function setTemplate(type) {
             const body = document.getElementById('msgBody');
             const typeSelect = document.getElementById('messageType');
             if (body && TEMPLATES[type]) {
                 body.value = TEMPLATES[type];
                 typeSelect.value = type;
-                // Show preview
                 document.getElementById('previewText').textContent = TEMPLATES[type];
                 document.getElementById('messagePreview').style.display = 'block';
             }
         }
 
-        // ─── Send single WhatsApp ──────────────────────────────
         function sendSingleWhatsApp(name, phone) {
             if (!phone || phone === 'N/A' || phone === '') {
                 showToast('⚠️ No phone number available for this contact', '');
                 return;
             }
-
-            const message = `🧹 Hello ${name}! 👋\n\nThis is a reminder about your upcoming cleaning service.\n\nThank you for choosing CleanCrew! 🧹`;
-
+            const message = `🧹 Hello ${name}! 👋\n\nThis is a reminder about your upcoming service.\n\nThank you for choosing CleanCrew! 🧹`;
             const url = `https://wa.me/234${phone.replace(/^0+/, '')}?text=${encodeURIComponent(message)}`;
             window.open(url, '_blank');
             showToast('💬 Opening WhatsApp...', 'whatsapp');
         }
 
-        // ─── Send Bulk WhatsApp ────────────────────────────────
         async function sendBulkWhatsApp() {
             const recipients = document.getElementById('msgRecipients');
             const selected = Array.from(recipients.selectedOptions).map(opt => opt.value);
             const body = document.getElementById('msgBody').value.trim();
             const type = document.getElementById('messageType').value;
 
-            if (!body) {
-                showToast('⚠️ Please enter a message', '');
-                return;
-            }
-
+            if (!body) { showToast('⚠️ Please enter a message', ''); return; }
             if (selected.length === 0 || (selected.length === 1 && selected[0] === '')) {
                 showToast('⚠️ Please select at least one recipient', '');
                 return;
@@ -1207,12 +1805,8 @@
                 recipientNames = selected;
             }
 
-            if (recipientNames.length === 0) {
-                showToast('⚠️ No clients found to message', '');
-                return;
-            }
+            if (recipientNames.length === 0) { showToast('⚠️ No clients found to message', ''); return; }
 
-            // Get phone numbers
             let phones = [];
             try {
                 const clients = await getClients();
@@ -1225,12 +1819,8 @@
                 return;
             }
 
-            if (phones.length === 0) {
-                showToast('⚠️ No phone numbers found for selected clients', '');
-                return;
-            }
+            if (phones.length === 0) { showToast('⚠️ No phone numbers found for selected clients', ''); return; }
 
-            // Save message
             const message = {
                 id: Date.now(),
                 type: type || 'custom',
@@ -1240,7 +1830,6 @@
                 status: 'sent'
             };
 
-            // Save to localStorage for history
             messageData = JSON.parse(localStorage.getItem('cleancrew_message_history') || '[]');
             messageData.unshift(message);
             localStorage.setItem('cleancrew_message_history', JSON.stringify(messageData));
@@ -1248,7 +1837,6 @@
             renderMessages();
             showToast(`💬 Sending to ${recipientNames.length} client(s)`, 'whatsapp');
 
-            // Open WhatsApp for first client (user will need to send to each)
             if (phones.length > 0) {
                 const url = `https://wa.me/234${phones[0].replace(/^0+/, '')}?text=${encodeURIComponent(body)}`;
                 window.open(url, '_blank');
@@ -1256,7 +1844,6 @@
             }
         }
 
-        // ─── Render Messages History ──────────────────────────
         function renderMessages() {
             const tbody = document.getElementById('messagesTable');
             messageData = JSON.parse(localStorage.getItem('cleancrew_message_history') || '[]');
@@ -1293,24 +1880,19 @@
             }).join('');
         }
 
-        // ─── Resend Message ────────────────────────────────────
         async function resendMessage(index) {
             const m = messageData[index];
             if (!m) return;
-
-            // Get phone numbers
             try {
                 const clients = await getClients();
                 const phones = m.recipients.map(name => {
                     const client = clients.find(c => c.name === name);
                     return client ? client.phone : null;
                 }).filter(p => p && p !== 'N/A' && p !== '');
-
                 if (phones.length === 0) {
                     showToast('⚠️ No phone numbers found for these clients', '');
                     return;
                 }
-
                 const url = `https://wa.me/234${phones[0].replace(/^0+/, '')}?text=${encodeURIComponent(m.body)}`;
                 window.open(url, '_blank');
                 showToast(`💬 Resending to ${phones.length} client(s)`, 'whatsapp');
@@ -1319,7 +1901,6 @@
             }
         }
 
-        // ─── Delete Message ────────────────────────────────────
         function deleteMessage(index) {
             if (!confirm('Delete this message?')) return;
             messageData.splice(index, 1);
@@ -1328,16 +1909,167 @@
             showToast('🗑️ Message deleted');
         }
 
-        // ─── INIT ────────────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+        // ─── PAYSTACK SUBSCRIPTION ──────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+        let selectedPlan = 'professional';
+
+        function selectPlan(plan) {
+            selectedPlan = plan;
+            document.querySelectorAll('.plan-card').forEach(el => {
+                el.style.borderColor = 'var(--border)';
+                el.style.background = 'transparent';
+            });
+            const el = document.getElementById('plan' + plan.charAt(0).toUpperCase() + plan.slice(1));
+            if (el) {
+                el.style.borderColor = 'var(--blue)';
+                el.style.background = 'var(--blue-light)';
+            }
+        }
+
+        async function subscribeToPlan(plan) {
+            if (!plan) plan = selectedPlan;
+            try {
+                const res = await fetch(`${API_URL}/paystack/initialize`, {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ plan: plan })
+                });
+                const data = await res.json();
+                if (data.authorization_url) {
+                    window.location.href = data.authorization_url;
+                } else {
+                    showToast('⚠️ Failed to initialize payment: ' + (data.error || 'Unknown error'));
+                }
+            } catch (e) {
+                console.error('Paystack init error:', e);
+                showToast('⚠️ Payment initialization failed');
+            }
+        }
+
+        // ─── ✅ FIXED: checkSubscription() with proper UI updates ──
+        async function checkSubscription() {
+            try {
+                const res = await fetch(`${API_URL}/subscription/status`, {
+                    headers: getHeaders()
+                });
+                const data = await res.json();
+
+                const container = document.getElementById('subscriptionStatus');
+                const plansContainer = document.getElementById('plansContainer');
+                const badge = document.getElementById('planBadge');
+
+                if (!container || !plansContainer) return;
+
+                // ─── Show badge ──────────────────────────────────────
+                if (badge) badge.style.display = 'inline-block';
+
+                if (data.status === 'active') {
+                    container.innerHTML = `
+                        <div class="status-box active">
+                            <p>✅ Active — ${data.plan.charAt(0).toUpperCase() + data.plan.slice(1)} Plan</p>
+                            <p class="sub-text">Your subscription is active. Thank you for your support!</p>
+                            <p style="font-size:12px; color:#065F46; margin-top:4px;">
+                                💳 You're on the ${data.plan} plan. Your subscription will renew automatically.
+                            </p>
+                        </div>
+                    `;
+                    plansContainer.style.display = 'none';
+
+                    if (badge) {
+                        badge.textContent = `✅ ${data.plan.charAt(0).toUpperCase() + data.plan.slice(1)}`;
+                        badge.className = 'badge-active';
+                        badge.style.display = 'inline-block';
+                    }
+
+                } else if (data.status === 'trial') {
+                    const trialEnd = new Date(data.trial_end);
+                    const now = new Date();
+                    const daysLeft = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
+
+                    if (daysLeft <= 0) {
+                        container.innerHTML = `
+                            <div class="status-box expired">
+                                <p>🔒 Trial Expired</p>
+                                <p class="sub-text">Your trial has ended. Please choose a plan below to continue using CleanCrew.</p>
+                            </div>
+                        `;
+                        plansContainer.style.display = 'block';
+                        if (badge) {
+                            badge.textContent = '🔒 Expired';
+                            badge.className = 'badge-expired';
+                            badge.style.display = 'inline-block';
+                        }
+                        return;
+                    }
+
+                    container.innerHTML = `
+                        <div class="status-box trial">
+                            <p>📅 Trial — ${daysLeft} days left</p>
+                            <p class="sub-text">Choose a plan below to continue using CleanCrew after your trial ends.</p>
+                        </div>
+                    `;
+                    plansContainer.style.display = 'block';
+
+                    if (badge) {
+                        badge.textContent = `📅 ${daysLeft} days left`;
+                        badge.className = 'badge-trial';
+                        badge.style.display = 'inline-block';
+                    }
+
+                } else {
+                    container.innerHTML = `
+                        <div class="status-box expired">
+                            <p>🔒 Subscription Expired</p>
+                            <p class="sub-text">Your subscription has expired. Please choose a plan below to renew.</p>
+                        </div>
+                    `;
+                    plansContainer.style.display = 'block';
+
+                    if (badge) {
+                        badge.textContent = '🔒 Expired';
+                        badge.className = 'badge-expired';
+                        badge.style.display = 'inline-block';
+                    }
+                }
+            } catch (e) {
+                console.error('Subscription check error:', e);
+                document.getElementById('subscriptionStatus').innerHTML = `<p style="color:var(--slate);">⚠️ Failed to load subscription status</p>`;
+            }
+        }
+
+        function checkPaystackReturn() {
+            const params = new URLSearchParams(window.location.search);
+            const reference = params.get('reference');
+            if (reference) {
+                fetch(`${API_URL}/paystack/verify/${reference}`, {
+                    method: 'POST',
+                    headers: getHeaders()
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('✅ Payment successful! Subscription activated.', 'success');
+                        setTimeout(() => {
+                            window.location.href = '/dashboard.html';
+                        }, 2000);
+                    }
+                })
+                .catch(err => console.error('Verification error:', err));
+            }
+        }
+
+        // ─── ──────────────────────────────────────────────────────
+        // ─── INIT ────────────────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
         async function init() {
             await loadUserInfo();
             await renderAll();
             await checkSubscription();
             checkPaystackReturn();
-            loadClientsForMessages();
             renderMessages();
+            renderInventory();
 
-            // Auto-show preview when typing
             document.getElementById('msgBody').addEventListener('input', function() {
                 const preview = document.getElementById('previewText');
                 const previewContainer = document.getElementById('messagePreview');

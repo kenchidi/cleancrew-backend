@@ -6,457 +6,205 @@
     <title>🧹 CleanCrew — Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* ─── All your existing styles here ─── */
+        /* Make sure the responsive section at the bottom is updated */
 
-        :root {
-            --blue: #1A6DDB;
-            --blue-dark: #1258B8;
-            --blue-light: #EBF3FE;
-            --ink: #0F1F40;
-            --white: #FFFFFF;
-            --slate: #6B7FA3;
-            --slate-light: #94A3B8;
-            --soft: #F4F7FC;
-            --border: #DDE6F5;
-            --shadow: 0 2px 0 rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.06);
-            --shadow-lg: 0 8px 40px rgba(15,31,64,0.12);
-            --radius: 16px;
-            --radius-sm: 10px;
-            --orange: #F5A623;
-            --red: #DC2626;
-            --green: #16A34A;
-            --whatsapp: #25D366;
-        }
-
-        body {
-            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-            background: var(--soft);
-            color: var(--ink);
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            background: var(--white);
-            border-radius: var(--radius);
-            padding: 16px 24px;
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow);
-            margin-bottom: 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        .header .logo {
-            font-size: 22px;
-            font-weight: 800;
-            color: var(--ink);
-            letter-spacing: -0.5px;
-            text-decoration: none;
-        }
-        .header .logo span {
-            color: var(--blue);
-        }
-
-        .header .user-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .header .user-info span {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--slate);
-        }
-        .header .user-info .logout-btn {
-            padding: 6px 16px;
-            background: var(--red);
-            color: #fff;
-            border: none;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 12px;
-        }
-        .header .user-info .logout-btn:hover {
-            opacity: 0.85;
-        }
-
-        .nav-tabs {
-            display: flex;
-            gap: 4px;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-            background: var(--white);
-            padding: 6px 10px;
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow);
-        }
-        .nav-tabs button {
-            padding: 8px 14px;
-            border: none;
-            background: transparent;
-            border-radius: var(--radius-sm);
-            font-family: inherit;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.15s;
-            color: var(--slate);
-        }
-        .nav-tabs button:hover {
-            background: var(--soft);
-            color: var(--ink);
-        }
-        .nav-tabs button.active {
-            background: var(--blue);
-            color: #fff;
-        }
-
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-
-        .card {
-            background: var(--white);
-            border-radius: var(--radius);
-            padding: 20px 24px;
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow);
-            margin-bottom: 20px;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-        .card-header h3 {
-            font-size: 18px;
-            font-weight: 700;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: var(--radius-sm);
-            font-family: inherit;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.15s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .btn-primary {
-            background: var(--blue);
-            color: #fff;
-        }
-        .btn-primary:hover {
-            background: var(--blue-dark);
-            transform: translateY(-1px);
-        }
-        .btn-success {
-            background: var(--green);
-            color: #fff;
-        }
-        .btn-success:hover {
-            opacity: 0.85;
-        }
-        .btn-danger {
-            background: var(--red);
-            color: #fff;
-        }
-        .btn-danger:hover {
-            opacity: 0.85;
-        }
-        .btn-outline {
-            background: transparent;
-            color: var(--slate);
-            border: 1.5px solid var(--border);
-        }
-        .btn-outline:hover {
-            background: var(--soft);
-        }
-        .btn-whatsapp {
-            background: var(--whatsapp);
-            color: #fff;
-        }
-        .btn-whatsapp:hover {
-            opacity: 0.85;
-        }
-        .btn-sm {
-            padding: 6px 14px;
-            font-size: 12px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 16px 20px;
-            box-shadow: var(--shadow);
-        }
-        .stat-card .stat-label {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--slate);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .stat-card .stat-value {
-            font-size: 28px;
-            font-weight: 800;
-            margin-top: 2px;
-        }
-        .stat-card .stat-icon {
-            float: right;
-            font-size: 24px;
-            opacity: 0.4;
-        }
-        .stat-card.primary .stat-value {
-            color: var(--blue);
-        }
-        .stat-card.green .stat-value {
-            color: var(--green);
-        }
-        .stat-card.orange .stat-value {
-            color: var(--orange);
-        }
-        .stat-card.blue .stat-value {
-            color: var(--blue);
-        }
-
-        .table-wrap {
-            overflow-x: auto;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-        th {
-            text-align: left;
-            padding: 10px 12px;
-            background: var(--soft);
-            font-weight: 600;
-            color: var(--slate);
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-bottom: 1px solid var(--border);
-        }
-        td {
-            padding: 10px 12px;
-            border-bottom: 1px solid var(--border);
-        }
-        tr:hover td {
-            background: var(--soft);
-        }
-
-        .status-badge {
-            font-size: 10px;
-            font-weight: 700;
-            padding: 3px 12px;
-            border-radius: 100px;
-            text-transform: uppercase;
-            display: inline-block;
-        }
-        .status-badge.pending {
-            background: #FEF3C7;
-            color: #92400E;
-        }
-        .status-badge.completed {
-            background: #D1FAE5;
-            color: #065F46;
-        }
-        .status-badge.in-progress {
-            background: #DBEAFE;
-            color: #1E40AF;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-        .form-grid .full-width {
-            grid-column: 1 / -1;
-        }
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        .form-group label {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--slate);
-        }
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            padding: 10px 14px;
-            border: 1.5px solid var(--border);
-            border-radius: var(--radius-sm);
-            font-family: inherit;
-            font-size: 13px;
-            transition: all 0.15s;
-            outline: none;
-            background: var(--white);
-        }
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            border-color: var(--blue);
-            box-shadow: 0 0 0 3px rgba(26,109,219,0.12);
-        }
-
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(15, 31, 64, 0.5);
-            z-index: 200;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(4px);
-        }
-        .modal-overlay.active {
-            display: flex;
-        }
-        .modal-box {
-            background: var(--white);
-            border-radius: var(--radius);
-            padding: 32px;
-            max-width: 520px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: var(--shadow-lg);
-        }
-        .modal-box .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .modal-box .modal-header h3 {
-            font-size: 18px;
-            font-weight: 700;
-        }
-        .modal-box .modal-close {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: var(--slate);
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            background: var(--ink);
-            color: #fff;
-            padding: 14px 24px;
-            border-radius: var(--radius-sm);
-            font-size: 14px;
-            font-weight: 600;
-            z-index: 999;
-            transform: translateY(80px);
-            opacity: 0;
-            transition: all 0.3s;
-            max-width: 400px;
-            box-shadow: var(--shadow-lg);
-        }
-        .toast.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-        .toast.success {
-            background: var(--green);
-        }
-        .toast.whatsapp {
-            background: var(--whatsapp);
-        }
-
-        .message-preview {
-            background: var(--soft);
-            border-radius: var(--radius-sm);
-            padding: 12px 16px;
-            margin: 8px 0;
-            border-left: 3px solid var(--whatsapp);
-            white-space: pre-wrap;
-            font-size: 13px;
-        }
-
+        /* ─── RESPONSIVE FIXES ─── */
         @media (max-width: 768px) {
             .container {
                 padding: 12px;
             }
             .stats-grid {
                 grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+            .stats-grid .stat-card {
+                padding: 12px 14px;
+            }
+            .stats-grid .stat-value {
+                font-size: 20px !important;
+            }
+            .stats-grid .stat-label {
+                font-size: 9px !important;
             }
             .form-grid {
                 grid-template-columns: 1fr;
             }
             .nav-tabs {
-                padding: 6px 8px;
+                padding: 4px 6px;
+                gap: 2px;
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                -webkit-overflow-scrolling: touch;
             }
             .nav-tabs button {
-                font-size: 10px;
-                padding: 6px 10px;
+                font-size: 9px !important;
+                padding: 4px 10px !important;
+                white-space: nowrap;
+                flex-shrink: 0;
             }
             .header {
                 flex-direction: column;
                 text-align: center;
+                padding: 12px 16px;
             }
             .header .logo {
                 font-size: 18px;
             }
+            .header .user-info {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .header .user-info span {
+                font-size: 12px;
+            }
             .card {
-                padding: 16px;
+                padding: 14px 16px;
+            }
+            .card-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .card-header h3 {
+                font-size: 15px;
+            }
+            .card-header .btn {
+                width: 100%;
+                justify-content: center;
+                font-size: 12px;
+                padding: 8px 12px;
             }
             .stat-card .stat-value {
                 font-size: 22px;
+            }
+
+            /* ─── 🔥 FIXED: Pricing Cards Mobile ─── */
+            #plansContainer > div {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 12px !important;
+            }
+
+            #plansContainer [id^="plan"] {
+                width: 100% !important;
+                padding: 16px !important;
+                margin-bottom: 0 !important;
+                box-sizing: border-box;
+            }
+
+            #plansContainer [id^="plan"] .price {
+                font-size: 22px !important;
+            }
+
+            #plansContainer [id^="plan"] .btn {
+                font-size: 14px !important;
+                padding: 10px !important;
+                width: 100% !important;
+                justify-content: center !important;
+            }
+
+            #plansContainer [id^="plan"] ul {
+                font-size: 12px !important;
+            }
+
+            #plansContainer [id^="plan"] h4 {
+                font-size: 16px !important;
+            }
+
+            /* ─── 🔥 FIXED: Trial Status Mobile ─── */
+            #subscriptionStatus div {
+                padding: 12px 14px !important;
+                font-size: 13px !important;
+            }
+            #subscriptionStatus div p {
+                font-size: 13px !important;
+            }
+            #subscriptionStatus div .btn {
+                width: 100% !important;
+                justify-content: center !important;
+                font-size: 13px !important;
+            }
+
+            /* ─── Table scroll fix ─── */
+            .table-wrap {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            table {
+                font-size: 11px !important;
+                min-width: 500px;
+            }
+            table th,
+            table td {
+                padding: 6px 8px !important;
+            }
+
+            /* ─── Messages Tab Mobile ─── */
+            .quick-actions-grid {
+                grid-template-columns: 1fr 1fr !important;
+                gap: 6px !important;
+            }
+            .quick-actions-grid .btn-sm {
+                font-size: 10px !important;
+                padding: 4px 8px !important;
+            }
+            #msgRecipients {
+                height: 60px !important;
+            }
+            #msgBody {
+                font-size: 12px !important;
+                min-height: 60px !important;
+            }
+            .message-preview {
+                font-size: 12px !important;
+                padding: 10px 12px !important;
             }
         }
 
         @media (max-width: 480px) {
             .stats-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            .stats-grid .stat-card {
+                padding: 10px 12px;
+            }
+            .stats-grid .stat-value {
+                font-size: 18px !important;
+            }
+            .stats-grid .stat-icon {
+                font-size: 18px !important;
+            }
+            .card {
+                padding: 12px 14px;
+            }
+            .card-header h3 {
+                font-size: 14px;
             }
             .nav-tabs button {
-                font-size: 9px;
-                padding: 4px 8px;
+                font-size: 8px !important;
+                padding: 3px 8px !important;
+            }
+            .header .logo {
+                font-size: 16px;
+            }
+            #plansContainer [id^="plan"] {
+                padding: 12px !important;
+            }
+            #plansContainer [id^="plan"] .price {
+                font-size: 18px !important;
+            }
+            #plansContainer [id^="plan"] .btn {
+                font-size: 12px !important;
+                padding: 8px !important;
+            }
+            #subscriptionStatus div {
+                padding: 10px 12px !important;
+                font-size: 12px !important;
+            }
+            #subscriptionStatus div p {
+                font-size: 12px !important;
             }
         }
     </style>
@@ -483,7 +231,7 @@
         <div class="tab-content active" id="tab-overview">
             <div class="stats-grid">
                 <div class="stat-card primary"><span class="stat-icon">📋</span><div class="stat-label">Total Jobs</div><div class="stat-value" id="ovJobs">0</div></div>
-                <div class="stat-card green"><span class="stat-icon">💰</span><div class="stat-label">Revenue</div><div class="stat-value" id="ovRevenue">&#8358;0</div></div>
+                <div class="stat-card green"><span class="stat-icon">💰</span><div class="stat-label">Revenue</div><div class="stat-value" id="ovRevenue">₦0</div></div>
                 <div class="stat-card orange"><span class="stat-icon">⏳</span><div class="stat-label">Pending</div><div class="stat-value" id="ovPending">0</div></div>
                 <div class="stat-card blue"><span class="stat-icon">👤</span><div class="stat-label">Clients</div><div class="stat-value" id="ovClients">0</div></div>
             </div>
@@ -501,12 +249,13 @@
                     <p style="color:var(--slate);">Loading...</p>
                 </div>
                 <div id="plansContainer" style="margin-top:16px;">
+                    <!-- 🔥 FIXED: Correct order: Starter → Professional → Enterprise -->
                     <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
-                        
-                        <!-- Starter Plan -->
+
+                        <!-- 1️⃣ Starter Plan -->
                         <div id="planStarter" style="border:2px solid var(--border); border-radius:var(--radius); padding:16px; text-align:center; cursor:pointer;" onclick="selectPlan('starter')">
                             <h4 style="font-size:18px; font-weight:800;">Starter</h4>
-                            <p style="font-size:28px; font-weight:800; color:var(--blue);">&#8358;10,000 <span style="font-size:14px; font-weight:400; color:var(--slate);">/month</span></p>
+                            <p class="price" style="font-size:28px; font-weight:800; color:var(--blue);">&#8358;10,000 <span style="font-size:14px; font-weight:400; color:var(--slate);">/month</span></p>
                             <ul style="list-style:none; text-align:left; margin:12px 0; font-size:13px; color:var(--slate);">
                                 <li>✅ Up to 50 jobs</li>
                                 <li>✅ Up to 50 clients</li>
@@ -515,12 +264,12 @@
                             </ul>
                             <button class="btn btn-primary" style="width:100%;" onclick="subscribeToPlan('starter')">Subscribe</button>
                         </div>
-                        
-                        <!-- Professional Plan (Popular) -->
+
+                        <!-- 2️⃣ Professional Plan (Popular) -->
                         <div id="planProfessional" style="border:2px solid var(--blue); border-radius:var(--radius); padding:16px; text-align:center; cursor:pointer; background:var(--blue-light);" onclick="selectPlan('professional')">
                             <span style="display:inline-block; background:var(--orange); color:#fff; font-size:10px; font-weight:700; padding:2px 12px; border-radius:100px; text-transform:uppercase; margin-bottom:8px;">🔥 Best Value</span>
                             <h4 style="font-size:18px; font-weight:800;">Professional</h4>
-                            <p style="font-size:28px; font-weight:800; color:var(--blue);">&#8358;17,500 <span style="font-size:14px; font-weight:400; color:var(--slate);">/month</span></p>
+                            <p class="price" style="font-size:28px; font-weight:800; color:var(--blue);">&#8358;17,500 <span style="font-size:14px; font-weight:400; color:var(--slate);">/month</span></p>
                             <ul style="list-style:none; text-align:left; margin:12px 0; font-size:13px; color:var(--slate);">
                                 <li>✅ Unlimited jobs</li>
                                 <li>✅ Unlimited clients</li>
@@ -530,11 +279,11 @@
                             </ul>
                             <button class="btn btn-primary" style="width:100%;" onclick="subscribeToPlan('professional')">Subscribe</button>
                         </div>
-                        
-                        <!-- Enterprise Plan -->
+
+                        <!-- 3️⃣ Enterprise Plan -->
                         <div id="planEnterprise" style="border:2px solid var(--border); border-radius:var(--radius); padding:16px; text-align:center; cursor:pointer;" onclick="selectPlan('enterprise')">
                             <h4 style="font-size:18px; font-weight:800;">Enterprise</h4>
-                            <p style="font-size:28px; font-weight:800; color:var(--blue);">&#8358;35,000 <span style="font-size:14px; font-weight:400; color:var(--slate);">/month</span></p>
+                            <p class="price" style="font-size:28px; font-weight:800; color:var(--blue);">&#8358;35,000 <span style="font-size:14px; font-weight:400; color:var(--slate);">/month</span></p>
                             <ul style="list-style:none; text-align:left; margin:12px 0; font-size:13px; color:var(--slate);">
                                 <li>✅ Everything in Professional</li>
                                 <li>✅ Team member access</li>
@@ -543,7 +292,7 @@
                             </ul>
                             <button class="btn btn-primary" style="width:100%;" onclick="subscribeToPlan('enterprise')">Subscribe</button>
                         </div>
-                        
+
                     </div>
                 </div>
             </div>
@@ -585,7 +334,6 @@
                     </div>
                 </div>
 
-                <!-- Quick Templates -->
                 <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:16px;">
                     <button class="btn btn-sm btn-outline" onclick="setTemplate('newmonth')">🎉 Happy New Month</button>
                     <button class="btn btn-sm btn-outline" onclick="setTemplate('festival')">🎄 Festival Greeting</button>
@@ -617,7 +365,6 @@
                     </select>
                 </div>
 
-                <!-- Message Preview -->
                 <div id="messagePreview" style="margin-top:12px; display:none;">
                     <div class="message-preview">
                         <div style="font-size:13px; white-space:pre-wrap; color:var(--ink);" id="previewText"></div>
@@ -633,7 +380,6 @@
                 </div>
             </div>
 
-            <!-- Message History -->
             <div class="card">
                 <div class="card-header">
                     <h3>📋 Message History</h3>
@@ -657,7 +403,6 @@
                 </div>
             </div>
         </div>
-        <!-- ─── END MESSAGES TAB ─── -->
 
     </div>
 
@@ -674,6 +419,9 @@
     <div class="toast" id="toast"></div>
 
     <script>
+        // ─── All your existing JavaScript here ───
+        // Make sure the subscription check function is included
+
         // ─── CONFIG ──────────────────────────────────────────
         const API_URL = 'https://cleancrew-backend.onrender.com/api';
         const TOKEN = localStorage.getItem('cleancrew_token');
@@ -1076,7 +824,7 @@
                     const trialEnd = new Date(data.trial_end);
                     const now = new Date();
                     
-                    // ✅ Calculate days remaining (NOT days used)
+                    // ✅ Calculate days remaining
                     const daysLeft = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
                     
                     // ✅ If daysLeft is negative, trial has expired
@@ -1135,11 +883,8 @@
             }
         }
 
-        // ─── ──────────────────────────────────────────────────────
         // ─── WHATSAPP MESSAGING ──────────────────────────────────
-        // ─── ──────────────────────────────────────────────────────
 
-        // ─── Templates ──────────────────────────────────────────
         const TEMPLATES = {
             newmonth: 'Happy New Month! 🎉\n\nWe hope this new month brings you joy, success, and a spotless home.\n\nThank you for choosing CleanCrew! 🧹',
             festival: '🎄 Happy Holidays! 🎄\n\nFrom our family to yours, we wish you a wonderful celebration.\n\nThank you for being a valued client. ✨',
@@ -1149,7 +894,6 @@
 
         let messageData = [];
 
-        // ─── Load clients for messages ────────────────────────
         async function loadClientsForMessages() {
             try {
                 const clients = await getClients();
@@ -1166,7 +910,6 @@
             }
         }
 
-        // ─── Set template ──────────────────────────────────────
         function setTemplate(type) {
             const body = document.getElementById('msgBody');
             const typeSelect = document.getElementById('messageType');
@@ -1178,7 +921,6 @@
             }
         }
 
-        // ─── Send single WhatsApp ──────────────────────────────
         function sendSingleWhatsApp(name, phone) {
             if (!phone || phone === 'N/A' || phone === '') {
                 showToast('⚠️ No phone number available for this contact', '');
@@ -1192,7 +934,6 @@
             showToast('💬 Opening WhatsApp...', 'whatsapp');
         }
 
-        // ─── Send Bulk WhatsApp ────────────────────────────────
         async function sendBulkWhatsApp() {
             const recipients = document.getElementById('msgRecipients');
             const selected = Array.from(recipients.selectedOptions).map(opt => opt.value);
@@ -1267,7 +1008,6 @@
             }
         }
 
-        // ─── Render Messages History ──────────────────────────
         function renderMessages() {
             const tbody = document.getElementById('messagesTable');
             messageData = JSON.parse(localStorage.getItem('cleancrew_message_history') || '[]');
@@ -1304,7 +1044,6 @@
             }).join('');
         }
 
-        // ─── Resend Message ────────────────────────────────────
         async function resendMessage(index) {
             const m = messageData[index];
             if (!m) return;
@@ -1329,7 +1068,6 @@
             }
         }
 
-        // ─── Delete Message ────────────────────────────────────
         function deleteMessage(index) {
             if (!confirm('Delete this message?')) return;
             messageData.splice(index, 1);
