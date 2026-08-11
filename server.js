@@ -63,6 +63,14 @@ const authenticate = async (req, res, next) => {
     return res.status(401).json({ error: 'Invalid token' });
   }
 
+  // ✅ Check if email is confirmed
+  if (!user.email_confirmed_at) {
+    return res.status(403).json({ 
+      error: 'Please confirm your email address before accessing the dashboard.',
+      requires_confirmation: true
+    });
+  }
+
   req.user = user;
   next();
 };
@@ -125,7 +133,10 @@ app.post('/api/auth/signup', async (req, res) => {
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { name } }
+      options: { 
+        data: { name },
+        emailRedirectTo: 'https://cleancrew-frontend.vercel.app/dashboard.html'
+      }
     });
 
     if (authError) throw authError;
@@ -142,7 +153,13 @@ app.post('/api/auth/signup', async (req, res) => {
         plan: 'professional'
       });
 
-    res.json({ success: true, user: authData.user });
+    // ✅ Send response with confirmation flag
+    res.json({ 
+      success: true, 
+      user: authData.user,
+      requires_confirmation: true,
+      message: 'Please check your email to confirm your account.'
+    });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -162,6 +179,15 @@ app.post('/api/auth/login', async (req, res) => {
     });
 
     if (authError) throw authError;
+
+    // ✅ Check if email is confirmed
+    if (!authData.user.email_confirmed_at) {
+      return res.status(403).json({ 
+        error: 'Please confirm your email address before logging in. Check your inbox for the confirmation link.',
+        requires_confirmation: true,
+        email: email
+      });
+    }
 
     const { data: sub } = await supabase
       .from('subscriptions')
@@ -183,13 +209,40 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+// ─── Resend Confirmation Email ──────────────────────────────
+app.post('/api/auth/resend-confirmation', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    // Resend confirmation email
+    const { error: resendError } = await supabase.auth.resend({
+      type: 'signup',
+      email: email,
+      options: {
+        emailRedirectTo: 'https://cleancrew-frontend.vercel.app/dashboard.html'
+      }
+    });
+
+    if (resendError) throw resendError;
+
+    res.json({ success: true, message: 'Confirmation email resent successfully. Please check your inbox.' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 // ─── Get User ─────────────────────────────────────────────
 app.get('/api/user', authenticate, async (req, res) => {
   try {
     res.json({
       id: req.user.id,
       email: req.user.email,
-      name: req.user.user_metadata?.name || ''
+      name: req.user.user_metadata?.name || '',
+      email_confirmed: !!req.user.email_confirmed_at
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
