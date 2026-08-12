@@ -622,157 +622,98 @@
             font-size: 13px;
         }
 
+        .inv-category-badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 100px;
+            display: inline-block;
+            margin-left: 8px;
+        }
+        .inv-category-badge.cleaning {
+            background: var(--blue-light);
+            color: var(--blue);
+        }
+        .inv-category-badge.laundry {
+            background: var(--laundry-light);
+            color: var(--laundry);
+        }
+
+        /* ─── WHATSAPP LIMIT WARNING ─── */
+        #whatsappLimitWarning {
+            display: none;
+            background: #FEF3C7;
+            border: 1px solid #F59E0B;
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            margin-bottom: 16px;
+        }
+        #whatsappLimitWarning p {
+            font-size: 13px;
+            color: #92400E;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        #whatsappLimitWarning a {
+            color: var(--blue);
+            font-weight: 700;
+            text-decoration: none;
+            background: var(--white);
+            padding: 4px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+        #whatsappLimitWarning a:hover {
+            background: var(--blue-light);
+        }
+
         @media (max-width: 768px) {
-            .container {
-                padding: 12px;
-            }
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-                gap: 10px;
-            }
-            .stat-card {
-                padding: 12px 14px;
-            }
-            .stat-card .stat-value {
-                font-size: 20px !important;
-            }
-            .stat-card .stat-label {
-                font-size: 9px !important;
-            }
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-            .nav-tabs {
-                padding: 4px 6px;
-                gap: 2px;
-                overflow-x: auto;
-                flex-wrap: nowrap;
-                -webkit-overflow-scrolling: touch;
-            }
-            .nav-tabs button {
-                font-size: 9px !important;
-                padding: 4px 10px !important;
-                white-space: nowrap;
-                flex-shrink: 0;
-            }
-            .header {
-                flex-direction: column;
-                text-align: center;
-                padding: 12px 16px;
-            }
-            .header .logo {
-                font-size: 18px;
-            }
-            .header .user-info {
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-            .header .user-info span {
-                font-size: 12px;
-            }
-            .card {
-                padding: 14px 16px;
-            }
-            .card-header {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 8px;
-            }
-            .card-header h3 {
-                font-size: 15px;
-            }
-            .card-header .btn {
-                width: 100%;
-                justify-content: center;
-                font-size: 12px;
-                padding: 8px 12px;
-            }
-            .plans-grid {
-                grid-template-columns: 1fr !important;
-                gap: 12px !important;
-            }
-            .plan-card {
-                padding: 14px !important;
-            }
-            .plan-card .price {
-                font-size: 22px !important;
-            }
-            .plan-card .btn {
-                font-size: 14px !important;
-                padding: 10px !important;
-            }
-            .plan-card ul {
-                font-size: 12px !important;
-            }
-            .plan-card h4 {
-                font-size: 16px !important;
-            }
-            #subscriptionStatus .status-box {
-                padding: 12px 14px !important;
-                font-size: 13px !important;
-            }
-            .table-wrap {
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-            table {
-                font-size: 11px !important;
-                min-width: 500px;
-            }
-            table th,
-            table td {
-                padding: 6px 8px !important;
-            }
-            .laundry-items {
-                grid-template-columns: 1fr;
-            }
-            .service-toggle button {
-                font-size: 10px !important;
-                padding: 4px 10px !important;
-            }
+            .container { padding: 12px; }
+            .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .stat-card { padding: 12px 14px; }
+            .stat-card .stat-value { font-size: 20px !important; }
+            .stat-card .stat-label { font-size: 9px !important; }
+            .form-grid { grid-template-columns: 1fr; }
+            .nav-tabs { padding: 4px 6px; gap: 2px; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+            .nav-tabs button { font-size: 9px !important; padding: 4px 10px !important; white-space: nowrap; flex-shrink: 0; }
+            .header { flex-direction: column; text-align: center; padding: 12px 16px; }
+            .header .logo { font-size: 18px; }
+            .header .user-info { flex-wrap: wrap; justify-content: center; }
+            .header .user-info span { font-size: 12px; }
+            .card { padding: 14px 16px; }
+            .card-header { flex-direction: column; align-items: stretch; gap: 8px; }
+            .card-header h3 { font-size: 15px; }
+            .card-header .btn { width: 100%; justify-content: center; font-size: 12px; padding: 8px 12px; }
+            .plans-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+            .plan-card { padding: 14px !important; }
+            .plan-card .price { font-size: 22px !important; }
+            .plan-card .btn { font-size: 14px !important; padding: 10px !important; }
+            .plan-card ul { font-size: 12px !important; }
+            .plan-card h4 { font-size: 16px !important; }
+            #subscriptionStatus .status-box { padding: 12px 14px !important; font-size: 13px !important; }
+            .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            table { font-size: 11px !important; min-width: 500px; }
+            table th, table td { padding: 6px 8px !important; }
+            .laundry-items { grid-template-columns: 1fr; }
+            .service-toggle button { font-size: 10px !important; padding: 4px 10px !important; }
         }
 
         @media (max-width: 480px) {
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-                gap: 8px;
-            }
-            .stat-card {
-                padding: 10px 12px;
-            }
-            .stat-card .stat-value {
-                font-size: 18px !important;
-            }
-            .stat-card .stat-icon {
-                font-size: 18px !important;
-            }
-            .card {
-                padding: 12px 14px;
-            }
-            .card-header h3 {
-                font-size: 14px;
-            }
-            .nav-tabs button {
-                font-size: 8px !important;
-                padding: 3px 8px !important;
-            }
-            .header .logo {
-                font-size: 16px;
-            }
-            .plan-card {
-                padding: 12px !important;
-            }
-            .plan-card .price {
-                font-size: 18px !important;
-            }
-            .plan-card .btn {
-                font-size: 12px !important;
-                padding: 8px !important;
-            }
-            #subscriptionStatus .status-box {
-                padding: 10px 12px !important;
-                font-size: 12px !important;
-            }
+            .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .stat-card { padding: 10px 12px; }
+            .stat-card .stat-value { font-size: 18px !important; }
+            .stat-card .stat-icon { font-size: 18px !important; }
+            .card { padding: 12px 14px; }
+            .card-header h3 { font-size: 14px; }
+            .nav-tabs button { font-size: 8px !important; padding: 3px 8px !important; }
+            .header .logo { font-size: 16px; }
+            .plan-card { padding: 12px !important; }
+            .plan-card .price { font-size: 18px !important; }
+            .plan-card .btn { font-size: 12px !important; padding: 8px !important; }
+            #subscriptionStatus .status-box { padding: 10px 12px !important; font-size: 12px !important; }
         }
     </style>
 </head>
@@ -800,7 +741,10 @@
             <button onclick="switchTab('jobs')" id="tabJobs">📋 Jobs</button>
             <button onclick="switchTab('clients')">👤 Clients</button>
             <button onclick="switchTab('messages')">💬 Messages</button>
-            <button onclick="switchTab('inventory')">📦 Inventory</button>
+            <button onclick="switchTab('inventory')" id="tabInventory">📦 Inventory</button>
+            <!-- Staff & Invoices tabs - hidden for Starter plan -->
+            <button id="tabStaff" style="display:none;" onclick="switchTab('staff')">🧹 Staff</button>
+            <button id="tabInvoices" style="display:none;" onclick="switchTab('invoices')">📄 Invoices</button>
         </div>
 
         <!-- ════ OVERVIEW TAB ════ -->
@@ -848,11 +792,13 @@
                     <div class="plans-grid">
                         <div class="plan-card" id="planStarter" onclick="selectPlan('starter')">
                             <h4>Starter</h4>
-                            <p class="price">₦10,000 <span>/month</span></p>
+                            <p class="price">₦12,500 <span>/month</span></p>
                             <ul>
                                 <li>✅ Up to 50 jobs</li>
                                 <li>✅ Up to 50 clients</li>
-                                <li>✅ Bulk WhatsApp</li>
+                                <li>✅ Up to 5 staff</li>
+                                <li>✅ 20 invoices/month</li>
+                                <li>✅ 100 WhatsApp messages</li>
                                 <li>✅ Basic reporting</li>
                             </ul>
                             <button class="btn btn-primary" onclick="event.stopPropagation(); subscribeToPlan('starter')">Subscribe</button>
@@ -864,9 +810,11 @@
                             <ul>
                                 <li>✅ Unlimited jobs</li>
                                 <li>✅ Unlimited clients</li>
-                                <li>✅ Bulk WhatsApp</li>
-                                <li>✅ Invoice generation</li>
+                                <li>✅ Unlimited staff</li>
+                                <li>✅ Unlimited invoices</li>
+                                <li>✅ Unlimited WhatsApp</li>
                                 <li>✅ Revenue tracking</li>
+                                <li>✅ Priority support</li>
                             </ul>
                             <button class="btn btn-primary" onclick="event.stopPropagation(); subscribeToPlan('professional')">Subscribe</button>
                         </div>
@@ -964,6 +912,14 @@
                     </div>
                 </div>
 
+                <!-- ─── WHATSAPP LIMIT WARNING (Starter Plan) ─── -->
+                <div id="whatsappLimitWarning">
+                    <p>
+                        <span>⚠️ You've used <span id="whatsappLimitCount">0/100</span> WhatsApp messages this month.</span>
+                        <a href="#pricing">Upgrade to Professional →</a>
+                    </p>
+                </div>
+
                 <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:16px;">
                     <button class="btn btn-sm btn-outline" onclick="setTemplate('newmonth')">🎉 Happy New Month</button>
                     <button class="btn btn-sm btn-outline" onclick="setTemplate('festival')">🎄 Festival Greeting</button>
@@ -1045,6 +1001,57 @@
             </div>
         </div>
 
+        <!-- ════ STAFF TAB ════ -->
+        <div class="tab-content" id="tab-staff">
+            <div class="card">
+                <div class="card-header">
+                    <h3>🧹 Staff Management</h3>
+                    <button class="btn btn-sm btn-primary" onclick="openModal('staff')">+ Add Staff</button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Role</th>
+                                <th>Jobs Assigned</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="staffTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════ INVOICES TAB ════ -->
+        <div class="tab-content" id="tab-invoices">
+            <div class="card">
+                <div class="card-header">
+                    <h3>📄 Invoices</h3>
+                    <button class="btn btn-sm btn-primary" onclick="openModal('invoice')">+ Create Invoice</button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Invoice #</th>
+                                <th>Client</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoicesTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- ─── MODAL ─── -->
@@ -1068,10 +1075,11 @@
         const TOKEN = localStorage.getItem('cleancrew_token');
 
         if (!TOKEN) {
-            window.location.href = 'index.html';
+            window.location.href = 'login.html';
         }
 
         let currentServiceType = 'cleaning';
+        let currentUserPlan = 'starter';
 
         function getHeaders() {
             return {
@@ -1089,6 +1097,10 @@
                 const data = await res.json();
                 if (res.ok) {
                     document.getElementById('userEmail').textContent = data.email || 'User';
+                    if (data.plan) {
+                        currentUserPlan = data.plan;
+                        applyFeatureRestrictions(data.plan);
+                    }
                 }
             } catch (e) {
                 console.error('Failed to load user info');
@@ -1145,7 +1157,9 @@
                     (tab === 'jobs' && el.textContent.includes('Jobs')) ||
                     (tab === 'clients' && el.textContent.includes('Clients')) ||
                     (tab === 'messages' && el.textContent.includes('Messages')) ||
-                    (tab === 'inventory' && el.textContent.includes('Inventory'))) {
+                    (tab === 'inventory' && el.textContent.includes('Inventory')) ||
+                    (tab === 'staff' && el.textContent.includes('Staff')) ||
+                    (tab === 'invoices' && el.textContent.includes('Invoices'))) {
                     el.classList.add('active');
                 }
             });
@@ -1155,6 +1169,12 @@
             }
             if (tab === 'inventory') {
                 renderInventory();
+            }
+            if (tab === 'staff') {
+                renderStaff();
+            }
+            if (tab === 'invoices') {
+                renderInvoices();
             }
             renderAll();
         }
@@ -1171,6 +1191,18 @@
         async function getClients() {
             const res = await fetch(`${API_URL}/clients`, { headers: getHeaders() });
             if (!res.ok) throw new Error('Failed to fetch clients');
+            return res.json();
+        }
+
+        async function getStaff() {
+            const res = await fetch(`${API_URL}/staff`, { headers: getHeaders() });
+            if (!res.ok) throw new Error('Failed to fetch staff');
+            return res.json();
+        }
+
+        async function getInvoices() {
+            const res = await fetch(`${API_URL}/invoices`, { headers: getHeaders() });
+            if (!res.ok) throw new Error('Failed to fetch invoices');
             return res.json();
         }
 
@@ -1191,6 +1223,26 @@
                 body: JSON.stringify(client)
             });
             if (!res.ok) throw new Error('Failed to create client');
+            return res.json();
+        }
+
+        async function createStaff(staff) {
+            const res = await fetch(`${API_URL}/staff`, {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify(staff)
+            });
+            if (!res.ok) throw new Error('Failed to create staff');
+            return res.json();
+        }
+
+        async function createInvoice(invoice) {
+            const res = await fetch(`${API_URL}/invoices`, {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify(invoice)
+            });
+            if (!res.ok) throw new Error('Failed to create invoice');
             return res.json();
         }
 
@@ -1265,6 +1317,8 @@
         // ─── ──────────────────────────────────────────────────────
         let jobsData = [];
         let inventoryData = [];
+        let staffData = [];
+        let invoicesData = [];
 
         async function renderAll() {
             try {
@@ -1411,6 +1465,14 @@
             }).join('');
         }
 
+        function renderStaff() {
+            // Placeholder - will be implemented when staff management is fully built
+        }
+
+        function renderInvoices() {
+            // Placeholder - will be implemented when invoices are fully built
+        }
+
         // ─── ──────────────────────────────────────────────────────
         // ─── ACTIONS ──────────────────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
@@ -1447,6 +1509,51 @@
         }
 
         // ─── ──────────────────────────────────────────────────────
+        // ─── APPLY FEATURE RESTRICTIONS ──────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+        function applyFeatureRestrictions(plan) {
+            const isProfessionalOrHigher = plan === 'professional' || plan === 'enterprise';
+            const isEnterprise = plan === 'enterprise';
+            const isStarter = plan === 'starter';
+
+            // Show plan badge
+            const badge = document.getElementById('planBadge');
+            if (badge) {
+                badge.textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
+                badge.className = 'badge-' + (isStarter ? 'trial' : 'active');
+                badge.style.display = 'inline-block';
+            }
+
+            // Staff tab - Professional+
+            const staffTab = document.getElementById('tabStaff');
+            if (staffTab) staffTab.style.display = isProfessionalOrHigher ? 'inline-block' : 'none';
+
+            // Invoices tab - Professional+
+            const invoicesTab = document.getElementById('tabInvoices');
+            if (invoicesTab) invoicesTab.style.display = isProfessionalOrHigher ? 'inline-block' : 'none';
+
+            // Inventory tab - Professional+
+            const inventoryTab = document.getElementById('tabInventory');
+            if (inventoryTab) inventoryTab.style.display = isProfessionalOrHigher ? 'inline-block' : 'none';
+
+            // WhatsApp limit warning - Starter only
+            const whatsappWarning = document.getElementById('whatsappLimitWarning');
+            if (whatsappWarning) {
+                whatsappWarning.style.display = isStarter ? 'block' : 'none';
+                if (isStarter) {
+                    const messageData = JSON.parse(localStorage.getItem('cleancrew_message_history') || '[]');
+                    const thisMonth = new Date().getMonth();
+                    const thisYear = new Date().getFullYear();
+                    const count = messageData.filter(m => {
+                        const d = new Date(m.sentAt);
+                        return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+                    }).length;
+                    document.getElementById('whatsappLimitCount').textContent = `${count}/100`;
+                }
+            }
+        }
+
+        // ─── ──────────────────────────────────────────────────────
         // ─── MODAL ────────────────────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
         let modalType = '';
@@ -1458,7 +1565,9 @@
             const titles = {
                 job: '📋 New Job',
                 client: '👤 New Client',
-                inventory: '📦 New Inventory Item'
+                inventory: '📦 New Inventory Item',
+                staff: '🧹 New Staff Member',
+                invoice: '📄 New Invoice'
             };
             document.getElementById('modalTitle').textContent = titles[type] || 'New';
             document.getElementById('modalForm').reset();
@@ -1537,12 +1646,40 @@
                     <div class="form-group"><label>Item Name *</label><input type="text" id="invName" required /></div>
                     <div class="form-group"><label>Category</label>
                         <select id="invCategory">
-                            <option value="cleaning">🧹 Cleaning</option>
-                            <option value="laundry">🧺 Laundry</option>
+                            <option value="cleaning" ${currentServiceType === 'cleaning' ? 'selected' : ''}>🧹 Cleaning</option>
+                            <option value="laundry" ${currentServiceType === 'laundry' ? 'selected' : ''}>🧺 Laundry</option>
                         </select>
                     </div>
                     <div class="form-group"><label>Quantity</label><input type="number" id="invQty" required /></div>
                     <div class="form-group"><label>Min Stock Level</label><input type="number" id="invMin" value="3" /></div>
+                `;
+            } else if (type === 'staff') {
+                f.innerHTML = `
+                    <div class="form-group"><label>Full Name *</label><input type="text" id="sName" required /></div>
+                    <div class="form-group"><label>Phone</label><input type="tel" id="sPhone" /></div>
+                    <div class="form-group"><label>Email</label><input type="email" id="sEmail" /></div>
+                    <div class="form-group"><label>Role</label>
+                        <select id="sRole">
+                            <option>Cleaner</option>
+                            <option>Supervisor</option>
+                            <option>Manager</option>
+                            <option>Admin</option>
+                        </select>
+                    </div>
+                `;
+            } else if (type === 'invoice') {
+                f.innerHTML = `
+                    <div class="form-group"><label>Client *</label><input type="text" id="invClient" required /></div>
+                    <div class="form-group"><label>Amount (₦) *</label><input type="number" id="invAmount" required /></div>
+                    <div class="form-group"><label>Date</label><input type="date" id="invDate" required /></div>
+                    <div class="form-group"><label>Status</label>
+                        <select id="invStatus">
+                            <option value="pending">Pending</option>
+                            <option value="paid">Paid</option>
+                            <option value="overdue">Overdue</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width"><label>Description</label><textarea id="invDescription" placeholder="What is this invoice for?"></textarea></div>
                 `;
             }
 
@@ -1676,12 +1813,52 @@
                 if (!name || !quantity) { showToast('⚠️ Fill all fields'); return; }
 
                 try {
-                    await createInventoryItem({ name, category, quantity, min_stock: minStock || 3 });
+                    await createInventoryItem({ 
+                        name, 
+                        category, 
+                        quantity, 
+                        min_stock: minStock || 3 
+                    });
                     showToast('✅ Inventory item added!', 'success');
                     closeModal();
                     renderInventory();
                 } catch (e) {
                     showToast('⚠️ Failed to add inventory item');
+                }
+
+            } else if (modalType === 'staff') {
+                const name = document.getElementById('sName').value.trim();
+                const phone = document.getElementById('sPhone').value.trim();
+                const email = document.getElementById('sEmail').value.trim();
+                const role = document.getElementById('sRole').value;
+
+                if (!name) { showToast('⚠️ Enter name'); return; }
+
+                try {
+                    await createStaff({ name, phone: phone || 'N/A', email: email || '', role });
+                    showToast('✅ Staff added!', 'success');
+                    closeModal();
+                    renderStaff();
+                } catch (e) {
+                    showToast('⚠️ Failed to add staff');
+                }
+
+            } else if (modalType === 'invoice') {
+                const client = document.getElementById('invClient').value.trim();
+                const amount = parseFloat(document.getElementById('invAmount').value);
+                const date = document.getElementById('invDate').value;
+                const status = document.getElementById('invStatus').value;
+                const description = document.getElementById('invDescription').value.trim();
+
+                if (!client || !amount || !date) { showToast('⚠️ Fill all fields'); return; }
+
+                try {
+                    await createInvoice({ client, amount, date, status, description: description || 'Cleaning service' });
+                    showToast('✅ Invoice created!', 'success');
+                    closeModal();
+                    renderInvoices();
+                } catch (e) {
+                    showToast('⚠️ Failed to create invoice');
                 }
             }
         }
@@ -1694,19 +1871,32 @@
                 const items = await getInventory();
                 inventoryData = items;
 
-                const filtered = items.filter(i => i.category === currentServiceType || !i.category);
+                const filtered = items.filter(item => {
+                    const itemCategory = item.category || 'cleaning';
+                    return itemCategory === currentServiceType;
+                });
 
                 const container = document.getElementById('inventoryList');
                 if (filtered.length === 0) {
-                    container.innerHTML = `<p style="color:var(--slate);">No ${currentServiceType} inventory items</p>`;
+                    container.innerHTML = `<p style="color:var(--slate);">No ${currentServiceType} inventory items yet. Add your first item below.</p>`;
                     return;
                 }
 
                 container.innerHTML = filtered.map((item, i) =>
                     `<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border-bottom:1px solid var(--border);">
-                        <div><strong>${item.name}</strong> <span style="font-size:12px;color:var(--slate);">Min: ${item.min_stock || 3}</span></div>
+                        <div>
+                            <strong>${item.name}</strong>
+                            <span class="inv-category-badge ${item.category || 'cleaning'}">
+                                ${item.category === 'laundry' ? '🧺 Laundry' : '🧹 Cleaning'}
+                            </span>
+                            <span style="font-size:11px;color:var(--slate);margin-left:8px;">
+                                Min: ${item.min_stock || 3}
+                            </span>
+                            ${item.quantity <= (item.min_stock || 3) ? 
+                                `<span style="font-size:11px;color:var(--red);margin-left:8px;">⚠️ Low Stock</span>` : ''}
+                        </div>
                         <div style="display:flex; gap:8px; align-items:center;">
-                            <span style="font-weight:700;">${item.quantity}</span>
+                            <span style="font-weight:700;font-size:16px;">${item.quantity}</span>
                             <button class="btn btn-sm btn-primary" onclick="adjustInventory('${item.id}', 1)">+1</button>
                             <button class="btn btn-sm btn-outline" onclick="adjustInventory('${item.id}', -1)">-1</button>
                             <button class="btn btn-sm btn-danger" onclick="deleteInventory('${item.id}')">🗑️</button>
@@ -1820,6 +2010,21 @@
             }
 
             if (phones.length === 0) { showToast('⚠️ No phone numbers found for selected clients', ''); return; }
+
+            // Check Starter plan limit
+            if (currentUserPlan === 'starter') {
+                const messageData = JSON.parse(localStorage.getItem('cleancrew_message_history') || '[]');
+                const thisMonth = new Date().getMonth();
+                const thisYear = new Date().getFullYear();
+                const count = messageData.filter(m => {
+                    const d = new Date(m.sentAt);
+                    return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+                }).length;
+                if (count + phones.length > 100) {
+                    showToast(`⚠️ You've reached your monthly limit of 100 messages. Upgrade to Professional for unlimited messaging.`, '');
+                    return;
+                }
+            }
 
             const message = {
                 id: Date.now(),
@@ -1947,7 +2152,6 @@
             }
         }
 
-        // ─── ✅ FIXED: checkSubscription() with proper UI updates ──
         async function checkSubscription() {
             try {
                 const res = await fetch(`${API_URL}/subscription/status`, {
@@ -1961,7 +2165,6 @@
 
                 if (!container || !plansContainer) return;
 
-                // ─── Show badge ──────────────────────────────────────
                 if (badge) badge.style.display = 'inline-block';
 
                 if (data.status === 'active') {
@@ -2063,23 +2266,68 @@
         // ─── INIT ────────────────────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
         async function init() {
-            await loadUserInfo();
-            await renderAll();
-            await checkSubscription();
-            checkPaystackReturn();
-            renderMessages();
-            renderInventory();
+            const token = localStorage.getItem('cleancrew_token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
 
-            document.getElementById('msgBody').addEventListener('input', function() {
-                const preview = document.getElementById('previewText');
-                const previewContainer = document.getElementById('messagePreview');
-                if (this.value.trim()) {
-                    preview.textContent = this.value;
-                    previewContainer.style.display = 'block';
-                } else {
-                    previewContainer.style.display = 'none';
+            try {
+                const res = await fetch(`${API_URL}/user`, { headers: getHeaders() });
+                
+                if (res.status === 403) {
+                    const data = await res.json();
+                    if (data.requires_confirmation) {
+                        showToast('📧 Please confirm your email address first. Check your inbox.', 'error');
+                        setTimeout(() => {
+                            window.location.href = 'login.html';
+                        }, 3000);
+                        return;
+                    }
                 }
-            });
+                
+                if (!res.ok) {
+                    localStorage.removeItem('cleancrew_token');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const userData = await res.json();
+                currentUserPlan = userData.plan || 'starter';
+                applyFeatureRestrictions(currentUserPlan);
+
+            } catch (e) {
+                console.error('Auth check error:', e);
+                applyFeatureRestrictions('starter');
+            }
+
+            try {
+                await loadUserInfo();
+                await renderAll();
+                await checkSubscription();
+                checkPaystackReturn();
+                renderMessages();
+                renderInventory();
+
+                document.getElementById('msgBody').addEventListener('input', function() {
+                    const preview = document.getElementById('previewText');
+                    const previewContainer = document.getElementById('messagePreview');
+                    if (this.value.trim()) {
+                        preview.textContent = this.value;
+                        previewContainer.style.display = 'block';
+                    } else {
+                        previewContainer.style.display = 'none';
+                    }
+                });
+            } catch (e) {
+                console.error('Dashboard init error:', e);
+                if (e.message && e.message.includes('403')) {
+                    showToast('📧 Please confirm your email address first.', 'error');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 3000);
+                }
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function() {

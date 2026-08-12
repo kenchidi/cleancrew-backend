@@ -115,6 +115,11 @@
             cursor: not-allowed;
             transform: none;
         }
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 13px;
+            width: auto;
+        }
 
         .link {
             text-align: center;
@@ -238,10 +243,30 @@
             toast._timer = setTimeout(() => toast.classList.remove('show'), 4000);
         }
 
-        // ─── CHECK IF ALREADY LOGGED IN ─────────────────────
+        // ─── ✅ CHECK IF ALREADY LOGGED IN ─────────────────────
+        // If user already has a token, redirect to dashboard
         const token = localStorage.getItem('cleancrew_token');
         if (token) {
             window.location.href = 'dashboard.html';
+        }
+
+        // ─── Resend Confirmation Email ──────────────────────
+        async function resendConfirmationEmail(email) {
+            try {
+                const response = await fetch(`${SERVER_URL}/api/auth/resend-confirmation`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    showToast('📧 Confirmation email resent! Check your inbox.', 'success');
+                } else {
+                    showToast('⚠️ ' + (data.error || 'Failed to resend email'), 'error');
+                }
+            } catch (error) {
+                showToast('⚠️ Could not connect to server', 'error');
+            }
         }
 
         // ─── LOGIN ──────────────────────────────────────────
@@ -277,18 +302,30 @@
                     setTimeout(() => {
                         window.location.href = 'dashboard.html';
                     }, 1500);
+                } else if (data.requires_confirmation) {
+                    errorMsg.innerHTML = `
+                        ${data.error}
+                        <br><br>
+                        <button onclick="resendConfirmationEmail('${email}')" class="btn btn-primary btn-sm">
+                            🔄 Resend Confirmation Email
+                        </button>
+                    `;
+                    errorMsg.classList.add('show');
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Login →';
                 } else {
                     errorMsg.textContent = data.error || 'Login failed. Please try again.';
                     errorMsg.classList.add('show');
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Login →';
                 }
             } catch (error) {
                 errorMsg.textContent = '⚠️ Could not connect to server. Please try again.';
                 errorMsg.classList.add('show');
                 console.error('Fetch error:', error);
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login →';
             }
-
-            loginBtn.disabled = false;
-            loginBtn.textContent = 'Login →';
         });
 
         // ─── FORGOT PASSWORD ──────────────────────────────────

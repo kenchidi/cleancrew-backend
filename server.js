@@ -32,22 +32,45 @@ const PAYSTACK_PUBLIC_KEY = process.env.PAYSTACK_PUBLIC_KEY;
 // ─── Paystack plans ──────────────────────────────────────
 const PLANS = {
   starter: { 
-    amount: 1000000, // ₦10,000 in kobo
+    amount: 1250000, // ₦12,500 in kobo
     name: 'Starter',
-    features: 'Up to 50 jobs, 50 clients',
-    limits: { jobs: 50, clients: 50 }
+    features: '50 jobs, 50 clients, 5 staff, 20 invoices/month, 100 WhatsApp messages, 10 inventory items',
+    limits: { 
+      jobs: 50, 
+      clients: 50, 
+      staff: 5, 
+      invoices: 20, 
+      whatsapp_messages: 100,
+      inventory: 10 
+    }
   },
   professional: { 
     amount: 1750000, // ₦17,500 in kobo
     name: 'Professional',
-    features: 'Unlimited jobs & clients, invoicing',
-    limits: { jobs: Infinity, clients: Infinity }
+    features: 'Unlimited jobs, clients, staff, invoices, WhatsApp & inventory',
+    limits: { 
+      jobs: Infinity, 
+      clients: Infinity, 
+      staff: Infinity, 
+      invoices: Infinity, 
+      whatsapp_messages: Infinity,
+      inventory: Infinity 
+    }
   },
   enterprise: { 
     amount: 3500000, // ₦35,000 in kobo
     name: 'Enterprise',
-    features: 'Everything + team access',
-    limits: { jobs: Infinity, clients: Infinity }
+    features: 'Everything in Professional + team access & advanced reporting',
+    limits: { 
+      jobs: Infinity, 
+      clients: Infinity, 
+      staff: Infinity, 
+      invoices: Infinity, 
+      whatsapp_messages: Infinity,
+      inventory: Infinity,
+      team_access: true,
+      advanced_reporting: true 
+    }
   }
 };
 
@@ -63,7 +86,7 @@ const authenticate = async (req, res, next) => {
     return res.status(401).json({ error: 'Invalid token' });
   }
 
-  // ✅ Check if email is confirmed
+  // Check if email is confirmed
   if (!user.email_confirmed_at) {
     return res.status(403).json({ 
       error: 'Please confirm your email address before accessing the dashboard.',
@@ -118,6 +141,21 @@ async function checkPlanLimit(userId, type) {
   return { allowed: true, limit, count: currentCount, plan: planName };
 }
 
+// ─── GET USER PLAN ──────────────────────────────────────
+async function getUserPlan(userId) {
+  const { data: sub, error } = await supabase
+    .from('subscriptions')
+    .select('plan')
+    .eq('user_id', userId)
+    .single();
+
+  if (error && error.code !== 'PGRST116') {
+    throw new Error('Error fetching subscription');
+  }
+
+  return sub?.plan || 'starter';
+}
+
 // ─── ──────────────────────────────────────────────────────
 // ─── AUTH ROUTES ──────────────────────────────────────────
 // ─── ──────────────────────────────────────────────────────
@@ -153,7 +191,6 @@ app.post('/api/auth/signup', async (req, res) => {
         plan: 'professional'
       });
 
-    // ✅ Send response with confirmation flag
     res.json({ 
       success: true, 
       user: authData.user,
@@ -180,7 +217,7 @@ app.post('/api/auth/login', async (req, res) => {
 
     if (authError) throw authError;
 
-    // ✅ Check if email is confirmed
+    // Check if email is confirmed
     if (!authData.user.email_confirmed_at) {
       return res.status(403).json({ 
         error: 'Please confirm your email address before logging in. Check your inbox for the confirmation link.',
@@ -218,7 +255,6 @@ app.post('/api/auth/resend-confirmation', async (req, res) => {
       return res.status(400).json({ error: 'Email is required' });
     }
 
-    // Resend confirmation email
     const { error: resendError } = await supabase.auth.resend({
       type: 'signup',
       email: email,
@@ -238,11 +274,13 @@ app.post('/api/auth/resend-confirmation', async (req, res) => {
 // ─── Get User ─────────────────────────────────────────────
 app.get('/api/user', authenticate, async (req, res) => {
   try {
+    const plan = await getUserPlan(req.user.id);
     res.json({
       id: req.user.id,
       email: req.user.email,
       name: req.user.user_metadata?.name || '',
-      email_confirmed: !!req.user.email_confirmed_at
+      email_confirmed: !!req.user.email_confirmed_at,
+      plan: plan
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -329,7 +367,7 @@ app.get('/api/subscription/status', authenticate, async (req, res) => {
     res.json({
       status: sub?.status || 'trial',
       trial_end: sub?.trial_end || new Date(Date.now() + 14 * 86400000),
-      plan: sub?.plan || 'professional'
+      plan: sub?.plan || 'starter'
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -598,6 +636,17 @@ app.get('/api/clients', authenticate, async (req, res) => {
 
 app.post('/api/clients', authenticate, async (req, res) => {
   try {
+    const limitCheck = await checkPlanLimit(req.user.id, 'clients');
+    
+    if (!limitCheck.allowed) {
+      return res.status(403).json({ 
+        error: limitCheck.message,
+        limit: limitCheck.limit,
+        count: limitCheck.count,
+        plan: limitCheck.plan
+      });
+    }
+
     const client = { ...req.body, user_id: req.user.id };
     const { data, error } = await supabase
       .from('clients')
@@ -652,6 +701,17 @@ app.get('/api/inventory', authenticate, async (req, res) => {
 
 app.post('/api/inventory', authenticate, async (req, res) => {
   try {
+    const limitCheck = await checkPlanLimit(req.user.id, 'inventory');
+    
+    if (!limitCheck.allowed) {
+      return res.status(403).json({ 
+        error: limitCheck.message,
+        limit: limitCheck.limit,
+        count: limitCheck.count,
+        plan: limitCheck.plan
+      });
+    }
+
     const item = { 
       ...req.body, 
       user_id: req.user.id,
@@ -703,6 +763,178 @@ app.delete('/api/inventory/:id', authenticate, async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('Error deleting inventory item:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ─── ──────────────────────────────────────────────────────
+// ─── INVOICE ROUTES ──────────────────────────────────────
+// ─── ──────────────────────────────────────────────────────
+
+app.get('/api/invoices', authenticate, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('invoices')
+      .select('*')
+      .eq('user_id', req.user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching invoices:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/invoices', authenticate, async (req, res) => {
+  try {
+    const limitCheck = await checkPlanLimit(req.user.id, 'invoices');
+    
+    if (!limitCheck.allowed) {
+      return res.status(403).json({ 
+        error: limitCheck.message,
+        limit: limitCheck.limit,
+        count: limitCheck.count,
+        plan: limitCheck.plan
+      });
+    }
+
+    const invoice = { 
+      ...req.body, 
+      user_id: req.user.id,
+      invoice_number: `CC-${Date.now().toString().slice(-6)}`
+    };
+    const { data, error } = await supabase
+      .from('invoices')
+      .insert(invoice)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    console.error('Error creating invoice:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/invoices/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase
+      .from('invoices')
+      .update(req.body)
+      .eq('id', id)
+      .eq('user_id', req.user.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    console.error('Error updating invoice:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/invoices/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabase
+      .from('invoices')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', req.user.id);
+
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting invoice:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ─── ──────────────────────────────────────────────────────
+// ─── STAFF ROUTES ──────────────────────────────────────
+// ─── ──────────────────────────────────────────────────────
+
+app.get('/api/staff', authenticate, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('staff')
+      .select('*')
+      .eq('user_id', req.user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching staff:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/staff', authenticate, async (req, res) => {
+  try {
+    const limitCheck = await checkPlanLimit(req.user.id, 'staff');
+    
+    if (!limitCheck.allowed) {
+      return res.status(403).json({ 
+        error: limitCheck.message,
+        limit: limitCheck.limit,
+        count: limitCheck.count,
+        plan: limitCheck.plan
+      });
+    }
+
+    const staff = { ...req.body, user_id: req.user.id };
+    const { data, error } = await supabase
+      .from('staff')
+      .insert(staff)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    console.error('Error creating staff:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/staff/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase
+      .from('staff')
+      .update(req.body)
+      .eq('id', id)
+      .eq('user_id', req.user.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    console.error('Error updating staff:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/staff/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabase
+      .from('staff')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', req.user.id);
+
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting staff:', error);
     res.status(500).json({ error: error.message });
   }
 });
