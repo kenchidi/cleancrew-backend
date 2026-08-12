@@ -1465,13 +1465,116 @@
             }).join('');
         }
 
-        function renderStaff() {
-            // Placeholder - will be implemented when staff management is fully built
+        function async function renderStaff() {
+    try {
+        const res = await fetch(`${API_URL}/staff`, { headers: getHeaders() });
+        if (!res.ok) throw new Error('Failed to fetch staff');
+        const staff = await res.json();
+        
+        const tbody = document.getElementById('staffTable');
+        if (staff.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--slate);">No staff members yet</td></tr>';
+            return;
         }
+        
+        tbody.innerHTML = staff.map((s, i) => `
+            <tr>
+                <td>${i + 1}</td>
+                <td><strong>${s.name}</strong></td>
+                <td>${s.phone || 'N/A'}</td>
+                <td>${s.role || 'Cleaner'}</td>
+                <td>0</td>
+                <td>
+                    <button class="btn btn-sm btn-danger" onclick="deleteStaff('${s.id}')">🗑️</button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (e) {
+        console.error('Failed to render staff:', e);
+        document.getElementById('staffTable').innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--slate);">Failed to load staff</td></tr>';
+    }
+}
 
-        function renderInvoices() {
-            // Placeholder - will be implemented when invoices are fully built
+async function deleteStaff(id) {
+    if (!confirm('Delete this staff member?')) return;
+    try {
+        const res = await fetch(`${API_URL}/staff/${id}`, {
+            method: 'DELETE',
+            headers: getHeaders()
+        });
+        if (!res.ok) throw new Error('Failed to delete staff');
+        showToast('🗑️ Staff deleted');
+        renderStaff();
+    } catch (e) {
+        showToast('⚠️ Failed to delete staff');
+    }
+}
+
+        async function renderInvoices() {
+    try {
+        const res = await fetch(`${API_URL}/invoices`, { headers: getHeaders() });
+        if (!res.ok) throw new Error('Failed to fetch invoices');
+        const invoices = await res.json();
+        
+        const tbody = document.getElementById('invoicesTable');
+        if (!invoices || invoices.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);">No invoices yet</td></tr>';
+            return;
         }
+        
+        tbody.innerHTML = invoices.map((inv, i) => {
+            const date = inv.date ? new Date(inv.date).toLocaleDateString('en-NG') : 'N/A';
+            const statusColors = {
+                pending: 'background:#FEF3C7;color:#92400E;',
+                paid: 'background:#D1FAE5;color:#065F46;',
+                overdue: 'background:#FEE2E2;color:#991B1B;'
+            };
+            const statusColor = statusColors[inv.status] || statusColors.pending;
+            
+            return `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td><strong>${inv.invoice_number || 'N/A'}</strong></td>
+                    <td>${inv.client || 'N/A'}</td>
+                    <td><strong>₦${(inv.amount || 0).toLocaleString()}</strong></td>
+                    <td><span style="padding:2px 10px;border-radius:100px;font-size:10px;font-weight:700;${statusColor}">${inv.status || 'pending'}</span></td>
+                    <td>${date}</td>
+                    <td>
+                        <button class="btn btn-sm btn-whatsapp" onclick="sendInvoiceWhatsApp('${inv.id}')">💬</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteInvoice('${inv.id}')">🗑️</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    } catch (e) {
+        console.error('Failed to render invoices:', e);
+        document.getElementById('invoicesTable').innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);">Failed to load invoices</td></tr>';
+    }
+}
+
+// ─── Delete Invoice ──────────────────────────────────────
+async function deleteInvoice(id) {
+    if (!confirm('Delete this invoice?')) return;
+    try {
+        const res = await fetch(`${API_URL}/invoices/${id}`, {
+            method: 'DELETE',
+            headers: getHeaders()
+        });
+        if (!res.ok) throw new Error('Failed to delete invoice');
+        showToast('🗑️ Invoice deleted');
+        renderInvoices();
+    } catch (e) {
+        showToast('⚠️ Failed to delete invoice');
+    }
+}
+
+// ─── Send Invoice via WhatsApp ──────────────────────────
+function sendInvoiceWhatsApp(id) {
+    // Find the invoice from the rendered data
+    // For now, just open WhatsApp
+    showToast('💬 Opening WhatsApp...', 'whatsapp');
+    window.open('https://wa.me/234', '_blank');
+}
 
         // ─── ──────────────────────────────────────────────────────
         // ─── ACTIONS ──────────────────────────────────────────────
