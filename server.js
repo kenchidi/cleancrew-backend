@@ -768,7 +768,7 @@ app.delete('/api/inventory/:id', authenticate, async (req, res) => {
 });
 
 // ─── ──────────────────────────────────────────────────────
-// ─── INVOICE ROUTES ──────────────────────────────────────
+// ─── ✅ CORRECTED INVOICE ROUTES ──────────────────────────
 // ─── ──────────────────────────────────────────────────────
 
 app.get('/api/invoices', authenticate, async (req, res) => {
@@ -800,18 +800,32 @@ app.post('/api/invoices', authenticate, async (req, res) => {
       });
     }
 
+    // ✅ FIX: Generate invoice number
+    const invoiceNumber = `CC-${Date.now().toString().slice(-6)}`;
+    
     const invoice = { 
-      ...req.body, 
       user_id: req.user.id,
-      invoice_number: `CC-${Date.now().toString().slice(-6)}`
+      number: invoiceNumber,  // ✅ This must NOT be null
+      client: req.body.client,
+      service: req.body.description || 'Cleaning service',
+      amount: req.body.amount,
+      date: req.body.date,
+      status: req.body.status || 'pending'
     };
+    
+    console.log('Creating invoice with data:', invoice);
+    
     const { data, error } = await supabase
       .from('invoices')
       .insert(invoice)
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(400).json({ error: error.message, details: error });
+    }
+    
     res.json(data);
   } catch (error) {
     console.error('Error creating invoice:', error);
