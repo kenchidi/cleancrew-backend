@@ -1557,42 +1557,42 @@
         }
 
         function renderInvoices() {
-            getInvoices()
-                .then(function(invoices) {
-                    var tbody = document.getElementById('invoicesTable');
-                    if (!invoices || invoices.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);">No invoices yet</td></tr>';
-                        return;
-                    }
-                    
-                    tbody.innerHTML = invoices.map(function(inv, i) {
-                        var date = inv.date ? new Date(inv.date).toLocaleDateString('en-NG') : 'N/A';
-                        var statusColors = {
-                            pending: 'background:#FEF3C7;color:#92400E;',
-                            paid: 'background:#D1FAE5;color:#065F46;',
-                            overdue: 'background:#FEE2E2;color:#991B1B;'
-                        };
-                        var statusColor = statusColors[inv.status] || statusColors.pending;
-                        
-                        return '<tr>' +
-                            '<td>' + (i + 1) + '</td>' +
-                            '<td><strong>' + (inv.invoice_number || 'N/A') + '</strong></td>' +
-                            '<td>' + (inv.client || 'N/A') + '</td>' +
-                            '<td><strong>₦' + (inv.amount || 0).toLocaleString() + '</strong></td>' +
-                            '<td><span style="padding:2px 10px;border-radius:100px;font-size:10px;font-weight:700;' + statusColor + '">' + (inv.status || 'pending') + '</span></td>' +
-                            '<td>' + date + '</td>' +
-                            '<td>' +
-                            '<button class="btn btn-sm btn-whatsapp" onclick="sendInvoiceWhatsApp(\'' + inv.id + '\')">💬</button>' +
-                            '<button class="btn btn-sm btn-danger" onclick="deleteInvoiceItem(\'' + inv.id + '\')">🗑️</button>' +
-                            '</td>' +
-                            '</tr>';
-                    }).join('');
-                })
-                .catch(function(e) {
-                    console.error('Failed to render invoices:', e);
-                    document.getElementById('invoicesTable').innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);">Failed to load invoices</td></tr>';
-                });
-        }
+    getInvoices()
+        .then(function(invoices) {
+            var tbody = document.getElementById('invoicesTable');
+            if (!invoices || invoices.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);">No invoices yet</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = invoices.map(function(inv, i) {
+                var date = inv.date ? new Date(inv.date).toLocaleDateString('en-NG') : 'N/A';
+                var statusColors = {
+                    pending: 'background:#FEF3C7;color:#92400E;',
+                    paid: 'background:#D1FAE5;color:#065F46;',
+                    overdue: 'background:#FEE2E2;color:#991B1B;'
+                };
+                var statusColor = statusColors[inv.status] || statusColors.pending;
+                
+                return '<tr>' +
+                    '<td>' + (i + 1) + '</td>' +
+                    '<td><strong>' + (inv.number || 'N/A') + '</strong></td>' +  // ✅ Changed from invoice_number to number
+                    '<td>' + (inv.client || 'N/A') + '</td>' +
+                    '<td><strong>₦' + (inv.amount || 0).toLocaleString() + '</strong></td>' +
+                    '<td><span style="padding:2px 10px;border-radius:100px;font-size:10px;font-weight:700;' + statusColor + '">' + (inv.status || 'pending') + '</span></td>' +
+                    '<td>' + date + '</td>' +
+                    '<td>' +
+                    '<button class="btn btn-sm btn-whatsapp" onclick="sendInvoiceWhatsApp(\'' + inv.id + '\')">💬</button>' +
+                    '<button class="btn btn-sm btn-danger" onclick="deleteInvoiceItem(\'' + inv.id + '\')">🗑️</button>' +
+                    '</td>' +
+                    '</tr>';
+            }).join('');
+        })
+        .catch(function(e) {
+            console.error('Failed to render invoices:', e);
+            document.getElementById('invoicesTable').innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);">Failed to load invoices</td></tr>';
+        });
+}
 
         // ─── ──────────────────────────────────────────────────────
         // ─── ACTIONS ──────────────────────────────────────────────
