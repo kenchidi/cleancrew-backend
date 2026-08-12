@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>🧹 CleanCrew — Dashboard</title>
+    <title> CleanCrew — Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <style>
         * {
@@ -742,7 +742,6 @@
             <button onclick="switchTab('clients')">👤 Clients</button>
             <button onclick="switchTab('messages')">💬 Messages</button>
             <button onclick="switchTab('inventory')" id="tabInventory">📦 Inventory</button>
-            <!-- Staff & Invoices tabs - hidden for Starter plan -->
             <button id="tabStaff" style="display:none;" onclick="switchTab('staff')">🧹 Staff</button>
             <button id="tabInvoices" style="display:none;" onclick="switchTab('invoices')">📄 Invoices</button>
         </div>
@@ -780,7 +779,6 @@
                 <div id="recentJobs"><p style="color:var(--slate);">No jobs yet</p></div>
             </div>
 
-            <!-- ─── SUBSCRIPTION / PLANS SECTION ─── -->
             <div class="card">
                 <div class="card-header">
                     <h3>💳 Choose Your Plan</h3>
@@ -912,7 +910,6 @@
                     </div>
                 </div>
 
-                <!-- ─── WHATSAPP LIMIT WARNING (Starter Plan) ─── -->
                 <div id="whatsappLimitWarning">
                     <p>
                         <span>⚠️ You've used <span id="whatsappLimitCount">0/100</span> WhatsApp messages this month.</span>
@@ -1113,13 +1110,16 @@
             window.location.href = 'index.html';
         }
 
-        function showToast(msg, type = '') {
+        function showToast(msg, type) {
+            type = type || '';
             const toast = document.getElementById('toast');
             toast.textContent = msg;
             toast.className = 'toast ' + type;
             toast.classList.add('show');
             clearTimeout(toast._timer);
-            toast._timer = setTimeout(() => toast.classList.remove('show'), 3000);
+            toast._timer = setTimeout(function() {
+                toast.classList.remove('show');
+            }, 3000);
         }
 
         // ─── ──────────────────────────────────────────────────────
@@ -1127,7 +1127,9 @@
         // ─── ──────────────────────────────────────────────────────
         function setServiceType(type) {
             currentServiceType = type;
-            document.querySelectorAll('.service-toggle button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.service-toggle button').forEach(function(btn) {
+                btn.classList.remove('active');
+            });
             if (type === 'cleaning') {
                 document.querySelector('.service-toggle .cleaning').classList.add('active');
                 document.getElementById('recentJobsTitle').textContent = '📋 Recent Cleaning Jobs';
@@ -1148,10 +1150,14 @@
         // ─── NAVIGATION ──────────────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
         function switchTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(function(el) {
+                el.classList.remove('active');
+            });
             document.getElementById('tab-' + tab).classList.add('active');
-            document.querySelectorAll('.nav-tabs button').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-tabs button').forEach(el => {
+            document.querySelectorAll('.nav-tabs button').forEach(function(el) {
+                el.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-tabs button').forEach(function(el) {
                 if (el.textContent.toLowerCase().includes(tab) ||
                     (tab === 'overview' && el.textContent.includes('Overview')) ||
                     (tab === 'jobs' && el.textContent.includes('Jobs')) ||
@@ -1182,476 +1188,523 @@
         // ─── ──────────────────────────────────────────────────────
         // ─── API FUNCTIONS ────────────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
-        async function getJobs() {
-            const res = await fetch(`${API_URL}/jobs`, { headers: getHeaders() });
-            if (!res.ok) throw new Error('Failed to fetch jobs');
-            return res.json();
+        function getJobs() {
+            return fetch(API_URL + '/jobs', { headers: getHeaders() })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Failed to fetch jobs');
+                    return res.json();
+                });
         }
 
-        async function getClients() {
-            const res = await fetch(`${API_URL}/clients`, { headers: getHeaders() });
-            if (!res.ok) throw new Error('Failed to fetch clients');
-            return res.json();
+        function getClients() {
+            return fetch(API_URL + '/clients', { headers: getHeaders() })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Failed to fetch clients');
+                    return res.json();
+                });
         }
 
-        async function getStaff() {
-            const res = await fetch(`${API_URL}/staff`, { headers: getHeaders() });
-            if (!res.ok) throw new Error('Failed to fetch staff');
-            return res.json();
+        function getStaff() {
+            return fetch(API_URL + '/staff', { headers: getHeaders() })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Failed to fetch staff');
+                    return res.json();
+                });
         }
 
-        async function getInvoices() {
-            const res = await fetch(`${API_URL}/invoices`, { headers: getHeaders() });
-            if (!res.ok) throw new Error('Failed to fetch invoices');
-            return res.json();
+        function getInvoices() {
+            return fetch(API_URL + '/invoices', { headers: getHeaders() })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Failed to fetch invoices');
+                    return res.json();
+                });
         }
 
-        async function createJob(job) {
-            const res = await fetch(`${API_URL}/jobs`, {
+        function createJob(job) {
+            return fetch(API_URL + '/jobs', {
                 method: 'POST',
                 headers: getHeaders(),
                 body: JSON.stringify(job)
+            })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Failed to create job');
+                return res.json();
             });
-            if (!res.ok) throw new Error('Failed to create job');
-            return res.json();
         }
 
-        async function createClient(client) {
-            const res = await fetch(`${API_URL}/clients`, {
+        function createClient(client) {
+            return fetch(API_URL + '/clients', {
                 method: 'POST',
                 headers: getHeaders(),
                 body: JSON.stringify(client)
+            })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Failed to create client');
+                return res.json();
             });
-            if (!res.ok) throw new Error('Failed to create client');
-            return res.json();
         }
 
-        async function createStaff(staff) {
-            const res = await fetch(`${API_URL}/staff`, {
+        function createStaff(staff) {
+            return fetch(API_URL + '/staff', {
                 method: 'POST',
                 headers: getHeaders(),
                 body: JSON.stringify(staff)
+            })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Failed to create staff');
+                return res.json();
             });
-            if (!res.ok) throw new Error('Failed to create staff');
-            return res.json();
         }
 
-        async function createInvoice(invoice) {
-            const res = await fetch(`${API_URL}/invoices`, {
+        function createInvoice(invoice) {
+            return fetch(API_URL + '/invoices', {
                 method: 'POST',
                 headers: getHeaders(),
                 body: JSON.stringify(invoice)
+            })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Failed to create invoice');
+                return res.json();
             });
-            if (!res.ok) throw new Error('Failed to create invoice');
-            return res.json();
         }
 
-        async function updateJob(id, data) {
-            const res = await fetch(`${API_URL}/jobs/${id}`, {
+        function updateJob(id, data) {
+            return fetch(API_URL + '/jobs/' + id, {
                 method: 'PUT',
                 headers: getHeaders(),
                 body: JSON.stringify(data)
+            })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Failed to update job');
+                return res.json();
             });
-            if (!res.ok) throw new Error('Failed to update job');
-            return res.json();
         }
 
-        async function deleteJob(id) {
-            const res = await fetch(`${API_URL}/jobs/${id}`, {
+        function deleteJob(id) {
+            return fetch(API_URL + '/jobs/' + id, {
                 method: 'DELETE',
                 headers: getHeaders()
+            })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Failed to delete job');
+                return res.json();
             });
-            if (!res.ok) throw new Error('Failed to delete job');
-            return res.json();
         }
 
-        async function deleteClient(id) {
-            const res = await fetch(`${API_URL}/clients/${id}`, {
+        function deleteClient(id) {
+            return fetch(API_URL + '/clients/' + id, {
                 method: 'DELETE',
                 headers: getHeaders()
+            })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Failed to delete client');
+                return res.json();
             });
-            if (!res.ok) throw new Error('Failed to delete client');
-            return res.json();
         }
 
         // ─── ──────────────────────────────────────────────────────
         // ─── INVENTORY API ───────────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
-        async function getInventory() {
-            const res = await fetch(`${API_URL}/inventory`, { headers: getHeaders() });
-            if (!res.ok) throw new Error('Failed to fetch inventory');
-            return res.json();
+        function getInventory() {
+            return fetch(API_URL + '/inventory', { headers: getHeaders() })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Failed to fetch inventory');
+                    return res.json();
+                });
         }
 
-        async function createInventoryItem(item) {
-            const res = await fetch(`${API_URL}/inventory`, {
+        function createInventoryItem(item) {
+            return fetch(API_URL + '/inventory', {
                 method: 'POST',
                 headers: getHeaders(),
                 body: JSON.stringify(item)
+            })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Failed to create inventory item');
+                return res.json();
             });
-            if (!res.ok) throw new Error('Failed to create inventory item');
-            return res.json();
         }
 
-        async function updateInventoryItem(id, data) {
-            const res = await fetch(`${API_URL}/inventory/${id}`, {
+        function updateInventoryItem(id, data) {
+            return fetch(API_URL + '/inventory/' + id, {
                 method: 'PUT',
                 headers: getHeaders(),
                 body: JSON.stringify(data)
+            })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Failed to update inventory item');
+                return res.json();
             });
-            if (!res.ok) throw new Error('Failed to update inventory item');
-            return res.json();
         }
 
-        async function deleteInventoryItem(id) {
-            const res = await fetch(`${API_URL}/inventory/${id}`, {
+        function deleteInventoryItem(id) {
+            return fetch(API_URL + '/inventory/' + id, {
                 method: 'DELETE',
                 headers: getHeaders()
+            })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Failed to delete inventory item');
+                return res.json();
             });
-            if (!res.ok) throw new Error('Failed to delete inventory item');
-            return res.json();
         }
 
         // ─── ──────────────────────────────────────────────────────
         // ─── RENDER FUNCTIONS ────────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
-        let jobsData = [];
-        let inventoryData = [];
-        let staffData = [];
-        let invoicesData = [];
+        var jobsData = [];
+        var inventoryData = [];
 
-        async function renderAll() {
-            try {
-                const [jobs, clients] = await Promise.all([getJobs(), getClients()]);
-                jobsData = jobs;
-                renderOverview(jobs, clients);
-                renderJobs(jobs);
-                renderClients(clients);
-            } catch (e) {
-                console.error('Render error:', e);
-                showToast('⚠️ Failed to load data');
-            }
+        function renderAll() {
+            Promise.all([getJobs(), getClients()])
+                .then(function(results) {
+                    var jobs = results[0];
+                    var clients = results[1];
+                    jobsData = jobs;
+                    renderOverview(jobs, clients);
+                    renderJobs(jobs);
+                    renderClients(clients);
+                })
+                .catch(function(e) {
+                    console.error('Render error:', e);
+                    showToast('⚠️ Failed to load data');
+                });
         }
 
         function renderOverview(jobs, clients) {
-            const filteredJobs = jobs.filter(j => j.service_type === currentServiceType);
+            var filteredJobs = jobs.filter(function(j) {
+                return j.service_type === currentServiceType;
+            });
 
-            const total = filteredJobs.length;
-            const completed = filteredJobs.filter(j => j.status === 'completed' || j.status === 'delivered').length;
-            const pending = filteredJobs.filter(j => j.status === 'pending' || j.status === 'in-progress' ||
-                j.status === 'collected' || j.status === 'washed' || j.status === 'dried' ||
-                j.status === 'folded').length;
-            const revenue = filteredJobs.filter(j => j.status === 'completed' || j.status === 'delivered')
-                .reduce((sum, j) => sum + (j.amount || 0), 0);
-            const laundryCount = jobs.filter(j => j.service_type === 'laundry').length;
+            var total = filteredJobs.length;
+            var completed = filteredJobs.filter(function(j) {
+                return j.status === 'completed' || j.status === 'delivered';
+            }).length;
+            var pending = filteredJobs.filter(function(j) {
+                return j.status === 'pending' || j.status === 'in-progress' ||
+                    j.status === 'collected' || j.status === 'washed' || j.status === 'dried' ||
+                    j.status === 'folded';
+            }).length;
+            var revenue = filteredJobs.filter(function(j) {
+                return j.status === 'completed' || j.status === 'delivered';
+            }).reduce(function(sum, j) {
+                return sum + (j.amount || 0);
+            }, 0);
+            var laundryCount = jobs.filter(function(j) {
+                return j.service_type === 'laundry';
+            }).length;
 
             document.getElementById('ovJobs').textContent = total;
             document.getElementById('ovRevenue').textContent = '₦' + revenue.toLocaleString();
             document.getElementById('ovPending').textContent = pending;
             document.getElementById('ovLaundry').textContent = laundryCount;
 
-            const recent = filteredJobs.slice(0, 5);
-            const container = document.getElementById('recentJobs');
+            var recent = filteredJobs.slice(0, 5);
+            var container = document.getElementById('recentJobs');
             if (recent.length === 0) {
-                container.innerHTML = `<p style="color:var(--slate);">No ${currentServiceType === 'laundry' ? 'laundry orders' : 'cleaning jobs'} yet</p>`;
+                container.innerHTML = '<p style="color:var(--slate);">No ' + (currentServiceType === 'laundry' ? 'laundry orders' : 'cleaning jobs') + ' yet</p>';
             } else {
-                container.innerHTML = recent.map(j =>
-                    `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);">
-                        <div>
-                            <strong>${j.client}</strong>
-                            <br>
-                            <span style="font-size:12px;color:var(--slate);">
-                                ${j.service_type === 'laundry' ? '🧺 ' : '🧹 '}
-                                ${j.service || 'N/A'}
-                                ${j.laundry_items ? ' · ' + (JSON.parse(j.laundry_items || '{}').items?.length || 0) + ' items' : ''}
-                            </span>
-                        </div>
-                        <div style="text-align:right;">
-                            <span style="font-weight:700;">₦${(j.amount||0).toLocaleString()}</span>
-                            <br>
-                            <span class="status-badge ${j.status}">${j.status}</span>
-                        </div>
-                    </div>`
-                ).join('');
+                container.innerHTML = recent.map(function(j) {
+                    var itemsHtml = '';
+                    if (j.laundry_items) {
+                        try {
+                            var parsed = JSON.parse(j.laundry_items || '{}');
+                            if (parsed.items && parsed.items.length > 0) {
+                                itemsHtml = ' · ' + parsed.items.length + ' items';
+                            }
+                        } catch (e) {}
+                    }
+                    return '<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);">' +
+                        '<div>' +
+                        '<strong>' + j.client + '</strong>' +
+                        '<br>' +
+                        '<span style="font-size:12px;color:var(--slate);">' +
+                        (j.service_type === 'laundry' ? '🧺 ' : '🧹 ') +
+                        (j.service || 'N/A') +
+                        itemsHtml +
+                        '</span>' +
+                        '</div>' +
+                        '<div style="text-align:right;">' +
+                        '<span style="font-weight:700;">₦' + (j.amount || 0).toLocaleString() + '</span>' +
+                        '<br>' +
+                        '<span class="status-badge ' + j.status + '">' + j.status + '</span>' +
+                        '</div>' +
+                        '</div>';
+                }).join('');
             }
         }
 
         function renderJobs(jobs) {
-            const filter = document.getElementById('jobFilter')?.value || 'all';
-            let filtered = jobs;
+            var filter = document.getElementById('jobFilter') ? document.getElementById('jobFilter').value : 'all';
+            var filtered = jobs.filter(function(j) {
+                return j.service_type === currentServiceType;
+            });
 
-            filtered = filtered.filter(j => j.service_type === currentServiceType);
+            if (filter !== 'all') {
+                filtered = filtered.filter(function(j) {
+                    return j.status === filter;
+                });
+            }
 
-            if (filter !== 'all') filtered = filtered.filter(j => j.status === filter);
-
-            const tbody = document.getElementById('jobsTable');
+            var tbody = document.getElementById('jobsTable');
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--slate);">
-                    No ${currentServiceType === 'laundry' ? 'laundry orders' : 'cleaning jobs'} found
-                </td></tr>`;
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--slate);">No ' + (currentServiceType === 'laundry' ? 'laundry orders' : 'cleaning jobs') + ' found</td></tr>';
                 return;
             }
 
-            tbody.innerHTML = filtered.map((j, i) => {
-                let itemsDisplay = '';
+            tbody.innerHTML = filtered.map(function(j, i) {
+                var itemsDisplay = '';
                 if (j.laundry_items) {
                     try {
-                        const items = JSON.parse(j.laundry_items);
+                        var items = JSON.parse(j.laundry_items);
                         if (items.items && items.items.length > 0) {
-                            itemsDisplay = items.items.map(item => `${item.qty}x ${item.name}`).join(', ');
+                            itemsDisplay = items.items.map(function(item) {
+                                return item.qty + 'x ' + item.name;
+                            }).join(', ');
                         }
-                    } catch (e) { /* ignore */ }
+                    } catch (e) {}
                 }
 
-                let actionButtons = '';
+                var actionButtons = '';
                 if (j.service_type === 'laundry') {
-                    if (j.status === 'collected') actionButtons = `<button class="btn btn-sm btn-success" onclick="updateJobStatus('${j.id}', 'washed')">Wash</button>`;
-                    else if (j.status === 'washed') actionButtons = `<button class="btn btn-sm btn-success" onclick="updateJobStatus('${j.id}', 'dried')">Dry</button>`;
-                    else if (j.status === 'dried') actionButtons = `<button class="btn btn-sm btn-success" onclick="updateJobStatus('${j.id}', 'folded')">Fold</button>`;
-                    else if (j.status === 'folded') actionButtons = `<button class="btn btn-sm btn-success" onclick="updateJobStatus('${j.id}', 'ready')">Ready</button>`;
-                    else if (j.status === 'ready') actionButtons = `<button class="btn btn-sm btn-success" onclick="updateJobStatus('${j.id}', 'delivered')">Deliver</button>`;
+                    if (j.status === 'collected') actionButtons = '<button class="btn btn-sm btn-success" onclick="updateJobStatus(\'' + j.id + '\', \'washed\')">Wash</button>';
+                    else if (j.status === 'washed') actionButtons = '<button class="btn btn-sm btn-success" onclick="updateJobStatus(\'' + j.id + '\', \'dried\')">Dry</button>';
+                    else if (j.status === 'dried') actionButtons = '<button class="btn btn-sm btn-success" onclick="updateJobStatus(\'' + j.id + '\', \'folded\')">Fold</button>';
+                    else if (j.status === 'folded') actionButtons = '<button class="btn btn-sm btn-success" onclick="updateJobStatus(\'' + j.id + '\', \'ready\')">Ready</button>';
+                    else if (j.status === 'ready') actionButtons = '<button class="btn btn-sm btn-success" onclick="updateJobStatus(\'' + j.id + '\', \'delivered\')">Deliver</button>';
                 } else {
-                    if (j.status === 'pending') actionButtons = `<button class="btn btn-sm btn-success" onclick="updateJobStatus('${j.id}', 'in-progress')">Start</button>`;
-                    else if (j.status === 'in-progress') actionButtons = `<button class="btn btn-sm btn-success" onclick="updateJobStatus('${j.id}', 'completed')">Complete</button>`;
+                    if (j.status === 'pending') actionButtons = '<button class="btn btn-sm btn-success" onclick="updateJobStatus(\'' + j.id + '\', \'in-progress\')">Start</button>';
+                    else if (j.status === 'in-progress') actionButtons = '<button class="btn btn-sm btn-success" onclick="updateJobStatus(\'' + j.id + '\', \'completed\')">Complete</button>';
                 }
 
-                const cancelButton = (j.status === 'pending' || j.status === 'collected' || j.status === 'in-progress' || j.status === 'washed' || j.status === 'dried' || j.status === 'folded') ?
-                    `<button class="btn btn-sm btn-danger" onclick="updateJobStatus('${j.id}', 'cancelled')">Cancel</button>` : '';
+                var cancelButton = (j.status === 'pending' || j.status === 'collected' || j.status === 'in-progress' || j.status === 'washed' || j.status === 'dried' || j.status === 'folded') ?
+                    '<button class="btn btn-sm btn-danger" onclick="updateJobStatus(\'' + j.id + '\', \'cancelled\')">Cancel</button>' : '';
 
-                return `
-                    <tr>
-                        <td>${i + 1}</td>
-                        <td><strong>${j.client}</strong><br><span style="font-size:11px;color:var(--slate);">${j.phone || ''}</span></td>
-                        <td>${j.service_type === 'laundry' ? '🧺 ' : '🧹 '}${j.service || 'N/A'}</td>
-                        <td style="font-size:12px;">${itemsDisplay || 'N/A'}</td>
-                        <td>${j.date || 'N/A'}</td>
-                        <td><strong>₦${(j.amount || 0).toLocaleString()}</strong></td>
-                        <td><span class="status-badge ${j.status}">${j.status}</span></td>
-                        <td>
-                            ${actionButtons}
-                            ${cancelButton}
-                            <button class="btn btn-sm btn-whatsapp" onclick="sendSingleWhatsApp('${j.client}', '${j.phone || ''}')">💬</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteJobItem('${j.id}')">🗑️</button>
-                        </td>
-                    </tr>
-                `;
+                return '<tr>' +
+                    '<td>' + (i + 1) + '</td>' +
+                    '<td><strong>' + j.client + '</strong><br><span style="font-size:11px;color:var(--slate);">' + (j.phone || '') + '</span></td>' +
+                    '<td>' + (j.service_type === 'laundry' ? '🧺 ' : '🧹 ') + (j.service || 'N/A') + '</td>' +
+                    '<td style="font-size:12px;">' + (itemsDisplay || 'N/A') + '</td>' +
+                    '<td>' + (j.date || 'N/A') + '</td>' +
+                    '<td><strong>₦' + (j.amount || 0).toLocaleString() + '</strong></td>' +
+                    '<td><span class="status-badge ' + j.status + '">' + j.status + '</span></td>' +
+                    '<td>' +
+                    actionButtons +
+                    cancelButton +
+                    '<button class="btn btn-sm btn-whatsapp" onclick="sendSingleWhatsApp(\'' + j.client + '\', \'' + (j.phone || '') + '\')">💬</button>' +
+                    '<button class="btn btn-sm btn-danger" onclick="deleteJobItem(\'' + j.id + '\')">🗑️</button>' +
+                    '</td>' +
+                    '</tr>';
             }).join('');
         }
 
         function renderClients(clients) {
-            const tbody = document.getElementById('clientsTable');
+            var tbody = document.getElementById('clientsTable');
             if (clients.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);">No clients yet</td></tr>';
                 return;
             }
-            tbody.innerHTML = clients.map((c, i) => {
-                const clientJobs = jobsData ? jobsData.filter(j => j.client === c.name) : [];
-                const totalSpent = clientJobs.filter(j => j.status === 'completed' || j.status === 'delivered')
-                    .reduce((sum, j) => sum + (j.amount || 0), 0);
-                return `
-                    <tr>
-                        <td>${i + 1}</td>
-                        <td><strong>${c.name}</strong></td>
-                        <td>${c.phone || 'N/A'}</td>
-                        <td>${c.location || 'N/A'}</td>
-                        <td>${clientJobs.length}</td>
-                        <td><strong>₦${totalSpent.toLocaleString()}</strong></td>
-                        <td>
-                            <button class="btn btn-sm btn-whatsapp" onclick="sendSingleWhatsApp('${c.name}', '${c.phone}')">💬</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteClientItem('${c.id}')">🗑️</button>
-                        </td>
-                    </tr>
-                `;
+            tbody.innerHTML = clients.map(function(c, i) {
+                var clientJobs = jobsData ? jobsData.filter(function(j) {
+                    return j.client === c.name;
+                }) : [];
+                var totalSpent = clientJobs.filter(function(j) {
+                    return j.status === 'completed' || j.status === 'delivered';
+                }).reduce(function(sum, j) {
+                    return sum + (j.amount || 0);
+                }, 0);
+                return '<tr>' +
+                    '<td>' + (i + 1) + '</td>' +
+                    '<td><strong>' + c.name + '</strong></td>' +
+                    '<td>' + (c.phone || 'N/A') + '</td>' +
+                    '<td>' + (c.location || 'N/A') + '</td>' +
+                    '<td>' + clientJobs.length + '</td>' +
+                    '<td><strong>₦' + totalSpent.toLocaleString() + '</strong></td>' +
+                    '<td>' +
+                    '<button class="btn btn-sm btn-whatsapp" onclick="sendSingleWhatsApp(\'' + c.name + '\', \'' + (c.phone || '') + '\')">💬</button>' +
+                    '<button class="btn btn-sm btn-danger" onclick="deleteClientItem(\'' + c.id + '\')">🗑️</button>' +
+                    '</td>' +
+                    '</tr>';
             }).join('');
         }
 
-        function async function renderStaff() {
-    try {
-        const res = await fetch(`${API_URL}/staff`, { headers: getHeaders() });
-        if (!res.ok) throw new Error('Failed to fetch staff');
-        const staff = await res.json();
-        
-        const tbody = document.getElementById('staffTable');
-        if (staff.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--slate);">No staff members yet</td></tr>';
-            return;
+        function renderStaff() {
+            getStaff()
+                .then(function(staff) {
+                    var tbody = document.getElementById('staffTable');
+                    if (!staff || staff.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--slate);">No staff members yet</td></tr>';
+                        return;
+                    }
+                    
+                    tbody.innerHTML = staff.map(function(s, i) {
+                        return '<tr>' +
+                            '<td>' + (i + 1) + '</td>' +
+                            '<td><strong>' + s.name + '</strong></td>' +
+                            '<td>' + (s.phone || 'N/A') + '</td>' +
+                            '<td>' + (s.role || 'Cleaner') + '</td>' +
+                            '<td>0</td>' +
+                            '<td>' +
+                            '<button class="btn btn-sm btn-whatsapp" onclick="sendSingleWhatsApp(\'' + s.name + '\', \'' + (s.phone || '') + '\')">💬</button>' +
+                            '<button class="btn btn-sm btn-danger" onclick="deleteStaffItem(\'' + s.id + '\')">🗑️</button>' +
+                            '</td>' +
+                            '</tr>';
+                    }).join('');
+                })
+                .catch(function(e) {
+                    console.error('Failed to render staff:', e);
+                    document.getElementById('staffTable').innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--slate);">Failed to load staff</td></tr>';
+                });
         }
-        
-        tbody.innerHTML = staff.map((s, i) => `
-            <tr>
-                <td>${i + 1}</td>
-                <td><strong>${s.name}</strong></td>
-                <td>${s.phone || 'N/A'}</td>
-                <td>${s.role || 'Cleaner'}</td>
-                <td>0</td>
-                <td>
-                    <button class="btn btn-sm btn-danger" onclick="deleteStaff('${s.id}')">🗑️</button>
-                </td>
-            </tr>
-        `).join('');
-    } catch (e) {
-        console.error('Failed to render staff:', e);
-        document.getElementById('staffTable').innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--slate);">Failed to load staff</td></tr>';
-    }
-}
 
-async function deleteStaff(id) {
-    if (!confirm('Delete this staff member?')) return;
-    try {
-        const res = await fetch(`${API_URL}/staff/${id}`, {
-            method: 'DELETE',
-            headers: getHeaders()
-        });
-        if (!res.ok) throw new Error('Failed to delete staff');
-        showToast('🗑️ Staff deleted');
-        renderStaff();
-    } catch (e) {
-        showToast('⚠️ Failed to delete staff');
-    }
-}
-
-        async function renderInvoices() {
-    try {
-        const res = await fetch(`${API_URL}/invoices`, { headers: getHeaders() });
-        if (!res.ok) throw new Error('Failed to fetch invoices');
-        const invoices = await res.json();
-        
-        const tbody = document.getElementById('invoicesTable');
-        if (!invoices || invoices.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);">No invoices yet</td></tr>';
-            return;
+        function renderInvoices() {
+            getInvoices()
+                .then(function(invoices) {
+                    var tbody = document.getElementById('invoicesTable');
+                    if (!invoices || invoices.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);">No invoices yet</td></tr>';
+                        return;
+                    }
+                    
+                    tbody.innerHTML = invoices.map(function(inv, i) {
+                        var date = inv.date ? new Date(inv.date).toLocaleDateString('en-NG') : 'N/A';
+                        var statusColors = {
+                            pending: 'background:#FEF3C7;color:#92400E;',
+                            paid: 'background:#D1FAE5;color:#065F46;',
+                            overdue: 'background:#FEE2E2;color:#991B1B;'
+                        };
+                        var statusColor = statusColors[inv.status] || statusColors.pending;
+                        
+                        return '<tr>' +
+                            '<td>' + (i + 1) + '</td>' +
+                            '<td><strong>' + (inv.invoice_number || 'N/A') + '</strong></td>' +
+                            '<td>' + (inv.client || 'N/A') + '</td>' +
+                            '<td><strong>₦' + (inv.amount || 0).toLocaleString() + '</strong></td>' +
+                            '<td><span style="padding:2px 10px;border-radius:100px;font-size:10px;font-weight:700;' + statusColor + '">' + (inv.status || 'pending') + '</span></td>' +
+                            '<td>' + date + '</td>' +
+                            '<td>' +
+                            '<button class="btn btn-sm btn-whatsapp" onclick="sendInvoiceWhatsApp(\'' + inv.id + '\')">💬</button>' +
+                            '<button class="btn btn-sm btn-danger" onclick="deleteInvoiceItem(\'' + inv.id + '\')">🗑️</button>' +
+                            '</td>' +
+                            '</tr>';
+                    }).join('');
+                })
+                .catch(function(e) {
+                    console.error('Failed to render invoices:', e);
+                    document.getElementById('invoicesTable').innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);">Failed to load invoices</td></tr>';
+                });
         }
-        
-        tbody.innerHTML = invoices.map((inv, i) => {
-            const date = inv.date ? new Date(inv.date).toLocaleDateString('en-NG') : 'N/A';
-            const statusColors = {
-                pending: 'background:#FEF3C7;color:#92400E;',
-                paid: 'background:#D1FAE5;color:#065F46;',
-                overdue: 'background:#FEE2E2;color:#991B1B;'
-            };
-            const statusColor = statusColors[inv.status] || statusColors.pending;
-            
-            return `
-                <tr>
-                    <td>${i + 1}</td>
-                    <td><strong>${inv.invoice_number || 'N/A'}</strong></td>
-                    <td>${inv.client || 'N/A'}</td>
-                    <td><strong>₦${(inv.amount || 0).toLocaleString()}</strong></td>
-                    <td><span style="padding:2px 10px;border-radius:100px;font-size:10px;font-weight:700;${statusColor}">${inv.status || 'pending'}</span></td>
-                    <td>${date}</td>
-                    <td>
-                        <button class="btn btn-sm btn-whatsapp" onclick="sendInvoiceWhatsApp('${inv.id}')">💬</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteInvoice('${inv.id}')">🗑️</button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-    } catch (e) {
-        console.error('Failed to render invoices:', e);
-        document.getElementById('invoicesTable').innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);">Failed to load invoices</td></tr>';
-    }
-}
-
-// ─── Delete Invoice ──────────────────────────────────────
-async function deleteInvoice(id) {
-    if (!confirm('Delete this invoice?')) return;
-    try {
-        const res = await fetch(`${API_URL}/invoices/${id}`, {
-            method: 'DELETE',
-            headers: getHeaders()
-        });
-        if (!res.ok) throw new Error('Failed to delete invoice');
-        showToast('🗑️ Invoice deleted');
-        renderInvoices();
-    } catch (e) {
-        showToast('⚠️ Failed to delete invoice');
-    }
-}
-
-// ─── Send Invoice via WhatsApp ──────────────────────────
-function sendInvoiceWhatsApp(id) {
-    // Find the invoice from the rendered data
-    // For now, just open WhatsApp
-    showToast('💬 Opening WhatsApp...', 'whatsapp');
-    window.open('https://wa.me/234', '_blank');
-}
 
         // ─── ──────────────────────────────────────────────────────
         // ─── ACTIONS ──────────────────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
-        async function updateJobStatus(id, status) {
-            try {
-                await updateJob(id, { status });
-                showToast(`✅ Job ${status}`, 'success');
-                renderAll();
-            } catch (e) {
-                showToast('⚠️ Failed to update job');
-            }
+        function updateJobStatus(id, status) {
+            updateJob(id, { status: status })
+                .then(function() {
+                    showToast('✅ Job ' + status, 'success');
+                    renderAll();
+                })
+                .catch(function() {
+                    showToast('⚠️ Failed to update job');
+                });
         }
 
-        async function deleteJobItem(id) {
+        function deleteJobItem(id) {
             if (!confirm('Delete this job?')) return;
-            try {
-                await deleteJob(id);
-                showToast('🗑️ Job deleted');
-                renderAll();
-            } catch (e) {
-                showToast('⚠️ Failed to delete job');
-            }
+            deleteJob(id)
+                .then(function() {
+                    showToast('🗑️ Job deleted');
+                    renderAll();
+                })
+                .catch(function() {
+                    showToast('⚠️ Failed to delete job');
+                });
         }
 
-        async function deleteClientItem(id) {
+        function deleteClientItem(id) {
             if (!confirm('Delete this client?')) return;
-            try {
-                await deleteClient(id);
-                showToast('🗑️ Client deleted');
-                renderAll();
-            } catch (e) {
-                showToast('⚠️ Failed to delete client');
-            }
+            deleteClient(id)
+                .then(function() {
+                    showToast('🗑️ Client deleted');
+                    renderAll();
+                })
+                .catch(function() {
+                    showToast('⚠️ Failed to delete client');
+                });
+        }
+
+        function deleteStaffItem(id) {
+            if (!confirm('Delete this staff member?')) return;
+            fetch(API_URL + '/staff/' + id, {
+                method: 'DELETE',
+                headers: getHeaders()
+            })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Failed to delete staff');
+                showToast('🗑️ Staff deleted');
+                renderStaff();
+            })
+            .catch(function() {
+                showToast('⚠️ Failed to delete staff');
+            });
+        }
+
+        function deleteInvoiceItem(id) {
+            if (!confirm('Delete this invoice?')) return;
+            fetch(API_URL + '/invoices/' + id, {
+                method: 'DELETE',
+                headers: getHeaders()
+            })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Failed to delete invoice');
+                showToast('🗑️ Invoice deleted');
+                renderInvoices();
+            })
+            .catch(function() {
+                showToast('⚠️ Failed to delete invoice');
+            });
+        }
+
+        function sendInvoiceWhatsApp(id) {
+            showToast('💬 Opening WhatsApp...', 'whatsapp');
+            window.open('https://wa.me/234', '_blank');
         }
 
         // ─── ──────────────────────────────────────────────────────
         // ─── APPLY FEATURE RESTRICTIONS ──────────────────────────
         // ─── ──────────────────────────────────────────────────────
         function applyFeatureRestrictions(plan) {
-            const isProfessionalOrHigher = plan === 'professional' || plan === 'enterprise';
-            const isEnterprise = plan === 'enterprise';
-            const isStarter = plan === 'starter';
+            var isProfessionalOrHigher = plan === 'professional' || plan === 'enterprise';
+            var isEnterprise = plan === 'enterprise';
+            var isStarter = plan === 'starter';
 
-            // Show plan badge
-            const badge = document.getElementById('planBadge');
+            var badge = document.getElementById('planBadge');
             if (badge) {
                 badge.textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
                 badge.className = 'badge-' + (isStarter ? 'trial' : 'active');
                 badge.style.display = 'inline-block';
             }
 
-            // Staff tab - Professional+
-            const staffTab = document.getElementById('tabStaff');
+            var staffTab = document.getElementById('tabStaff');
             if (staffTab) staffTab.style.display = isProfessionalOrHigher ? 'inline-block' : 'none';
 
-            // Invoices tab - Professional+
-            const invoicesTab = document.getElementById('tabInvoices');
+            var invoicesTab = document.getElementById('tabInvoices');
             if (invoicesTab) invoicesTab.style.display = isProfessionalOrHigher ? 'inline-block' : 'none';
 
-            // Inventory tab - Professional+
-            const inventoryTab = document.getElementById('tabInventory');
+            var inventoryTab = document.getElementById('tabInventory');
             if (inventoryTab) inventoryTab.style.display = isProfessionalOrHigher ? 'inline-block' : 'none';
 
-            // WhatsApp limit warning - Starter only
-            const whatsappWarning = document.getElementById('whatsappLimitWarning');
+            var whatsappWarning = document.getElementById('whatsappLimitWarning');
             if (whatsappWarning) {
                 whatsappWarning.style.display = isStarter ? 'block' : 'none';
                 if (isStarter) {
-                    const messageData = JSON.parse(localStorage.getItem('cleancrew_message_history') || '[]');
-                    const thisMonth = new Date().getMonth();
-                    const thisYear = new Date().getFullYear();
-                    const count = messageData.filter(m => {
-                        const d = new Date(m.sentAt);
+                    var messageData = JSON.parse(localStorage.getItem('cleancrew_message_history') || '[]');
+                    var thisMonth = new Date().getMonth();
+                    var thisYear = new Date().getFullYear();
+                    var count = messageData.filter(function(m) {
+                        var d = new Date(m.sentAt);
                         return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
                     }).length;
-                    document.getElementById('whatsappLimitCount').textContent = `${count}/100`;
+                    document.getElementById('whatsappLimitCount').textContent = count + '/100';
                 }
             }
         }
@@ -1659,13 +1712,13 @@ function sendInvoiceWhatsApp(id) {
         // ─── ──────────────────────────────────────────────────────
         // ─── MODAL ────────────────────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
-        let modalType = '';
-        let laundryItems = [];
+        var modalType = '';
+        var laundryItems = [];
 
         function openModal(type) {
             modalType = type;
             laundryItems = [];
-            const titles = {
+            var titles = {
                 job: '📋 New Job',
                 client: '👤 New Client',
                 inventory: '📦 New Inventory Item',
@@ -1675,150 +1728,80 @@ function sendInvoiceWhatsApp(id) {
             document.getElementById('modalTitle').textContent = titles[type] || 'New';
             document.getElementById('modalForm').reset();
 
-            const f = document.getElementById('modalFormFields');
+            var f = document.getElementById('modalFormFields');
 
             if (type === 'job') {
-                const isLaundry = currentServiceType === 'laundry';
-                f.innerHTML = `
-                    <div class="form-group"><label>Client Name</label><input type="text" id="jClient" required /></div>
-                    <div class="form-group"><label>Phone</label><input type="tel" id="jPhone" /></div>
-                    <div class="form-group"><label>Service Type</label>
-                        <select id="jServiceType" onchange="toggleJobFields()">
-                            <option value="cleaning" ${!isLaundry ? 'selected' : ''}>🧹 Cleaning</option>
-                            <option value="laundry" ${isLaundry ? 'selected' : ''}>🧺 Laundry</option>
-                        </select>
-                    </div>
-                    <div class="form-group"><label>Service</label>
-                        <select id="jService">
-                            ${isLaundry ? `
-                                <option>Laundry Pickup</option>
-                                <option>Dry Cleaning</option>
-                                <option>Ironing Only</option>
-                                <option>Bulk Laundry</option>
-                            ` : `
-                                <option>Home Cleaning</option>
-                                <option>Office Cleaning</option>
-                                <option>Deep Cleaning</option>
-                                <option>Post-Construction</option>
-                                <option>Move In/Out</option>
-                            `}
-                        </select>
-                    </div>
-                    <div class="form-group"><label>Amount (₦)</label><input type="number" id="jAmount" required /></div>
-                    <div class="form-group"><label>Date</label><input type="date" id="jDate" required /></div>
-                    <div class="form-group"><label>Status</label>
-                        <select id="jStatus">
-                            ${isLaundry ? `
-                                <option value="collected">Collected</option>
-                                <option value="washed">Washed</option>
-                                <option value="dried">Dried</option>
-                                <option value="folded">Folded</option>
-                                <option value="ready">Ready</option>
-                                <option value="delivered">Delivered</option>
-                            ` : `
-                                <option value="pending">Pending</option>
-                                <option value="in-progress">In Progress</option>
-                                <option value="completed">Completed</option>
-                            `}
-                        </select>
-                    </div>
-                    <div class="form-group" id="laundryItemsGroup" ${!isLaundry ? 'style="display:none;"' : ''}>
-                        <label>🧺 Laundry Items</label>
-                        <div id="laundryItemsContainer">
-                            <div class="laundry-items" id="laundryItemsList"></div>
-                            <div style="display:flex; gap:8px; margin-top:8px;">
-                                <input type="text" id="itemName" placeholder="Item name (e.g. Shirt)" style="flex:1; padding:8px 12px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:13px;">
-                                <input type="number" id="itemQty" placeholder="Qty" style="width:60px; padding:8px 12px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:13px;">
-                                <button type="button" class="btn btn-sm btn-primary" onclick="addLaundryItem()">Add</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group full-width"><label>Notes</label><textarea id="jNotes"></textarea></div>
-                `;
+                var isLaundry = currentServiceType === 'laundry';
+                f.innerHTML = '<div class="form-group"><label>Client Name</label><input type="text" id="jClient" required /></div>' +
+                    '<div class="form-group"><label>Phone</label><input type="tel" id="jPhone" /></div>' +
+                    '<div class="form-group"><label>Service Type</label><select id="jServiceType" onchange="toggleJobFields()"><option value="cleaning"' + (!isLaundry ? ' selected' : '') + '>🧹 Cleaning</option><option value="laundry"' + (isLaundry ? ' selected' : '') + '>🧺 Laundry</option></select></div>' +
+                    '<div class="form-group"><label>Service</label><select id="jService">' +
+                    (isLaundry ? '<option>Laundry Pickup</option><option>Dry Cleaning</option><option>Ironing Only</option><option>Bulk Laundry</option>' :
+                    '<option>Home Cleaning</option><option>Office Cleaning</option><option>Deep Cleaning</option><option>Post-Construction</option><option>Move In/Out</option>') +
+                    '</select></div>' +
+                    '<div class="form-group"><label>Amount (₦)</label><input type="number" id="jAmount" required /></div>' +
+                    '<div class="form-group"><label>Date</label><input type="date" id="jDate" required /></div>' +
+                    '<div class="form-group"><label>Status</label><select id="jStatus">' +
+                    (isLaundry ? '<option value="collected">Collected</option><option value="washed">Washed</option><option value="dried">Dried</option><option value="folded">Folded</option><option value="ready">Ready</option><option value="delivered">Delivered</option>' :
+                    '<option value="pending">Pending</option><option value="in-progress">In Progress</option><option value="completed">Completed</option>') +
+                    '</select></div>' +
+                    '<div class="form-group" id="laundryItemsGroup"' + (!isLaundry ? ' style="display:none;"' : '') + '>' +
+                    '<label>🧺 Laundry Items</label>' +
+                    '<div id="laundryItemsContainer">' +
+                    '<div class="laundry-items" id="laundryItemsList"></div>' +
+                    '<div style="display:flex; gap:8px; margin-top:8px;">' +
+                    '<input type="text" id="itemName" placeholder="Item name (e.g. Shirt)" style="flex:1; padding:8px 12px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:13px;">' +
+                    '<input type="number" id="itemQty" placeholder="Qty" style="width:60px; padding:8px 12px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:13px;">' +
+                    '<button type="button" class="btn btn-sm btn-primary" onclick="addLaundryItem()">Add</button>' +
+                    '</div></div></div>' +
+                    '<div class="form-group full-width"><label>Notes</label><textarea id="jNotes"></textarea></div>';
                 renderLaundryItems();
             } else if (type === 'client') {
-                f.innerHTML = `
-                    <div class="form-group"><label>Name *</label><input type="text" id="cName" required /></div>
-                    <div class="form-group"><label>Phone</label><input type="tel" id="cPhone" /></div>
-                    <div class="form-group"><label>Email</label><input type="email" id="cEmail" /></div>
-                    <div class="form-group"><label>Location</label><input type="text" id="cLocation" /></div>
-                    <div class="form-group full-width"><label>Notes</label><textarea id="cNotes"></textarea></div>
-                `;
+                f.innerHTML = '<div class="form-group"><label>Name *</label><input type="text" id="cName" required /></div>' +
+                    '<div class="form-group"><label>Phone</label><input type="tel" id="cPhone" /></div>' +
+                    '<div class="form-group"><label>Email</label><input type="email" id="cEmail" /></div>' +
+                    '<div class="form-group"><label>Location</label><input type="text" id="cLocation" /></div>' +
+                    '<div class="form-group full-width"><label>Notes</label><textarea id="cNotes"></textarea></div>';
             } else if (type === 'inventory') {
-                f.innerHTML = `
-                    <div class="form-group"><label>Item Name *</label><input type="text" id="invName" required /></div>
-                    <div class="form-group"><label>Category</label>
-                        <select id="invCategory">
-                            <option value="cleaning" ${currentServiceType === 'cleaning' ? 'selected' : ''}>🧹 Cleaning</option>
-                            <option value="laundry" ${currentServiceType === 'laundry' ? 'selected' : ''}>🧺 Laundry</option>
-                        </select>
-                    </div>
-                    <div class="form-group"><label>Quantity</label><input type="number" id="invQty" required /></div>
-                    <div class="form-group"><label>Min Stock Level</label><input type="number" id="invMin" value="3" /></div>
-                `;
+                f.innerHTML = '<div class="form-group"><label>Item Name *</label><input type="text" id="invName" required /></div>' +
+                    '<div class="form-group"><label>Category</label><select id="invCategory"><option value="cleaning"' + (currentServiceType === 'cleaning' ? ' selected' : '') + '>🧹 Cleaning</option><option value="laundry"' + (currentServiceType === 'laundry' ? ' selected' : '') + '>🧺 Laundry</option></select></div>' +
+                    '<div class="form-group"><label>Quantity</label><input type="number" id="invQty" required /></div>' +
+                    '<div class="form-group"><label>Min Stock Level</label><input type="number" id="invMin" value="3" /></div>';
             } else if (type === 'staff') {
-                f.innerHTML = `
-                    <div class="form-group"><label>Full Name *</label><input type="text" id="sName" required /></div>
-                    <div class="form-group"><label>Phone</label><input type="tel" id="sPhone" /></div>
-                    <div class="form-group"><label>Email</label><input type="email" id="sEmail" /></div>
-                    <div class="form-group"><label>Role</label>
-                        <select id="sRole">
-                            <option>Cleaner</option>
-                            <option>Supervisor</option>
-                            <option>Manager</option>
-                            <option>Admin</option>
-                        </select>
-                    </div>
-                `;
+                f.innerHTML = '<div class="form-group"><label>Full Name *</label><input type="text" id="sName" required /></div>' +
+                    '<div class="form-group"><label>Phone</label><input type="tel" id="sPhone" /></div>' +
+                    '<div class="form-group"><label>Email</label><input type="email" id="sEmail" /></div>' +
+                    '<div class="form-group"><label>Role</label><select id="sRole"><option>Cleaner</option><option>Supervisor</option><option>Manager</option><option>Admin</option></select></div>';
             } else if (type === 'invoice') {
-                f.innerHTML = `
-                    <div class="form-group"><label>Client *</label><input type="text" id="invClient" required /></div>
-                    <div class="form-group"><label>Amount (₦) *</label><input type="number" id="invAmount" required /></div>
-                    <div class="form-group"><label>Date</label><input type="date" id="invDate" required /></div>
-                    <div class="form-group"><label>Status</label>
-                        <select id="invStatus">
-                            <option value="pending">Pending</option>
-                            <option value="paid">Paid</option>
-                            <option value="overdue">Overdue</option>
-                        </select>
-                    </div>
-                    <div class="form-group full-width"><label>Description</label><textarea id="invDescription" placeholder="What is this invoice for?"></textarea></div>
-                `;
+                f.innerHTML = '<div class="form-group"><label>Client *</label><input type="text" id="invClient" required /></div>' +
+                    '<div class="form-group"><label>Amount (₦) *</label><input type="number" id="invAmount" required /></div>' +
+                    '<div class="form-group"><label>Date</label><input type="date" id="invDate" required /></div>' +
+                    '<div class="form-group"><label>Status</label><select id="invStatus"><option value="pending">Pending</option><option value="paid">Paid</option><option value="overdue">Overdue</option></select></div>' +
+                    '<div class="form-group full-width"><label>Description</label><textarea id="invDescription" placeholder="What is this invoice for?"></textarea></div>';
             }
 
             document.getElementById('modalOverlay').classList.add('active');
         }
 
         function toggleJobFields() {
-            const isLaundry = document.getElementById('jServiceType').value === 'laundry';
+            var isLaundry = document.getElementById('jServiceType').value === 'laundry';
             document.getElementById('laundryItemsGroup').style.display = isLaundry ? 'block' : 'none';
-            const statusSelect = document.getElementById('jStatus');
+            var statusSelect = document.getElementById('jStatus');
             if (isLaundry) {
-                statusSelect.innerHTML = `
-                    <option value="collected">Collected</option>
-                    <option value="washed">Washed</option>
-                    <option value="dried">Dried</option>
-                    <option value="folded">Folded</option>
-                    <option value="ready">Ready</option>
-                    <option value="delivered">Delivered</option>
-                `;
+                statusSelect.innerHTML = '<option value="collected">Collected</option><option value="washed">Washed</option><option value="dried">Dried</option><option value="folded">Folded</option><option value="ready">Ready</option><option value="delivered">Delivered</option>';
             } else {
-                statusSelect.innerHTML = `
-                    <option value="pending">Pending</option>
-                    <option value="in-progress">In Progress</option>
-                    <option value="completed">Completed</option>
-                `;
+                statusSelect.innerHTML = '<option value="pending">Pending</option><option value="in-progress">In Progress</option><option value="completed">Completed</option>';
             }
         }
 
         function addLaundryItem() {
-            const name = document.getElementById('itemName').value.trim();
-            const qty = parseInt(document.getElementById('itemQty').value);
+            var name = document.getElementById('itemName').value.trim();
+            var qty = parseInt(document.getElementById('itemQty').value);
             if (!name || !qty || qty < 1) {
                 showToast('⚠️ Enter item name and quantity', '');
                 return;
             }
-            laundryItems.push({ name, qty });
+            laundryItems.push({ name: name, qty: qty });
             document.getElementById('itemName').value = '';
             document.getElementById('itemQty').value = '';
             renderLaundryItems();
@@ -1830,17 +1813,14 @@ function sendInvoiceWhatsApp(id) {
         }
 
         function renderLaundryItems() {
-            const container = document.getElementById('laundryItemsList');
+            var container = document.getElementById('laundryItemsList');
             if (laundryItems.length === 0) {
                 container.innerHTML = '<p style="color:var(--slate); font-size:13px;">No items added</p>';
                 return;
             }
-            container.innerHTML = laundryItems.map((item, i) =>
-                `<div class="laundry-item">
-                    <span>${item.qty}x ${item.name}</span>
-                    <button class="remove-item" onclick="removeLaundryItem(${i})">✕</button>
-                </div>`
-            ).join('');
+            container.innerHTML = laundryItems.map(function(item, i) {
+                return '<div class="laundry-item"><span>' + item.qty + 'x ' + item.name + '</span><button class="remove-item" onclick="removeLaundryItem(' + i + ')">✕</button></div>';
+            }).join('');
         }
 
         function closeModal() {
@@ -1848,29 +1828,29 @@ function sendInvoiceWhatsApp(id) {
             laundryItems = [];
         }
 
-        async function saveModalForm(e) {
+        function saveModalForm(e) {
             e.preventDefault();
 
             if (modalType === 'job') {
-                const client = document.getElementById('jClient').value.trim();
-                const phone = document.getElementById('jPhone').value.trim();
-                const serviceType = document.getElementById('jServiceType').value;
-                const service = document.getElementById('jService').value;
-                const amount = parseFloat(document.getElementById('jAmount').value);
-                const date = document.getElementById('jDate').value;
-                const status = document.getElementById('jStatus').value;
-                const notes = document.getElementById('jNotes').value.trim();
+                var client = document.getElementById('jClient').value.trim();
+                var phone = document.getElementById('jPhone').value.trim();
+                var serviceType = document.getElementById('jServiceType').value;
+                var service = document.getElementById('jService').value;
+                var amount = parseFloat(document.getElementById('jAmount').value);
+                var date = document.getElementById('jDate').value;
+                var status = document.getElementById('jStatus').value;
+                var notes = document.getElementById('jNotes').value.trim();
 
-                if (!client || !amount || !date) { showToast('⚠️ Fill all fields'); return; }
+                if (!client || !amount || !date) { showToast('⚠️ Fill all fields', ''); return; }
 
-                const jobData = {
-                    client,
+                var jobData = {
+                    client: client,
                     phone: phone || 'N/A',
                     service_type: serviceType,
-                    service,
-                    amount,
-                    date,
-                    status,
+                    service: service,
+                    amount: amount,
+                    date: date,
+                    status: status,
                     notes: notes || 'None'
                 };
 
@@ -1878,182 +1858,182 @@ function sendInvoiceWhatsApp(id) {
                     jobData.laundry_items = JSON.stringify({ items: laundryItems });
                 }
 
-                try {
-                    await createJob(jobData);
-                    showToast('✅ Job added!', 'success');
-                    closeModal();
-                    renderAll();
-                } catch (e) {
-                    console.error('Error creating job:', e);
-                    showToast('⚠️ Failed to add job: ' + (e.message || 'Unknown error'));
-                }
+                createJob(jobData)
+                    .then(function() {
+                        showToast('✅ Job added!', 'success');
+                        closeModal();
+                        renderAll();
+                    })
+                    .catch(function(e) {
+                        console.error('Error creating job:', e);
+                        showToast('⚠️ Failed to add job: ' + (e.message || 'Unknown error'), '');
+                    });
 
             } else if (modalType === 'client') {
-                const name = document.getElementById('cName').value.trim();
-                const phone = document.getElementById('cPhone').value.trim();
-                const email = document.getElementById('cEmail').value.trim();
-                const location = document.getElementById('cLocation').value.trim();
-                const notes = document.getElementById('cNotes').value.trim();
+                var name = document.getElementById('cName').value.trim();
+                var phone = document.getElementById('cPhone').value.trim();
+                var email = document.getElementById('cEmail').value.trim();
+                var location = document.getElementById('cLocation').value.trim();
+                var notes = document.getElementById('cNotes').value.trim();
 
-                if (!name) { showToast('⚠️ Enter name'); return; }
+                if (!name) { showToast('⚠️ Enter name', ''); return; }
 
-                try {
-                    await createClient({ name, phone: phone || 'N/A', email: email || '', location: location || '',
-                        notes: notes || '' });
-                    showToast('✅ Client added!', 'success');
-                    closeModal();
-                    renderAll();
-                } catch (e) {
-                    showToast('⚠️ Failed to add client');
-                }
+                createClient({ name: name, phone: phone || 'N/A', email: email || '', location: location || '', notes: notes || '' })
+                    .then(function() {
+                        showToast('✅ Client added!', 'success');
+                        closeModal();
+                        renderAll();
+                    })
+                    .catch(function() {
+                        showToast('⚠️ Failed to add client', '');
+                    });
 
             } else if (modalType === 'inventory') {
-                const name = document.getElementById('invName').value.trim();
-                const category = document.getElementById('invCategory').value;
-                const quantity = parseInt(document.getElementById('invQty').value);
-                const minStock = parseInt(document.getElementById('invMin').value);
+                var name = document.getElementById('invName').value.trim();
+                var category = document.getElementById('invCategory').value;
+                var quantity = parseInt(document.getElementById('invQty').value);
+                var minStock = parseInt(document.getElementById('invMin').value);
 
-                if (!name || !quantity) { showToast('⚠️ Fill all fields'); return; }
+                if (!name || !quantity) { showToast('⚠️ Fill all fields', ''); return; }
 
-                try {
-                    await createInventoryItem({ 
-                        name, 
-                        category, 
-                        quantity, 
-                        min_stock: minStock || 3 
+                createInventoryItem({ name: name, category: category, quantity: quantity, min_stock: minStock || 3 })
+                    .then(function() {
+                        showToast('✅ Inventory item added!', 'success');
+                        closeModal();
+                        renderInventory();
+                    })
+                    .catch(function() {
+                        showToast('⚠️ Failed to add inventory item', '');
                     });
-                    showToast('✅ Inventory item added!', 'success');
-                    closeModal();
-                    renderInventory();
-                } catch (e) {
-                    showToast('⚠️ Failed to add inventory item');
-                }
 
             } else if (modalType === 'staff') {
-                const name = document.getElementById('sName').value.trim();
-                const phone = document.getElementById('sPhone').value.trim();
-                const email = document.getElementById('sEmail').value.trim();
-                const role = document.getElementById('sRole').value;
+                var name = document.getElementById('sName').value.trim();
+                var phone = document.getElementById('sPhone').value.trim();
+                var email = document.getElementById('sEmail').value.trim();
+                var role = document.getElementById('sRole').value;
 
-                if (!name) { showToast('⚠️ Enter name'); return; }
+                if (!name) { showToast('⚠️ Enter name', ''); return; }
 
-                try {
-                    await createStaff({ name, phone: phone || 'N/A', email: email || '', role });
-                    showToast('✅ Staff added!', 'success');
-                    closeModal();
-                    renderStaff();
-                } catch (e) {
-                    showToast('⚠️ Failed to add staff');
-                }
+                createStaff({ name: name, phone: phone || 'N/A', email: email || '', role: role })
+                    .then(function() {
+                        showToast('✅ Staff added!', 'success');
+                        closeModal();
+                        renderStaff();
+                    })
+                    .catch(function() {
+                        showToast('⚠️ Failed to add staff', '');
+                    });
 
             } else if (modalType === 'invoice') {
-                const client = document.getElementById('invClient').value.trim();
-                const amount = parseFloat(document.getElementById('invAmount').value);
-                const date = document.getElementById('invDate').value;
-                const status = document.getElementById('invStatus').value;
-                const description = document.getElementById('invDescription').value.trim();
+                var client = document.getElementById('invClient').value.trim();
+                var amount = parseFloat(document.getElementById('invAmount').value);
+                var date = document.getElementById('invDate').value;
+                var status = document.getElementById('invStatus').value;
+                var description = document.getElementById('invDescription').value.trim();
 
-                if (!client || !amount || !date) { showToast('⚠️ Fill all fields'); return; }
+                if (!client || !amount || !date) { showToast('⚠️ Fill all fields', ''); return; }
 
-                try {
-                    await createInvoice({ client, amount, date, status, description: description || 'Cleaning service' });
-                    showToast('✅ Invoice created!', 'success');
-                    closeModal();
-                    renderInvoices();
-                } catch (e) {
-                    showToast('⚠️ Failed to create invoice');
-                }
+                createInvoice({ client: client, amount: amount, date: date, status: status, description: description || 'Cleaning service' })
+                    .then(function() {
+                        showToast('✅ Invoice created!', 'success');
+                        closeModal();
+                        renderInvoices();
+                    })
+                    .catch(function(e) {
+                        console.error('Error creating invoice:', e);
+                        showToast('⚠️ Failed to create invoice', '');
+                    });
             }
         }
 
         // ─── ──────────────────────────────────────────────────────
         // ─── INVENTORY ────────────────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
-        async function renderInventory() {
-            try {
-                const items = await getInventory();
-                inventoryData = items;
+        function renderInventory() {
+            getInventory()
+                .then(function(items) {
+                    inventoryData = items;
 
-                const filtered = items.filter(item => {
-                    const itemCategory = item.category || 'cleaning';
-                    return itemCategory === currentServiceType;
+                    var filtered = items.filter(function(item) {
+                        var itemCategory = item.category || 'cleaning';
+                        return itemCategory === currentServiceType;
+                    });
+
+                    var container = document.getElementById('inventoryList');
+                    if (filtered.length === 0) {
+                        container.innerHTML = '<p style="color:var(--slate);">No ' + currentServiceType + ' inventory items yet. Add your first item below.</p>';
+                        return;
+                    }
+
+                    container.innerHTML = filtered.map(function(item) {
+                        var lowStockHtml = '';
+                        if (item.quantity <= (item.min_stock || 3)) {
+                            lowStockHtml = '<span style="font-size:11px;color:var(--red);margin-left:8px;">⚠️ Low Stock</span>';
+                        }
+                        return '<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border-bottom:1px solid var(--border);">' +
+                            '<div>' +
+                            '<strong>' + item.name + '</strong>' +
+                            '<span class="inv-category-badge ' + (item.category || 'cleaning') + '">' + (item.category === 'laundry' ? '🧺 Laundry' : '🧹 Cleaning') + '</span>' +
+                            '<span style="font-size:11px;color:var(--slate);margin-left:8px;">Min: ' + (item.min_stock || 3) + '</span>' +
+                            lowStockHtml +
+                            '</div>' +
+                            '<div style="display:flex; gap:8px; align-items:center;">' +
+                            '<span style="font-weight:700;font-size:16px;">' + item.quantity + '</span>' +
+                            '<button class="btn btn-sm btn-primary" onclick="adjustInventory(\'' + item.id + '\', 1)">+1</button>' +
+                            '<button class="btn btn-sm btn-outline" onclick="adjustInventory(\'' + item.id + '\', -1)">-1</button>' +
+                            '<button class="btn btn-sm btn-danger" onclick="deleteInventory(\'' + item.id + '\')">🗑️</button>' +
+                            '</div>' +
+                            '</div>';
+                    }).join('');
+                })
+                .catch(function(e) {
+                    console.error('Failed to render inventory:', e);
+                    document.getElementById('inventoryList').innerHTML = '<p style="color:var(--slate);">Failed to load inventory</p>';
                 });
-
-                const container = document.getElementById('inventoryList');
-                if (filtered.length === 0) {
-                    container.innerHTML = `<p style="color:var(--slate);">No ${currentServiceType} inventory items yet. Add your first item below.</p>`;
-                    return;
-                }
-
-                container.innerHTML = filtered.map((item, i) =>
-                    `<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border-bottom:1px solid var(--border);">
-                        <div>
-                            <strong>${item.name}</strong>
-                            <span class="inv-category-badge ${item.category || 'cleaning'}">
-                                ${item.category === 'laundry' ? '🧺 Laundry' : '🧹 Cleaning'}
-                            </span>
-                            <span style="font-size:11px;color:var(--slate);margin-left:8px;">
-                                Min: ${item.min_stock || 3}
-                            </span>
-                            ${item.quantity <= (item.min_stock || 3) ? 
-                                `<span style="font-size:11px;color:var(--red);margin-left:8px;">⚠️ Low Stock</span>` : ''}
-                        </div>
-                        <div style="display:flex; gap:8px; align-items:center;">
-                            <span style="font-weight:700;font-size:16px;">${item.quantity}</span>
-                            <button class="btn btn-sm btn-primary" onclick="adjustInventory('${item.id}', 1)">+1</button>
-                            <button class="btn btn-sm btn-outline" onclick="adjustInventory('${item.id}', -1)">-1</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteInventory('${item.id}')">🗑️</button>
-                        </div>
-                    </div>`
-                ).join('');
-            } catch (e) {
-                console.error('Failed to render inventory:', e);
-                document.getElementById('inventoryList').innerHTML = '<p style="color:var(--slate);">Failed to load inventory</p>';
-            }
         }
 
-        async function adjustInventory(id, delta) {
-            const item = inventoryData.find(i => i.id === id);
+        function adjustInventory(id, delta) {
+            var item = inventoryData.find(function(i) { return i.id === id; });
             if (!item) return;
-            const newQty = Math.max(0, item.quantity + delta);
-            try {
-                await updateInventoryItem(id, { quantity: newQty });
-                renderInventory();
-            } catch (e) {
-                showToast('⚠️ Failed to update inventory');
-            }
+            var newQty = Math.max(0, item.quantity + delta);
+            updateInventoryItem(id, { quantity: newQty })
+                .then(function() {
+                    renderInventory();
+                })
+                .catch(function() {
+                    showToast('⚠️ Failed to update inventory', '');
+                });
         }
 
-        async function deleteInventory(id) {
+        function deleteInventory(id) {
             if (!confirm('Delete this item?')) return;
-            try {
-                await deleteInventoryItem(id);
-                renderInventory();
-                showToast('🗑️ Item deleted');
-            } catch (e) {
-                showToast('⚠️ Failed to delete item');
-            }
+            deleteInventoryItem(id)
+                .then(function() {
+                    renderInventory();
+                    showToast('🗑️ Item deleted');
+                })
+                .catch(function() {
+                    showToast('⚠️ Failed to delete item', '');
+                });
         }
 
         // ─── ──────────────────────────────────────────────────────
         // ─── WHATSAPP MESSAGING ──────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
-        const TEMPLATES = {
+        var TEMPLATES = {
             newmonth: 'Happy New Month! 🎉\n\nWe hope this new month brings you joy, success, and a spotless home.\n\nThank you for choosing CleanCrew! 🧹',
             festival: '🎄 Happy Holidays! 🎄\n\nFrom our family to yours, we wish you a wonderful celebration.\n\nThank you for being a valued client. ✨',
             birthday: '🎂 Happy Birthday! 🎉\n\nWishing you a day filled with joy and a year full of blessings.\n\nFrom the CleanCrew team 🧹',
             promo: '✨ Special Offer Just For You! ✨\n\nBook a deep cleaning this month and get 10% off!\n\nMention this message when you book.\n\nValid for new bookings only. 🧹'
         };
 
-        let messageData = [];
+        var messageData = [];
 
-        function loadClientsForMessages() {
-            // handled by renderClients
-        }
+        function loadClientsForMessages() {}
 
         function setTemplate(type) {
-            const body = document.getElementById('msgBody');
-            const typeSelect = document.getElementById('messageType');
+            var body = document.getElementById('msgBody');
+            var typeSelect = document.getElementById('messageType');
             if (body && TEMPLATES[type]) {
                 body.value = TEMPLATES[type];
                 typeSelect.value = type;
@@ -2067,17 +2047,17 @@ function sendInvoiceWhatsApp(id) {
                 showToast('⚠️ No phone number available for this contact', '');
                 return;
             }
-            const message = `🧹 Hello ${name}! 👋\n\nThis is a reminder about your upcoming service.\n\nThank you for choosing CleanCrew! 🧹`;
-            const url = `https://wa.me/234${phone.replace(/^0+/, '')}?text=${encodeURIComponent(message)}`;
+            var message = '🧹 Hello ' + name + '! 👋\n\nThis is a reminder about your upcoming service.\n\nThank you for choosing CleanCrew! 🧹';
+            var url = 'https://wa.me/234' + phone.replace(/^0+/, '') + '?text=' + encodeURIComponent(message);
             window.open(url, '_blank');
             showToast('💬 Opening WhatsApp...', 'whatsapp');
         }
 
-        async function sendBulkWhatsApp() {
-            const recipients = document.getElementById('msgRecipients');
-            const selected = Array.from(recipients.selectedOptions).map(opt => opt.value);
-            const body = document.getElementById('msgBody').value.trim();
-            const type = document.getElementById('messageType').value;
+        function sendBulkWhatsApp() {
+            var recipients = document.getElementById('msgRecipients');
+            var selected = Array.from(recipients.selectedOptions).map(function(opt) { return opt.value; });
+            var body = document.getElementById('msgBody').value.trim();
+            var type = document.getElementById('messageType').value;
 
             if (!body) { showToast('⚠️ Please enter a message', ''); return; }
             if (selected.length === 0 || (selected.length === 1 && selected[0] === '')) {
@@ -2085,75 +2065,77 @@ function sendInvoiceWhatsApp(id) {
                 return;
             }
 
-            let recipientNames = [];
-            if (selected.includes('all')) {
-                try {
-                    const clients = await getClients();
-                    recipientNames = clients.map(c => c.name);
-                } catch (e) {
-                    showToast('⚠️ Failed to load clients', '');
-                    return;
-                }
+            var recipientNames = [];
+            if (selected.indexOf('all') !== -1) {
+                getClients()
+                    .then(function(clients) {
+                        recipientNames = clients.map(function(c) { return c.name; });
+                        processBulkSend(recipientNames, body, type);
+                    })
+                    .catch(function() {
+                        showToast('⚠️ Failed to load clients', '');
+                    });
             } else {
                 recipientNames = selected;
-            }
-
-            if (recipientNames.length === 0) { showToast('⚠️ No clients found to message', ''); return; }
-
-            let phones = [];
-            try {
-                const clients = await getClients();
-                phones = recipientNames.map(name => {
-                    const client = clients.find(c => c.name === name);
-                    return client ? client.phone : null;
-                }).filter(p => p && p !== 'N/A' && p !== '');
-            } catch (e) {
-                showToast('⚠️ Failed to get client phone numbers', '');
-                return;
-            }
-
-            if (phones.length === 0) { showToast('⚠️ No phone numbers found for selected clients', ''); return; }
-
-            // Check Starter plan limit
-            if (currentUserPlan === 'starter') {
-                const messageData = JSON.parse(localStorage.getItem('cleancrew_message_history') || '[]');
-                const thisMonth = new Date().getMonth();
-                const thisYear = new Date().getFullYear();
-                const count = messageData.filter(m => {
-                    const d = new Date(m.sentAt);
-                    return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
-                }).length;
-                if (count + phones.length > 100) {
-                    showToast(`⚠️ You've reached your monthly limit of 100 messages. Upgrade to Professional for unlimited messaging.`, '');
-                    return;
-                }
-            }
-
-            const message = {
-                id: Date.now(),
-                type: type || 'custom',
-                recipients: recipientNames,
-                body: body,
-                sentAt: new Date().toISOString(),
-                status: 'sent'
-            };
-
-            messageData = JSON.parse(localStorage.getItem('cleancrew_message_history') || '[]');
-            messageData.unshift(message);
-            localStorage.setItem('cleancrew_message_history', JSON.stringify(messageData));
-
-            renderMessages();
-            showToast(`💬 Sending to ${recipientNames.length} client(s)`, 'whatsapp');
-
-            if (phones.length > 0) {
-                const url = `https://wa.me/234${phones[0].replace(/^0+/, '')}?text=${encodeURIComponent(body)}`;
-                window.open(url, '_blank');
-                showToast(`💬 Opening WhatsApp for ${phones.length} client(s)`, 'whatsapp');
+                processBulkSend(recipientNames, body, type);
             }
         }
 
+        function processBulkSend(recipientNames, body, type) {
+            if (recipientNames.length === 0) { showToast('⚠️ No clients found to message', ''); return; }
+
+            getClients()
+                .then(function(clients) {
+                    var phones = recipientNames.map(function(name) {
+                        var client = clients.find(function(c) { return c.name === name; });
+                        return client ? client.phone : null;
+                    }).filter(function(p) { return p && p !== 'N/A' && p !== ''; });
+
+                    if (phones.length === 0) { showToast('⚠️ No phone numbers found for selected clients', ''); return; }
+
+                    if (currentUserPlan === 'starter') {
+                        var messageData = JSON.parse(localStorage.getItem('cleancrew_message_history') || '[]');
+                        var thisMonth = new Date().getMonth();
+                        var thisYear = new Date().getFullYear();
+                        var count = messageData.filter(function(m) {
+                            var d = new Date(m.sentAt);
+                            return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+                        }).length;
+                        if (count + phones.length > 100) {
+                            showToast('⚠️ You\'ve reached your monthly limit of 100 messages. Upgrade to Professional for unlimited messaging.', '');
+                            return;
+                        }
+                    }
+
+                    var message = {
+                        id: Date.now(),
+                        type: type || 'custom',
+                        recipients: recipientNames,
+                        body: body,
+                        sentAt: new Date().toISOString(),
+                        status: 'sent'
+                    };
+
+                    messageData = JSON.parse(localStorage.getItem('cleancrew_message_history') || '[]');
+                    messageData.unshift(message);
+                    localStorage.setItem('cleancrew_message_history', JSON.stringify(messageData));
+
+                    renderMessages();
+                    showToast('💬 Sending to ' + recipientNames.length + ' client(s)', 'whatsapp');
+
+                    if (phones.length > 0) {
+                        var url = 'https://wa.me/234' + phones[0].replace(/^0+/, '') + '?text=' + encodeURIComponent(body);
+                        window.open(url, '_blank');
+                        showToast('💬 Opening WhatsApp for ' + phones.length + ' client(s)', 'whatsapp');
+                    }
+                })
+                .catch(function() {
+                    showToast('⚠️ Failed to get client phone numbers', '');
+                });
+        }
+
         function renderMessages() {
-            const tbody = document.getElementById('messagesTable');
+            var tbody = document.getElementById('messagesTable');
             messageData = JSON.parse(localStorage.getItem('cleancrew_message_history') || '[]');
 
             if (messageData.length === 0) {
@@ -2161,52 +2143,51 @@ function sendInvoiceWhatsApp(id) {
                 return;
             }
 
-            tbody.innerHTML = messageData.map((m, i) => {
-                const date = new Date(m.sentAt).toLocaleDateString('en-NG', {
+            tbody.innerHTML = messageData.map(function(m, i) {
+                var date = new Date(m.sentAt).toLocaleDateString('en-NG', {
                     month: 'short',
                     day: 'numeric',
                     year: 'numeric',
                     hour: '2-digit',
                     minute: '2-digit'
                 });
-                const recipientCount = m.recipients ? m.recipients.length : 0;
-                const recipientNames = m.recipients ? m.recipients.slice(0, 3).join(', ') + (recipientCount > 3 ? ` +${recipientCount - 3} more` : '') : 'All clients';
+                var recipientCount = m.recipients ? m.recipients.length : 0;
+                var recipientNames = m.recipients ? m.recipients.slice(0, 3).join(', ') + (recipientCount > 3 ? ' +' + (recipientCount - 3) + ' more' : '') : 'All clients';
 
-                return `
-                    <tr>
-                        <td>${i + 1}</td>
-                        <td style="font-size:12px;">${date}</td>
-                        <td><strong>${recipientCount} client(s)</strong><br><span style="font-size:11px;color:var(--slate);">${recipientNames}</span></td>
-                        <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${m.body ? m.body.substring(0, 60) + (m.body.length > 60 ? '...' : '') : 'N/A'}</td>
-                        <td><span class="status-badge sent" style="background:#D1FAE5;color:#065F46;">✓ Sent</span></td>
-                        <td>
-                            <button class="btn btn-sm btn-whatsapp" onclick="resendMessage(${i})">📤 Resend</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteMessage(${i})">🗑️</button>
-                        </td>
-                    </tr>
-                `;
+                return '<tr>' +
+                    '<td>' + (i + 1) + '</td>' +
+                    '<td style="font-size:12px;">' + date + '</td>' +
+                    '<td><strong>' + recipientCount + ' client(s)</strong><br><span style="font-size:11px;color:var(--slate);">' + recipientNames + '</span></td>' +
+                    '<td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + (m.body ? m.body.substring(0, 60) + (m.body.length > 60 ? '...' : '') : 'N/A') + '</td>' +
+                    '<td><span class="status-badge sent" style="background:#D1FAE5;color:#065F46;">✓ Sent</span></td>' +
+                    '<td>' +
+                    '<button class="btn btn-sm btn-whatsapp" onclick="resendMessage(' + i + ')">📤 Resend</button>' +
+                    '<button class="btn btn-sm btn-danger" onclick="deleteMessage(' + i + ')">🗑️</button>' +
+                    '</td>' +
+                    '</tr>';
             }).join('');
         }
 
-        async function resendMessage(index) {
-            const m = messageData[index];
+        function resendMessage(index) {
+            var m = messageData[index];
             if (!m) return;
-            try {
-                const clients = await getClients();
-                const phones = m.recipients.map(name => {
-                    const client = clients.find(c => c.name === name);
-                    return client ? client.phone : null;
-                }).filter(p => p && p !== 'N/A' && p !== '');
-                if (phones.length === 0) {
-                    showToast('⚠️ No phone numbers found for these clients', '');
-                    return;
-                }
-                const url = `https://wa.me/234${phones[0].replace(/^0+/, '')}?text=${encodeURIComponent(m.body)}`;
-                window.open(url, '_blank');
-                showToast(`💬 Resending to ${phones.length} client(s)`, 'whatsapp');
-            } catch (e) {
-                showToast('⚠️ Failed to resend message', '');
-            }
+            getClients()
+                .then(function(clients) {
+                    var phones = m.recipients.map(function(name) {
+                        var client = clients.find(function(c) { return c.name === name; });
+                        return client ? client.phone : null;
+                    }).filter(function(p) { return p && p !== 'N/A' && p !== ''; });
+                    if (phones.length === 0) {
+                        showToast('⚠️ No phone numbers found for these clients', '');
+                        return;
+                    }
+                    var url = 'https://wa.me/234' + phones[0].replace(/^0+/, '') + '?text=' + encodeURIComponent(m.body);
+                    window.open(url, '_blank');
+                    showToast('💬 Resending to ' + phones.length + ' client(s)', 'whatsapp');
+                })
+                .catch(function() {
+                    showToast('⚠️ Failed to resend message', '');
+                });
         }
 
         function deleteMessage(index) {
@@ -2220,86 +2201,80 @@ function sendInvoiceWhatsApp(id) {
         // ─── ──────────────────────────────────────────────────────
         // ─── PAYSTACK SUBSCRIPTION ──────────────────────────────
         // ─── ──────────────────────────────────────────────────────
-        let selectedPlan = 'professional';
+        var selectedPlan = 'professional';
 
         function selectPlan(plan) {
             selectedPlan = plan;
-            document.querySelectorAll('.plan-card').forEach(el => {
+            document.querySelectorAll('.plan-card').forEach(function(el) {
                 el.style.borderColor = 'var(--border)';
                 el.style.background = 'transparent';
             });
-            const el = document.getElementById('plan' + plan.charAt(0).toUpperCase() + plan.slice(1));
+            var el = document.getElementById('plan' + plan.charAt(0).toUpperCase() + plan.slice(1));
             if (el) {
                 el.style.borderColor = 'var(--blue)';
                 el.style.background = 'var(--blue-light)';
             }
         }
 
-        async function subscribeToPlan(plan) {
+        function subscribeToPlan(plan) {
             if (!plan) plan = selectedPlan;
-            try {
-                const res = await fetch(`${API_URL}/paystack/initialize`, {
-                    method: 'POST',
-                    headers: getHeaders(),
-                    body: JSON.stringify({ plan: plan })
-                });
-                const data = await res.json();
+            fetch(API_URL + '/paystack/initialize', {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({ plan: plan })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
                 if (data.authorization_url) {
                     window.location.href = data.authorization_url;
                 } else {
-                    showToast('⚠️ Failed to initialize payment: ' + (data.error || 'Unknown error'));
+                    showToast('⚠️ Failed to initialize payment: ' + (data.error || 'Unknown error'), '');
                 }
-            } catch (e) {
+            })
+            .catch(function(e) {
                 console.error('Paystack init error:', e);
-                showToast('⚠️ Payment initialization failed');
-            }
+                showToast('⚠️ Payment initialization failed', '');
+            });
         }
 
-        async function checkSubscription() {
-            try {
-                const res = await fetch(`${API_URL}/subscription/status`, {
-                    headers: getHeaders()
-                });
-                const data = await res.json();
-
-                const container = document.getElementById('subscriptionStatus');
-                const plansContainer = document.getElementById('plansContainer');
-                const badge = document.getElementById('planBadge');
+        function checkSubscription() {
+            fetch(API_URL + '/subscription/status', {
+                headers: getHeaders()
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                var container = document.getElementById('subscriptionStatus');
+                var plansContainer = document.getElementById('plansContainer');
+                var badge = document.getElementById('planBadge');
 
                 if (!container || !plansContainer) return;
 
                 if (badge) badge.style.display = 'inline-block';
 
                 if (data.status === 'active') {
-                    container.innerHTML = `
-                        <div class="status-box active">
-                            <p>✅ Active — ${data.plan.charAt(0).toUpperCase() + data.plan.slice(1)} Plan</p>
-                            <p class="sub-text">Your subscription is active. Thank you for your support!</p>
-                            <p style="font-size:12px; color:#065F46; margin-top:4px;">
-                                💳 You're on the ${data.plan} plan. Your subscription will renew automatically.
-                            </p>
-                        </div>
-                    `;
+                    container.innerHTML = '<div class="status-box active">' +
+                        '<p>✅ Active — ' + data.plan.charAt(0).toUpperCase() + data.plan.slice(1) + ' Plan</p>' +
+                        '<p class="sub-text">Your subscription is active. Thank you for your support!</p>' +
+                        '<p style="font-size:12px; color:#065F46; margin-top:4px;">💳 You\'re on the ' + data.plan + ' plan. Your subscription will renew automatically.</p>' +
+                        '</div>';
                     plansContainer.style.display = 'none';
 
                     if (badge) {
-                        badge.textContent = `✅ ${data.plan.charAt(0).toUpperCase() + data.plan.slice(1)}`;
+                        badge.textContent = '✅ ' + data.plan.charAt(0).toUpperCase() + data.plan.slice(1);
                         badge.className = 'badge-active';
                         badge.style.display = 'inline-block';
                     }
 
                 } else if (data.status === 'trial') {
-                    const trialEnd = new Date(data.trial_end);
-                    const now = new Date();
-                    const daysLeft = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
+                    var trialEnd = new Date(data.trial_end);
+                    var now = new Date();
+                    var daysLeft = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
 
                     if (daysLeft <= 0) {
-                        container.innerHTML = `
-                            <div class="status-box expired">
-                                <p>🔒 Trial Expired</p>
-                                <p class="sub-text">Your trial has ended. Please choose a plan below to continue using CleanCrew.</p>
-                            </div>
-                        `;
+                        container.innerHTML = '<div class="status-box expired">' +
+                            '<p>🔒 Trial Expired</p>' +
+                            '<p class="sub-text">Your trial has ended. Please choose a plan below to continue using CleanCrew.</p>' +
+                            '</div>';
                         plansContainer.style.display = 'block';
                         if (badge) {
                             badge.textContent = '🔒 Expired';
@@ -2309,27 +2284,23 @@ function sendInvoiceWhatsApp(id) {
                         return;
                     }
 
-                    container.innerHTML = `
-                        <div class="status-box trial">
-                            <p>📅 Trial — ${daysLeft} days left</p>
-                            <p class="sub-text">Choose a plan below to continue using CleanCrew after your trial ends.</p>
-                        </div>
-                    `;
+                    container.innerHTML = '<div class="status-box trial">' +
+                        '<p>📅 Trial — ' + daysLeft + ' days left</p>' +
+                        '<p class="sub-text">Choose a plan below to continue using CleanCrew after your trial ends.</p>' +
+                        '</div>';
                     plansContainer.style.display = 'block';
 
                     if (badge) {
-                        badge.textContent = `📅 ${daysLeft} days left`;
+                        badge.textContent = '📅 ' + daysLeft + ' days left';
                         badge.className = 'badge-trial';
                         badge.style.display = 'inline-block';
                     }
 
                 } else {
-                    container.innerHTML = `
-                        <div class="status-box expired">
-                            <p>🔒 Subscription Expired</p>
-                            <p class="sub-text">Your subscription has expired. Please choose a plan below to renew.</p>
-                        </div>
-                    `;
+                    container.innerHTML = '<div class="status-box expired">' +
+                        '<p>🔒 Subscription Expired</p>' +
+                        '<p class="sub-text">Your subscription has expired. Please choose a plan below to renew.</p>' +
+                        '</div>';
                     plansContainer.style.display = 'block';
 
                     if (badge) {
@@ -2338,99 +2309,95 @@ function sendInvoiceWhatsApp(id) {
                         badge.style.display = 'inline-block';
                     }
                 }
-            } catch (e) {
+            })
+            .catch(function(e) {
                 console.error('Subscription check error:', e);
-                document.getElementById('subscriptionStatus').innerHTML = `<p style="color:var(--slate);">⚠️ Failed to load subscription status</p>`;
-            }
+                document.getElementById('subscriptionStatus').innerHTML = '<p style="color:var(--slate);">⚠️ Failed to load subscription status</p>';
+            });
         }
 
         function checkPaystackReturn() {
-            const params = new URLSearchParams(window.location.search);
-            const reference = params.get('reference');
+            var params = new URLSearchParams(window.location.search);
+            var reference = params.get('reference');
             if (reference) {
-                fetch(`${API_URL}/paystack/verify/${reference}`, {
+                fetch(API_URL + '/paystack/verify/' + reference, {
                     method: 'POST',
                     headers: getHeaders()
                 })
-                .then(res => res.json())
-                .then(data => {
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
                     if (data.success) {
                         showToast('✅ Payment successful! Subscription activated.', 'success');
-                        setTimeout(() => {
+                        setTimeout(function() {
                             window.location.href = '/dashboard.html';
                         }, 2000);
                     }
                 })
-                .catch(err => console.error('Verification error:', err));
+                .catch(function(err) { console.error('Verification error:', err); });
             }
         }
 
         // ─── ──────────────────────────────────────────────────────
         // ─── INIT ────────────────────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
-        async function init() {
-            const token = localStorage.getItem('cleancrew_token');
+        function init() {
+            var token = localStorage.getItem('cleancrew_token');
             if (!token) {
                 window.location.href = 'login.html';
                 return;
             }
 
-            try {
-                const res = await fetch(`${API_URL}/user`, { headers: getHeaders() });
-                
-                if (res.status === 403) {
-                    const data = await res.json();
-                    if (data.requires_confirmation) {
-                        showToast('📧 Please confirm your email address first. Check your inbox.', 'error');
-                        setTimeout(() => {
-                            window.location.href = 'login.html';
-                        }, 3000);
+            fetch(API_URL + '/user', { headers: getHeaders() })
+                .then(function(res) {
+                    if (res.status === 403) {
+                        return res.json().then(function(data) {
+                            if (data.requires_confirmation) {
+                                showToast('📧 Please confirm your email address first. Check your inbox.', 'error');
+                                setTimeout(function() {
+                                    window.location.href = 'login.html';
+                                }, 3000);
+                                return;
+                            }
+                        });
+                    }
+                    if (!res.ok) {
+                        localStorage.removeItem('cleancrew_token');
+                        window.location.href = 'login.html';
                         return;
                     }
-                }
-                
-                if (!res.ok) {
-                    localStorage.removeItem('cleancrew_token');
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                const userData = await res.json();
-                currentUserPlan = userData.plan || 'starter';
-                applyFeatureRestrictions(currentUserPlan);
-
-            } catch (e) {
-                console.error('Auth check error:', e);
-                applyFeatureRestrictions('starter');
-            }
-
-            try {
-                await loadUserInfo();
-                await renderAll();
-                await checkSubscription();
-                checkPaystackReturn();
-                renderMessages();
-                renderInventory();
-
-                document.getElementById('msgBody').addEventListener('input', function() {
-                    const preview = document.getElementById('previewText');
-                    const previewContainer = document.getElementById('messagePreview');
-                    if (this.value.trim()) {
-                        preview.textContent = this.value;
-                        previewContainer.style.display = 'block';
-                    } else {
-                        previewContainer.style.display = 'none';
+                    return res.json();
+                })
+                .then(function(userData) {
+                    if (userData && userData.plan) {
+                        currentUserPlan = userData.plan;
+                        applyFeatureRestrictions(userData.plan);
                     }
+                })
+                .catch(function(e) {
+                    console.error('Auth check error:', e);
+                    applyFeatureRestrictions('starter');
+                })
+                .finally(function() {
+                    loadUserInfo();
+                    renderAll();
+                    checkSubscription();
+                    checkPaystackReturn();
+                    renderMessages();
+                    renderInventory();
+                    renderStaff();
+                    renderInvoices();
+
+                    document.getElementById('msgBody').addEventListener('input', function() {
+                        var preview = document.getElementById('previewText');
+                        var previewContainer = document.getElementById('messagePreview');
+                        if (this.value.trim()) {
+                            preview.textContent = this.value;
+                            previewContainer.style.display = 'block';
+                        } else {
+                            previewContainer.style.display = 'none';
+                        }
+                    });
                 });
-            } catch (e) {
-                console.error('Dashboard init error:', e);
-                if (e.message && e.message.includes('403')) {
-                    showToast('📧 Please confirm your email address first.', 'error');
-                    setTimeout(() => {
-                        window.location.href = 'login.html';
-                    }, 3000);
-                }
-            }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
