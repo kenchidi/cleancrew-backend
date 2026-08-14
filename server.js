@@ -9,23 +9,16 @@ dotenv.config();
 
 const app = express();
 
-// ─── ✅ CORS CONFIGURATION ──────────────────────────────────
-app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-// ─── ✅ FIXED: Handle preflight requests ───────────────────
-app.options('*', (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.sendStatus(200);
-});
+// ─── ✅ SIMPLIFIED CORS ──────────────────────────────────────
+// This single line handles all preflight (OPTIONS) requests automatically.
+app.use(cors());
 
 app.use(express.json());
 app.use(express.static(__dirname));
+
+// ─── ──────────────────────────────────────────────────────
+// ─── THE REST OF YOUR CODE REMAINS EXACTLY THE SAME ────
+// ─── ──────────────────────────────────────────────────────
 
 // ─── Supabase Client ──────────────────────────────────────
 const supabase = createClient(
