@@ -9,69 +9,38 @@ dotenv.config();
 
 const app = express();
 
-// ─── ──────────────────────────────────────────────────────
-// ─── ✅ CORS CONFIGURATION ──────────────────────────────
-// ─── ──────────────────────────────────────────────────────
-
-// Allowed origins
-const allowedOrigins = [
-    'https://cleancrew-frontend.vercel.app',
-    'http://localhost:3000',
-    'http://localhost:5000',
-    'https://cleancrew-frontend.vercel.app/',
-    'http://127.0.0.1:5500',
-    'https://cleancrew-backend.onrender.com'
-];
-
+// ─── ✅ CORS CONFIGURATION ──────────────────────────────────
 app.use(cors({
-    origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl)
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            console.log('❌ Blocked origin:', origin);
-            callback(null, false);
-        }
-    },
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    credentials: true
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Handle preflight requests
-app.options('*', cors());
-
-// ─── ──────────────────────────────────────────────────────
-// ─── MIDDLEWARE ──────────────────────────────────────────
-// ─── ──────────────────────────────────────────────────────
+// ─── ✅ FIXED: Handle preflight requests ───────────────────
+app.options('*', (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.sendStatus(200);
+});
 
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// ─── ──────────────────────────────────────────────────────
-// ─── SUPABASE CLIENT ─────────────────────────────────────
-// ─── ──────────────────────────────────────────────────────
-
+// ─── Supabase Client ──────────────────────────────────────
 const supabase = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// ─── ──────────────────────────────────────────────────────
-// ─── PAYSTACK CONFIG ─────────────────────────────────────
-// ─── ──────────────────────────────────────────────────────
-
+// ─── Paystack config ──────────────────────────────────────
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 const PAYSTACK_PUBLIC_KEY = process.env.PAYSTACK_PUBLIC_KEY;
 
-// ─── ──────────────────────────────────────────────────────
-// ─── PLANS ────────────────────────────────────────────────
-// ─── ──────────────────────────────────────────────────────
-
+// ─── Paystack plans ──────────────────────────────────────
 const PLANS = {
     starter: {
-        amount: 1250000, // ₦12,500 in kobo
+        amount: 1250000,
         name: 'Starter',
         features: '50 jobs, 50 clients, 5 staff, 20 invoices/month, 100 WhatsApp messages, 10 inventory items',
         limits: {
@@ -84,7 +53,7 @@ const PLANS = {
         }
     },
     professional: {
-        amount: 1750000, // ₦17,500 in kobo
+        amount: 1750000,
         name: 'Professional',
         features: 'Unlimited jobs, clients, staff, invoices, WhatsApp & inventory',
         limits: {
@@ -97,7 +66,7 @@ const PLANS = {
         }
     },
     enterprise: {
-        amount: 3500000, // ₦35,000 in kobo
+        amount: 3500000,
         name: 'Enterprise',
         features: 'Everything in Professional + team access & advanced reporting',
         limits: {
@@ -113,10 +82,7 @@ const PLANS = {
     }
 };
 
-// ─── ──────────────────────────────────────────────────────
 // ─── AUTHENTICATION MIDDLEWARE ──────────────────────────
-// ─── ──────────────────────────────────────────────────────
-
 const authenticate = async (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
@@ -128,7 +94,6 @@ const authenticate = async (req, res, next) => {
         return res.status(401).json({ error: 'Invalid token' });
     }
 
-    // Check if email is confirmed
     if (!user.email_confirmed_at) {
         return res.status(403).json({
             error: 'Please confirm your email address before accessing the dashboard.',
@@ -140,10 +105,7 @@ const authenticate = async (req, res, next) => {
     next();
 };
 
-// ─── ──────────────────────────────────────────────────────
 // ─── HELPERS ──────────────────────────────────────────────
-// ─── ──────────────────────────────────────────────────────
-
 async function checkPlanLimit(userId, type) {
     const { data: sub, error: subError } = await supabase
         .from('subscriptions')
@@ -201,23 +163,18 @@ async function getUserPlan(userId) {
 }
 
 // ─── ──────────────────────────────────────────────────────
-// ─── ──────────────────────────────────────────────────────
 // ─── API ROUTES ──────────────────────────────────────────
-// ─── ──────────────────────────────────────────────────────
 // ─── ──────────────────────────────────────────────────────
 
 // ─── TEST ENDPOINT ──────────────────────────────────────
 app.get('/api/test', (req, res) => {
-    console.log('✅ Test endpoint hit from:', req.headers.origin);
     res.json({
         message: 'CORS is working!',
-        origin: req.headers.origin || 'No origin',
         time: new Date().toISOString()
     });
 });
 
 // ─── AUTH ROUTES ──────────────────────────────────────────
-
 app.post('/api/auth/signup', async (req, res) => {
     try {
         const { name, email, password } = req.body;
@@ -276,7 +233,6 @@ app.post('/api/auth/login', async (req, res) => {
 
         if (authError) throw authError;
 
-        // Check if email is confirmed
         if (!authData.user.email_confirmed_at) {
             return res.status(403).json({
                 error: 'Please confirm your email address before logging in. Check your inbox for the confirmation link.',
@@ -306,10 +262,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
-// ─── ──────────────────────────────────────────────────────
 // ─── ✅ PASSWORD RESET ROUTE ─────────────────────────────
-// ─── ──────────────────────────────────────────────────────
-
 app.post('/api/auth/reset-password', async (req, res) => {
     console.log('✅ Password reset endpoint hit!');
     try {
@@ -320,8 +273,6 @@ app.post('/api/auth/reset-password', async (req, res) => {
             console.log('❌ No email provided');
             return res.status(400).json({ error: 'Email is required' });
         }
-
-        console.log('🔄 Sending reset email to:', email);
 
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
             redirectTo: 'https://cleancrew-frontend.vercel.app/reset-password.html'
@@ -340,8 +291,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
     }
 });
 
-// ─── Resend Confirmation Email ──────────────────────────────
-
+// ─── Resend Confirmation Email ──────────────────────────
 app.post('/api/auth/resend-confirmation', async (req, res) => {
     try {
         const { email } = req.body;
@@ -368,7 +318,6 @@ app.post('/api/auth/resend-confirmation', async (req, res) => {
 });
 
 // ─── Get User ─────────────────────────────────────────────
-
 app.get('/api/user', authenticate, async (req, res) => {
     try {
         const plan = await getUserPlan(req.user.id);
@@ -385,53 +334,7 @@ app.get('/api/user', authenticate, async (req, res) => {
     }
 });
 
-app.post('/api/auth/reset-session', async (req, res) => {
-    try {
-        const { access_token } = req.body;
-
-        if (!access_token) {
-            return res.status(400).json({ error: 'Access token is required' });
-        }
-
-        const { data, error } = await supabase.auth.setSession({
-            access_token: access_token,
-            refresh_token: ''
-        });
-
-        if (error) throw error;
-
-        res.json({ session: data.session });
-    } catch (error) {
-        console.error('Reset session error:', error);
-        res.status(400).json({ error: error.message });
-    }
-});
-
-app.post('/api/auth/reset-password/confirm', authenticate, async (req, res) => {
-    try {
-        const { new_password } = req.body;
-
-        if (!new_password || new_password.length < 6) {
-            return res.status(400).json({ error: 'Password must be at least 6 characters' });
-        }
-
-        const { data, error } = await supabase.auth.updateUser({
-            password: new_password
-        });
-
-        if (error) throw error;
-
-        res.json({ success: true, message: 'Password updated successfully' });
-    } catch (error) {
-        console.error('Reset password confirm error:', error);
-        res.status(400).json({ error: error.message });
-    }
-});
-
-// ─── ──────────────────────────────────────────────────────
-// ─── SUBSCRIPTION ROUTES ──────────────────────────────────
-// ─── ──────────────────────────────────────────────────────
-
+// ─── Subscription Status ──────────────────────────────────
 app.get('/api/subscription/status', authenticate, async (req, res) => {
     try {
         const { data: sub } = await supabase
@@ -452,7 +355,6 @@ app.get('/api/subscription/status', authenticate, async (req, res) => {
 });
 
 // ─── Paystack Routes ──────────────────────────────────────
-
 app.post('/api/paystack/initialize', authenticate, async (req, res) => {
     try {
         const { plan = 'professional' } = req.body;
@@ -633,11 +535,7 @@ app.post('/api/jobs', authenticate, async (req, res) => {
             ...req.body,
             user_id: req.user.id,
             service_type: req.body.service_type || 'cleaning',
-            laundry_items: req.body.laundry_items || null,
-            pickup_date: req.body.pickup_date || null,
-            delivery_date: req.body.delivery_date || null,
-            pickup_address: req.body.pickup_address || null,
-            delivery_address: req.body.delivery_address || null
+            laundry_items: req.body.laundry_items || null
         };
 
         const { data, error } = await supabase
@@ -1034,5 +932,4 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ CleanCrew server running on port ${PORT}`);
     console.log(`   Local: http://localhost:${PORT}`);
-    console.log(`   Allowed origins:`, allowedOrigins);
 });
