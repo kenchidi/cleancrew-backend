@@ -234,7 +234,7 @@ app.post('/api/auth/signup', async (req, res) => {
             password,
             options: {
                 data: { name },
-                emailRedirectTo: `${FRONTEND_URL}/dashboard.html`
+                emailRedirectTo: `${FRONTEND_URL}/login.html?confirmed=1`
             }
         });
 
@@ -347,7 +347,7 @@ app.post('/api/auth/resend-confirmation', async (req, res) => {
             type: 'signup',
             email: email,
             options: {
-                emailRedirectTo: `${FRONTEND_URL}/dashboard.html`
+                emailRedirectTo: `${FRONTEND_URL}/login.html?confirmed=1`
             }
         });
 
