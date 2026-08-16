@@ -1254,7 +1254,7 @@
             </div>
 
             <!-- ─── SUBSCRIPTION / PLANS SECTION ─── -->
-            <div class="card">
+            <div class="card" id="plansSection">
                 <div class="card-header">
                     <h3><svg class="icon"><use href="#ic-sparkle"/></svg> Choose Your Plan</h3>
                 </div>
@@ -1387,7 +1387,7 @@
                 <div class="whatsapp-limit-warning" id="whatsappLimitWarning">
                     <p>
                         <span><svg class="icon" style="color:var(--amber);"><use href="#ic-alert"/></svg> You've used <span id="whatsappLimitCount">0/100</span> WhatsApp messages this month.</span>
-                        <a href="#pricing">Upgrade to Professional →</a>
+                        <a href="#plansSection" onclick="goToPlans(event)">Upgrade plan →</a>
                     </p>
                 </div>
 
@@ -1685,6 +1685,15 @@
                 renderInvoices();
             }
             renderAll();
+        }
+
+        function goToPlans(e) {
+            if (e) e.preventDefault();
+            switchTab('overview');
+            setTimeout(function() {
+                var el = document.getElementById('plansSection');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
         }
 
         // ─── ──────────────────────────────────────────────────────

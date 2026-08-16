@@ -331,6 +331,26 @@
             }
         }
 
+        
+        // Prefill email / show post-confirmation success
+        (function() {
+            try {
+                var params = new URLSearchParams(window.location.search);
+                var qEmail = params.get('email');
+                if (qEmail) {
+                    var emailInput = document.getElementById('email');
+                    if (emailInput) emailInput.value = qEmail;
+                }
+                if (params.get('confirmed') === '1') {
+                    var successMsg = document.getElementById('successMsg');
+                    if (successMsg) {
+                        successMsg.textContent = 'Email confirmed! You can log in now.';
+                        successMsg.classList.add('show');
+                    }
+                }
+            } catch (e) {}
+        })();
+
         const form = document.getElementById('loginForm');
         const errorMsg = document.getElementById('errorMsg');
         const successMsg = document.getElementById('successMsg');
@@ -364,8 +384,10 @@
                         window.location.href = 'dashboard.html';
                     }, 1200);
                 } else if (data.requires_confirmation) {
-                    errorMsg.innerHTML = (data.error || 'Please confirm your email.') +
-                        '<br><br><button type="button" onclick="resendConfirmationEmail(\'' + email + '\')" class="btn btn-primary btn-sm">Resend Confirmation Email</button>';
+                    errorMsg.innerHTML = '<strong>Confirm your email first</strong><br>' +
+                        (data.error || 'We sent a link when you signed up. Open it to activate your account.') +
+                        '<br><br>Check inbox and spam for <strong>' + email + '</strong>.' +
+                        '<br><br><button type="button" onclick="resendConfirmationEmail(\'' + email + '\')" class="btn btn-primary btn-sm">Resend confirmation email</button>';
                     errorMsg.classList.add('show');
                     loginBtn.disabled = false;
                     loginBtn.innerHTML = '<svg class="icon"><use href="#ic-arrow"/></svg> Login';
@@ -387,7 +409,8 @@
         async function forgotPassword() {
             const email = document.getElementById('email').value.trim();
             if (!email) {
-                showToast('Please enter your email address first', 'error');
+                showToast('Enter your email above, then tap Forgot Password', 'error');
+                document.getElementById('email').focus();
                 return;
             }
             try {
@@ -398,7 +421,10 @@
                 });
                 const data = await response.json();
                 if (response.ok) {
-                    showToast('Password reset email sent! Check your inbox.', 'success');
+                    errorMsg.classList.remove('show');
+                    successMsg.innerHTML = 'Password reset link sent to <strong>' + email + '</strong>. Check your inbox and spam folder, then open the link to set a new password.';
+                    successMsg.classList.add('show');
+                    showToast('Reset email sent — check your inbox', 'success');
                 } else {
                     showToast(data.error || 'Failed to send reset email', 'error');
                 }

@@ -328,11 +328,42 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    successMsg.textContent = 'Account created! Redirecting to login...';
+                    // Stay on page — clear next-step instructions (do not dump users on landing)
+                    var formEl = document.getElementById('signupForm');
+                    if (formEl) formEl.style.display = 'none';
+                    var linkEl = document.querySelector('.link');
+                    if (linkEl) linkEl.style.display = 'none';
+                    successMsg.innerHTML =
+                        '<strong>Check your email</strong><br><br>' +
+                        'We sent a confirmation link to <strong>' + email + '</strong>.<br><br>' +
+                        'Open that email and click the link to activate your account. ' +
+                        'Check spam/junk if you do not see it within a few minutes.<br><br>' +
+                        '<button type="button" class="btn btn-primary btn-sm" id="resendConfirmBtn" style="margin-top:8px;">Resend confirmation email</button><br><br>' +
+                        '<a href="login.html?email=' + encodeURIComponent(email) + '">Already confirmed? Go to login →</a>';
                     successMsg.classList.add('show');
-                    setTimeout(function() {
-                        window.location.href = 'login.html';
-                    }, 1500);
+                    successMsg.style.display = 'block';
+                    document.getElementById('resendConfirmBtn').onclick = async function() {
+                        try {
+                            var r = await fetch(SERVER_URL + '/api/auth/resend-confirmation', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ email: email })
+                            });
+                            var d = await r.json();
+                            if (r.ok) {
+                                successMsg.innerHTML = '<strong>Email resent</strong><br><br>Check <strong>' + email + '</strong> again (and spam). ' +
+                                    '<br><br><a href="login.html?email=' + encodeURIComponent(email) + '">Go to login →</a>';
+                            } else {
+                                errorMsg.textContent = d.error || 'Could not resend email';
+                                errorMsg.classList.add('show');
+                            }
+                        } catch (err) {
+                            errorMsg.textContent = 'Could not connect to server';
+                            errorMsg.classList.add('show');
+                        }
+                    };
+                    signupBtn.disabled = true;
+                    signupBtn.innerHTML = '<svg class="icon"><use href="#ic-check"/></svg> Account created';
                 } else {
                     errorMsg.textContent = data.error || 'Signup failed. Please try again.';
                     errorMsg.classList.add('show');
