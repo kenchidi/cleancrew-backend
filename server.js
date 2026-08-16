@@ -32,6 +32,21 @@ const PAYSTACK_PUBLIC_KEY = process.env.PAYSTACK_PUBLIC_KEY;
 
 // ─── Paystack plans ──────────────────────────────────────
 const PLANS = {
+    free: {
+        amount: 0,
+        name: 'Free',
+        features: '25 jobs/mo, 25 clients, 3 staff, 15 invoices/mo, 30 WhatsApp/mo, 10 inventory',
+        limits: {
+            jobs: 25,
+            clients: 25,
+            staff: 3,
+            invoices: 15,
+            whatsapp_messages: 30,
+            inventory: 10
+        },
+        // jobs, invoices, whatsapp counted per calendar month; others are total caps
+        monthly: ['jobs', 'invoices', 'whatsapp_messages']
+    },
     starter: {
         amount: 1250000,
         name: 'Starter',
@@ -43,7 +58,8 @@ const PLANS = {
             invoices: 20,
             whatsapp_messages: 100,
             inventory: 10
-        }
+        },
+        monthly: ['jobs', 'invoices', 'whatsapp_messages']
     },
     professional: {
         amount: 1750000,
@@ -56,7 +72,8 @@ const PLANS = {
             invoices: Infinity,
             whatsapp_messages: Infinity,
             inventory: Infinity
-        }
+        },
+        monthly: []
     },
     enterprise: {
         amount: 3500000,
@@ -71,9 +88,12 @@ const PLANS = {
             inventory: Infinity,
             team_access: true,
             advanced_reporting: true
-        }
+        },
+        monthly: []
     }
 };
+
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://cleancrewapp.com';
 
 // ─── AUTHENTICATION MIDDLEWARE ──────────────────────────
 const authenticate = async (req, res, next) => {
@@ -102,7 +122,7 @@ const authenticate = async (req, res, next) => {
 async function checkPlanLimit(userId, type) {
     const { data: sub, error: subError } = await supabase
         .from('subscriptions')
-        .select('plan')
+        .select('plan, status')
         .eq('user_id', userId)
         .single();
 
@@ -110,31 +130,64 @@ async function checkPlanLimit(userId, type) {
         throw new Error('Error checking subscription');
     }
 
-    const planName = sub?.plan || 'starter';
-    const limit = PLANS[planName]?.limits?.[type] || 50;
+    // Default new/unknown users to free (not starter)
+    let planName = sub?.plan || 'free';
+    if (!PLANS[planName]) planName = 'free';
+
+    // Active paid plans only — trial on professional without payment still uses that plan's limits
+    const limit = PLANS[planName]?.limits?.[type];
+    if (limit === undefined) {
+        return { allowed: true, limit: Infinity, plan: planName, count: 0 };
+    }
 
     if (limit === Infinity) {
         return { allowed: true, limit: Infinity, plan: planName, count: 0 };
     }
 
-    const { count, error: countError } = await supabase
-        .from(type)
+    const isMonthly = (PLANS[planName].monthly || []).includes(type);
+    let query = supabase
+        .from(type === 'whatsapp_messages' ? 'usage_events' : type)
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId);
 
+    // WhatsApp may be tracked in usage_events; if table missing, allow and log
+    if (type === 'whatsapp_messages') {
+        query = supabase
+            .from('usage_events')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', userId)
+            .eq('action_type', 'whatsapp_sent');
+    }
+
+    if (isMonthly) {
+        const start = new Date();
+        start.setDate(1);
+        start.setHours(0, 0, 0, 0);
+        query = query.gte('created_at', start.toISOString());
+    }
+
+    const { count, error: countError } = await query;
+
     if (countError) {
+        // usage_events might not exist yet — don't block WhatsApp
+        if (type === 'whatsapp_messages') {
+            console.warn('WhatsApp usage count skipped:', countError.message);
+            return { allowed: true, limit, count: 0, plan: planName };
+        }
         throw new Error('Error counting items');
     }
 
     const currentCount = count || 0;
 
     if (currentCount >= limit) {
+        const period = isMonthly ? ' this month' : '';
         return {
             allowed: false,
             limit,
             count: currentCount,
             plan: planName,
-            message: `You've reached your ${planName} plan limit of ${limit} ${type}. Upgrade to Professional for unlimited ${type}.`
+            code: 'LIMIT_REACHED',
+            message: `You've reached your ${PLANS[planName].name} plan limit of ${limit} ${type.replace(/_/g, ' ')}${period}. Upgrade or buy credits to continue.`
         };
     }
 
@@ -152,7 +205,7 @@ async function getUserPlan(userId) {
         throw new Error('Error fetching subscription');
     }
 
-    return sub?.plan || 'starter';
+    return sub?.plan || 'free';
 }
 
 // ─── ──────────────────────────────────────────────────────
@@ -181,22 +234,19 @@ app.post('/api/auth/signup', async (req, res) => {
             password,
             options: {
                 data: { name },
-                emailRedirectTo: 'https://cleancrew-frontend.vercel.app/dashboard.html'
+                emailRedirectTo: `${FRONTEND_URL}/dashboard.html`
             }
         });
 
         if (authError) throw authError;
 
-        const trialEnd = new Date();
-        trialEnd.setDate(trialEnd.getDate() + 14);
-
         await supabase
             .from('subscriptions')
             .insert({
                 user_id: authData.user.id,
-                status: 'trial',
-                trial_end: trialEnd.toISOString(),
-                plan: 'professional'
+                status: 'active',
+                trial_end: null,
+                plan: 'free'
             });
 
         res.json({
@@ -246,7 +296,7 @@ app.post('/api/auth/login', async (req, res) => {
                 id: authData.user.id,
                 email: authData.user.email,
                 name: authData.user.user_metadata.name,
-                subscription: sub || { status: 'trial', trial_end: new Date(Date.now() + 14 * 86400000) }
+                subscription: sub || { status: 'active', plan: 'free' }
             }
         });
     } catch (error) {
@@ -268,7 +318,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
         }
 
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: 'https://cleancrew-frontend.vercel.app/reset-password.html'
+            redirectTo: `${FRONTEND_URL}/reset-password.html`
         });
 
         if (error) {
@@ -297,7 +347,7 @@ app.post('/api/auth/resend-confirmation', async (req, res) => {
             type: 'signup',
             email: email,
             options: {
-                emailRedirectTo: 'https://cleancrew-frontend.vercel.app/dashboard.html'
+                emailRedirectTo: `${FRONTEND_URL}/dashboard.html`
             }
         });
 
@@ -337,9 +387,9 @@ app.get('/api/subscription/status', authenticate, async (req, res) => {
             .single();
 
         res.json({
-            status: sub?.status || 'trial',
-            trial_end: sub?.trial_end || new Date(Date.now() + 14 * 86400000),
-            plan: sub?.plan || 'starter'
+            status: sub?.status || 'active',
+            trial_end: sub?.trial_end || null,
+            plan: sub?.plan || 'free'
         });
     } catch (error) {
         console.error('Subscription status error:', error);
@@ -372,7 +422,7 @@ app.post('/api/paystack/initialize', authenticate, async (req, res) => {
                 amount: planData.amount,
                 currency: 'NGN',
                 reference: reference,
-                callback_url: 'https://cleancrew-frontend.vercel.app/dashboard.html',
+                callback_url: `${FRONTEND_URL}/dashboard.html`,
                 metadata: {
                     user_id: userId,
                     plan: plan,
@@ -491,6 +541,37 @@ app.post('/api/paystack/webhook', async (req, res) => {
     }
 });
 
+// ─── Usage / plan limits (for dashboard UI) ────────────────
+app.get('/api/usage/limits', authenticate, async (req, res) => {
+    try {
+        const plan = await getUserPlan(req.user.id);
+        const planDef = PLANS[plan] || PLANS.free;
+        const types = ['jobs', 'clients', 'staff', 'invoices', 'inventory'];
+        const usage = {};
+        for (const type of types) {
+            try {
+                const result = await checkPlanLimit(req.user.id, type);
+                usage[type] = {
+                    used: result.count,
+                    limit: result.limit === Infinity ? null : result.limit,
+                    allowed: result.allowed
+                };
+            } catch (e) {
+                usage[type] = { used: 0, limit: planDef.limits[type] ?? null, allowed: true };
+            }
+        }
+        res.json({
+            plan,
+            plan_name: planDef.name,
+            features: planDef.features,
+            usage
+        });
+    } catch (error) {
+        console.error('Usage limits error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // ─── ──────────────────────────────────────────────────────
 // ─── JOBS ROUTES ──────────────────────────────────────────
 // ─── ──────────────────────────────────────────────────────
@@ -524,11 +605,15 @@ app.post('/api/jobs', authenticate, async (req, res) => {
             });
         }
 
+        const mode = req.body.mode || req.body.service_type || 'cleaning';
         const job = {
             ...req.body,
             user_id: req.user.id,
-            service_type: req.body.service_type || 'cleaning',
-            laundry_items: req.body.laundry_items || null
+            mode,
+            service_type: mode,
+            items: req.body.items || req.body.laundry_items || [],
+            rooms: req.body.rooms ?? null,
+            property_size: req.body.property_size || null
         };
 
         const { data, error } = await supabase
@@ -767,14 +852,19 @@ app.post('/api/invoices', authenticate, async (req, res) => {
             });
         }
 
+        const amount = req.body.amount_due ?? req.body.amount;
         const invoice = {
             user_id: req.user.id,
-            number: `CC-${Date.now().toString().slice(-6)}`,
+            number: req.body.number || `CC-${Date.now().toString().slice(-6)}`,
             client: req.body.client,
-            service: req.body.description || 'Cleaning service',
-            amount: req.body.amount,
+            service: req.body.description || req.body.service || 'Service',
+            amount: amount,
+            amount_due: amount,
+            amount_paid: req.body.amount_paid ?? 0,
             date: req.body.date,
-            status: req.body.status || 'pending'
+            status: req.body.status || 'unpaid',
+            job_id: req.body.job_id || null,
+            paid_at: req.body.paid_at || null
         };
 
         console.log('Creating invoice with data:', invoice);
