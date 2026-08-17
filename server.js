@@ -1284,7 +1284,7 @@ app.post('/api/invoices/:id/generate-pdf', authenticate, async (req, res) => {
     const { id } = req.params;
     const userId = req.user.id;
 
-    // 1. Get invoice details
+    // Get invoice
     const { data: invoice, error: invoiceError } = await supabase
       .from('invoices')
       .select('*')
@@ -1295,7 +1295,7 @@ app.post('/api/invoices/:id/generate-pdf', authenticate, async (req, res) => {
     if (invoiceError) throw invoiceError;
     if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
 
-    // 2. Get invoice settings
+    // Get settings
     const { data: settings, error: settingsError } = await supabase
       .from('invoice_settings')
       .select('*')
@@ -1304,7 +1304,7 @@ app.post('/api/invoices/:id/generate-pdf', authenticate, async (req, res) => {
 
     if (settingsError) throw settingsError;
 
-    // 3. Generate PDF using jsPDF
+    // Generate PDF
     const { jsPDF } = require('jspdf');
 
     const doc = new jsPDF();
@@ -1312,21 +1312,11 @@ app.post('/api/invoices/:id/generate-pdf', authenticate, async (req, res) => {
     const margin = 20;
     let y = 20;
 
-    // ─── HELPER: Clean text (remove special characters) ───
-    function cleanText(text) {
-      if (!text) return '';
-      // Remove control characters and normalize
-      return String(text)
-        .replace(/[^\x20-\x7E\n\r]/g, ' ')  // Keep only printable ASCII
-        .replace(/\s+/g, ' ')                 // Collapse multiple spaces
-        .trim();
-    }
-
     // ─── HEADER ────────────────────────────────────────────
-    const businessName = cleanText(settings?.business_name || 'CleanCrew Laundry');
-    const address = cleanText(settings?.business_address || '');
-    const phone = cleanText(settings?.phone || '');
-    const email = cleanText(settings?.email || '');
+    const businessName = settings?.business_name || 'CleanCrew Laundry';
+    const address = settings?.business_address || '';
+    const phone = settings?.phone || '';
+    const email = settings?.email || '';
 
     doc.setFontSize(24);
     doc.setFont('helvetica', 'bold');
@@ -1342,7 +1332,6 @@ app.post('/api/invoices/:id/generate-pdf', authenticate, async (req, res) => {
     if (email) { doc.text(`Email: ${email}`, margin, y); y += 6; }
     y += 4;
 
-    // ─── DIVIDER ──────────────────────────────────────────
     doc.setDrawColor(26, 109, 219);
     doc.setLineWidth(0.5);
     doc.line(margin, y, pageWidth - margin, y);
@@ -1354,7 +1343,7 @@ app.post('/api/invoices/:id/generate-pdf', authenticate, async (req, res) => {
     doc.setTextColor(26, 109, 219);
     doc.text('INVOICE', margin, y);
 
-    const invoiceNumber = cleanText(invoice.number || invoice.invoice_numb || `CC-${String(invoice.id).slice(0, 8)}`);
+    const invoiceNumber = invoice.number || invoice.invoice_numb || `CC-${String(invoice.id).slice(0, 8)}`;
     const invoiceDate = new Date(invoice.date || invoice.created_at).toLocaleDateString('en-NG', {
       day: '2-digit',
       month: 'short',
@@ -1369,7 +1358,7 @@ app.post('/api/invoices/:id/generate-pdf', authenticate, async (req, res) => {
     doc.text(`Date: ${invoiceDate}`, pageWidth - margin - 10, y, { align: 'right' });
     y += 8;
 
-    const statusText = cleanText(invoice.status || 'Unpaid');
+    const statusText = invoice.status || 'Unpaid';
     const statusColor = statusText === 'paid' ? '#16A34A' : (statusText === 'pending' ? '#F0A421' : '#DC2626');
     doc.setTextColor(statusColor);
     doc.text(`Status: ${statusText.charAt(0).toUpperCase() + statusText.slice(1)}`, pageWidth - margin - 10, y, { align: 'right' });
@@ -1383,13 +1372,9 @@ app.post('/api/invoices/:id/generate-pdf', authenticate, async (req, res) => {
     y += 8;
 
     doc.setFont('helvetica', 'normal');
-    doc.text(cleanText(invoice.client || 'Customer'), margin, y);
+    doc.text(invoice.client || 'Customer', margin, y);
     y += 6;
-    if (invoice.phone) {
-      const phoneClean = cleanText(invoice.phone);
-      doc.text(`Phone: ${phoneClean}`, margin, y);
-      y += 6;
-    }
+    if (invoice.phone) { doc.text(`Phone: ${invoice.phone}`, margin, y); y += 6; }
     y += 8;
 
     // ─── ITEMS TABLE ──────────────────────────────────────
@@ -1399,7 +1384,6 @@ app.post('/api/invoices/:id/generate-pdf', authenticate, async (req, res) => {
     const col4 = 175;
     const rowHeight = 8;
 
-    // Table header
     doc.setFillColor(240, 244, 248);
     doc.rect(margin, y - 4, pageWidth - (margin * 2), rowHeight, 'F');
 
@@ -1412,7 +1396,6 @@ app.post('/api/invoices/:id/generate-pdf', authenticate, async (req, res) => {
     doc.text('Total', col4, y);
     y += rowHeight + 4;
 
-    // Table rows
     const amount = invoice.amount || invoice.amount_due || 0;
     let items = [];
 
@@ -1431,7 +1414,7 @@ app.post('/api/invoices/:id/generate-pdf', authenticate, async (req, res) => {
     doc.setTextColor(51, 51, 51);
 
     items.forEach((item) => {
-      const itemName = cleanText(item.name || item.service || 'Service');
+      const itemName = item.name || item.service || 'Service';
       const qty = item.qty || 1;
       const price = item.price || (amount / qty) || 0;
       const total = qty * price;
@@ -1453,7 +1436,6 @@ app.post('/api/invoices/:id/generate-pdf', authenticate, async (req, res) => {
     doc.line(margin, y, pageWidth - margin, y);
     y += 6;
 
-    // ─── TOTAL ──────────────────────────────────────────
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
     doc.setTextColor(26, 109, 219);
@@ -1472,15 +1454,15 @@ app.post('/api/invoices/:id/generate-pdf', authenticate, async (req, res) => {
     doc.setFontSize(10);
     doc.setTextColor(51, 51, 51);
 
-    const bankName = cleanText(settings?.bank_name || '');
-    const accountName = cleanText(settings?.account_name || '');
-    const accountNumber = cleanText(settings?.account_number || '');
-    const paymentWhatsapp = cleanText(settings?.payment_whatsapp || '');
+    const bankName = settings?.bank_name || '';
+    const accountName = settings?.account_name || '';
+    const accountNumber = settings?.account_number || '';
+    const paymentWhatsapp = settings?.payment_whatsapp || '';
 
     if (bankName) { doc.text(`Bank: ${bankName}`, margin, y); y += 6; }
     if (accountName) { doc.text(`Account Name: ${accountName}`, margin, y); y += 6; }
     if (accountNumber) { doc.text(`Account Number: ${accountNumber}`, margin, y); y += 6; }
-    doc.text(`Reference: ${invoiceNumber} (use as payment reference)`, margin, y);
+    doc.text(`Reference: ${invoiceNumber}`, margin, y);
     y += 6;
     if (paymentWhatsapp) {
       doc.text(`After payment, send proof to: ${paymentWhatsapp}`, margin, y);
@@ -1500,49 +1482,51 @@ app.post('/api/invoices/:id/generate-pdf', authenticate, async (req, res) => {
 
     // ─── SAVE PDF ──────────────────────────────────────
     const pdfBuffer = doc.output('arraybuffer');
-
-    // Upload to Supabase Storage
     const fileName = `invoice_${invoice.id}_${Date.now()}.pdf`;
 
-    try {
-      const { error: uploadError } = await supabase.storage
-        .from('invoices')
-        .upload(fileName, Buffer.from(pdfBuffer), {
-          contentType: 'application/pdf',
-          cacheControl: '3600'
-        });
-
-      if (uploadError) {
-        console.error('Upload error:', uploadError);
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `inline; filename="invoice_${invoiceNumber}.pdf"`);
-        res.send(Buffer.from(pdfBuffer));
-        return;
-      }
-
-      const { data: urlData } = supabase.storage
-        .from('invoices')
-        .getPublicUrl(fileName);
-
-      const pdfUrl = urlData.publicUrl;
-
-      await supabase
-        .from('invoices')
-        .update({ pdf_url: pdfUrl })
-        .eq('id', id);
-
-      res.json({
-        success: true,
-        pdf_url: pdfUrl,
-        message: 'PDF generated successfully'
+    // Try to upload to Supabase Storage
+    const { error: uploadError } = await supabase.storage
+      .from('invoices')
+      .upload(fileName, Buffer.from(pdfBuffer), {
+        contentType: 'application/pdf',
+        cacheControl: '3600',
+        upsert: true
       });
 
-    } catch (uploadError) {
-      console.error('Upload error:', uploadError);
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `inline; filename="invoice_${invoiceNumber}.pdf"`);
-      res.send(Buffer.from(pdfBuffer));
+    if (uploadError) {
+      console.error('Invoice PDF upload failed:', uploadError);
+      return res.status(500).json({
+        error: 'PDF was created but could not be saved. Check that the Supabase Storage bucket "invoices" exists and is accessible.',
+        details: uploadError.message
+      });
     }
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from('invoices')
+      .getPublicUrl(fileName);
+
+    const pdfUrl = urlData.publicUrl;
+
+    // Update invoice with PDF URL
+    const { error: updateError } = await supabase
+      .from('invoices')
+      .update({ pdf_url: pdfUrl })
+      .eq('id', id);
+
+    if (updateError) {
+      console.error('Invoice PDF URL update failed:', updateError);
+      return res.status(500).json({
+        error: 'PDF was uploaded, but the invoice could not be updated with its PDF URL.',
+        details: updateError.message
+      });
+    }
+
+    res.json({
+      success: true,
+      pdf_url: pdfUrl,
+      message: 'PDF generated successfully'
+    });
 
   } catch (error) {
     console.error('PDF generation error:', error);
