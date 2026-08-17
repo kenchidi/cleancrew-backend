@@ -1232,7 +1232,350 @@ app.post('/api/revenue/lock', authenticate, async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+// ─── ──────────────────────────────────────────────────────
+// ─── INVOICE SETTINGS ROUTES ─────────────────────────────
+// ─── ──────────────────────────────────────────────────────
 
+// ─── Get Invoice Settings ────────────────────────────────
+app.get('/api/invoice-settings', authenticate, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('invoice_settings')
+      .select('*')
+      .eq('user_id', req.user.id)
+      .maybeSingle();
+
+    if (error) throw error;
+    res.json(data || {});
+  } catch (error) {
+    console.error('Get invoice settings error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ─── Save Invoice Settings ──────────────────────────────
+app.post('/api/invoice-settings', authenticate, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('invoice_settings')
+      .upsert({
+        user_id: req.user.id,
+        ...req.body,
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    console.error('Save invoice settings error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ─── ──────────────────────────────────────────────────────
+// ─── GENERATE INVOICE PDF ────────────────────────────────
+// ─── ──────────────────────────────────────────────────────
+
+// ─── Generate PDF for an invoice ─────────────────────────
+app.post('/api/invoices/:id/generate-pdf', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    // 1. Get invoice details
+    const { data: invoice, error: invoiceError } = await supabase
+      .from('invoices')
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', userId)
+      .single();
+
+    if (invoiceError) throw invoiceError;
+    if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
+
+    // 2. Get invoice settings
+    const { data: settings, error: settingsError } = await supabase
+      .from('invoice_settings')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (settingsError) throw settingsError;
+
+    // 3. Generate PDF using jsPDF
+    const { jsPDF } = require('jspdf');
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 20;
+    let y = 20;
+
+    // ─── HEADER ────────────────────────────────────────────
+    const businessName = settings?.business_name || 'CleanCrew Laundry';
+    const address = settings?.business_address || '';
+    const phone = settings?.phone || '';
+    const email = settings?.email || '';
+
+    // Business Name
+    doc.setFontSize(24);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(26, 109, 219);
+    doc.text(businessName, margin, y);
+    y += 10;
+
+    // Address & Contact
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 100, 100);
+    if (address) { doc.text(address, margin, y); y += 6; }
+    if (phone) { doc.text(`📞 ${phone}`, margin, y); y += 6; }
+    if (email) { doc.text(`✉️ ${email}`, margin, y); y += 6; }
+
+    y += 4;
+
+    // ─── DIVIDER LINE ─────────────────────────────────────
+    doc.setDrawColor(26, 109, 219);
+    doc.setLineWidth(0.5);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 10;
+
+    // ─── INVOICE TITLE ────────────────────────────────────
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(26, 109, 219);
+    doc.text('INVOICE', margin, y);
+    
+    // Invoice number and date (right aligned)
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(51, 51, 51);
+    const invoiceNumber = invoice.number || invoice.invoice_numb || `CC-${String(invoice.id).slice(0, 8)}`;
+    const invoiceDate = new Date(invoice.date || invoice.created_at).toLocaleDateString('en-NG', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+    
+    doc.text(`#${invoiceNumber}`, pageWidth - margin - 10, y, { align: 'right' });
+    y += 8;
+    doc.text(`Date: ${invoiceDate}`, pageWidth - margin - 10, y, { align: 'right' });
+    y += 8;
+    
+    const statusText = invoice.status || 'Unpaid';
+    const statusColor = statusText === 'paid' ? '#16A34A' : (statusText === 'pending' ? '#F0A421' : '#DC2626');
+    doc.setTextColor(statusColor);
+    doc.text(`Status: ${statusText.charAt(0).toUpperCase() + statusText.slice(1)}`, pageWidth - margin - 10, y, { align: 'right' });
+
+    y += 14;
+
+    // ─── BILL TO ──────────────────────────────────────────
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(51, 51, 51);
+    doc.text('BILL TO:', margin, y);
+    y += 8;
+
+    doc.setFont('helvetica', 'normal');
+    doc.text(invoice.client || 'Customer', margin, y);
+    y += 6;
+    if (invoice.phone) { doc.text(`📞 ${invoice.phone}`, margin, y); y += 6; }
+
+    y += 8;
+
+    // ─── ITEMS TABLE ──────────────────────────────────────
+    const col1 = margin;
+    const col2 = 110;
+    const col3 = 150;
+    const col4 = 175;
+    const rowHeight = 8;
+
+    doc.setFillColor(240, 244, 248);
+    doc.rect(margin, y - 4, pageWidth - (margin * 2), rowHeight, 'F');
+    
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(51, 51, 51);
+    doc.text('Description', col1, y);
+    doc.text('Qty', col2, y);
+    doc.text('Price', col3, y);
+    doc.text('Total', col4, y);
+
+    y += rowHeight + 4;
+
+    // Table rows
+    const amount = invoice.amount || invoice.amount_due || 0;
+    let items = [];
+    
+    if (invoice.items) {
+      try {
+        items = typeof invoice.items === 'string' ? JSON.parse(invoice.items) : invoice.items;
+      } catch (e) { items = []; }
+    }
+    
+    if (!items || items.length === 0) {
+      items = [{ name: invoice.service || 'Service', qty: 1, price: amount }];
+    }
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(51, 51, 51);
+
+    items.forEach((item) => {
+      const itemName = item.name || item.service || 'Service';
+      const qty = item.qty || 1;
+      const price = item.price || (amount / qty) || 0;
+      const total = qty * price;
+
+      doc.text(itemName.substring(0, 30), col1, y);
+      doc.text(String(qty), col2, y);
+      doc.text(`₦${price.toLocaleString()}`, col3, y);
+      doc.text(`₦${total.toLocaleString()}`, col4, y);
+
+      y += rowHeight;
+      
+      if (y > 260) {
+        doc.addPage();
+        y = 20;
+      }
+    });
+
+    y += 4;
+
+    // ─── TOTAL ──────────────────────────────────────────
+    doc.setDrawColor(200, 200, 200);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 6;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(26, 109, 219);
+    doc.text('TOTAL', col3, y);
+    doc.text(`₦${amount.toLocaleString()}`, col4, y);
+
+    y += 16;
+
+    // ─── PAYMENT INSTRUCTIONS ──────────────────────────
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(26, 109, 219);
+    doc.text('💳 Payment Instructions', margin, y);
+    y += 8;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(51, 51, 51);
+
+    const bankName = settings?.bank_name || '';
+    const accountName = settings?.account_name || '';
+    const accountNumber = settings?.account_number || '';
+
+    if (bankName) { doc.text(`Bank: ${bankName}`, margin, y); y += 6; }
+    if (accountName) { doc.text(`Account Name: ${accountName}`, margin, y); y += 6; }
+    if (accountNumber) { doc.text(`Account Number: ${accountNumber}`, margin, y); y += 6; }
+    doc.text(`Reference: ${invoiceNumber} (use as payment reference)`, margin, y);
+    y += 6;
+
+    if (settings?.payment_whatsapp) {
+      doc.text(`📞 After payment, send proof to: ${settings.payment_whatsapp}`, margin, y);
+      y += 10;
+    }
+
+    // ─── FOOTER ──────────────────────────────────────────
+    const footerY = 280;
+    doc.setFontSize(9);
+    doc.setTextColor(150, 150, 150);
+    doc.setFont('helvetica', 'italic');
+    doc.text(`Thank you for choosing ${businessName}!`, margin, footerY);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(180, 180, 180);
+    doc.text(`⚡ Powered by CleanCrew — cleancrewapp.com`, margin, footerY + 6);
+
+    // ─── SAVE PDF ──────────────────────────────────────
+    const pdfBuffer = doc.output('arraybuffer');
+
+    // Upload to Supabase Storage
+    const fileName = `invoice_${invoice.id}_${Date.now()}.pdf`;
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('invoices')
+      .upload(fileName, Buffer.from(pdfBuffer), {
+        contentType: 'application/pdf',
+        cacheControl: '3600'
+      });
+
+    if (uploadError) {
+      // If bucket doesn't exist, return the PDF directly
+      res.setHeader('Content-Type', 'application/pdf');
+      res.send(Buffer.from(pdfBuffer));
+      return;
+    }
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from('invoices')
+      .getPublicUrl(fileName);
+
+    const pdfUrl = urlData.publicUrl;
+
+    // Update invoice with PDF URL
+    await supabase
+      .from('invoices')
+      .update({ pdf_url: pdfUrl })
+      .eq('id', id);
+
+    res.json({
+      success: true,
+      pdf_url: pdfUrl,
+      message: 'PDF generated successfully'
+    });
+
+  } catch (error) {
+    console.error('Generate PDF error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ─── Get Invoice PDF ────────────────────────────────────
+app.get('/api/invoices/:id/pdf', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const { data: invoice, error: invoiceError } = await supabase
+      .from('invoices')
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', userId)
+      .single();
+
+    if (invoiceError) throw invoiceError;
+    if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
+
+    if (invoice.pdf_url) {
+      return res.json({ pdf_url: invoice.pdf_url });
+    }
+
+    return res.status(404).json({ error: 'PDF not generated yet' });
+    
+  } catch (error) {
+    console.error('Get invoice PDF error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+// ─── ──────────────────────────────────────────────────────
+// ─── START SERVER ──────────────────────────────────────────
+// ─── ──────────────────────────────────────────────────────
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`✅ CleanCrew server running on port ${PORT}`);
+    console.log(`   Local: http://localhost:${PORT}`);
+});
 
 // ─── ──────────────────────────────────────────────────────
 // ─── START SERVER ──────────────────────────────────────────
