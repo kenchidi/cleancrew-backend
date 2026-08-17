@@ -289,6 +289,8 @@ app.post('/api/auth/login', async (req, res) => {
 
         res.json({
             token: authData.session.access_token,
+            refresh_token: authData.session.refresh_token,
+            expires_in: authData.session.expires_in,
             user: {
                 id: authData.user.id,
                 email: authData.user.email,
@@ -298,6 +300,33 @@ app.post('/api/auth/login', async (req, res) => {
         });
     } catch (error) {
         console.error('Login error:', error);
+        res.status(401).json({ error: error.message });
+    }
+});
+
+// ─── ✅ TOKEN REFRESH ROUTE ──────────────────────────────
+// Exchanges a Supabase refresh_token for a new access token, so the
+// dashboard can silently renew a session instead of failing with
+// "Invalid token" once the access token's 1-hour lifetime is up.
+app.post('/api/auth/refresh', async (req, res) => {
+    try {
+        const { refresh_token } = req.body;
+        if (!refresh_token) {
+            return res.status(400).json({ error: 'refresh_token is required' });
+        }
+
+        const { data, error } = await supabase.auth.refreshSession({ refresh_token });
+        if (error || !data.session) {
+            return res.status(401).json({ error: 'Invalid or expired refresh token' });
+        }
+
+        res.json({
+            token: data.session.access_token,
+            refresh_token: data.session.refresh_token,
+            expires_in: data.session.expires_in
+        });
+    } catch (error) {
+        console.error('Token refresh error:', error);
         res.status(401).json({ error: error.message });
     }
 });
@@ -358,6 +387,15 @@ app.post('/api/auth/resend-confirmation', async (req, res) => {
 });
 
 // ─── Get User ─────────────────────────────────────────────
+// ─── ✅ HEALTH CHECK ─────────────────────────────────────
+// Lightweight, unauthenticated endpoint. Point an external uptime
+// monitor (UptimeRobot, cron-job.org, etc.) at this every 5-10 minutes
+// to prevent Render's free tier from spinning the service down and
+// causing a slow "cold start" on the next real request (e.g. login).
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', time: new Date().toISOString() });
+});
+
 app.get('/api/user', authenticate, async (req, res) => {
     try {
         const plan = await getUserPlan(req.user.id);
