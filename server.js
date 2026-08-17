@@ -1075,8 +1075,8 @@ app.get('/api/owner-pin/status', authenticate, async (req, res) => {
             .from('subscriptions')
             .select('owner_pin_hash')
             .eq('user_id', req.user.id)
-            .single();
-        if (error && error.code !== 'PGRST116') throw error;
+            .maybeSingle();
+        if (error) throw error;
         res.json({ has_pin: !!(data && data.owner_pin_hash) });
     } catch (error) {
         console.error('owner-pin status:', error);
@@ -1091,25 +1091,43 @@ app.post('/api/owner-pin/set', authenticate, async (req, res) => {
         if (!/^\d{4,6}$/.test(pin)) {
             return res.status(400).json({ error: 'PIN must be 4–6 digits' });
         }
-        const { data: sub } = await supabase
+        const { data: sub, error: subErr } = await supabase
             .from('subscriptions')
-            .select('owner_pin_hash')
+            .select('user_id, owner_pin_hash, plan, status')
             .eq('user_id', req.user.id)
-            .single();
+            .maybeSingle();
+        if (subErr) throw subErr;
+
         if (sub && sub.owner_pin_hash) {
             if (!current || hashPin(current) !== sub.owner_pin_hash) {
-                return res.status(403).json({ error: 'Current PIN is incorrect' });
+                return res.status(403).json({
+                    error: 'Current PIN is incorrect. Enter your existing PIN to change it.'
+                });
             }
         }
-        const { error } = await supabase
-            .from('subscriptions')
-            .upsert({
-                user_id: req.user.id,
-                owner_pin_hash: hashPin(pin),
-                plan: (sub && sub.plan) || 'free',
-                status: (sub && sub.status) || 'active'
-            }, { onConflict: 'user_id' });
-        if (error) throw error;
+
+        const payload = {
+            owner_pin_hash: hashPin(pin),
+            updated_at: new Date().toISOString()
+        };
+
+        if (sub && sub.user_id) {
+            const { error } = await supabase
+                .from('subscriptions')
+                .update(payload)
+                .eq('user_id', req.user.id);
+            if (error) throw error;
+        } else {
+            const { error } = await supabase
+                .from('subscriptions')
+                .insert({
+                    user_id: req.user.id,
+                    plan: 'free',
+                    status: 'active',
+                    ...payload
+                });
+            if (error) throw error;
+        }
         res.json({ success: true, has_pin: true });
     } catch (error) {
         console.error('owner-pin set:', error);
@@ -1124,8 +1142,8 @@ app.post('/api/owner-pin/verify', authenticate, async (req, res) => {
             .from('subscriptions')
             .select('owner_pin_hash')
             .eq('user_id', req.user.id)
-            .single();
-        if (error && error.code !== 'PGRST116') throw error;
+            .maybeSingle();
+        if (error) throw error;
         if (!data || !data.owner_pin_hash) {
             return res.json({ ok: true, unlocked: true, has_pin: false });
         }
