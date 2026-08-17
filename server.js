@@ -23,6 +23,10 @@ const supabase = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY
 );
+console.log(
+    'Supabase service role key loaded:',
+    !!process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 // ─── Paystack config ──────────────────────────────────────
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
