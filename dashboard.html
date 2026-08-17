@@ -1,0 +1,3326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CleanCrew — Dashboard</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png?v=2" />
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png?v=2" />
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=2" />
+    <link rel="manifest" href="site.webmanifest" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+    <style>
+        /* ============================================
+           TOKENS
+        ============================================ */
+        :root {
+            --blue: #1A6DDB;
+            --blue-dark: #0F4FA8;
+            --blue-deep: #0B3B85;
+            --blue-light: #EBF3FE;
+            --blue-mist: #F5F9FF;
+            --blue-glow: #F5F9FF;
+            --blue-gradient: linear-gradient(135deg, #2E7DE8 0%, #0F4FA8 100%);
+            --ink: #0B1526;
+            --ink-soft: #33405C;
+            --slate: #5B6B85;
+            --slate-light: #93A0B8;
+            --border: #E7EBF3;
+            --surface: #F7F9FC;
+            --white: #FFFFFF;
+            --green: #16A34A;
+            --red: #DC2626;
+            --amber: #F0A421;
+            --whatsapp: #25D366;
+            --radius-lg: 24px;
+            --radius: 16px;
+            --radius-sm: 11px;
+            --shadow-sm: 0 1px 2px rgba(11,21,38,.05), 0 1px 1px rgba(11,21,38,.04);
+            --shadow-md: 0 10px 30px rgba(11,21,38,.07);
+            --shadow-lg: 0 24px 64px rgba(11,21,38,.14);
+            --shadow-blue: 0 14px 34px rgba(15,79,168,.28);
+        }
+
+        /* ============================================
+           RESET
+        ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            background: var(--surface);
+            color: var(--ink);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 20px 24px;
+        }
+
+        /* ============================================
+           ICONS
+        ============================================ */
+        .icon {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 1.7;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            flex-shrink: 0;
+        }
+        .icon-sm {
+            width: 14px;
+            height: 14px;
+        }
+        .icon-lg {
+            width: 22px;
+            height: 22px;
+        }
+        .icon-xl {
+            width: 28px;
+            height: 28px;
+        }
+        .icon-fill {
+            fill: currentColor;
+            stroke: none;
+        }
+        .icon-green {
+            color: var(--green);
+        }
+        .icon-blue {
+            color: var(--blue);
+        }
+        .icon-amber {
+            color: var(--amber);
+        }
+        .icon-red {
+            color: var(--red);
+        }
+        .icon-whatsapp {
+            color: var(--whatsapp);
+        }
+        .icon-slate {
+            color: var(--slate);
+        }
+
+        /* ============================================
+           BUTTONS
+        ============================================ */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            text-decoration: none;
+            justify-content: center;
+            white-space: nowrap;
+        }
+        .btn .icon {
+            width: 15px;
+            height: 15px;
+        }
+        .btn-primary {
+            background: var(--blue-gradient);
+            color: #fff;
+            box-shadow: var(--shadow-blue);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 40px rgba(15,79,168,.36);
+        }
+        .btn-secondary {
+            background: var(--white);
+            color: var(--blue);
+            border: 1.5px solid var(--border);
+        }
+        .btn-secondary:hover {
+            border-color: var(--blue);
+            background: var(--blue-mist);
+            transform: translateY(-2px);
+        }
+        .btn-success {
+            background: var(--green);
+            color: #fff;
+        }
+        .btn-success:hover {
+            opacity: 0.85;
+            transform: translateY(-2px);
+        }
+        .btn-danger {
+            background: var(--red);
+            color: #fff;
+        }
+        .btn-danger:hover {
+            opacity: 0.85;
+            transform: translateY(-2px);
+        }
+        .btn-whatsapp {
+            background: var(--whatsapp);
+            color: #fff;
+        }
+        .btn-whatsapp:hover {
+            opacity: 0.85;
+            transform: translateY(-2px);
+        }
+        .btn-outline {
+            background: transparent;
+            color: var(--slate);
+            border: 1.5px solid var(--border);
+        }
+        .btn-outline:hover {
+            background: var(--surface);
+        }
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 11px;
+        }
+        .btn-sm .icon {
+            width: 13px;
+            height: 13px;
+        }
+        .btn-block {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* ============================================
+           HEADER
+        ============================================ */
+        .header {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 12px 20px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        .logo .mark {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            background: var(--blue-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(15,79,168,.3);
+        }
+        .logo .mark svg {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: #fff;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+        }
+        .logo .word {
+            font-size: 19px;
+            font-weight: 800;
+            color: var(--ink);
+            letter-spacing: -0.4px;
+        }
+        .logo .word span {
+            color: var(--blue);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .user-info .email {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--slate);
+        }
+        .user-info .plan-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 100px;
+            display: none;
+        }
+        .user-info .plan-badge.active {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        .user-info .plan-badge.trial {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+        .user-info .plan-badge.expired {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 14px;
+            background: var(--red);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 12px;
+            transition: opacity 0.15s ease;
+        }
+        .logout-btn:hover {
+            opacity: 0.85;
+        }
+        .logout-btn .icon {
+            width: 13px;
+            height: 13px;
+            stroke: #fff;
+        }
+
+        .service-toggle {
+            display: flex;
+            gap: 4px;
+            background: var(--surface);
+            border-radius: var(--radius-sm);
+            padding: 3px;
+            border: 1px solid var(--border);
+        }
+        .service-toggle button {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 14px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            color: var(--slate);
+        }
+        .service-toggle button .icon {
+            width: 14px;
+            height: 14px;
+        }
+        .service-toggle button.active {
+            background: var(--white);
+            color: var(--ink);
+            box-shadow: var(--shadow-sm);
+        }
+        .service-toggle button.cleaning.active {
+            color: var(--blue);
+        }
+        .service-toggle button.laundry.active {
+            color: var(--whatsapp);
+        }
+
+        /* ============================================
+           NAV TABS
+        ============================================ */
+        .nav-tabs {
+            display: flex;
+            gap: 3px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            background: var(--white);
+            padding: 4px 6px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+        }
+        .nav-tabs button {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            color: var(--slate);
+        }
+        .nav-tabs button .icon {
+            width: 15px;
+            height: 15px;
+        }
+        .nav-tabs button:hover {
+            background: var(--surface);
+            color: var(--ink);
+        }
+        .nav-tabs button.active {
+            background: var(--blue);
+            color: #fff;
+        }
+        .nav-tabs button.active .icon {
+            stroke: #fff;
+        }
+
+        /* ============================================
+           TAB CONTENT
+        ============================================ */
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ============================================
+           CARDS
+        ============================================ */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 22px 26px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 20px;
+            transition: box-shadow 0.2s ease;
+        }
+        .card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .card-header h3 {
+            font-size: 17px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-header h3 .icon {
+            width: 20px;
+            height: 20px;
+            color: var(--blue);
+        }
+
+        /* ============================================
+           STATS
+        ============================================ */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .stat-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        .stat-card .stat-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--slate);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-card .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            margin-top: 2px;
+        }
+        .stat-card .stat-icon {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            opacity: 0.3;
+        }
+        .stat-card .stat-icon .icon {
+            width: 24px;
+            height: 24px;
+        }
+        .stat-card.primary .stat-value {
+            color: var(--blue);
+        }
+        .stat-card.primary .stat-icon {
+            color: var(--blue);
+        }
+        .stat-card.green .stat-value {
+            color: var(--green);
+        }
+        .stat-card.green .stat-icon {
+            color: var(--green);
+        }
+        .stat-card.orange .stat-value {
+            color: var(--amber);
+        }
+        .stat-card.orange .stat-icon {
+            color: var(--amber);
+        }
+
+        /* ============================================
+           TABLES
+        ============================================ */
+        .table-wrap {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        th {
+            text-align: left;
+            padding: 10px 12px;
+            background: var(--surface);
+            font-weight: 700;
+            color: var(--slate);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+        }
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+        tr:hover td {
+            background: var(--surface);
+        }
+        .table-actions {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        /* ============================================
+           STATUS BADGES
+        ============================================ */
+        .status-badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 100px;
+            text-transform: uppercase;
+            display: inline-block;
+            letter-spacing: 0.3px;
+        }
+        .status-badge.pending {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+        .status-badge.completed {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        .status-badge.in-progress {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+        .status-badge.collected {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+        .status-badge.washed {
+            background: #E0E7FF;
+            color: #3730A3;
+        }
+        .status-badge.dried {
+            background: #EDE9FE;
+            color: #5B21B6;
+        }
+        .status-badge.folded {
+            background: #FCE7F3;
+            color: #9D174D;
+        }
+        .status-badge.ready {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        .status-badge.delivered {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        .status-badge.cancelled {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+        .status-badge.sent {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        /* ============================================
+           FORMS
+        ============================================ */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .form-grid .full-width {
+            grid-column: 1 / -1;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .form-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--slate);
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 10px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 13px;
+            transition: all 0.15s ease;
+            outline: none;
+            background: var(--white);
+            color: var(--ink);
+            width: 100%;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(26,109,219,0.12);
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* ============================================
+           MODAL
+        ============================================ */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(11,21,38,0.5);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-box {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            max-width: 540px;
+            width: 92%;
+            max-height: 92vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+        .modal-box .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+        .modal-box .modal-header h3 {
+            font-size: 18px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .modal-box .modal-header h3 .icon {
+            width: 22px;
+            height: 22px;
+            color: var(--blue);
+        }
+        .modal-box .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--slate);
+            padding: 4px;
+            line-height: 1;
+        }
+
+        /* ============================================
+           TOAST
+        ============================================ */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--ink);
+            color: #fff;
+            padding: 14px 24px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 999;
+            transform: translateY(80px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            max-width: 400px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .toast .icon {
+            width: 18px;
+            height: 18px;
+            stroke: #fff;
+            flex-shrink: 0;
+        }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .toast.success {
+            background: var(--green);
+        }
+        .toast.whatsapp {
+            background: var(--whatsapp);
+        }
+        .toast.error {
+            background: var(--red);
+        }
+
+        /* ============================================
+           WHATSAPP LIMIT WARNING
+        ============================================ */
+        .whatsapp-limit-warning {
+            display: none;
+            background: #FEF3C7;
+            border: 1px solid #F59E0B;
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            margin-bottom: 16px;
+        }
+        .whatsapp-limit-warning p {
+            font-size: 13px;
+            color: #92400E;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .whatsapp-limit-warning a {
+            color: var(--blue);
+            font-weight: 700;
+            text-decoration: none;
+            background: var(--white);
+            padding: 4px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+        .whatsapp-limit-warning a:hover {
+            background: var(--blue-light);
+        }
+
+        /* ============================================
+           PRICING PLANS
+        ============================================ */
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        .plan-card {
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 18px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: var(--white);
+        }
+        .plan-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        .plan-card.popular {
+            border-color: var(--blue);
+            background: var(--blue-glow);
+            box-shadow: var(--shadow-md);
+        }
+        .plan-card.popular .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: var(--blue-light);
+            color: var(--blue-dark);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            padding: 4px 12px;
+            border-radius: 100px;
+            margin-bottom: 10px;
+        }
+        .plan-card.popular .badge .icon {
+            width: 12px;
+            height: 12px;
+        }
+        .plan-card .name {
+            font-size: 17px;
+            font-weight: 800;
+        }
+        .plan-card .price {
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--ink);
+            margin: 8px 0 2px;
+            letter-spacing: -0.5px;
+        }
+        .plan-card .price span {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--slate);
+            letter-spacing: 0;
+        }
+        .plan-card .price-note {
+            font-size: 12px;
+            color: var(--slate);
+            margin-bottom: 14px;
+        }
+        .plan-card ul {
+            list-style: none;
+            text-align: left;
+            margin: 0 0 16px;
+        }
+        .plan-card ul li {
+            padding: 5px 0;
+            font-size: 12.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--ink-soft);
+            border-top: 1px solid var(--border);
+        }
+        .plan-card ul li:first-child {
+            border-top: none;
+        }
+        .plan-card ul li .icon {
+            width: 14px;
+            height: 14px;
+            color: var(--green);
+            flex-shrink: 0;
+        }
+        .plan-card .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .subscription-status .status-box {
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .subscription-status .status-box .icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+        .subscription-status .status-box.active {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        .subscription-status .status-box.active .icon {
+            color: var(--green);
+        }
+        .subscription-status .status-box.trial {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+        .subscription-status .status-box.trial .icon {
+            color: var(--amber);
+        }
+        .subscription-status .status-box.expired {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+        .subscription-status .status-box.expired .icon {
+            color: var(--red);
+        }
+        .subscription-status .status-box p {
+            font-weight: 700;
+        }
+        .subscription-status .status-box .sub-text {
+            font-weight: 400;
+            font-size: 13px;
+        }
+
+        /* ============================================
+           INVENTORY
+        ============================================ */
+        .inv-category-badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 100px;
+            display: inline-block;
+            margin-left: 8px;
+        }
+        .inv-category-badge.cleaning {
+            background: var(--blue-light);
+            color: var(--blue);
+        }
+        .inv-category-badge.laundry {
+            background: #E8F8EF;
+            color: var(--whatsapp);
+        }
+
+        .laundry-items {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 8px 0;
+        }
+        .laundry-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0;
+            background: transparent;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+        }
+        .laundry-item .remove-item {
+            background: none;
+            border: none;
+            color: var(--red);
+            cursor: pointer;
+            font-size: 18px;
+            line-height: 1;
+            padding: 4px 8px;
+            flex-shrink: 0;
+        }
+
+        /* ============================================
+           MESSAGE PREVIEW
+        ============================================ */
+        .message-preview {
+            background: var(--surface);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            margin: 8px 0;
+            border-left: 3px solid var(--whatsapp);
+            white-space: pre-wrap;
+            font-size: 13px;
+        }
+
+        /* ============================================
+           RESPONSIVE
+        ============================================ */
+        @media (max-width: 768px) {
+            .container {
+                padding: 12px;
+            }
+            .header {
+                flex-direction: column;
+                text-align: center;
+                padding: 14px 16px;
+            }
+            .user-info {
+                justify-content: center;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+            .stat-card {
+                padding: 12px 14px;
+            }
+            .stat-card .stat-value {
+                font-size: 20px !important;
+            }
+            .stat-card .stat-label {
+                font-size: 9px !important;
+            }
+            .stat-card .stat-icon {
+                top: 10px;
+                right: 10px;
+            }
+            .stat-card .stat-icon .icon {
+                width: 18px;
+                height: 18px;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .nav-tabs {
+                padding: 4px 6px;
+                gap: 2px;
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                -webkit-overflow-scrolling: touch;
+            }
+            .nav-tabs button {
+                font-size: 10px !important;
+                padding: 6px 12px !important;
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+            .nav-tabs button .icon {
+                width: 13px;
+                height: 13px;
+            }
+            .card {
+                padding: 14px 16px;
+            }
+            .card-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .card-header h3 {
+                font-size: 15px;
+            }
+            .card-header .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            .plans-grid {
+                grid-template-columns: 1fr !important;
+                gap: 12px !important;
+            }
+            .plan-card .price {
+                font-size: 22px !important;
+            }
+            .table-wrap {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            table {
+                font-size: 11px !important;
+                min-width: 500px;
+            }
+            table th,
+            table td {
+                padding: 6px 8px !important;
+            }
+            .laundry-items {
+                grid-template-columns: 1fr;
+            }
+            .service-toggle button {
+                font-size: 10px !important;
+                padding: 4px 10px !important;
+            }
+            .service-toggle button .icon {
+                width: 13px;
+                height: 13px;
+            }
+            .modal-box {
+                padding: 20px 16px;
+            }
+            .logo .word {
+                font-size: 16px;
+            }
+            .logo .mark {
+                width: 28px;
+                height: 28px;
+            }
+            .logo .mark svg {
+                width: 17px;
+                height: 17px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            .stat-card {
+                padding: 10px 12px;
+            }
+            .stat-card .stat-value {
+                font-size: 16px !important;
+            }
+            .stat-card .stat-icon .icon {
+                width: 15px;
+                height: 15px;
+            }
+            .card {
+                padding: 12px;
+            }
+            .card-header h3 {
+                font-size: 14px;
+            }
+            .nav-tabs button {
+                font-size: 9px !important;
+                padding: 4px 8px !important;
+            }
+            .nav-tabs button .icon {
+                width: 11px;
+                height: 11px;
+            }
+            .logo .word {
+                font-size: 14px;
+            }
+            .logo .mark {
+                width: 24px;
+                height: 24px;
+            }
+            .logo .mark svg {
+                width: 14px;
+                height: 14px;
+            }
+            .plan-card .price {
+                font-size: 18px !important;
+            }
+            .user-info .email {
+                font-size: 11px;
+            }
+            .btn {
+                font-size: 12px;
+                padding: 8px 14px;
+            }
+            .btn-sm {
+                font-size: 10px;
+                padding: 4px 10px;
+            }
+        }
+    
+        /* Mobile messages + support float */
+        .template-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        @media (min-width: 640px) {
+            .template-row { grid-template-columns: repeat(4, 1fr); }
+        }
+        .template-row .btn { width: 100%; justify-content: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .recipient-list {
+            max-height: 220px;
+            overflow-y: auto;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 8px;
+            background: #fff;
+        }
+        .recipient-list label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .recipient-list label:last-child { border-bottom: none; }
+        .recipient-list input { width: 18px; height: 18px; flex-shrink: 0; }
+        .support-fab {
+            position: fixed;
+            right: 18px;
+            bottom: 22px;
+            z-index: 9999;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #25D366;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 24px rgba(37, 211, 102, 0.45);
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .support-fab:hover { transform: scale(1.05); }
+        .support-fab .icon { width: 28px; height: 28px; stroke: #fff; }
+        .revenue-locked .stat-value { filter: blur(6px); user-select: none; }
+        .unlock-revenue-btn { margin-top: 6px; font-size: 12px; }
+        body { overflow-x: hidden; }
+        #tab-messages, #tab-messages .card { max-width: 100%; overflow-x: hidden; }
+
+    </style>
+</head>
+<body>
+
+    <!-- ============================================
+    ICON SPRITE
+    ============================================ -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <defs>
+            <symbol id="ic-sparkle" viewBox="0 0 24 24"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z"/></symbol>
+            <symbol id="ic-clipboard" viewBox="0 0 24 24"><path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><rect x="5" y="5" width="14" height="16" rx="2"/><path d="M9 11h6M9 15h6"/></symbol>
+            <symbol id="ic-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></symbol>
+            <symbol id="ic-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 2.7-5 6-5s6 2 6 5"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 20c.2-2.3 1.8-4 3.8-4.3"/></symbol>
+            <symbol id="ic-file" viewBox="0 0 24 24"><path d="M7 3h7l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4"/><path d="M9 13h6M9 16.5h6"/></symbol>
+            <symbol id="ic-wallet" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="16.5" cy="14" r="1.2" fill="currentColor" stroke="none"/></symbol>
+            <symbol id="ic-box" viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M4.5 7.5L12 12l7.5-4.5M12 12v9"/></symbol>
+            <symbol id="ic-chart" viewBox="0 0 24 24"><path d="M4 20V10M11 20V4M18 20v-7"/><path d="M3 20h18"/></symbol>
+            <symbol id="ic-chat" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-8 8H7l-4 3 .9-4.2A8 8 0 1 1 21 12z"/></symbol>
+            <symbol id="ic-check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></symbol>
+            <symbol id="ic-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+            <symbol id="ic-bell" viewBox="0 0 24 24"><path d="M6 10a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 14 6 10z"/><path d="M10 19a2 2 0 0 0 4 0"/></symbol>
+            <symbol id="ic-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></symbol>
+            <symbol id="ic-edit" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></symbol>
+            <symbol id="ic-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16v.01"/></symbol>
+            <symbol id="ic-x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+            <symbol id="ic-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+            <symbol id="ic-laundry" viewBox="0 0 24 24"><path d="M4 6h16l-1.5 13.5a2 2 0 0 1-2 1.5H7.5a2 2 0 0 1-2-1.5L4 6z"/><path d="M9 6V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V6"/><circle cx="12" cy="13" r="3.5"/><path d="M12 11.5c.8.6.8 1.9 0 2.5"/></symbol>
+        </defs>
+    </svg>
+
+    <div class="container">
+
+        <!-- ─── HEADER ─── -->
+        <div class="header">
+            <a href="dashboard.html" class="logo">
+                <span class="mark">
+                    <svg viewBox="0 0 100 100">
+                        <path d="M80 34 C74 22 62 14 48 14 C28 14 12 30 12 50 C12 70 28 86 48 86 C62 86 74 78 80 66" stroke="white" stroke-width="13" stroke-linecap="round" />
+                        <g transform="translate(68,46)">
+                            <path d="M0,-9 L1.6,-1.6 L9,0 L1.6,1.6 L0,9 L-1.6,1.6 L-9,0 L-1.6,-1.6 Z" fill="white" />
+                        </g>
+                    </svg>
+                </span>
+                <span class="word">Clean<span>Crew</span>.</span>
+            </a>
+            <div class="user-info">
+                <span class="email" id="userEmail">Loading...</span>
+                <span id="planBadge" class="plan-badge active" style="display:none;"></span>
+                <div class="service-toggle">
+                    <button type="button" class="cleaning active" id="modeCleaning" onclick="setServiceType('cleaning')">
+                        <svg class="icon"><use href="#ic-sparkle"/></svg> Cleaning
+                    </button>
+                    <button type="button" class="laundry" id="modeLaundry" onclick="setServiceType('laundry')">
+                        <svg class="icon"><use href="#ic-laundry"/></svg> Laundry
+                    </button>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <svg class="icon"><use href="#ic-x"/></svg> Logout
+                </button>
+            </div>
+        </div>
+
+        <!-- ─── NAV TABS ─── -->
+        <div class="nav-tabs">
+            <button class="active" onclick="switchTab('overview')">
+                <svg class="icon"><use href="#ic-chart"/></svg> Overview
+            </button>
+            <button onclick="switchTab('jobs')" id="tabJobs">
+                <svg class="icon"><use href="#ic-clipboard"/></svg> Jobs
+            </button>
+            <button onclick="switchTab('clients')">
+                <svg class="icon"><use href="#ic-user"/></svg> Clients
+            </button>
+            <button onclick="switchTab('messages')">
+                <svg class="icon"><use href="#ic-chat"/></svg> Messages
+            </button>
+            <button onclick="switchTab('inventory')" id="tabInventory">
+                <svg class="icon"><use href="#ic-box"/></svg> Inventory
+            </button>
+            <button id="tabStaff" style="display:none;" onclick="switchTab('staff')">
+                <svg class="icon"><use href="#ic-users"/></svg> Staff
+            </button>
+            <button id="tabInvoices" style="display:none;" onclick="switchTab('invoices')">
+                <svg class="icon"><use href="#ic-file"/></svg> Invoices
+            </button>
+        </div>
+
+        <!-- ════ OVERVIEW TAB ════ -->
+        <div class="tab-content active" id="tab-overview">
+            <div class="stats-grid">
+                <div class="stat-card primary">
+                    <span class="stat-icon"><svg class="icon"><use href="#ic-clipboard"/></svg></span>
+                    <div class="stat-label">Total Jobs</div>
+                    <div class="stat-value" id="ovJobs">0</div>
+                </div>
+                <div class="stat-card green" id="revenueStatCard">
+                    <span class="stat-icon"><svg class="icon"><use href="#ic-wallet"/></svg></span>
+                    <div class="stat-label">Revenue</div>
+                    <div class="stat-value" id="ovRevenue">₦0</div>
+                    <button type="button" class="btn btn-outline btn-sm unlock-revenue-btn" id="unlockRevenueBtn" onclick="promptUnlockRevenue()" style="display:none;">Unlock</button>
+                </div>
+                <div class="stat-card orange">
+                    <span class="stat-icon"><svg class="icon"><use href="#ic-bell"/></svg></span>
+                    <div class="stat-label">Pending</div>
+                    <div class="stat-value" id="ovPending">0</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 id="recentJobsTitle"><svg class="icon"><use href="#ic-clipboard"/></svg> Recent Jobs</h3>
+                    <button class="btn btn-primary btn-sm" onclick="openModal('job')">
+                        <svg class="icon"><use href="#ic-plus"/></svg> New Job
+                    </button>
+                </div>
+                <div id="recentJobs"><p style="color:var(--slate);">No jobs yet</p></div>
+            </div>
+
+            <!-- ─── SUBSCRIPTION / PLANS SECTION ─── -->
+            <div class="card" id="plansSection">
+                <div class="card-header">
+                    <h3><svg class="icon"><use href="#ic-sparkle"/></svg> Choose Your Plan</h3>
+                </div>
+                <div id="subscriptionStatus" class="subscription-status">
+                    <p style="color:var(--slate);">Loading...</p>
+                </div>
+                <div id="plansContainer">
+                    <div class="plans-grid">
+                        <div class="plan-card" id="planStarter" onclick="selectPlan('starter')">
+                            <div class="name">Starter</div>
+                            <div class="price">₦12,500 <span>/month</span></div>
+                            <div class="price-note">Perfect for solo cleaners</div>
+                            <ul>
+                                <li><svg class="icon"><use href="#ic-check"/></svg>Up to 50 jobs</li>
+                                <li><svg class="icon"><use href="#ic-check"/></svg>Up to 50 clients</li>
+                                <li><svg class="icon"><use href="#ic-check"/></svg>Up to 5 staff</li>
+                                <li><svg class="icon"><use href="#ic-check"/></svg>20 invoices/month</li>
+                                <li><svg class="icon"><use href="#ic-check"/></svg>100 WhatsApp messages</li>
+                                <li><svg class="icon"><use href="#ic-check"/></svg>Basic reporting</li>
+                            </ul>
+                            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); subscribeToPlan('starter')">Subscribe</button>
+                        </div>
+                        <div class="plan-card popular" id="planProfessional" onclick="selectPlan('professional')">
+                            <div class="badge"><svg class="icon"><use href="#ic-sparkle"/></svg>Best Value</div>
+                            <div class="name">Professional</div>
+                            <div class="price">₦17,500 <span>/month</span></div>
+                            <div class="price-note">For growing businesses</div>
+                            <ul>
+                                <li><svg class="icon"><use href="#ic-check"/></svg>Unlimited jobs</li>
+                                <li><svg class="icon"><use href="#ic-check"/></svg>Unlimited clients</li>
+                                <li><svg class="icon"><use href="#ic-check"/></svg>Unlimited staff</li>
+                                <li><svg class="icon"><use href="#ic-check"/></svg>Unlimited invoices</li>
+                                <li><svg class="icon"><use href="#ic-check"/></svg>Unlimited WhatsApp</li>
+                                <li><svg class="icon"><use href="#ic-check"/></svg>Revenue tracking</li>
+                            </ul>
+                            <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); subscribeToPlan('professional')">Subscribe</button>
+                        </div>
+                        <div class="plan-card" id="planEnterprise" onclick="selectPlan('enterprise')">
+                            <div class="name">Enterprise</div>
+                            <div class="price">₦35,000 <span>/month</span></div>
+                            <div class="price-note">For established teams</div>
+                            <ul>
+                                <li><svg class="icon"><use href="#ic-check"/></svg>Everything in Professional</li>
+                                <li><svg class="icon"><use href="#ic-check"/></svg>Team member access</li>
+                                <li><svg class="icon"><use href="#ic-check"/></svg>Advanced reporting</li>
+                                <li><svg class="icon"><use href="#ic-check"/></svg>Dedicated support</li>
+                            </ul>
+                            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); subscribeToPlan('enterprise')">Subscribe</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════ JOBS TAB ════ -->
+        <div class="tab-content" id="tab-jobs">
+            <div class="card">
+                <div class="card-header">
+                    <h3 id="jobsTitle"><svg class="icon"><use href="#ic-clipboard"/></svg> All Jobs</h3>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button class="btn btn-primary btn-sm" onclick="openModal('job')">
+                            <svg class="icon"><use href="#ic-plus"/></svg> New Job
+                        </button>
+                        <select id="jobFilter" onchange="renderJobs()" style="padding:6px 12px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-size:12px; font-family:inherit; background:var(--white); color:var(--ink);">
+                            <option value="all">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Client</th>
+                                <th>Service</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="jobsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════ CLIENTS TAB ════ -->
+        <div class="tab-content" id="tab-clients">
+            <div class="card">
+                <div class="card-header">
+                    <h3><svg class="icon"><use href="#ic-user"/></svg> All Clients</h3>
+                    <button class="btn btn-primary btn-sm" onclick="openModal('client')">
+                        <svg class="icon"><use href="#ic-plus"/></svg> Add Client
+                    </button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Location</th>
+                                <th>Jobs</th>
+                                <th>Total Spent</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clientsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════ MESSAGES TAB ════ -->
+        <div class="tab-content" id="tab-messages">
+            <div class="card">
+                <div class="card-header">
+                    <h3><svg class="icon"><use href="#ic-chat"/></svg> Bulk WhatsApp Messaging</h3>
+                    <button class="btn btn-whatsapp btn-sm" onclick="sendBulkWhatsApp()">
+                        <svg class="icon"><use href="#ic-chat"/></svg> Send Now
+                    </button>
+                </div>
+
+                <div class="whatsapp-limit-warning" id="whatsappLimitWarning">
+                    <p>
+                        <span><svg class="icon" style="color:var(--amber);"><use href="#ic-alert"/></svg> You've used <span id="whatsappLimitCount">0/100</span> WhatsApp messages this month.</span>
+                        <a href="#plansSection" onclick="goToPlans(event)">Upgrade plan →</a>
+                    </p>
+                </div>
+
+                <div class="template-row">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="setTemplate('newmonth')">🎉 New Month</button>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="setTemplate('festival')">🎄 Festival</button>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="setTemplate('birthday')">🎂 Birthday</button>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="setTemplate('promo')">📢 Promo</button>
+                </div>
+
+                <div class="form-group">
+                    <label>Select recipients</label>
+                    <div id="msgRecipients" class="recipient-list">
+                        <p style="color:var(--slate);font-size:13px;margin:0;">Loading clients…</p>
+                    </div>
+                    <span style="font-size:11px; color:var(--slate);">Tap names to select. Use “All clients” for everyone.</span>
+                </div>
+
+                <div class="form-group" style="margin-top:12px;">
+                    <label>💬 Message</label>
+                    <textarea id="msgBody" rows="5" placeholder="Type your message here..." style="width:100%; padding:10px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:13px; resize:vertical;"></textarea>
+                </div>
+
+                <div class="form-group" style="margin-top:12px;">
+                    <label>📋 Message Type</label>
+                    <select id="messageType" style="width:100%; padding:10px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:13px;">
+                        <option value="custom">✏️ Custom</option>
+                        <option value="newmonth">🎉 Happy New Month</option>
+                        <option value="festival">🎄 Festival Greeting</option>
+                        <option value="birthday">🎂 Birthday</option>
+                        <option value="promo">📢 Promotional Offer</option>
+                    </select>
+                </div>
+
+                <div id="messagePreview" style="margin-top:12px; display:none;">
+                    <div class="message-preview">
+                        <div style="font-size:13px; white-space:pre-wrap; color:var(--ink);" id="previewText"></div>
+                    </div>
+                </div>
+
+                <button class="btn btn-whatsapp" onclick="sendBulkWhatsApp()" style="margin-top:16px; width:100%; justify-content:center;">
+                    <svg class="icon"><use href="#ic-chat"/></svg> Send via WhatsApp
+                </button>
+
+                <div style="margin-top:16px;">
+                    <p style="font-size:12px; color:var(--slate);">📌 Messages are sent individually to each selected client. WhatsApp will open for each client.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3><svg class="icon"><use href="#ic-clipboard"/></svg> Message History</h3>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Date</th>
+                                <th>To</th>
+                                <th>Message</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="messagesTable">
+                            <tr><td colspan="6" style="text-align:center;color:var(--slate);">No messages sent yet</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════ INVENTORY TAB ════ -->
+        <div class="tab-content" id="tab-inventory">
+            <div class="card">
+                <div class="card-header">
+                    <h3 id="inventoryTitle"><svg class="icon"><use href="#ic-box"/></svg> Inventory</h3>
+                    <button class="btn btn-primary btn-sm" onclick="openModal('inventory')">
+                        <svg class="icon"><use href="#ic-plus"/></svg> Add Item
+                    </button>
+                </div>
+                <div id="inventoryList"></div>
+            </div>
+        </div>
+
+        <!-- ════ STAFF TAB ════ -->
+        <div class="tab-content" id="tab-staff">
+            <div class="card">
+                <div class="card-header">
+                    <h3><svg class="icon"><use href="#ic-users"/></svg> Staff Management</h3>
+                    <button class="btn btn-primary btn-sm" onclick="openModal('staff')">
+                        <svg class="icon"><use href="#ic-plus"/></svg> Add Staff
+                    </button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Role</th>
+                                <th>Jobs Assigned</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="staffTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════ INVOICES TAB ════ -->
+        <div class="tab-content" id="tab-invoices">
+            <div class="card">
+                <div class="card-header">
+                    <h3><svg class="icon"><use href="#ic-file"/></svg> Invoices</h3>
+                    <button class="btn btn-primary btn-sm" onclick="openModal('invoice')">
+                        <svg class="icon"><use href="#ic-plus"/></svg> Create Invoice
+                    </button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Invoice #</th>
+                                <th>Client</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoicesTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ─── MODAL ─── -->
+    <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="modalTitle"><svg class="icon"><use href="#ic-plus"/></svg> New Job</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <form id="modalForm" onsubmit="saveModalForm(event)">
+                <div class="form-grid" id="modalFormFields"></div>
+                <button type="submit" class="btn btn-primary" style="width:100%; margin-top:16px;">
+                    <svg class="icon"><use href="#ic-check"/></svg> Save
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ─── TOAST ─── -->
+    <div class="toast" id="toast">
+        <svg class="icon"><use href="#ic-check"/></svg>
+        <span id="toastMessage">Success</span>
+    </div>
+
+    <script>
+        // ─── ──────────────────────────────────────────────────────
+        // ─── CONFIG ──────────────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+        const API_URL = 'https://cleancrew-backend.onrender.com/api';
+        // Set your support number in international format without + (Nigeria example: 2348012345678)
+        const SUPPORT_WHATSAPP = localStorage.getItem('cleancrew_support_wa') || '2348012345678';
+        var laundryPriceMap = {};
+        var revenueUnlocked = false;
+        var hasOwnerPin = false;
+        var realRevenueValue = 0;
+
+        const TOKEN = localStorage.getItem('cleancrew_token');
+
+        if (!TOKEN) {
+            window.location.href = 'login.html';
+        }
+
+        let currentServiceType = (function() {
+            try {
+                var saved = localStorage.getItem('cleancrew_mode');
+                return (saved === 'laundry' || saved === 'cleaning') ? saved : 'cleaning';
+            } catch (e) { return 'cleaning'; }
+        })();
+        let currentUserPlan = 'free';
+
+        function getHeaders() {
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${TOKEN}`
+            };
+        }
+
+        // ─── ──────────────────────────────────────────────────────
+        // ─── TOAST ────────────────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+        function showToast(msg, type) {
+            type = type || '';
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = msg;
+            toast.className = 'toast ' + type;
+            toast.classList.add('show');
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(function() {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ─── ──────────────────────────────────────────────────────
+        // ─── USER INFO ────────────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+        async function loadUserInfo() {
+            try {
+                const res = await fetch(`${API_URL}/user`, { headers: getHeaders() });
+                const data = await res.json();
+                if (res.ok) {
+                    document.getElementById('userEmail').textContent = data.email || 'User';
+                    if (data.plan) {
+                        currentUserPlan = data.plan;
+                        applyFeatureRestrictions(data.plan);
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to load user info');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('cleancrew_token');
+            localStorage.removeItem('cleancrew_user');
+            window.location.href = 'index.html';
+        }
+
+        // ─── ──────────────────────────────────────────────────────
+        // ─── SERVICE TYPE ────────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+        function getJobMode(job) {
+            return (job && (job.mode || job.service_type)) || 'cleaning';
+        }
+
+        function setServiceType(type) {
+            if (type !== 'cleaning' && type !== 'laundry') type = 'cleaning';
+            currentServiceType = type;
+            try { localStorage.setItem('cleancrew_mode', type); } catch (e) {}
+
+            document.querySelectorAll('.service-toggle button').forEach(function(btn) {
+                btn.classList.remove('active');
+            });
+            var activeBtn = document.querySelector('.service-toggle .' + type);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            var label = type === 'laundry' ? 'Laundry' : 'Cleaning';
+            var recentEl = document.getElementById('recentJobsTitle');
+            var jobsEl = document.getElementById('jobsTitle');
+            var invEl = document.getElementById('inventoryTitle');
+            if (recentEl) recentEl.innerHTML = '<svg class="icon"><use href="#ic-clipboard"/></svg> Recent ' + label + ' Jobs';
+            if (jobsEl) jobsEl.innerHTML = '<svg class="icon"><use href="#ic-clipboard"/></svg> All ' + label + ' Jobs';
+            if (invEl) invEl.innerHTML = '<svg class="icon"><use href="#ic-box"/></svg> ' + label + ' Inventory';
+
+            renderAll();
+        }
+
+        // ─── ──────────────────────────────────────────────────────
+        // ─── NAVIGATION ──────────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(function(el) {
+                el.classList.remove('active');
+            });
+            document.getElementById('tab-' + tab).classList.add('active');
+            document.querySelectorAll('.nav-tabs button').forEach(function(el) {
+                el.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-tabs button').forEach(function(el) {
+                if (el.textContent.toLowerCase().includes(tab) ||
+                    (tab === 'overview' && el.textContent.includes('Overview')) ||
+                    (tab === 'jobs' && el.textContent.includes('Jobs')) ||
+                    (tab === 'clients' && el.textContent.includes('Clients')) ||
+                    (tab === 'messages' && el.textContent.includes('Messages')) ||
+                    (tab === 'inventory' && el.textContent.includes('Inventory')) ||
+                    (tab === 'staff' && el.textContent.includes('Staff')) ||
+                    (tab === 'invoices' && el.textContent.includes('Invoices'))) {
+                    el.classList.add('active');
+                }
+            });
+            if (tab === 'messages') {
+                renderMessages();
+            }
+            if (tab === 'inventory') {
+                renderInventory();
+            }
+            if (tab === 'staff') {
+                renderStaff();
+            }
+            if (tab === 'invoices') {
+                renderInvoices();
+            }
+            renderAll();
+        }
+
+        function goToPlans(e) {
+            if (e) e.preventDefault();
+            switchTab('overview');
+            setTimeout(function() {
+                var el = document.getElementById('plansSection');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+
+        // ─── ──────────────────────────────────────────────────────
+        // ─── API FUNCTIONS ────────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+        function getJobs() {
+            return fetch(API_URL + '/jobs', { headers: getHeaders() })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Failed to fetch jobs');
+                    return res.json();
+                });
+        }
+
+        function getClients() {
+            return fetch(API_URL + '/clients', { headers: getHeaders() })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Failed to fetch clients');
+                    return res.json();
+                });
+        }
+
+        function getStaff() {
+            return fetch(API_URL + '/staff', { headers: getHeaders() })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Failed to fetch staff');
+                    return res.json();
+                });
+        }
+
+        function getInvoices() {
+            return fetch(API_URL + '/invoices', { headers: getHeaders() })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Failed to fetch invoices');
+                    return res.json();
+                });
+        }
+
+        function getInventory() {
+            return fetch(API_URL + '/inventory', { headers: getHeaders() })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Failed to fetch inventory');
+                    return res.json();
+                });
+        }
+
+        function parseApiError(res) {
+            return res.json().then(function(data) {
+                var msg = (data && data.error) || ('Request failed (' + res.status + ')');
+                var err = new Error(msg);
+                err.code = data && data.code;
+                err.status = res.status;
+                throw err;
+            }).catch(function(e) {
+                if (e.status) throw e;
+                throw new Error('Request failed (' + res.status + ')');
+            });
+        }
+
+        function createJob(job) {
+            return fetch(API_URL + '/jobs', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify(job)
+                })
+                .then(function(res) {
+                    if (!res.ok) return parseApiError(res);
+                    return res.json();
+                });
+        }
+
+        function createClient(client) {
+            return fetch(API_URL + '/clients', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify(client)
+                })
+                .then(function(res) {
+                    if (!res.ok) return parseApiError(res);
+                    return res.json();
+                });
+        }
+
+        function createStaff(staff) {
+            return fetch(API_URL + '/staff', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify(staff)
+                })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Failed to create staff');
+                    return res.json();
+                });
+        }
+
+        function createInvoice(invoice) {
+            return fetch(API_URL + '/invoices', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify(invoice)
+                })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Failed to create invoice');
+                    return res.json();
+                });
+        }
+
+        function updateInvoice(id, data) {
+            return fetch(API_URL + '/invoices/' + id, {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    body: JSON.stringify(data)
+                })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Failed to update invoice');
+                    return res.json();
+                });
+        }
+
+        function deriveInvoiceStatus(amountDue, amountPaid) {
+            var due = parseFloat(amountDue) || 0;
+            var paid = parseFloat(amountPaid) || 0;
+            if (paid <= 0) return 'unpaid';
+            if (paid >= due) return 'paid';
+            return 'partial';
+        }
+
+        function createInventoryItem(item) {
+            return fetch(API_URL + '/inventory', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify(item)
+                })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Failed to create inventory item');
+                    return res.json();
+                });
+        }
+
+        function updateJob(id, data) {
+            return fetch(API_URL + '/jobs/' + id, {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    body: JSON.stringify(data)
+                })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Failed to update job');
+                    return res.json();
+                });
+        }
+
+        function updateInventoryItem(id, data) {
+            return fetch(API_URL + '/inventory/' + id, {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    body: JSON.stringify(data)
+                })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Failed to update inventory item');
+                    return res.json();
+                });
+        }
+
+        function deleteJob(id) {
+            return fetch(API_URL + '/jobs/' + id, {
+                    method: 'DELETE',
+                    headers: getHeaders()
+                })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Failed to delete job');
+                    return res.json();
+                });
+        }
+
+        function deleteClient(id) {
+            return fetch(API_URL + '/clients/' + id, {
+                    method: 'DELETE',
+                    headers: getHeaders()
+                })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Failed to delete client');
+                    return res.json();
+                });
+        }
+
+        function deleteInventoryItem(id) {
+            return fetch(API_URL + '/inventory/' + id, {
+                    method: 'DELETE',
+                    headers: getHeaders()
+                })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Failed to delete inventory item');
+                    return res.json();
+                });
+        }
+
+        // ─── ──────────────────────────────────────────────────────
+        // ─── RENDER FUNCTIONS ────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+        var jobsData = [];
+        var inventoryData = [];
+
+
+        function applyRevenueDisplay() {
+            var el = document.getElementById('ovRevenue');
+            var card = document.getElementById('revenueStatCard');
+            var btn = document.getElementById('unlockRevenueBtn');
+            if (!el) return;
+            if (!hasOwnerPin || revenueUnlocked) {
+                el.textContent = '₦' + Number(realRevenueValue || 0).toLocaleString();
+                if (card) card.classList.remove('revenue-locked');
+                if (btn) btn.style.display = hasOwnerPin && !revenueUnlocked ? 'inline-flex' : 'none';
+            } else {
+                el.textContent = '₦••••••';
+                if (card) card.classList.add('revenue-locked');
+                if (btn) {
+                    btn.style.display = 'inline-flex';
+                    btn.textContent = 'Unlock with PIN';
+                }
+            }
+        }
+
+        function initOwnerPin() {
+            fetch(API_URL + '/owner-pin/status', { headers: getHeaders() })
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    hasOwnerPin = !!(d && d.has_pin);
+                    revenueUnlocked = !hasOwnerPin;
+                    applyRevenueDisplay();
+                })
+                .catch(function() {
+                    hasOwnerPin = false;
+                    revenueUnlocked = true;
+                });
+        }
+
+        function promptUnlockRevenue() {
+            if (!hasOwnerPin) {
+                var pin = prompt('Set a 4–6 digit owner PIN to lock revenue from staff view:');
+                if (!pin) return;
+                fetch(API_URL + '/owner-pin/set', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ pin: pin })
+                }).then(function(r) { return r.json().then(function(d) { return { ok: r.ok, d: d }; }); })
+                  .then(function(res) {
+                    if (!res.ok) { showToast(res.d.error || 'Could not set PIN', 'error'); return; }
+                    hasOwnerPin = true;
+                    revenueUnlocked = false;
+                    applyRevenueDisplay();
+                    showToast('Revenue PIN set. Unlock when you need to see totals.', 'success');
+                  });
+                return;
+            }
+            var pin = prompt('Enter owner PIN to view revenue:');
+            if (pin == null) return;
+            fetch(API_URL + '/owner-pin/verify', {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({ pin: pin })
+            }).then(function(r) { return r.json().then(function(d) { return { ok: r.ok, d: d }; }); })
+              .then(function(res) {
+                if (!res.ok) { showToast(res.d.error || 'Incorrect PIN', 'error'); return; }
+                revenueUnlocked = true;
+                applyRevenueDisplay();
+                showToast('Revenue unlocked for this session', 'success');
+              });
+        }
+
+        function initSupportFab() {
+            var fab = document.getElementById('supportFab');
+            if (!fab) return;
+            var num = (SUPPORT_WHATSAPP || '').replace(/\D/g, '');
+            var text = encodeURIComponent('Hi CleanCrew support, I need help with my account.');
+            fab.href = 'https://wa.me/' + num + '?text=' + text;
+        }
+
+
+        function renderAll() {
+            Promise.all([getJobs(), getClients()])
+                .then(function(results) {
+                    var jobs = results[0];
+                    var clients = results[1];
+                    jobsData = jobs;
+                    renderOverview(jobs, clients);
+                    renderJobs(jobs);
+                    renderClients(clients);
+                })
+                .catch(function(e) {
+                    console.error('Render error:', e);
+                    showToast('Failed to load data', 'error');
+                });
+        }
+
+        function renderOverview(jobs, clients) {
+            var filteredJobs = jobs.filter(function(j) {
+                return getJobMode(j) === currentServiceType;
+            });
+            var modeLabel = currentServiceType === 'laundry' ? 'laundry' : 'cleaning';
+            var modeIcon = currentServiceType === 'laundry' ? '👕' : '🧹';
+
+            var total = filteredJobs.length;
+            var completed = filteredJobs.filter(function(j) {
+                return j.status === 'completed' || j.status === 'delivered';
+            }).length;
+            var pending = filteredJobs.filter(function(j) {
+                return j.status === 'pending' || j.status === 'in-progress';
+            }).length;
+            var revenue = filteredJobs.filter(function(j) {
+                return j.status === 'completed' || j.status === 'delivered';
+            }).reduce(function(sum, j) {
+                return sum + (j.amount || 0);
+            }, 0);
+
+            document.getElementById('ovJobs').textContent = total;
+            realRevenueValue = revenue;
+            applyRevenueDisplay();
+            document.getElementById('ovPending').textContent = pending;
+
+            var recent = filteredJobs.slice(0, 5);
+            var container = document.getElementById('recentJobs');
+            if (recent.length === 0) {
+                container.innerHTML = '<p style="color:var(--slate);">No ' + modeLabel + ' jobs yet</p>';
+            } else {
+                container.innerHTML = recent.map(function(j) {
+                    return '<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);">' +
+                        '<div>' +
+                        '<strong>' + j.client + '</strong>' +
+                        '<br>' +
+                        '<span style="font-size:12px;color:var(--slate);">' +
+                        modeIcon + ' ' + (j.service || 'N/A') +
+                        '</span>' +
+                        '</div>' +
+                        '<div style="text-align:right;">' +
+                        '<span style="font-weight:700;">₦' + (j.amount || 0).toLocaleString() + '</span>' +
+                        '<br>' +
+                        '<span class="status-badge ' + j.status + '">' + j.status + '</span>' +
+                        '</div>' +
+                        '</div>';
+                }).join('');
+            }
+        }
+
+        function renderJobs(jobs) {
+            var filter = document.getElementById('jobFilter') ? document.getElementById('jobFilter').value : 'all';
+            var filtered = jobs.filter(function(j) {
+                return getJobMode(j) === currentServiceType;
+            });
+            var modeLabel = currentServiceType === 'laundry' ? 'laundry' : 'cleaning';
+            var modeIcon = currentServiceType === 'laundry' ? '👕' : '🧹';
+
+            if (filter !== 'all') {
+                filtered = filtered.filter(function(j) {
+                    return j.status === filter;
+                });
+            }
+
+            var tbody = document.getElementById('jobsTable');
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);">No ' + modeLabel + ' jobs found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(function(j, i) {
+                var actionButtons = '';
+                if (j.status === 'pending') actionButtons = '<button class="btn btn-success btn-sm" onclick="updateJobStatus(\'' + j.id + '\', \'in-progress\')">Start</button>';
+                else if (j.status === 'in-progress') actionButtons = '<button class="btn btn-success btn-sm" onclick="updateJobStatus(\'' + j.id + '\', \'completed\')">Complete</button>';
+
+                var cancelButton = (j.status === 'pending' || j.status === 'in-progress') ?
+                    '<button class="btn btn-danger btn-sm" onclick="updateJobStatus(\'' + j.id + '\', \'cancelled\')">Cancel</button>' : '';
+
+                var detail = '';
+                if (getJobMode(j) === 'laundry' && j.items && j.items.length) {
+                    var itemsArr = typeof j.items === 'string' ? (function() { try { return JSON.parse(j.items); } catch (e) { return []; } })() : j.items;
+                    if (itemsArr && itemsArr.length) {
+                        detail = itemsArr.map(function(it) { return (it.qty || 1) + '× ' + (it.name || ''); }).join(', ');
+                    }
+                } else if (getJobMode(j) === 'cleaning') {
+                    var bits = [];
+                    if (j.rooms) bits.push(j.rooms + ' room' + (j.rooms > 1 ? 's' : ''));
+                    if (j.property_size) bits.push(j.property_size);
+                    detail = bits.join(' · ');
+                }
+
+                return '<tr>' +
+                    '<td>' + (i + 1) + '</td>' +
+                    '<td><strong>' + j.client + '</strong><br><span style="font-size:11px;color:var(--slate);">' + (j.phone || '') + '</span></td>' +
+                    '<td>' + modeIcon + ' ' + (j.service || 'N/A') +
+                    (detail ? '<br><span style="font-size:11px;color:var(--slate);">' + detail + '</span>' : '') +
+                    '</td>' +
+                    '<td>' + (j.date || 'N/A') + '</td>' +
+                    '<td><strong>₦' + (j.amount || 0).toLocaleString() + '</strong></td>' +
+                    '<td><span class="status-badge ' + j.status + '">' + j.status + '</span></td>' +
+                    '<td><div class="table-actions">' +
+                    actionButtons +
+                    cancelButton +
+                    '<button class="btn btn-whatsapp btn-sm" onclick="sendSingleWhatsApp(\'' + j.client + '\', \'' + (j.phone || '') + '\')"><svg class="icon"><use href="#ic-chat"/></svg></button>' +
+                    '<button class="btn btn-danger btn-sm" onclick="deleteJobItem(\'' + j.id + '\')"><svg class="icon"><use href="#ic-trash"/></svg></button>' +
+                    '</div></td>' +
+                    '</tr>';
+            }).join('');
+        }
+
+        function renderClients(clients) {
+            var tbody = document.getElementById('clientsTable');
+            if (clients.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);">No clients yet</td></tr>';
+                return;
+            }
+            tbody.innerHTML = clients.map(function(c, i) {
+                var clientJobs = jobsData ? jobsData.filter(function(j) {
+                    return j.client === c.name;
+                }) : [];
+                var totalSpent = clientJobs.filter(function(j) {
+                    return j.status === 'completed' || j.status === 'delivered';
+                }).reduce(function(sum, j) {
+                    return sum + (j.amount || 0);
+                }, 0);
+                return '<tr>' +
+                    '<td>' + (i + 1) + '</td>' +
+                    '<td><strong>' + c.name + '</strong></td>' +
+                    '<td>' + (c.phone || 'N/A') + '</td>' +
+                    '<td>' + (c.location || 'N/A') + '</td>' +
+                    '<td>' + clientJobs.length + '</td>' +
+                    '<td><strong>₦' + totalSpent.toLocaleString() + '</strong></td>' +
+                    '<td><div class="table-actions">' +
+                    '<button class="btn btn-whatsapp btn-sm" onclick="sendSingleWhatsApp(\'' + c.name + '\', \'' + (c.phone || '') + '\')"><svg class="icon"><use href="#ic-chat"/></svg></button>' +
+                    '<button class="btn btn-danger btn-sm" onclick="deleteClientItem(\'' + c.id + '\')"><svg class="icon"><use href="#ic-trash"/></svg></button>' +
+                    '</div></td>' +
+                    '</tr>';
+            }).join('');
+        }
+
+        function renderStaff() {
+            getStaff()
+                .then(function(staff) {
+                    var tbody = document.getElementById('staffTable');
+                    if (!staff || staff.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--slate);">No staff members yet</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = staff.map(function(s, i) {
+                        return '<tr>' +
+                            '<td>' + (i + 1) + '</td>' +
+                            '<td><strong>' + s.name + '</strong></td>' +
+                            '<td>' + (s.phone || 'N/A') + '</td>' +
+                            '<td>' + (s.role || 'Cleaner') + '</td>' +
+                            '<td>0</td>' +
+                            '<td><div class="table-actions">' +
+                            '<button class="btn btn-whatsapp btn-sm" onclick="sendSingleWhatsApp(\'' + s.name + '\', \'' + (s.phone || '') + '\')"><svg class="icon"><use href="#ic-chat"/></svg></button>' +
+                            '<button class="btn btn-danger btn-sm" onclick="deleteStaffItem(\'' + s.id + '\')"><svg class="icon"><use href="#ic-trash"/></svg></button>' +
+                            '</div></td>' +
+                            '</tr>';
+                    }).join('');
+                })
+                .catch(function(e) {
+                    console.error('Failed to render staff:', e);
+                    document.getElementById('staffTable').innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--slate);">Failed to load staff</td></tr>';
+                });
+        }
+
+        function renderInvoices() {
+            getInvoices()
+                .then(function(invoices) {
+                    invoicesData = invoices || [];
+                    var tbody = document.getElementById('invoicesTable');
+                    if (!invoices || invoices.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);">No invoices yet</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = invoices.map(function(inv, i) {
+                        var date = inv.date ? new Date(inv.date).toLocaleDateString('en-NG') : 'N/A';
+                        var amountDue = inv.amount_due != null ? inv.amount_due : (inv.amount || 0);
+                        var amountPaid = inv.amount_paid != null ? inv.amount_paid : (inv.status === 'paid' ? amountDue : 0);
+                        var status = inv.status === 'overdue' ? 'overdue' : deriveInvoiceStatus(amountDue, amountPaid);
+                        // keep legacy pending label mapped
+                        if (status === 'unpaid' && inv.status === 'pending') status = 'unpaid';
+
+                        var statusColors = {
+                            unpaid: 'background:#FEF3C7;color:#92400E;',
+                            pending: 'background:#FEF3C7;color:#92400E;',
+                            partial: 'background:#DBEAFE;color:#1E40AF;',
+                            paid: 'background:#D1FAE5;color:#065F46;',
+                            overdue: 'background:#FEE2E2;color:#991B1B;'
+                        };
+                        var statusColor = statusColors[status] || statusColors.unpaid;
+                        var paidLabel = amountPaid > 0
+                            ? '<br><span style="font-size:11px;color:var(--slate);">Paid ₦' + Number(amountPaid).toLocaleString() + '</span>'
+                            : '';
+
+                        var actions = '';
+                        if (status !== 'paid') {
+                            actions += '<button class="btn btn-success btn-sm" onclick="openRecordPayment(\'' + inv.id + '\')">Record payment</button>';
+                            actions += '<button class="btn btn-outline btn-sm" onclick="sendPaymentReminder(\'' + inv.id + '\')">Remind</button>';
+                        }
+                        actions += '<button class="btn btn-whatsapp btn-sm" onclick="sendInvoiceWhatsApp(\'' + inv.id + '\')"><svg class="icon"><use href="#ic-chat"/></svg></button>';
+                        actions += '<button class="btn btn-danger btn-sm" onclick="deleteInvoiceItem(\'' + inv.id + '\')"><svg class="icon"><use href="#ic-trash"/></svg></button>';
+
+                        return '<tr>' +
+                            '<td>' + (i + 1) + '</td>' +
+                            '<td><strong>' + (inv.number || inv.invoice_numb || 'N/A') + '</strong></td>' +
+                            '<td>' + (inv.client || 'N/A') + '</td>' +
+                            '<td><strong>₦' + Number(amountDue).toLocaleString() + '</strong>' + paidLabel + '</td>' +
+                            '<td><span style="padding:2px 10px;border-radius:100px;font-size:10px;font-weight:700;' + statusColor + '">' + status + '</span></td>' +
+                            '<td>' + date + '</td>' +
+                            '<td><div class="table-actions">' + actions + '</div></td>' +
+                            '</tr>';
+                    }).join('');
+                })
+                .catch(function(e) {
+                    console.error('Failed to render invoices:', e);
+                    document.getElementById('invoicesTable').innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);">Failed to load invoices</td></tr>';
+                });
+        }
+
+        function openRecordPayment(id) {
+            var inv = invoicesData.find(function(x) { return x.id === id; });
+            if (!inv) { showToast('Invoice not found', 'error'); return; }
+
+            var amountDue = inv.amount_due != null ? Number(inv.amount_due) : Number(inv.amount || 0);
+            var amountPaid = inv.amount_paid != null ? Number(inv.amount_paid) : 0;
+            var remaining = Math.max(amountDue - amountPaid, 0);
+
+            modalType = 'record-payment';
+            document.getElementById('modalTitle').innerHTML = '<svg class="icon"><use href="#ic-wallet"/></svg> Record payment';
+            document.getElementById('modalForm').reset();
+            var f = document.getElementById('modalFormFields');
+            f.innerHTML =
+                '<input type="hidden" id="payInvoiceId" value="' + inv.id + '" />' +
+                '<div class="form-group full-width"><label>Client</label><input type="text" value="' + (inv.client || '') + '" disabled /></div>' +
+                '<div class="form-group"><label>Amount due</label><input type="text" value="₦' + amountDue.toLocaleString() + '" disabled /></div>' +
+                '<div class="form-group"><label>Already paid</label><input type="text" value="₦' + amountPaid.toLocaleString() + '" disabled /></div>' +
+                '<div class="form-group"><label>Payment amount (₦) *</label><input type="number" id="payAmount" min="0" step="0.01" value="' + remaining + '" required /></div>' +
+                '<div class="form-group full-width"><label>Note (optional)</label><textarea id="payNote" placeholder="Bank transfer, cash, etc."></textarea></div>';
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        function sendPaymentReminder(id) {
+            var inv = invoicesData.find(function(x) { return x.id === id; });
+            if (!inv) { showToast('Invoice not found', 'error'); return; }
+            var amountDue = inv.amount_due != null ? Number(inv.amount_due) : Number(inv.amount || 0);
+            var amountPaid = inv.amount_paid != null ? Number(inv.amount_paid) : 0;
+            var remaining = Math.max(amountDue - amountPaid, 0);
+            var client = inv.client || 'Customer';
+            var phone = (inv.phone || '').replace(/[^\d]/g, '');
+            if (phone.startsWith('0')) phone = '234' + phone.slice(1);
+            if (phone.length < 10) phone = '234';
+            var msg = 'Hi ' + client + ', friendly reminder that ₦' + remaining.toLocaleString() +
+                ' is outstanding on invoice ' + (inv.number || inv.invoice_numb || '') +
+                '. Please arrange payment at your earliest convenience. Thank you! — CleanCrew';
+            showToast('Opening WhatsApp...', 'whatsapp');
+            window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+        }
+
+        function renderInventory() {
+            getInventory()
+                .then(function(items) {
+                    inventoryData = items;
+                    var modeLabel = currentServiceType === 'laundry' ? 'Laundry' : 'Cleaning';
+                    var modeIcon = currentServiceType === 'laundry' ? '👕' : '🧹';
+
+                    var filtered = items.filter(function(item) {
+                        var itemCategory = item.category || 'cleaning';
+                        return itemCategory === currentServiceType;
+                    });
+
+                    var container = document.getElementById('inventoryList');
+                    if (filtered.length === 0) {
+                        container.innerHTML = '<p style="color:var(--slate);">No ' + modeLabel.toLowerCase() + ' inventory items yet.</p>';
+                        return;
+                    }
+
+                    container.innerHTML = filtered.map(function(item) {
+                        var lowStockHtml = '';
+                        if (item.quantity <= (item.min_stock || 3)) {
+                            lowStockHtml = '<span style="font-size:11px;color:var(--red);margin-left:8px;display:inline-flex;align-items:center;gap:4px;"><svg class="icon icon-sm" style="color:var(--red);"><use href="#ic-alert"/></svg> Low Stock</span>';
+                        }
+                        return '<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border-bottom:1px solid var(--border);">' +
+                            '<div>' +
+                            '<strong>' + item.name + '</strong>' +
+                            '<span class="inv-category-badge ' + currentServiceType + '">' + modeIcon + ' ' + modeLabel + '</span>' +
+                            '<span style="font-size:11px;color:var(--slate);margin-left:8px;">Min: ' + (item.min_stock || 3) + '</span>' +
+                            lowStockHtml +
+                            '</div>' +
+                            '<div style="display:flex; gap:8px; align-items:center;">' +
+                            '<span style="font-weight:700;font-size:16px;">' + item.quantity + '</span>' +
+                            '<button class="btn btn-primary btn-sm" onclick="adjustInventory(\'' + item.id + '\', 1)"><svg class="icon"><use href="#ic-plus"/></svg></button>' +
+                            '<button class="btn btn-outline btn-sm" onclick="adjustInventory(\'' + item.id + '\', -1)"><svg class="icon"><use href="#ic-x"/></svg></button>' +
+                            '<button class="btn btn-danger btn-sm" onclick="deleteInventory(\'' + item.id + '\')"><svg class="icon"><use href="#ic-trash"/></svg></button>' +
+                            '</div>' +
+                            '</div>';
+                    }).join('');
+                })
+                .catch(function(e) {
+                    console.error('Failed to render inventory:', e);
+                    document.getElementById('inventoryList').innerHTML = '<p style="color:var(--slate);">Failed to load inventory</p>';
+                });
+        }
+
+        // ─── ──────────────────────────────────────────────────────
+        // ─── ACTIONS ──────────────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+        function updateJobStatus(id, status) {
+            updateJob(id, { status: status })
+                .then(function() {
+                    showToast('Job ' + status, 'success');
+                    renderAll();
+                })
+                .catch(function() {
+                    showToast('Failed to update job', 'error');
+                });
+        }
+
+        function deleteJobItem(id) {
+            if (!confirm('Delete this job?')) return;
+            deleteJob(id)
+                .then(function() {
+                    showToast('Job deleted', 'success');
+                    renderAll();
+                })
+                .catch(function() {
+                    showToast('Failed to delete job', 'error');
+                });
+        }
+
+        function deleteClientItem(id) {
+            if (!confirm('Delete this client?')) return;
+            deleteClient(id)
+                .then(function() {
+                    showToast('Client deleted', 'success');
+                    renderAll();
+                })
+                .catch(function() {
+                    showToast('Failed to delete client', 'error');
+                });
+        }
+
+        function deleteStaffItem(id) {
+            if (!confirm('Delete this staff member?')) return;
+            fetch(API_URL + '/staff/' + id, {
+                    method: 'DELETE',
+                    headers: getHeaders()
+                })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Failed to delete staff');
+                    showToast('Staff deleted', 'success');
+                    renderStaff();
+                })
+                .catch(function() {
+                    showToast('Failed to delete staff', 'error');
+                });
+        }
+
+        function deleteInvoiceItem(id) {
+            if (!confirm('Delete this invoice?')) return;
+            fetch(API_URL + '/invoices/' + id, {
+                    method: 'DELETE',
+                    headers: getHeaders()
+                })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Failed to delete invoice');
+                    showToast('Invoice deleted', 'success');
+                    renderInvoices();
+                })
+                .catch(function() {
+                    showToast('Failed to delete invoice', 'error');
+                });
+        }
+
+        function deleteInventory(id) {
+            if (!confirm('Delete this item?')) return;
+            deleteInventoryItem(id)
+                .then(function() {
+                    renderInventory();
+                    showToast('Item deleted', 'success');
+                })
+                .catch(function() {
+                    showToast('Failed to delete item', 'error');
+                });
+        }
+
+        function adjustInventory(id, delta) {
+            var item = inventoryData.find(function(i) {
+                return i.id === id;
+            });
+            if (!item) return;
+            var newQty = Math.max(0, item.quantity + delta);
+            updateInventoryItem(id, { quantity: newQty })
+                .then(function() {
+                    renderInventory();
+                })
+                .catch(function() {
+                    showToast('Failed to update inventory', 'error');
+                });
+        }
+
+        function sendInvoiceWhatsApp(id) {
+            var inv = invoicesData.find(function(x) { return x.id === id; });
+            var client = (inv && inv.client) || 'Customer';
+            var amountDue = inv && (inv.amount_due != null ? inv.amount_due : inv.amount);
+            var number = inv && (inv.number || inv.invoice_numb);
+            var phone = ((inv && inv.phone) || '').replace(/[^\d]/g, '');
+            if (phone.startsWith('0')) phone = '234' + phone.slice(1);
+            if (phone.length < 10) phone = '234';
+            var msg = 'Hi ' + client + ', here is your CleanCrew invoice' +
+                (number ? ' (' + number + ')' : '') +
+                (amountDue != null ? ' for ₦' + Number(amountDue).toLocaleString() : '') +
+                '. Thank you for your business!';
+            showToast('Opening WhatsApp...', 'whatsapp');
+            window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+        }
+
+        // ─── ──────────────────────────────────────────────────────
+        // ─── FEATURE RESTRICTIONS ──────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+        function applyFeatureRestrictions(plan) {
+            plan = plan || 'free';
+            var isUnlimited = plan === 'professional' || plan === 'enterprise';
+            var isFree = plan === 'free';
+            var isStarter = plan === 'starter';
+
+            var badge = document.getElementById('planBadge');
+            if (badge) {
+                badge.textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
+                badge.className = 'plan-badge ' + (isFree || isStarter ? 'trial' : 'active');
+                badge.style.display = 'inline-block';
+            }
+
+            // Free tier includes staff, invoices, inventory (limits enforced by API)
+            var staffTab = document.getElementById('tabStaff');
+            if (staffTab) staffTab.style.display = 'inline-block';
+
+            var invoicesTab = document.getElementById('tabInvoices');
+            if (invoicesTab) invoicesTab.style.display = 'inline-block';
+
+            var inventoryTab = document.getElementById('tabInventory');
+            if (inventoryTab) inventoryTab.style.display = 'inline-block';
+
+            var whatsappWarning = document.getElementById('whatsappLimitWarning');
+            if (whatsappWarning) {
+                var showWaLimit = isFree || isStarter;
+                whatsappWarning.style.display = showWaLimit ? 'block' : 'none';
+                if (showWaLimit) {
+                    var messageData = JSON.parse(localStorage.getItem('cleancrew_message_history') || '[]');
+                    var thisMonth = new Date().getMonth();
+                    var thisYear = new Date().getFullYear();
+                    var count = messageData.filter(function(m) {
+                        var d = new Date(m.sentAt);
+                        return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+                    }).length;
+                    var waLimit = isFree ? 30 : 100;
+                    document.getElementById('whatsappLimitCount').textContent = count + '/' + waLimit;
+                }
+            }
+        }
+
+        // ─── ──────────────────────────────────────────────────────
+        // ─── MODAL ────────────────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+        var modalType = '';
+        var laundryItems = [];
+        var invoicesData = [];
+
+        function addLaundryItemRow(name, qty, price) {
+            laundryItems.push({
+                name: name || '',
+                qty: qty || 1,
+                price: price != null ? price : 0
+            });
+            renderLaundryItemRows();
+        }
+
+        function removeLaundryItemRow(index) {
+            laundryItems.splice(index, 1);
+            renderLaundryItemRows();
+        }
+
+        function laundryLineTotal(item) {
+            return (parseFloat(item.qty) || 0) * (parseFloat(item.price) || 0);
+        }
+
+        function laundryJobTotal() {
+            return laundryItems.reduce(function(sum, it) { return sum + laundryLineTotal(it); }, 0);
+        }
+
+        function renderLaundryItemRows() {
+            var container = document.getElementById('laundryItemsList');
+            if (!container) return;
+            if (laundryItems.length === 0) {
+                container.innerHTML = '<p style="font-size:12px;color:var(--slate);margin:0;">No items yet. Add shirts, trousers, etc.</p>';
+                var tot = document.getElementById('laundryJobTotal');
+                if (tot) tot.textContent = '₦0';
+                return;
+            }
+            var priceOptions = Object.keys(laundryPriceMap).sort().map(function(n) {
+                return '<option value="' + n.replace(/"/g, '&quot;') + '"></option>';
+            }).join('');
+            container.innerHTML = laundryItems.map(function(item, i) {
+                return '<div class="laundry-item" style="flex-wrap:wrap;">' +
+                    '<input type="text" list="laundryPriceNames" placeholder="Item" value="' + (item.name || '').replace(/"/g, '&quot;') + '" ' +
+                    'oninput="onLaundryItemName(' + i + ', this.value)" style="flex:1;min-width:100px;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;" />' +
+                    '<input type="number" min="1" value="' + (item.qty || 1) + '" ' +
+                    'oninput="laundryItems[' + i + '].qty=parseInt(this.value,10)||1;updateLaundryTotals()" style="width:64px;padding:6px 8px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;" />' +
+                    '<input type="number" min="0" step="50" value="' + (item.price || 0) + '" ' +
+                    'oninput="laundryItems[' + i + '].price=parseFloat(this.value)||0;updateLaundryTotals()" style="width:88px;padding:6px 8px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;" title="Unit price" />' +
+                    '<span style="font-size:12px;color:var(--slate);min-width:64px;">₦' + laundryLineTotal(item).toLocaleString() + '</span>' +
+                    '<button type="button" class="remove-item" onclick="removeLaundryItemRow(' + i + ')" title="Remove">×</button>' +
+                    '</div>';
+            }).join('') + '<datalist id="laundryPriceNames">' + priceOptions + '</datalist>';
+            updateLaundryTotals();
+        }
+
+        function onLaundryItemName(index, name) {
+            laundryItems[index].name = name;
+            var key = name.trim().toLowerCase();
+            var mapKey = Object.keys(laundryPriceMap).find(function(k) { return k.toLowerCase() === key; });
+            if (mapKey != null) {
+                laundryItems[index].price = laundryPriceMap[mapKey];
+            }
+            updateLaundryTotals();
+            renderLaundryItemRows();
+        }
+
+        function updateLaundryTotals() {
+            var total = laundryJobTotal();
+            var totEl = document.getElementById('laundryJobTotal');
+            if (totEl) totEl.textContent = '₦' + total.toLocaleString();
+            var amountEl = document.getElementById('jAmount');
+            if (amountEl && currentServiceType === 'laundry') {
+                amountEl.value = total > 0 ? total : amountEl.value;
+            }
+        }
+
+        function collectLaundryItems() {
+            return laundryItems
+                .map(function(item) {
+                    return {
+                        name: (item.name || '').trim(),
+                        qty: parseInt(item.qty, 10) || 1,
+                        price: parseFloat(item.price) || 0
+                    };
+                })
+                .filter(function(item) { return item.name; });
+        }
+
+        function loadLaundryPricing() {
+            return fetch(API_URL + '/laundry-pricing', { headers: getHeaders() })
+                .then(function(res) { return res.ok ? res.json() : []; })
+                .then(function(rows) {
+                    laundryPriceMap = {};
+                    (rows || []).forEach(function(r) {
+                        laundryPriceMap[r.item_name] = parseFloat(r.price) || 0;
+                    });
+                    return rows;
+                })
+                .catch(function() { laundryPriceMap = {}; return []; });
+        }
+
+        function saveLaundryPrice(name, price) {
+            return fetch(API_URL + '/laundry-pricing', {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({ item_name: name, price: price })
+            }).then(function(res) {
+                if (!res.ok) return parseApiError(res);
+                return res.json();
+            });
+        }
+
+function openModal(type) {
+            modalType = type;
+            laundryItems = [];
+            var titles = {
+                job: 'New Job',
+                client: 'New Client',
+                inventory: 'New Inventory Item',
+                staff: 'New Staff Member',
+                invoice: 'New Invoice'
+            };
+            document.getElementById('modalTitle').innerHTML = '<svg class="icon"><use href="#ic-plus"/></svg> ' + titles[type];
+            document.getElementById('modalForm').reset();
+
+            var f = document.getElementById('modalFormFields');
+
+            if (type === 'job') {
+                var modeLabel = currentServiceType === 'laundry' ? 'Laundry' : 'Cleaning';
+                var serviceOptions = currentServiceType === 'laundry'
+                    ? '<option>Wash & Fold</option><option>Wash & Iron</option><option>Dry Cleaning</option><option>Iron Only</option><option>Commercial Laundry</option>'
+                    : '<option>Home Cleaning</option><option>Office Cleaning</option><option>Deep Cleaning</option><option>Post-Construction</option><option>Move In/Out</option>';
+                titles.job = 'New ' + modeLabel + ' Job';
+                document.getElementById('modalTitle').innerHTML = '<svg class="icon"><use href="#ic-plus"/></svg> ' + titles.job;
+
+                var modeExtra = '';
+                if (currentServiceType === 'cleaning') {
+                    modeExtra =
+                        '<div class="form-group"><label>Rooms</label><input type="number" id="jRooms" min="1" placeholder="e.g. 3" /></div>' +
+                        '<div class="form-group"><label>Property size</label><select id="jPropertySize">' +
+                        '<option value="">— Optional —</option>' +
+                        '<option>Studio</option><option>1-bed</option><option>2-bed</option><option>3-bed</option><option>4+</option>' +
+                        '<option>Office (small)</option><option>Office (large)</option>' +
+                        '</select></div>';
+                } else {
+                    modeExtra =
+                        '<div class="form-group full-width">' +
+                        '<label>Items (name · qty · unit price)</label>' +
+                        '<div id="laundryItemsList" class="laundry-items"></div>' +
+                        '<button type="button" class="btn btn-outline btn-sm" onclick="addLaundryItemRow()" style="margin-top:6px;">' +
+                        '<svg class="icon"><use href="#ic-plus"/></svg> Add item</button>' +
+                        '<p style="margin:10px 0 0;font-size:14px;font-weight:700;">Total: <span id="laundryJobTotal">₦0</span></p>' +
+                        '<p style="margin:4px 0 0;font-size:11px;color:var(--slate);">Unit price auto-fills from your laundry price list when the name matches.</p>' +
+                        '</div>';
+                }
+
+                f.innerHTML = '<div class="form-group"><label>Client Name</label><input type="text" id="jClient" required /></div>' +
+                    '<div class="form-group"><label>Phone</label><input type="tel" id="jPhone" /></div>' +
+                    '<div class="form-group"><label>Service</label><select id="jService">' + serviceOptions + '</select></div>' +
+                    modeExtra +
+                    '<div class="form-group"><label>Amount (₦)</label><input type="number" id="jAmount" required /></div>' +
+                    '<div class="form-group"><label>Date</label><input type="date" id="jDate" required /></div>' +
+                    '<div class="form-group"><label>Status</label><select id="jStatus"><option value="pending">Pending</option><option value="in-progress">In Progress</option><option value="completed">Completed</option></select></div>' +
+                    '<div class="form-group full-width"><label>Notes</label><textarea id="jNotes" placeholder="Access codes, special requests…"></textarea></div>';
+
+                if (currentServiceType === 'laundry') {
+                    laundryItems = [];
+                    loadLaundryPricing().then(function() {
+                        addLaundryItemRow();
+                    });
+                }
+            } else if (type === 'client') {
+                f.innerHTML = '<div class="form-group"><label>Name *</label><input type="text" id="cName" required /></div>' +
+                    '<div class="form-group"><label>Phone</label><input type="tel" id="cPhone" /></div>' +
+                    '<div class="form-group"><label>Email</label><input type="email" id="cEmail" /></div>' +
+                    '<div class="form-group"><label>Location</label><input type="text" id="cLocation" /></div>' +
+                    '<div class="form-group full-width"><label>Notes</label><textarea id="cNotes"></textarea></div>';
+            } else if (type === 'inventory') {
+                var invModeLabel = currentServiceType === 'laundry' ? '👕 Laundry' : '🧹 Cleaning';
+                titles.inventory = 'New ' + (currentServiceType === 'laundry' ? 'Laundry' : 'Cleaning') + ' Item';
+                document.getElementById('modalTitle').innerHTML = '<svg class="icon"><use href="#ic-plus"/></svg> ' + titles.inventory;
+                f.innerHTML = '<div class="form-group"><label>Item Name *</label><input type="text" id="invName" required /></div>' +
+                    '<div class="form-group"><label>Category</label><select id="invCategory"><option value="' + currentServiceType + '" selected>' + invModeLabel + '</option></select></div>' +
+                    '<div class="form-group"><label>Quantity</label><input type="number" id="invQty" required /></div>' +
+                    '<div class="form-group"><label>Min Stock Level</label><input type="number" id="invMin" value="3" /></div>';
+            } else if (type === 'staff') {
+                f.innerHTML = '<div class="form-group"><label>Full Name *</label><input type="text" id="sName" required /></div>' +
+                    '<div class="form-group"><label>Phone</label><input type="tel" id="sPhone" /></div>' +
+                    '<div class="form-group"><label>Email</label><input type="email" id="sEmail" /></div>' +
+                    '<div class="form-group"><label>Role</label><select id="sRole"><option>Cleaner</option><option>Supervisor</option><option>Manager</option><option>Admin</option></select></div>';
+            } else if (type === 'invoice') {
+                f.innerHTML = '<div class="form-group"><label>Client *</label><input type="text" id="invClient" required /></div>' +
+                    '<div class="form-group"><label>Amount (₦) *</label><input type="number" id="invAmount" required /></div>' +
+                    '<div class="form-group"><label>Date</label><input type="date" id="invDate" required /></div>' +
+                    '<div class="form-group"><label>Status</label><select id="invStatus"><option value="pending">Pending</option><option value="paid">Paid</option><option value="overdue">Overdue</option></select></div>' +
+                    '<div class="form-group full-width"><label>Description</label><textarea id="invDescription" placeholder="What is this invoice for?"></textarea></div>';
+            }
+
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            laundryItems = [];
+        }
+
+        function saveModalForm(e) {
+            e.preventDefault();
+
+            if (modalType === 'job') {
+                var client = document.getElementById('jClient').value.trim();
+                var phone = document.getElementById('jPhone').value.trim();
+                var service = document.getElementById('jService').value;
+                var amount = parseFloat(document.getElementById('jAmount').value);
+                var date = document.getElementById('jDate').value;
+                var status = document.getElementById('jStatus').value;
+                var notes = document.getElementById('jNotes').value.trim();
+
+                if (!client || !amount || !date) { showToast('Fill all fields', 'error'); return; }
+
+                var jobData = {
+                    client: client,
+                    phone: phone || 'N/A',
+                    mode: currentServiceType,
+                    service_type: currentServiceType,
+                    service: service,
+                    amount: amount,
+                    date: date,
+                    status: status,
+                    notes: notes || 'None',
+                    items: [],
+                    rooms: null,
+                    property_size: null
+                };
+
+                if (currentServiceType === 'laundry') {
+                    jobData.items = collectLaundryItems();
+                    if (jobData.items.length === 0) {
+                        showToast('Add at least one laundry item', 'error');
+                        return;
+                    }
+                } else {
+                    var roomsEl = document.getElementById('jRooms');
+                    var propEl = document.getElementById('jPropertySize');
+                    var roomsVal = roomsEl ? parseInt(roomsEl.value, 10) : null;
+                    jobData.rooms = roomsVal && roomsVal > 0 ? roomsVal : null;
+                    jobData.property_size = propEl && propEl.value ? propEl.value : null;
+                }
+
+                createJob(jobData)
+                    .then(function() {
+                        if (currentServiceType === 'laundry' && jobData.items && jobData.items.length) {
+                            jobData.items.forEach(function(it) {
+                                if (it.name && it.price > 0) {
+                                    saveLaundryPrice(it.name, it.price).catch(function() {});
+                                }
+                            });
+                        }
+                        showToast('Job added!', 'success');
+                        closeModal();
+                        renderAll();
+                    })
+                    .catch(function(e) {
+                        console.error('Error creating job:', e);
+                        showToast(e.message || 'Failed to add job', 'error');
+                    });
+
+            } else if (modalType === 'client') {
+                var name = document.getElementById('cName').value.trim();
+                var phone = document.getElementById('cPhone').value.trim();
+                var email = document.getElementById('cEmail').value.trim();
+                var location = document.getElementById('cLocation').value.trim();
+                var notes = document.getElementById('cNotes').value.trim();
+
+                if (!name) { showToast('Enter name', 'error'); return; }
+
+                createClient({ name: name, phone: phone || 'N/A', email: email || '', location: location || '',
+                        notes: notes || '' })
+                    .then(function() {
+                        showToast('Client added!', 'success');
+                        closeModal();
+                        renderAll();
+                    })
+                    .catch(function() {
+                        showToast('Failed to add client', 'error');
+                    });
+
+            } else if (modalType === 'inventory') {
+                var name = document.getElementById('invName').value.trim();
+                var category = document.getElementById('invCategory').value;
+                var quantity = parseInt(document.getElementById('invQty').value);
+                var minStock = parseInt(document.getElementById('invMin').value);
+
+                if (!name || !quantity) { showToast('Fill all fields', 'error'); return; }
+
+                createInventoryItem({ name: name, category: category, quantity: quantity, min_stock: minStock || 3 })
+                    .then(function() {
+                        showToast('Inventory item added!', 'success');
+                        closeModal();
+                        renderInventory();
+                    })
+                    .catch(function() {
+                        showToast('Failed to add inventory item', 'error');
+                    });
+
+            } else if (modalType === 'staff') {
+                var name = document.getElementById('sName').value.trim();
+                var phone = document.getElementById('sPhone').value.trim();
+                var email = document.getElementById('sEmail').value.trim();
+                var role = document.getElementById('sRole').value;
+
+                if (!name) { showToast('Enter name', 'error'); return; }
+
+                createStaff({ name: name, phone: phone || 'N/A', email: email || '', role: role })
+                    .then(function() {
+                        showToast('Staff added!', 'success');
+                        closeModal();
+                        renderStaff();
+                    })
+                    .catch(function() {
+                        showToast('Failed to add staff', 'error');
+                    });
+
+            } else if (modalType === 'invoice') {
+                var client = document.getElementById('invClient').value.trim();
+                var amount = parseFloat(document.getElementById('invAmount').value);
+                var date = document.getElementById('invDate').value;
+                var status = document.getElementById('invStatus').value;
+                var description = document.getElementById('invDescription').value.trim();
+
+                if (!client || !amount || !date) { showToast('Fill all fields', 'error'); return; }
+
+                var initialPaid = status === 'paid' ? amount : 0;
+                createInvoice({
+                    client: client,
+                    amount: amount,
+                    amount_due: amount,
+                    amount_paid: initialPaid,
+                    date: date,
+                    status: status === 'paid' ? 'paid' : (status === 'overdue' ? 'overdue' : 'unpaid'),
+                    description: description || 'Service',
+                    paid_at: status === 'paid' ? new Date().toISOString() : null
+                })
+                    .then(function() {
+                        showToast('Invoice created!', 'success');
+                        closeModal();
+                        renderInvoices();
+                    })
+                    .catch(function(e) {
+                        console.error('Error creating invoice:', e);
+                        showToast('Failed to create invoice', 'error');
+                    });
+
+            } else if (modalType === 'record-payment') {
+                var invId = document.getElementById('payInvoiceId').value;
+                var payAmount = parseFloat(document.getElementById('payAmount').value);
+                if (!invId || !(payAmount > 0)) {
+                    showToast('Enter a valid payment amount', 'error');
+                    return;
+                }
+                var inv = invoicesData.find(function(x) { return x.id === invId; });
+                if (!inv) { showToast('Invoice not found', 'error'); return; }
+
+                var amountDue = inv.amount_due != null ? Number(inv.amount_due) : Number(inv.amount || 0);
+                var prevPaid = inv.amount_paid != null ? Number(inv.amount_paid) : 0;
+                var newPaid = prevPaid + payAmount;
+                var newStatus = deriveInvoiceStatus(amountDue, newPaid);
+                var payload = {
+                    amount_paid: newPaid,
+                    amount_due: amountDue,
+                    status: newStatus === 'unpaid' ? 'pending' : newStatus,
+                    paid_at: newStatus === 'paid' ? new Date().toISOString() : (inv.paid_at || null)
+                };
+
+                updateInvoice(invId, payload)
+                    .then(function() {
+                        showToast(newStatus === 'paid' ? 'Invoice marked as paid' : 'Payment recorded', 'success');
+                        closeModal();
+                        renderInvoices();
+                    })
+                    .catch(function(e) {
+                        console.error('Payment update failed:', e);
+                        showToast('Failed to record payment', 'error');
+                    });
+            }
+        }
+
+        // ─── ──────────────────────────────────────────────────────
+        // ─── WHATSAPP MESSAGING ──────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+        var TEMPLATES = {
+            newmonth: 'Happy New Month! 🎉\n\nWe hope this new month brings you joy, success, and a spotless home.\n\nThank you for choosing CleanCrew! 🧹',
+            festival: '🎄 Happy Holidays! 🎄\n\nFrom our family to yours, we wish you a wonderful celebration.\n\nThank you for being a valued client. ✨',
+            birthday: '🎂 Happy Birthday! 🎉\n\nWishing you a day filled with joy and a year full of blessings.\n\nFrom the CleanCrew team 🧹',
+            promo: '✨ Special Offer Just For You! ✨\n\nBook a deep cleaning this month and get 10% off!\n\nMention this message when you book.\n\nValid for new bookings only. 🧹'
+        };
+
+        var messageData = [];
+
+        function setTemplate(type) {
+            var body = document.getElementById('msgBody');
+            var typeSelect = document.getElementById('messageType');
+            if (body && TEMPLATES[type]) {
+                body.value = TEMPLATES[type];
+                typeSelect.value = type;
+                document.getElementById('previewText').textContent = TEMPLATES[type];
+                document.getElementById('messagePreview').style.display = 'block';
+            }
+        }
+
+        function sendSingleWhatsApp(name, phone) {
+            if (!phone || phone === 'N/A' || phone === '') {
+                showToast('No phone number available for this contact', 'error');
+                return;
+            }
+            var message = '🧹 Hello ' + name + '! 👋\n\nThis is a reminder about your upcoming service.\n\nThank you for choosing CleanCrew! 🧹';
+            var url = 'https://wa.me/234' + phone.replace(/^0+/, '') + '?text=' + encodeURIComponent(message);
+            window.open(url, '_blank');
+            showToast('Opening WhatsApp...', 'whatsapp');
+        }
+
+        function sendBulkWhatsApp() {
+            var body = document.getElementById('msgBody').value.trim();
+            var type = document.getElementById('messageType').value;
+            var recipientNames = getSelectedRecipientNames();
+
+            if (!body) { showToast('Please enter a message', 'error'); return; }
+            if (!recipientNames.length) {
+                showToast('Please select at least one recipient', 'error');
+                return;
+            }
+            processBulkSend(recipientNames, body, type);
+        }
+
+        function processBulkSend(recipientNames, body, type) {
+            if (recipientNames.length === 0) { showToast('No clients found to message', 'error'); return; }
+
+            getClients()
+                .then(function(clients) {
+                    var phones = recipientNames.map(function(name) {
+                        var client = clients.find(function(c) { return c.name === name; });
+                        return client ? client.phone : null;
+                    }).filter(function(p) { return p && p !== 'N/A' && p !== ''; });
+
+                    if (phones.length === 0) { showToast('No phone numbers found for selected clients', 'error'); return; }
+
+                    if (currentUserPlan === 'starter') {
+                        var messageData = JSON.parse(localStorage.getItem('cleancrew_message_history') || '[]');
+                        var thisMonth = new Date().getMonth();
+                        var thisYear = new Date().getFullYear();
+                        var count = messageData.filter(function(m) {
+                            var d = new Date(m.sentAt);
+                            return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+                        }).length;
+                        if (count + phones.length > 100) {
+                            showToast('You\'ve reached your monthly limit of 100 messages. Upgrade to Professional for unlimited messaging.',
+                            'error');
+                            return;
+                        }
+                    }
+
+                    var message = {
+                        id: Date.now(),
+                        type: type || 'custom',
+                        recipients: recipientNames,
+                        body: body,
+                        sentAt: new Date().toISOString(),
+                        status: 'sent'
+                    };
+
+                    messageData = JSON.parse(localStorage.getItem('cleancrew_message_history') || '[]');
+                    messageData.unshift(message);
+                    localStorage.setItem('cleancrew_message_history', JSON.stringify(messageData));
+
+                    renderMessages();
+                    showToast('Sending to ' + recipientNames.length + ' client(s)', 'whatsapp');
+
+                    if (phones.length > 0) {
+                        var url = 'https://wa.me/234' + phones[0].replace(/^0+/, '') + '?text=' + encodeURIComponent(body);
+                        window.open(url, '_blank');
+                        showToast('Opening WhatsApp for ' + phones.length + ' client(s)', 'whatsapp');
+                    }
+                })
+                .catch(function() {
+                    showToast('Failed to get client phone numbers', 'error');
+                });
+        }
+
+        function populateMessageRecipients() {
+            var box = document.getElementById('msgRecipients');
+            if (!box) return;
+            getClients()
+                .then(function(clients) {
+                    if (!clients || clients.length === 0) {
+                        box.innerHTML = '<p style="color:var(--slate);font-size:13px;margin:0;">No clients yet — add clients first</p>';
+                        return;
+                    }
+                    var html = '<label><input type="checkbox" id="msgAllClients" onchange="toggleAllRecipients(this.checked)" /> <strong>All clients (' + clients.length + ')</strong></label>';
+                    clients.forEach(function(c) {
+                        var name = c.name || 'Client';
+                        var phone = c.phone ? ' · ' + c.phone : '';
+                        html += '<label><input type="checkbox" class="msg-recipient" value="' + name.replace(/"/g, '&quot;') + '" data-phone="' + (c.phone || '').replace(/"/g, '') + '" /> ' + name + phone + '</label>';
+                    });
+                    box.innerHTML = html;
+                })
+                .catch(function() {
+                    box.innerHTML = '<p style="color:var(--slate);font-size:13px;margin:0;">Could not load clients</p>';
+                });
+        }
+
+        function toggleAllRecipients(on) {
+            document.querySelectorAll('.msg-recipient').forEach(function(cb) { cb.checked = on; });
+        }
+
+        function getSelectedRecipientNames() {
+            var all = document.getElementById('msgAllClients');
+            if (all && all.checked) {
+                return Array.prototype.map.call(document.querySelectorAll('.msg-recipient'), function(cb) { return cb.value; });
+            }
+            return Array.prototype.map.call(document.querySelectorAll('.msg-recipient:checked'), function(cb) { return cb.value; });
+        }
+
+        function renderMessages() {
+            populateMessageRecipients();
+            var tbody = document.getElementById('messagesTable');
+            messageData = JSON.parse(localStorage.getItem('cleancrew_message_history') || '[]');
+
+            if (messageData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--slate);">No messages sent yet</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = messageData.map(function(m, i) {
+                var date = new Date(m.sentAt).toLocaleDateString('en-NG', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                var recipientCount = m.recipients ? m.recipients.length : 0;
+                var recipientNames = m.recipients ? m.recipients.slice(0, 3).join(', ') + (recipientCount > 3 ? ' +' + (
+                    recipientCount - 3) + ' more' : '') : 'All clients';
+
+                return '<tr>' +
+                    '<td>' + (i + 1) + '</td>' +
+                    '<td style="font-size:12px;">' + date + '</td>' +
+                    '<td><strong>' + recipientCount + ' client(s)</strong><br><span style="font-size:11px;color:var(--slate);">' +
+                    recipientNames + '</span></td>' +
+                    '<td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + (m.body ?
+                        m.body.substring(0, 60) + (m.body.length > 60 ? '...' : '') : 'N/A') + '</td>' +
+                    '<td><span class="status-badge sent">✓ Sent</span></td>' +
+                    '<td><div class="table-actions">' +
+                    '<button class="btn btn-whatsapp btn-sm" onclick="resendMessage(' + i + ')"><svg class="icon"><use href="#ic-chat"/></svg></button>' +
+                    '<button class="btn btn-danger btn-sm" onclick="deleteMessage(' + i + ')"><svg class="icon"><use href="#ic-trash"/></svg></button>' +
+                    '</div></td>' +
+                    '</tr>';
+            }).join('');
+        }
+
+        function resendMessage(index) {
+            var m = messageData[index];
+            if (!m) return;
+            getClients()
+                .then(function(clients) {
+                    var phones = m.recipients.map(function(name) {
+                        var client = clients.find(function(c) { return c.name === name; });
+                        return client ? client.phone : null;
+                    }).filter(function(p) { return p && p !== 'N/A' && p !== ''; });
+                    if (phones.length === 0) {
+                        showToast('No phone numbers found for these clients', 'error');
+                        return;
+                    }
+                    var url = 'https://wa.me/234' + phones[0].replace(/^0+/, '') + '?text=' + encodeURIComponent(m.body);
+                    window.open(url, '_blank');
+                    showToast('Resending to ' + phones.length + ' client(s)', 'whatsapp');
+                })
+                .catch(function() {
+                    showToast('Failed to resend message', 'error');
+                });
+        }
+
+        function deleteMessage(index) {
+            if (!confirm('Delete this message?')) return;
+            messageData.splice(index, 1);
+            localStorage.setItem('cleancrew_message_history', JSON.stringify(messageData));
+            renderMessages();
+            showToast('Message deleted', 'success');
+        }
+
+        // ─── ──────────────────────────────────────────────────────
+        // ─── PAYSTACK SUBSCRIPTION ──────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+        var selectedPlan = 'professional';
+
+        function selectPlan(plan) {
+            selectedPlan = plan;
+            document.querySelectorAll('.plan-card').forEach(function(el) {
+                el.style.borderColor = 'var(--border)';
+                el.style.background = 'transparent';
+            });
+            var el = document.getElementById('plan' + plan.charAt(0).toUpperCase() + plan.slice(1));
+            if (el) {
+                el.style.borderColor = 'var(--blue)';
+                el.style.background = 'var(--blue-glow)';
+            }
+        }
+
+        function subscribeToPlan(plan) {
+            if (!plan) plan = selectedPlan;
+            fetch(API_URL + '/paystack/initialize', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ plan: plan })
+                })
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    if (data.authorization_url) {
+                        window.location.href = data.authorization_url;
+                    } else {
+                        showToast('Failed to initialize payment: ' + (data.error || 'Unknown error'), 'error');
+                    }
+                })
+                .catch(function(e) {
+                    console.error('Paystack init error:', e);
+                    showToast('Payment initialization failed', 'error');
+                });
+        }
+
+        function checkSubscription() {
+            fetch(API_URL + '/subscription/status', {
+                    headers: getHeaders()
+                })
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    var container = document.getElementById('subscriptionStatus');
+                    var plansContainer = document.getElementById('plansContainer');
+                    var badge = document.getElementById('planBadge');
+
+                    if (!container || !plansContainer) return;
+
+                    if (badge) badge.style.display = 'inline-block';
+
+                    if (data.status === 'active') {
+                        container.innerHTML = '<div class="status-box active">' +
+                            '<svg class="icon"><use href="#ic-check"/></svg>' +
+                            '<div><p>Active — ' + data.plan.charAt(0).toUpperCase() + data.plan.slice(1) + ' Plan</p>' +
+                            '<p class="sub-text">Your subscription is active. Thank you for your support!</p>' +
+                            '<p style="font-size:12px; color:#065F46; margin-top:4px;">You\'re on the ' + data.plan +
+                            ' plan. Your subscription will renew automatically.</p></div>' +
+                            '</div>';
+                        plansContainer.style.display = 'none';
+
+                        if (badge) {
+                            badge.textContent = '✅ ' + data.plan.charAt(0).toUpperCase() + data.plan.slice(1);
+                            badge.className = 'plan-badge active';
+                            badge.style.display = 'inline-block';
+                        }
+
+                    } else if (data.status === 'trial') {
+                        var trialEnd = new Date(data.trial_end);
+                        var now = new Date();
+                        var daysLeft = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
+
+                        if (daysLeft <= 0) {
+                            container.innerHTML = '<div class="status-box expired">' +
+                                '<svg class="icon"><use href="#ic-alert"/></svg>' +
+                                '<div><p>Trial Expired</p>' +
+                                '<p class="sub-text">Your trial has ended. Please choose a plan below to continue using CleanCrew.</p></div>' +
+                                '</div>';
+                            plansContainer.style.display = 'block';
+                            if (badge) {
+                                badge.textContent = '🔒 Expired';
+                                badge.className = 'plan-badge expired';
+                                badge.style.display = 'inline-block';
+                            }
+                            return;
+                        }
+
+                        container.innerHTML = '<div class="status-box trial">' +
+                            '<svg class="icon"><use href="#ic-bell"/></svg>' +
+                            '<div><p>Trial — ' + daysLeft + ' days left</p>' +
+                            '<p class="sub-text">Choose a plan below to continue using CleanCrew after your trial ends.</p></div>' +
+                            '</div>';
+                        plansContainer.style.display = 'block';
+
+                        if (badge) {
+                            badge.textContent = '📅 ' + daysLeft + ' days left';
+                            badge.className = 'plan-badge trial';
+                            badge.style.display = 'inline-block';
+                        }
+
+                    } else {
+                        container.innerHTML = '<div class="status-box expired">' +
+                            '<svg class="icon"><use href="#ic-alert"/></svg>' +
+                            '<div><p>Subscription Expired</p>' +
+                            '<p class="sub-text">Your subscription has expired. Please choose a plan below to renew.</p></div>' +
+                            '</div>';
+                        plansContainer.style.display = 'block';
+
+                        if (badge) {
+                            badge.textContent = '🔒 Expired';
+                            badge.className = 'plan-badge expired';
+                            badge.style.display = 'inline-block';
+                        }
+                    }
+                })
+                .catch(function(e) {
+                    console.error('Subscription check error:', e);
+                    document.getElementById('subscriptionStatus').innerHTML =
+                        '<p style="color:var(--slate);">Failed to load subscription status</p>';
+                });
+        }
+
+        function checkPaystackReturn() {
+            var params = new URLSearchParams(window.location.search);
+            var reference = params.get('reference');
+            if (reference) {
+                fetch(API_URL + '/paystack/verify/' + reference, {
+                        method: 'POST',
+                        headers: getHeaders()
+                    })
+                    .then(function(res) { return res.json(); })
+                    .then(function(data) {
+                        if (data.success) {
+                            showToast('Payment successful! Subscription activated.', 'success');
+                            setTimeout(function() {
+                                window.location.href = '/dashboard.html';
+                            }, 2000);
+                        }
+                    })
+                    .catch(function(err) { console.error('Verification error:', err); });
+            }
+        }
+
+        // ─── ──────────────────────────────────────────────────────
+        // ─── INIT ────────────────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+        function init() {
+            var token = localStorage.getItem('cleancrew_token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            fetch(API_URL + '/user', { headers: getHeaders() })
+                .then(function(res) {
+                    if (res.status === 403) {
+                        return res.json().then(function(data) {
+                            if (data.requires_confirmation) {
+                                showToast('Please confirm your email address first. Check your inbox.', 'error');
+                                setTimeout(function() {
+                                    window.location.href = 'login.html';
+                                }, 3000);
+                                return;
+                            }
+                        });
+                    }
+                    if (!res.ok) {
+                        localStorage.removeItem('cleancrew_token');
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                    return res.json();
+                })
+                .then(function(userData) {
+                    if (userData && userData.plan) {
+                        currentUserPlan = userData.plan;
+                        applyFeatureRestrictions(userData.plan);
+                    }
+                })
+                .catch(function(e) {
+                    console.error('Auth check error:', e);
+                    applyFeatureRestrictions('starter');
+                })
+                .finally(function() {
+                    loadUserInfo();
+                    // Restore mode toggle UI (labels + active button) then render
+                    setServiceType(currentServiceType);
+                    checkSubscription();
+                    checkPaystackReturn();
+                    renderMessages();
+                    renderInventory();
+                    renderStaff();
+                    renderInvoices();
+
+                    document.getElementById('msgBody').addEventListener('input', function() {
+                        var preview = document.getElementById('previewText');
+                        var previewContainer = document.getElementById('messagePreview');
+                        if (this.value.trim()) {
+                            preview.textContent = this.value;
+                            previewContainer.style.display = 'block';
+                        } else {
+                            previewContainer.style.display = 'none';
+                        }
+                    });
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            init();
+        });
+    </script>
+
+
+    <a class="support-fab" id="supportFab" href="#" target="_blank" rel="noopener" title="Chat with CleanCrew support" aria-label="WhatsApp support">
+        <svg class="icon"><use href="#ic-chat"/></svg>
+    </a>
+</body>
+</html>
