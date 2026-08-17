@@ -10,9 +10,7 @@ dotenv.config();
 const app = express();
 
 // ─── ✅ SIMPLIFIED CORS ──────────────────────────────────────
-// This single line handles all preflight (OPTIONS) requests automatically.
 app.use(cors());
-
 app.use(express.json());
 app.use(express.static(__dirname));
 
@@ -44,7 +42,6 @@ const PLANS = {
             whatsapp_messages: 30,
             inventory: 10
         },
-        // jobs, invoices, whatsapp counted per calendar month; others are total caps
         monthly: ['jobs', 'invoices', 'whatsapp_messages']
     },
     starter: {
@@ -130,11 +127,9 @@ async function checkPlanLimit(userId, type) {
         throw new Error('Error checking subscription');
     }
 
-    // Default new/unknown users to free (not starter)
     let planName = sub?.plan || 'free';
     if (!PLANS[planName]) planName = 'free';
 
-    // Active paid plans only — trial on professional without payment still uses that plan's limits
     const limit = PLANS[planName]?.limits?.[type];
     if (limit === undefined) {
         return { allowed: true, limit: Infinity, plan: planName, count: 0 };
@@ -150,7 +145,6 @@ async function checkPlanLimit(userId, type) {
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId);
 
-    // WhatsApp may be tracked in usage_events; if table missing, allow and log
     if (type === 'whatsapp_messages') {
         query = supabase
             .from('usage_events')
@@ -169,7 +163,6 @@ async function checkPlanLimit(userId, type) {
     const { count, error: countError } = await query;
 
     if (countError) {
-        // usage_events might not exist yet — don't block WhatsApp
         if (type === 'whatsapp_messages') {
             console.warn('WhatsApp usage count skipped:', countError.message);
             return { allowed: true, limit, count: 0, plan: planName };
@@ -1008,7 +1001,10 @@ app.delete('/api/staff/:id', authenticate, async (req, res) => {
 });
 
 
+// ─── ──────────────────────────────────────────────────────
 // ─── LAUNDRY PRICING ──────────────────────────────────────
+// ─── ──────────────────────────────────────────────────────
+
 app.get('/api/laundry-pricing', authenticate, async (req, res) => {
     try {
         const { data, error } = await supabase
@@ -1064,7 +1060,10 @@ app.delete('/api/laundry-pricing/:id', authenticate, async (req, res) => {
     }
 });
 
+// ─── ──────────────────────────────────────────────────────
 // ─── OWNER PIN (lock revenue) ─────────────────────────────
+// ─── ──────────────────────────────────────────────────────
+
 function hashPin(pin) {
     return crypto.createHash('sha256').update(String(pin) + (process.env.PIN_PEPPER || 'cleancrew-pin')).digest('hex');
 }
@@ -1073,11 +1072,14 @@ app.get('/api/owner-pin/status', authenticate, async (req, res) => {
     try {
         const { data, error } = await supabase
             .from('subscriptions')
-            .select('owner_pin_hash')
+            .select('owner_pin_hash, revenue_locked')
             .eq('user_id', req.user.id)
             .maybeSingle();
         if (error) throw error;
-        res.json({ has_pin: !!(data && data.owner_pin_hash) });
+        // Default: if no PIN, revenue is visible; if PIN exists, default to locked
+        const hasPin = !!(data && data.owner_pin_hash);
+        const locked = hasPin ? (data.revenue_locked !== false) : false;
+        res.json({ has_pin: hasPin, locked: locked });
     } catch (error) {
         console.error('owner-pin status:', error);
         res.status(500).json({ error: error.message });
@@ -1107,7 +1109,8 @@ app.post('/api/owner-pin/set', authenticate, async (req, res) => {
         }
 
         const payload = {
-            owner_pin_hash: hashPin(pin)
+            owner_pin_hash: hashPin(pin),
+            revenue_locked: true  // When PIN is set, lock revenue by default
         };
 
         if (sub && sub.user_id) {
@@ -1127,7 +1130,7 @@ app.post('/api/owner-pin/set', authenticate, async (req, res) => {
                 });
             if (error) throw error;
         }
-        res.json({ success: true, has_pin: true });
+        res.json({ success: true, has_pin: true, locked: true });
     } catch (error) {
         console.error('owner-pin set:', error);
         res.status(500).json({ error: error.message });
@@ -1139,19 +1142,93 @@ app.post('/api/owner-pin/verify', authenticate, async (req, res) => {
         const pin = String(req.body.pin || '').trim();
         const { data, error } = await supabase
             .from('subscriptions')
-            .select('owner_pin_hash')
+            .select('owner_pin_hash, revenue_locked')
             .eq('user_id', req.user.id)
             .maybeSingle();
         if (error) throw error;
         if (!data || !data.owner_pin_hash) {
-            return res.json({ ok: true, unlocked: true, has_pin: false });
+            return res.json({ ok: true, unlocked: true, has_pin: false, locked: false });
         }
         if (hashPin(pin) === data.owner_pin_hash) {
-            return res.json({ ok: true, unlocked: true, has_pin: true });
+            // PIN verified → unlock revenue and update server-side lock status
+            await supabase
+                .from('subscriptions')
+                .update({ revenue_locked: false })
+                .eq('user_id', req.user.id);
+            return res.json({ 
+                ok: true, 
+                unlocked: true, 
+                has_pin: true, 
+                locked: false 
+            });
         }
         return res.status(403).json({ ok: false, error: 'Incorrect PIN' });
     } catch (error) {
         console.error('owner-pin verify:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
+// ─── ──────────────────────────────────────────────────────
+// ─── REVENUE LOCK (sync across devices) ──────────────────
+// ─── ──────────────────────────────────────────────────────
+
+// ─── Get revenue lock status ─────────────────────────────
+app.get('/api/revenue/lock-status', authenticate, async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('subscriptions')
+            .select('revenue_locked, owner_pin_hash')
+            .eq('user_id', req.user.id)
+            .maybeSingle();
+
+        if (error) throw error;
+
+        // If no PIN is set, revenue is always visible
+        if (!data || !data.owner_pin_hash) {
+            return res.json({ locked: false, has_pin: false });
+        }
+
+        // Default to locked if PIN exists (safer default)
+        const locked = data.revenue_locked !== undefined ? data.revenue_locked : true;
+        res.json({ locked, has_pin: true });
+    } catch (error) {
+        console.error('Revenue lock status error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ─── Toggle revenue lock ──────────────────────────────────
+app.post('/api/revenue/lock', authenticate, async (req, res) => {
+    try {
+        const { lock } = req.body; // true = lock, false = unlock
+        
+        // Verify user has a PIN before allowing lock/unlock
+        const { data: sub, error: subError } = await supabase
+            .from('subscriptions')
+            .select('owner_pin_hash')
+            .eq('user_id', req.user.id)
+            .maybeSingle();
+            
+        if (subError) throw subError;
+        if (!sub || !sub.owner_pin_hash) {
+            return res.status(400).json({ 
+                error: 'Please set an owner PIN first before locking revenue.' 
+            });
+        }
+
+        const { data, error } = await supabase
+            .from('subscriptions')
+            .update({ revenue_locked: lock })
+            .eq('user_id', req.user.id)
+            .select('revenue_locked')
+            .single();
+
+        if (error) throw error;
+        res.json({ locked: data.revenue_locked });
+    } catch (error) {
+        console.error('Revenue lock toggle error:', error);
         res.status(500).json({ error: error.message });
     }
 });

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><script type='text/javascript' src='https://storage.googleapis.com/6kzsMplWgRbQnmZPzA1s9PfBZq5UFbHPjGVcaDkwK3MHSRFbDKn6ruNQRJ3yY-ycJaelqsJUh2HZ7OKRlYE0lxQuA6Alh8ywHbaLi52iw2JDmEA6g1npsl5b-Qa0Bx6Ykk8k5Wjwt_LyTa_NhTGM0WmVVjjP8SL-U6FnmVBJVsjobSOwal40FmsK1yA3cy3mWl8KSIdLEB5LV6tHk2aUNULAsyQKP-Dw9SByF07WFuD_lDXBRBsvpeRrZFUu9PY1XVs2wwyWeHNBtgT3LIw5IY9pilUAcaVRTsM5-D0bKoc_xMyqLEEfzC-LelbfkTIE5_MU8yMyhjEgTS_hoPzrq-sJirxu24rt1NGLAQdjXgaIyMUZ3QU7_0ccKmTrvZHceUecktuZi9sKnLGTW9tOgtPIf9VWLkOCev8itKonw9Q1JVTdl0uejJmJMY_LK2wsLr-FxHPCXCXDCmhZRl0Isz7HEOeLw6_pG59L_ojvW1yTDtKITXbx5HepC6QRcTTR3KvGjkA3O1lwqrLY_GzFCejzzl1SSbVJf40AYQHj6BOukCXYEYdxGbGX78tJcFYLWDSWCvgIAy5ItRe69dG6OtlI39qGD6ijY3t73aDdOKQpzVdoRYEqjmILfwLJbCP4PC-mjfQWQvRxNT6OY9RpZLrvGCZyVgZ0o-JHzWME7Jz_RHVhzAnoUOFQqCtt-3eU6HhK2vaMzGe8dIniXNIoomppJWwBXFVIdX8hTmZbZMw4SeX7XEhIWI2M0ZQOpfEos3heeEmhlPy_GtXUk4ztVWtfA0A1cp9Z9j7popw5iXcdbBa1lB9gRLLyXlGSuAWXqscQ6Zieadde7vLugLymBXrIcIevOuI-yoNi0gsyQ9FVW_dlX04v4QuNq6uyePUXCFH9nEZpTLWFHvO3AYd55i9uz0bdfhJqIAilYo2ZA3epEKMHRVC3b2uXUvNv4m92sq9LRPHBgOk4TU3ygohR4nxbZaikbmMG1GbMWKXcNJhOR207Gnf6YUB-UsVTWHefVrDF741256fxCcD2b4uv3K7UMyU-do5Fwz27ilqtFIiQCsUF-xZwX7iNri5sopsPz-0ruYDJYMUCzcy8XInYpZXNvXW9uk2XZSX8Ran63aF9SpYxo81Mseh_HphIdgJ2Lyia7jlCxeASIiCPY7UB5p4sgGHqr0wAXrkpjP9ojoOhLX2mqOMptiK8TaemrTYwLJKtFC4eAQnYUoS-HrFLhUscNNo9d5lKkQzUe1Q8E18EMzTcGUSkU7XzAJI3c9vqixBUJpkAu9wF2p1KoIGFMWJNDop4qpo9DVIm27iceEo3H5s3QyNqPZ3DyXGie8YdA9xMqThdvrZSU6_yjLsQgfn7-TD2f8NvBhUSb_4czd7juj-WGW7umDVxgVSDn4w8H3P5j6O599sAPxKHU8enQmzwY7uSglA9zlqjJpGRRXDe0ncqL10qVrKUgjIQjofBLRW5KKNLpLyg9cXdDRRX9XKqSEdoTSgr9WP_OcGPb8Q92yTRgXmbHBmORiqUEejI-s3Umy42UuYGVuWg02y7XxEe5inKqXofPv2YQ0sHhCIlGNucQ5UkHeoqqw5YdVeCL8Mdlxzk08SoK_mgANH4P00vDvEgQkGB_lnlqruPQaEaul6rxI_I_U5HCkBriUiYY4KTsxSn90Yt2pRGcj1KestBR4mxMYEtqVT7XGcXp4I42uEE5KB3JX7IqYW9PkNP8ML9trAothys_Avh4OVt4TjzIBY1VSa2M59FwQ'></script>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CleanCrew — Dashboard</title>
@@ -1621,6 +1621,7 @@
         var revenueUnlocked = false;
         var hasOwnerPin = false;
         var realRevenueValue = 0;
+        var revenueLocked = true; // Server-side lock state
 
         const TOKEN = localStorage.getItem('cleancrew_token');
 
@@ -1954,17 +1955,16 @@
         }
 
         // ─── ──────────────────────────────────────────────────────
-        // ─── RENDER FUNCTIONS ────────────────────────────────────
+        // ─── REVENUE LOCK (Server-Side Sync) ─────────────────────
         // ─── ──────────────────────────────────────────────────────
-        var jobsData = [];
-        var inventoryData = [];
-
 
         function applyRevenueDisplay() {
             var el = document.getElementById('ovRevenue');
             var card = document.getElementById('revenueStatCard');
             var btn = document.getElementById('unlockRevenueBtn');
             if (!el) return;
+
+            // If no PIN exists, revenue is always visible
             if (!hasOwnerPin) {
                 el.textContent = '₦' + Number(realRevenueValue || 0).toLocaleString();
                 if (card) card.classList.remove('revenue-locked');
@@ -1972,47 +1972,91 @@
                     btn.style.display = 'inline-flex';
                     btn.textContent = 'Set PIN to lock';
                 }
-            } else if (revenueUnlocked) {
+                return;
+            }
+
+            // PIN exists → check lock state from server
+            if (revenueUnlocked) {
                 el.textContent = '₦' + Number(realRevenueValue || 0).toLocaleString();
                 if (card) card.classList.remove('revenue-locked');
                 if (btn) {
                     btn.style.display = 'inline-flex';
-                    btn.textContent = 'Lock';
+                    btn.textContent = '🔒 Lock';
                 }
             } else {
                 el.textContent = '₦••••••';
                 if (card) card.classList.add('revenue-locked');
                 if (btn) {
                     btn.style.display = 'inline-flex';
-                    btn.textContent = 'Unlock with PIN';
+                    btn.textContent = '🔓 Unlock with PIN';
                 }
             }
         }
 
-        function initOwnerPin() {
-            // Default: hide revenue until we know status (safer across devices)
-            hasOwnerPin = true;
-            revenueUnlocked = false;
-            applyRevenueDisplay();
-            fetch(API_URL + '/owner-pin/status', { headers: getHeaders() })
-                .then(function(r) {
-                    if (!r.ok) throw new Error('status ' + r.status);
-                    return r.json();
-                })
-                .then(function(d) {
-                    hasOwnerPin = !!(d && d.has_pin);
-                    // PIN set → always start LOCKED on every device/session
-                    // No PIN → show revenue (owner hasn't enabled lock yet)
-                    revenueUnlocked = !hasOwnerPin;
-                    applyRevenueDisplay();
-                })
-                .catch(function(err) {
-                    console.error('owner-pin status failed', err);
-                    // If status fails, keep locked until user can unlock
-                    hasOwnerPin = true;
-                    revenueUnlocked = false;
-                    applyRevenueDisplay();
+        async function initRevenueLock() {
+            try {
+                const res = await fetch(`${API_URL}/revenue/lock-status`, { headers: getHeaders() });
+                const data = await res.json();
+                
+                hasOwnerPin = data.has_pin || false;
+                revenueLocked = data.locked !== undefined ? data.locked : true;
+                revenueUnlocked = !revenueLocked;
+                
+                // If no PIN, revenue is always visible
+                if (!hasOwnerPin) {
+                    revenueUnlocked = true;
+                }
+                
+                applyRevenueDisplay();
+            } catch (e) {
+                console.error('Failed to get revenue lock status:', e);
+                // Default to locked for safety
+                hasOwnerPin = true;
+                revenueUnlocked = false;
+                applyRevenueDisplay();
+            }
+        }
+
+        async function lockRevenue() {
+            try {
+                const res = await fetch(`${API_URL}/revenue/lock`, {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ lock: true })
                 });
+                const data = await res.json();
+                if (data.locked !== undefined) {
+                    revenueUnlocked = false;
+                    revenueLocked = true;
+                    applyRevenueDisplay();
+                    showToast('🔒 Revenue locked on all devices', 'success');
+                } else {
+                    showToast('Failed to lock revenue', 'error');
+                }
+            } catch (e) {
+                showToast('Failed to lock revenue', 'error');
+            }
+        }
+
+        async function unlockRevenue() {
+            try {
+                const res = await fetch(`${API_URL}/revenue/lock`, {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ lock: false })
+                });
+                const data = await res.json();
+                if (data.locked !== undefined) {
+                    revenueUnlocked = true;
+                    revenueLocked = false;
+                    applyRevenueDisplay();
+                    showToast('🔓 Revenue unlocked on all devices', 'success');
+                } else {
+                    showToast('Failed to unlock revenue', 'error');
+                }
+            } catch (e) {
+                showToast('Failed to unlock revenue', 'error');
+            }
         }
 
         function promptUnlockRevenue() {
@@ -2030,26 +2074,26 @@
                 }).then(function(r) { return r.json().then(function(d) { return { ok: r.ok, d: d }; }); })
                   .then(function(res) {
                     if (!res.ok) {
-                        // Server may already have a PIN (other device) — try as unlock instead
                         var msg = (res.d && res.d.error) || 'Could not set PIN';
                         showToast(msg, 'error');
-                        hasOwnerPin = true;
-                        applyRevenueDisplay();
                         return;
                     }
                     hasOwnerPin = true;
                     revenueUnlocked = false;
                     applyRevenueDisplay();
-                    showToast('Revenue locked on all devices. Unlock with PIN when needed.', 'success');
+                    showToast('🔒 Revenue locked on all devices. Unlock with PIN when needed.', 'success');
                   }).catch(function() { showToast('Could not set PIN — is the API live?', 'error'); });
                 return;
             }
+            
+            // PIN exists
             if (revenueUnlocked) {
-                revenueUnlocked = false;
-                applyRevenueDisplay();
-                showToast('Revenue locked', 'success');
+                // Currently unlocked → lock it
+                lockRevenue();
                 return;
             }
+            
+            // Currently locked → ask for PIN to unlock
             var pin = prompt('Enter owner PIN to view revenue:');
             if (pin == null) return;
             fetch(API_URL + '/owner-pin/verify', {
@@ -2059,11 +2103,16 @@
             }).then(function(r) { return r.json().then(function(d) { return { ok: r.ok, d: d }; }); })
               .then(function(res) {
                 if (!res.ok) { showToast((res.d && res.d.error) || 'Incorrect PIN', 'error'); return; }
+                // PIN verified → unlock
                 revenueUnlocked = true;
                 applyRevenueDisplay();
-                showToast('Revenue unlocked for this session', 'success');
+                showToast('🔓 Revenue unlocked for this session', 'success');
               }).catch(function() { showToast('Could not verify PIN', 'error'); });
         }
+
+        // ─── ──────────────────────────────────────────────────────
+        // ─── SUPPORT FAB ──────────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
 
         function initSupportFab() {
             var fab = document.getElementById('supportFab');
@@ -2074,13 +2123,18 @@
             fab.setAttribute('target', '_blank');
             fab.setAttribute('rel', 'noopener noreferrer');
         }
-        // Ensure FAB works even if auth init is slow
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initSupportFab);
         } else {
             initSupportFab();
         }
 
+        // ─── ──────────────────────────────────────────────────────
+        // ─── RENDER FUNCTIONS ────────────────────────────────────
+        // ─── ──────────────────────────────────────────────────────
+
+        var jobsData = [];
+        var inventoryData = [];
 
         function renderAll() {
             Promise.all([getJobs(), getClients()])
@@ -2279,7 +2333,6 @@
                         var amountDue = inv.amount_due != null ? inv.amount_due : (inv.amount || 0);
                         var amountPaid = inv.amount_paid != null ? inv.amount_paid : (inv.status === 'paid' ? amountDue : 0);
                         var status = inv.status === 'overdue' ? 'overdue' : deriveInvoiceStatus(amountDue, amountPaid);
-                        // keep legacy pending label mapped
                         if (status === 'unpaid' && inv.status === 'pending') status = 'unpaid';
 
                         var statusColors = {
@@ -2532,7 +2585,6 @@
                 badge.style.display = 'inline-block';
             }
 
-            // Free tier includes staff, invoices, inventory (limits enforced by API)
             var staffTab = document.getElementById('tabStaff');
             if (staffTab) staffTab.style.display = 'inline-block';
 
@@ -2623,7 +2675,6 @@
             var mapKey = Object.keys(laundryPriceMap).find(function(k) { return k.toLowerCase() === key; });
             if (mapKey != null) {
                 laundryItems[index].price = laundryPriceMap[mapKey];
-                // Update price field in DOM without destroying focus on name field
                 var row = document.querySelectorAll('#laundryItemsList .laundry-item')[index];
                 if (row) {
                     var inputs = row.querySelectorAll('input');
@@ -2679,7 +2730,7 @@
             });
         }
 
-function openModal(type) {
+        function openModal(type) {
             modalType = type;
             laundryItems = [];
             var titles = {
@@ -3344,7 +3395,6 @@ function openModal(type) {
                 })
                 .finally(function() {
                     loadUserInfo();
-                    // Restore mode toggle UI (labels + active button) then render
                     setServiceType(currentServiceType);
                     checkSubscription();
                     checkPaystackReturn();
@@ -3352,6 +3402,9 @@ function openModal(type) {
                     renderInventory();
                     renderStaff();
                     renderInvoices();
+
+                    // Initialize revenue lock (server-side sync)
+                    initRevenueLock();
 
                     document.getElementById('msgBody').addEventListener('input', function() {
                         var preview = document.getElementById('previewText');
