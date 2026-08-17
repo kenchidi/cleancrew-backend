@@ -1526,6 +1526,25 @@ app.post('/api/invoices/:id/generate-pdf', authenticate, async (req, res) => {
     const pdfBuffer = doc.output('arraybuffer');
     const fileName = `invoice_${invoice.id}_${Date.now()}.pdf`;
 
+    // Make sure the 'invoices' bucket exists before uploading. If this is
+    // the first time PDF generation has run, or the bucket was deleted,
+    // this creates it automatically instead of failing outright.
+    const { data: buckets, error: listBucketsError } = await supabase.storage.listBuckets();
+    if (listBucketsError) {
+      console.error('Could not list Storage buckets:', listBucketsError);
+    }
+    const invoicesBucketExists = (buckets || []).some(b => b.name === 'invoices');
+    if (!invoicesBucketExists) {
+      const { error: createBucketError } = await supabase.storage.createBucket('invoices', {
+        public: true
+      });
+      if (createBucketError) {
+        console.error('Failed to auto-create "invoices" bucket:', createBucketError);
+      } else {
+        console.log('Created missing "invoices" Storage bucket.');
+      }
+    }
+
     // Try to upload to Supabase Storage
     const { error: uploadError } = await supabase.storage
       .from('invoices')
