@@ -28,6 +28,33 @@ console.log(
     !!process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
+// ─── Diagnostic: verify the key above is really a service_role key ──
+// A genuine service_role key bypasses RLS entirely. If Storage uploads
+// fail with "new row violates row-level security policy" even though
+// this env var is set, it almost always means the wrong key value was
+// pasted (e.g. the anon/public key instead of service_role). This
+// decodes the JWT payload to show which role Supabase will actually see.
+try {
+    const parts = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').split('.');
+    if (parts.length === 3) {
+        let b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+        while (b64.length % 4) b64 += '=';
+        const payload = JSON.parse(Buffer.from(b64, 'base64').toString('utf8'));
+        console.log('Supabase key role:', payload.role || '(unknown)');
+        if (payload.role !== 'service_role') {
+            console.warn(
+                '⚠️  SUPABASE_SERVICE_ROLE_KEY does not look like a service_role key ' +
+                '(role="' + payload.role + '"). Storage uploads will be blocked by RLS. ' +
+                'Copy the "service_role" secret from Supabase → Settings → API and update it on Render.'
+            );
+        }
+    } else {
+        console.warn('SUPABASE_SERVICE_ROLE_KEY does not look like a valid JWT.');
+    }
+} catch (e) {
+    console.warn('Could not decode SUPABASE_SERVICE_ROLE_KEY to verify its role:', e.message);
+}
+
 // ─── Paystack config ──────────────────────────────────────
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 const PAYSTACK_PUBLIC_KEY = process.env.PAYSTACK_PUBLIC_KEY;
