@@ -1107,8 +1107,7 @@ app.post('/api/owner-pin/set', authenticate, async (req, res) => {
         }
 
         const payload = {
-            owner_pin_hash: hashPin(pin),
-            updated_at: new Date().toISOString()
+            owner_pin_hash: hashPin(pin)
         };
 
         if (sub && sub.user_id) {
