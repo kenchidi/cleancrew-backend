@@ -1,0 +1,15 @@
+{
+  "name": "cleancrew-backend",
+  "version": "1.0.0",
+  "description": "CleanCrew Backend API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.112.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
+  }
+}
