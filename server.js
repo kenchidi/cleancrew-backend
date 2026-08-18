@@ -2331,15 +2331,18 @@ app.post(
             }
 
             const item = {
-                ...req.body,
-
-                user_id:
-                    req.user.id,
-
-                category:
-                    req.body.category ||
-                    'cleaning'
+                name: req.body.name,
+                category: req.body.category || 'cleaning',
+                quantity: req.body.quantity,
+                min_stock: req.body.min_stock,
+                unit: req.body.unit,
+                notes: req.body.notes,
+                user_id: req.user.id
             };
+            // Drop undefined so we don't send unknown columns
+            Object.keys(item).forEach(function (k) {
+                if (item[k] === undefined) delete item[k];
+            });
 
             const {
                 data,
