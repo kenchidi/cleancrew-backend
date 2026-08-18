@@ -231,7 +231,141 @@ async function getUserPlan(userId) {
 
     return sub?.plan || 'free';
 }
+// ─── ──────────────────────────────────────────────────────
+// ─── CREDIT SYSTEM HELPERS ───────────────────────────────
+// ─── ──────────────────────────────────────────────────────
 
+// ─── Get credit balance ──────────────────────────────────
+async function getCreditBalance(userId) {
+  const { data, error } = await supabase
+    .from('credit_wallets')
+    .select('balance')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error) throw new Error('Failed to fetch credit balance: ' + error.message);
+  return data?.balance || 0;
+}
+
+// ─── Add credits ─────────────────────────────────────────
+async function addCredits(userId, amount, description, reference = null, metadata = {}) {
+  // Get current balance
+  const { data: wallet, error: walletError } = await supabase
+    .from('credit_wallets')
+    .select('balance')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (walletError) throw walletError;
+
+  const currentBalance = wallet?.balance || 0;
+  const newBalance = currentBalance + amount;
+
+  // Upsert wallet
+  const { error: upsertError } = await supabase
+    .from('credit_wallets')
+    .upsert({
+      user_id: userId,
+      balance: newBalance,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id' });
+
+  if (upsertError) throw upsertError;
+
+  // Log transaction
+  const { error: txError } = await supabase
+    .from('credit_transactions')
+    .insert({
+      user_id: userId,
+      type: 'purchase',
+      amount: amount,
+      balance_after: newBalance,
+      description: description,
+      reference: reference,
+      metadata: metadata
+    });
+
+  if (txError) console.error('Failed to log credit transaction:', txError);
+
+  return { balance: newBalance };
+}
+
+// ─── Consume credits ─────────────────────────────────────
+async function consumeCredit(userId, description, resourceId = null) {
+  const balance = await getCreditBalance(userId);
+
+  if (balance < 1) {
+    return { success: false, balance, message: 'Insufficient credits' };
+  }
+
+  const newBalance = balance - 1;
+
+  // Update wallet
+  const { error: updateError } = await supabase
+    .from('credit_wallets')
+    .update({ balance: newBalance, updated_at: new Date().toISOString() })
+    .eq('user_id', userId);
+
+  if (updateError) throw updateError;
+
+  // Log usage
+  const { error: txError } = await supabase
+    .from('credit_transactions')
+    .insert({
+      user_id: userId,
+      type: 'usage',
+      amount: -1,
+      balance_after: newBalance,
+      description: description,
+      metadata: { resource_id: resourceId }
+    });
+
+  if (txError) console.error('Failed to log credit usage:', txError);
+
+  return { success: true, balance: newBalance };
+}
+
+// ─── Check if user has remaining free jobs ──────────────
+async function getFreeJobsRemaining(userId) {
+  const { count, error } = await supabase
+    .from('jobs')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId);
+
+  if (error) throw error;
+  
+  // Free tier allows 25 lifetime jobs
+  return Math.max(0, 25 - (count || 0));
+}
+
+// ─── Check if user can create job ──────────────────────
+async function canCreateJob(userId) {
+  // 1. Check if user has active Professional or Enterprise subscription
+  const { data: sub, error: subError } = await supabase
+    .from('subscriptions')
+    .select('plan, status')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (!subError && sub && sub.status === 'active' && (sub.plan === 'professional' || sub.plan === 'enterprise')) {
+    return { allowed: true, source: 'subscription' };
+  }
+
+  // 2. Check free job allowance (25 lifetime)
+  const freeJobsRemaining = await getFreeJobsRemaining(userId);
+  if (freeJobsRemaining > 0) {
+    return { allowed: true, source: 'free', remaining: freeJobsRemaining };
+  }
+
+  // 3. Check purchased credits
+  const balance = await getCreditBalance(userId);
+  if (balance > 0) {
+    return { allowed: true, source: 'credit', balance: balance };
+  }
+
+  // 4. No more jobs available
+  return { allowed: false, source: 'none', message: 'You\'ve used all your free jobs and have no credits remaining.' };
+}
 // ─── ──────────────────────────────────────────────────────
 // ─── API ROUTES ──────────────────────────────────────────
 // ─── ──────────────────────────────────────────────────────
@@ -577,23 +711,45 @@ app.post('/api/paystack/webhook', async (req, res) => {
 
         if (event.event === 'charge.success') {
             const { reference } = event.data;
-            const { user_id, plan } = event.data.metadata;
+            const { user_id, plan, type, jobs, pack } = event.data.metadata || {};
 
-            await supabase
-                .from('subscriptions')
-                .upsert({
-                    user_id: user_id,
-                    status: 'active',
-                    plan: plan || 'professional',
-                    trial_end: new Date(Date.now() + 365 * 86400000).toISOString()
-                });
+            // ─── Handle Credit Purchase (NEW) ───────────────────
+            if (type === 'credit_purchase' && user_id) {
+                const jobCount = parseInt(jobs) || 25;
+                await addCredits(
+                    user_id,
+                    jobCount,
+                    `Credit pack: ${pack || 'Starter'} (${jobCount} jobs)`,
+                    reference,
+                    { pack, jobs: jobCount }
+                );
+                
+                await supabase
+                    .from('transactions')
+                    .update({ status: 'completed' })
+                    .eq('reference', reference);
+                
+                console.log(`✅ Credits added: ${jobCount} jobs for user ${user_id}`);
+            }
 
-            await supabase
-                .from('transactions')
-                .update({ status: 'completed' })
-                .eq('reference', reference);
+            // ─── Handle Subscription (Existing) ─────────────────
+            if (plan) {
+                await supabase
+                    .from('subscriptions')
+                    .upsert({
+                        user_id: user_id,
+                        status: 'active',
+                        plan: plan || 'professional',
+                        trial_end: new Date(Date.now() + 365 * 86400000).toISOString()
+                    });
 
-            console.log(`✅ Subscription activated for user ${user_id} (${plan})`);
+                await supabase
+                    .from('transactions')
+                    .update({ status: 'completed' })
+                    .eq('reference', reference);
+
+                console.log(`✅ Subscription activated for user ${user_id} (${plan})`);
+            }
         }
 
         res.sendStatus(200);
@@ -655,77 +811,65 @@ app.get('/api/jobs', authenticate, async (req, res) => {
 });
 
 app.post('/api/jobs', authenticate, async (req, res) => {
-    try {
-        const limitCheck = await checkPlanLimit(req.user.id, 'jobs');
+  try {
+    const userId = req.user.id;
 
-        if (!limitCheck.allowed) {
-            return res.status(403).json({
-                error: limitCheck.message,
-                limit: limitCheck.limit,
-                count: limitCheck.count,
-                plan: limitCheck.plan
-            });
-        }
+    // Check if user can create a job
+    const canCreate = await canCreateJob(userId);
 
-        const mode = req.body.mode || req.body.service_type || 'cleaning';
-        const job = {
-            ...req.body,
-            user_id: req.user.id,
-            mode,
-            service_type: mode,
-            items: req.body.items || req.body.laundry_items || [],
-            rooms: req.body.rooms ?? null,
-            property_size: req.body.property_size || null
-        };
-
-        const { data, error } = await supabase
-            .from('jobs')
-            .insert(job)
-            .select()
-            .single();
-
-        if (error) throw error;
-        res.json(data);
-    } catch (error) {
-        console.error('Error creating job:', error);
-        res.status(500).json({ error: error.message });
+    if (!canCreate.allowed) {
+      return res.status(403).json({
+        error: canCreate.message || 'You\'ve used all your free jobs. Buy credits to continue.',
+        code: 'NO_JOBS_REMAINING',
+        free_used: true,
+        credits_remaining: await getCreditBalance(userId)
+      });
     }
-});
 
-app.put('/api/jobs/:id', authenticate, async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { data, error } = await supabase
-            .from('jobs')
-            .update(req.body)
-            .eq('id', id)
-            .eq('user_id', req.user.id)
-            .select()
-            .single();
-
-        if (error) throw error;
-        res.json(data);
-    } catch (error) {
-        console.error('Error updating job:', error);
-        res.status(500).json({ error: error.message });
+    // If using credits, consume one
+    if (canCreate.source === 'credit') {
+      const result = await consumeCredit(userId, `Job creation: ${req.body.client || 'New job'}`);
+      if (!result.success) {
+        return res.status(403).json({
+          error: 'Insufficient credits',
+          code: 'INSUFFICIENT_CREDITS'
+        });
+      }
     }
-});
 
-app.delete('/api/jobs/:id', authenticate, async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { error } = await supabase
-            .from('jobs')
-            .delete()
-            .eq('id', id)
-            .eq('user_id', req.user.id);
+    // Create the job
+    const mode = req.body.mode || req.body.service_type || 'cleaning';
+    const job = {
+      ...req.body,
+      user_id: userId,
+      mode,
+      service_type: mode,
+      items: req.body.items || req.body.laundry_items || [],
+      rooms: req.body.rooms ?? null,
+      property_size: req.body.property_size || null
+    };
 
-        if (error) throw error;
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error deleting job:', error);
-        res.status(500).json({ error: error.message });
-    }
+    const { data, error } = await supabase
+      .from('jobs')
+      .insert(job)
+      .select()
+      .single();
+
+    if (error) throw error;
+    
+    res.json({
+      ...data,
+      _meta: {
+        source: canCreate.source,
+        free_remaining: await getFreeJobsRemaining(userId),
+        credits_remaining: await getCreditBalance(userId)
+      }
+    });
+
+  } catch (error) {
+    console.error('Error creating job:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // ─── ──────────────────────────────────────────────────────
