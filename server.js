@@ -890,10 +890,15 @@ app.post('/api/auth/signup', async (req, res) => {
                 plan: 'free'
             });
 
-        // Create the credit wallet immediately.
-        await ensureCreditWallet(
-            authData.user.id
-        );
+        // Create the credit wallet immediately (non-fatal if RLS/DB hiccup).
+        try {
+            await ensureCreditWallet(authData.user.id);
+        } catch (walletErr) {
+            console.error(
+                'Credit wallet on signup (non-fatal):',
+                walletErr.message || walletErr
+            );
+        }
 
         res.json({
             success: true,
@@ -960,9 +965,14 @@ app.post('/api/auth/login', async (req, res) => {
             .eq('user_id', authData.user.id)
             .maybeSingle();
 
-        await ensureCreditWallet(
-            authData.user.id
-        );
+        try {
+            await ensureCreditWallet(authData.user.id);
+        } catch (walletErr) {
+            console.error(
+                'Credit wallet on login (non-fatal):',
+                walletErr.message || walletErr
+            );
+        }
 
         res.json({
             token:
@@ -1302,6 +1312,111 @@ app.get(
                 error
             );
 
+            res.status(500).json({
+                error: error.message
+            });
+        }
+    }
+);
+
+
+// ─── CREDIT PURCHASE (Paystack) ─────────────────────────────
+
+app.post(
+    '/api/credits/initialize',
+    authenticate,
+    async (req, res) => {
+        try {
+            if (!PAYSTACK_SECRET_KEY) {
+                return res.status(500).json({
+                    error: 'Paystack is not configured on the server'
+                });
+            }
+
+            const pack = req.body.pack || 'starter';
+            if (!CREDIT_PACKS[pack]) {
+                return res.status(400).json({
+                    error: 'Invalid credit pack. Use starter, business, professional, or enterprise.'
+                });
+            }
+
+            const packData = CREDIT_PACKS[pack];
+            const userId = req.user.id;
+            const email = req.user.email;
+            const reference =
+                `credit_${userId}_${Date.now()}`;
+
+            const response = await fetch(
+                'https://api.paystack.co/transaction/initialize',
+                {
+                    method: 'POST',
+                    headers: {
+                        Authorization:
+                            `Bearer ${PAYSTACK_SECRET_KEY}`,
+                        'Content-Type':
+                            'application/json'
+                    },
+                    body: JSON.stringify({
+                        email,
+                        amount: packData.amount,
+                        currency: 'NGN',
+                        reference,
+                        callback_url:
+                            `${FRONTEND_URL}/dashboard.html?credits=1`,
+                        metadata: {
+                            user_id: userId,
+                            type: 'credit_purchase',
+                            pack,
+                            jobs: packData.jobs,
+                            pack_name: packData.name
+                        }
+                    })
+                }
+            );
+
+            const data = await response.json();
+
+            if (!data.status) {
+                console.error('Paystack credit init failed:', data);
+                return res.status(400).json({
+                    error:
+                        (data.message) ||
+                        'Paystack could not start the payment. Check your secret key and that the amount is valid.'
+                });
+            }
+
+            // Optional local record
+            try {
+                await supabase.from('transactions').insert({
+                    user_id: userId,
+                    reference,
+                    amount: packData.amount / 100,
+                    status: 'pending',
+                    type: 'credit_purchase',
+                    metadata: {
+                        pack,
+                        jobs: packData.jobs
+                    }
+                });
+            } catch (txLogErr) {
+                console.warn('transactions log skipped:', txLogErr.message || txLogErr);
+            }
+
+            res.json({
+                authorization_url:
+                    data.data.authorization_url,
+                access_code:
+                    data.data.access_code,
+                reference:
+                    data.data.reference || reference,
+                jobs: packData.jobs,
+                amount: packData.amount / 100
+            });
+        } catch (error) {
+            console.error(
+                'Credit purchase initialize error:',
+                error
+            );
             res.status(500).json({
                 error: error.message
             });
