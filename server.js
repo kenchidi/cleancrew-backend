@@ -12,14 +12,7 @@ const app = express();
 
 // ─── CORS ────────────────────────────────────────────────────
 app.use(cors());
-// Capture the raw body alongside the parsed one. Paystack signs the exact
-// bytes it sent; JSON.stringify(req.body) is not guaranteed to reproduce
-// that byte-for-byte, so signature verification must use req.rawBody.
-app.use(express.json({
-    verify: (req, res, buf) => {
-        req.rawBody = buf;
-    }
-}));
+app.use(express.json());
 app.use(express.static(__dirname));
 
 // ─── SUPABASE ────────────────────────────────────────────────
@@ -85,18 +78,19 @@ const PLANS = {
         amount: 0,
         name: 'Free',
         features:
-            '25 jobs (lifetime), 25 clients, 3 staff, 15 invoices/mo, unlimited WhatsApp, 10 inventory',
+            '25 jobs/mo, 25 clients, 3 staff, 15 invoices/mo, 30 WhatsApp/mo, 10 inventory',
         limits: {
             jobs: 25,
             clients: 25,
             staff: 3,
             invoices: 15,
-            whatsapp_messages: Infinity,
+            whatsapp_messages: 30,
             inventory: 10
         },
         monthly: [
             'jobs',
-            'invoices'
+            'invoices',
+            'whatsapp_messages'
         ]
     },
 
@@ -104,21 +98,22 @@ const PLANS = {
         amount: 1250000,
         name: 'Starter',
         features:
-            'Unlimited jobs, clients, staff, invoices, WhatsApp & inventory',
+            '50 jobs, 50 clients, 5 staff, 20 invoices/month, 100 WhatsApp messages, 10 inventory items',
         limits: {
-            jobs: Infinity,
-            clients: Infinity,
-            staff: Infinity,
-            invoices: Infinity,
-            whatsapp_messages: Infinity,
-            inventory: Infinity
+            jobs: 50,
+            clients: 50,
+            staff: 5,
+            invoices: 20,
+            whatsapp_messages: 100,
+            inventory: 10
         },
-        monthly: []
+        monthly: [
+            'jobs',
+            'invoices',
+            'whatsapp_messages'
+        ]
     },
 
-    // NOTE: professional/enterprise are kept defined (unused) rather than
-    // deleted, in case tiered pricing comes back later. Nothing currently
-    // links to them — starter (₦12,500) is the only paid tier offered.
     professional: {
         amount: 1750000,
         name: 'Professional',
@@ -390,16 +385,6 @@ async function getUserPlan(userId) {
  *
  * credit_transactions:
  *     stores the audit history
- *
- * REQUIRED MIGRATION (run once in the Supabase SQL editor):
- * processCreditPurchase() below relies on this constraint to
- * safely de-duplicate retried/duplicate webhook + verify calls for
- * the same payment. Without it, concurrent duplicate deliveries
- * could still double-credit a wallet.
- *
- *     CREATE UNIQUE INDEX IF NOT EXISTS credit_transactions_reference_purchase_uniq
- *     ON credit_transactions (reference)
- *     WHERE type = 'purchase' AND reference IS NOT NULL;
  */
 
 // ─── Get credit balance ─────────────────────────────────────
@@ -459,74 +444,6 @@ async function ensureCreditWallet(userId) {
 
 // ─── Add credits ─────────────────────────────────────────────
 
-// --- Increment wallet balance safely -------------------------
-// Uses the same compare-and-swap pattern as consumeCredit() below,
-// with a small retry loop for the rare case of real concurrent
-// writes to the same wallet. The version previously here did a
-// plain read-then-unconditional-write, which under two concurrent
-// calls could silently lose one of the increments (last write
-// wins, based on a stale read) — this fixes that.
-async function incrementWalletBalance(userId, amount, maxRetries = 5) {
-    amount = Number(amount);
-
-    if (!Number.isInteger(amount) || amount <= 0) {
-        throw new Error('Credit amount must be a positive integer');
-    }
-
-    await ensureCreditWallet(userId);
-
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
-        const {
-            data: wallet,
-            error: walletError
-        } = await supabase
-            .from('credit_wallets')
-            .select('balance')
-            .eq('user_id', userId)
-            .single();
-
-        if (walletError) {
-            throw new Error(
-                'Failed to fetch credit wallet: ' +
-                walletError.message
-            );
-        }
-
-        const currentBalance = Number(wallet.balance || 0);
-        const newBalance = currentBalance + amount;
-
-        const {
-            data: updatedWallet,
-            error: updateError
-        } = await supabase
-            .from('credit_wallets')
-            .update({
-                balance: newBalance,
-                updated_at: new Date().toISOString()
-            })
-            .eq('user_id', userId)
-            .eq('balance', currentBalance) // compare-and-swap guard
-            .select('balance')
-            .maybeSingle();
-
-        if (updateError) {
-            throw new Error(
-                'Failed to update credit balance: ' +
-                updateError.message
-            );
-        }
-
-        if (updatedWallet) {
-            return Number(updatedWallet.balance);
-        }
-        // Balance changed underneath us — retry with a fresh read.
-    }
-
-    throw new Error(
-        'Could not update credit balance after multiple attempts (high contention)'
-    );
-}
-
 async function addCredits(
     userId,
     amount,
@@ -565,7 +482,46 @@ async function addCredits(
         }
     }
 
-    const finalBalance = await incrementWalletBalance(userId, amount);
+    const {
+        data: wallet,
+        error: walletError
+    } = await supabase
+        .from('credit_wallets')
+        .select('balance')
+        .eq('user_id', userId)
+        .single();
+
+    if (walletError) {
+        throw new Error(
+            'Failed to fetch credit wallet: ' +
+            walletError.message
+        );
+    }
+
+    const currentBalance = Number(wallet.balance || 0);
+    const newBalance = currentBalance + amount;
+
+    const {
+        data: updatedWallet,
+        error: updateError
+    } = await supabase
+        .from('credit_wallets')
+        .update({
+            balance: newBalance,
+            updated_at: new Date().toISOString()
+        })
+        .eq('user_id', userId)
+        .select('balance')
+        .single();
+
+    if (updateError) {
+        throw new Error(
+            'Failed to update credit balance: ' +
+            updateError.message
+        );
+    }
+
+    const finalBalance = Number(updatedWallet.balance);
 
     const { error: txError } = await supabase
         .from('credit_transactions')
@@ -598,58 +554,6 @@ async function addCredits(
         amount_added: amount,
         already_processed: false
     };
-}
-
-// --- Process a credit purchase (payment paths only) -----------
-// Both the Paystack webhook and the "verify on redirect back"
-// endpoint can be the first to see a successful credit purchase —
-// Paystack does not guarantee which arrives first, and both can
-// fire for the same payment. Unlike addCredits() above (used for
-// low-stakes refunds), this claims the reference by inserting the
-// transaction row FIRST, before touching the balance at all. If a
-// unique constraint on credit_transactions(reference) exists (see
-// the migration note above), a genuine duplicate delivery fails
-// this insert immediately — the balance is never touched a second
-// time, so there's no window where both callers could pass a
-// check and both increment.
-async function processCreditPurchase(userId, reference, jobCount, pack) {
-    const { error: claimError } = await supabase
-        .from('credit_transactions')
-        .insert({
-            user_id: userId,
-            type: 'purchase',
-            amount: jobCount,
-            description: `Credit pack: ${pack || 'Starter'} (${jobCount} jobs)`,
-            reference,
-            metadata: { pack, jobs: jobCount }
-        });
-
-    if (!claimError) {
-        const finalBalance = await incrementWalletBalance(userId, jobCount);
-
-        await supabase
-            .from('credit_transactions')
-            .update({ balance_after: finalBalance })
-            .eq('reference', reference)
-            .eq('type', 'purchase');
-
-        await supabase
-            .from('transactions')
-            .update({ status: 'completed' })
-            .eq('reference', reference);
-
-        return { credited: true, jobs: jobCount, balance: finalBalance };
-    }
-
-    if (claimError.code === '23505' || /duplicate|unique/i.test(claimError.message || '')) {
-        return {
-            credited: false,
-            reason: 'already_processed',
-            balance: await getCreditBalance(userId)
-        };
-    }
-
-    throw new Error('Failed to claim credit purchase: ' + claimError.message);
 }
 
 // ─── Consume one credit ─────────────────────────────────────
@@ -774,70 +678,26 @@ async function consumeCredit(
 // ─── Lifetime free jobs (NOT monthly) ───────────────────────
 // Product rule: every account gets 25 free jobs for life.
 // After that → job credits (PAYG) or a paid unlimited plan.
-//
-// NOTE: this is deliberately NOT `COUNT(*) FROM jobs` — that would
-// let someone delete a job to "regain" free-tier allowance and
-// create unlimited free jobs by repeatedly creating/deleting.
-// Instead this reads a monotonic counter (credit_wallets.
-// lifetime_jobs_used) that only ever goes up, incremented once per
-// job creation in the /api/jobs POST route.
-//
-// REQUIRED MIGRATION (run once in the Supabase SQL editor):
-//     ALTER TABLE credit_wallets
-//     ADD COLUMN IF NOT EXISTS lifetime_jobs_used integer NOT NULL DEFAULT 0;
 
 const LIFETIME_FREE_JOBS = 25;
 
 async function getLifetimeJobsUsed(userId) {
-    await ensureCreditWallet(userId);
-
     const {
-        data,
+        count,
         error
     } = await supabase
-        .from('credit_wallets')
-        .select('lifetime_jobs_used')
-        .eq('user_id', userId)
-        .single();
+        .from('jobs')
+        .select('*', {
+            count: 'exact',
+            head: true
+        })
+        .eq('user_id', userId);
 
     if (error) {
         throw error;
     }
 
-    return Number(data?.lifetime_jobs_used || 0);
-}
-
-// Increment the lifetime jobs counter by 1. Called once per
-// successful job creation, regardless of which access path (free/
-// credit/subscription) allowed it — this is a historical usage
-// counter, not a live balance, so it doesn't need the strict
-// compare-and-swap treatment incrementWalletBalance() uses for
-// money. A rare race here costs at most one extra free job, not
-// lost/duplicated revenue.
-async function incrementLifetimeJobsUsed(userId) {
-    await ensureCreditWallet(userId);
-
-    const { data, error } = await supabase
-        .from('credit_wallets')
-        .select('lifetime_jobs_used')
-        .eq('user_id', userId)
-        .single();
-
-    if (error) {
-        console.error('Failed to read lifetime_jobs_used:', error.message);
-        return;
-    }
-
-    const current = Number(data?.lifetime_jobs_used || 0);
-
-    const { error: updateError } = await supabase
-        .from('credit_wallets')
-        .update({ lifetime_jobs_used: current + 1 })
-        .eq('user_id', userId);
-
-    if (updateError) {
-        console.error('Failed to increment lifetime_jobs_used:', updateError.message);
-    }
+    return count || 0;
 }
 
 async function getFreeJobsRemaining(userId) {
@@ -897,56 +757,110 @@ async function canCreateJob(userId) {
         throw new Error('Error checking subscription');
     }
 
-    const plan = (sub && PLANS[sub.plan]) ? sub.plan : 'free';
-    const status = sub?.status || 'active';
+    // Only exact known paid plan names unlock paid limits.
+    // Anything else (null, typo, empty) is treated as free.
+    let plan = 'free';
+    if (sub && sub.plan && PLANS[sub.plan]) {
+        plan = sub.plan;
+    }
+    const status = (sub && sub.status) ? String(sub.status).toLowerCase() : 'active';
     const active = status === 'active' || status === 'trial';
 
-    // 1) Unlimited plans — starter is now the single paid tier (₦12,500),
-    // truly unlimited, same as professional/enterprise (kept for the
-    // rare pre-existing subscriber still on one of those, or if tiers
-    // come back later).
+    const usedLifetime = await getLifetimeJobsUsed(userId);
+    const freeLeft = Math.max(0, LIFETIME_FREE_JOBS - usedLifetime);
+    const creditBalance = await getCreditBalance(userId);
+
+    console.log('[canCreateJob]', {
+        userId,
+        plan,
+        status,
+        active,
+        usedLifetime,
+        freeLeft,
+        creditBalance
+    });
+
+    // 1) Unlimited plans ONLY when active professional/enterprise
     if (
         active &&
-        (plan === 'starter' || plan === 'professional' || plan === 'enterprise')
+        (plan === 'professional' || plan === 'enterprise')
     ) {
         return {
             allowed: true,
             source: 'subscription',
-            plan
+            plan,
+            used: usedLifetime,
+            free_remaining: freeLeft,
+            credits: creditBalance
         };
     }
 
-    // 3) Free tier — 25 jobs lifetime (not monthly)
-    const freeLeft = await getFreeJobsRemaining(userId);
-    if (freeLeft > 0) {
+    // 2) Starter subscription — monthly included jobs, then credits
+    if (active && plan === 'starter') {
+        const starter = await getStarterJobsRemainingThisMonth(userId);
+        if (starter.remaining > 0) {
+            return {
+                allowed: true,
+                source: 'starter',
+                plan: 'starter',
+                remaining: starter.remaining,
+                limit: starter.limit,
+                used: starter.used,
+                credits: creditBalance
+            };
+        }
+        if (creditBalance > 0) {
+            return {
+                allowed: true,
+                source: 'credit',
+                balance: creditBalance,
+                plan: 'starter'
+            };
+        }
+        return {
+            allowed: false,
+            source: 'none',
+            plan: 'starter',
+            message:
+                "You've used all 50 Starter jobs this month and have no credits left. Buy credits or go Unlimited."
+        };
+    }
+
+    // 3) Free tier — HARD CAP: 25 jobs lifetime (count of rows in jobs for this user)
+    if (usedLifetime < LIFETIME_FREE_JOBS) {
         return {
             allowed: true,
             source: 'free',
             plan: 'free',
             remaining: freeLeft,
             limit: LIFETIME_FREE_JOBS,
-            used: LIFETIME_FREE_JOBS - freeLeft
+            used: usedLifetime,
+            credits: creditBalance
         };
     }
 
-    // 4) PAYG credits
-    const balance = await getCreditBalance(userId);
-    if (balance > 0) {
+    // 4) After free pool exhausted → credits only
+    if (creditBalance > 0) {
         return {
             allowed: true,
             source: 'credit',
-            balance,
-            plan: 'free'
+            balance: creditBalance,
+            plan: 'free',
+            used: usedLifetime,
+            free_remaining: 0
         };
     }
 
-    // 5) Block
+    // 5) Block — no free jobs, no credits, not on paid unlimited
     return {
         allowed: false,
         source: 'none',
         plan: 'free',
+        used: usedLifetime,
+        free_remaining: 0,
+        credits: 0,
         message:
-            "You've used all 25 free jobs and have no credits remaining. Buy credits or upgrade to continue."
+            "You've used all 25 free jobs and have no credits remaining. Buy credits or upgrade to Unlimited (₦12,500/mo)."
     };
 }
 
@@ -1535,6 +1449,43 @@ app.post(
     }
 );
 
+
+// ─── JOB QUOTA (debug + dashboard) ──────────────────────────
+
+app.get(
+    '/api/jobs/quota',
+    authenticate,
+    async (req, res) => {
+        try {
+            const userId = req.user.id;
+            const used = await getLifetimeJobsUsed(userId);
+            const freeLeft = Math.max(0, LIFETIME_FREE_JOBS - used);
+            const credits = await getCreditBalance(userId);
+            const decision = await canCreateJob(userId);
+
+            const { data: sub } = await supabase
+                .from('subscriptions')
+                .select('plan, status')
+                .eq('user_id', userId)
+                .maybeSingle();
+
+            res.json({
+                lifetime_free_limit: LIFETIME_FREE_JOBS,
+                jobs_used: used,
+                free_jobs_remaining: freeLeft,
+                credits,
+                subscription: sub || { plan: 'free', status: 'active' },
+                can_create: decision.allowed,
+                source: decision.source,
+                message: decision.message || null
+            });
+        } catch (error) {
+            console.error('quota error:', error);
+            res.status(500).json({ error: error.message });
+        }
+    }
+);
+
 // ─── PAYSTACK INITIALIZE ────────────────────────────────────
 
 app.post(
@@ -1690,40 +1641,9 @@ app.post(
                 const userId =
                     req.user.id;
 
-                const metadata =
-                    data.data.metadata || {};
-
-                // Credit purchases have no `plan` field — they must be
-                // detected explicitly, not assumed. Previously this
-                // endpoint ran the subscription-activation code below
-                // unconditionally, which meant buying a credit pack
-                // also silently granted a free ₦12,500/mo subscription.
-                if (metadata.type === 'credit_purchase') {
-                    const jobCount =
-                        parseInt(metadata.jobs, 10) || 25;
-
-                    const result =
-                        await processCreditPurchase(
-                            userId,
-                            reference,
-                            jobCount,
-                            metadata.pack
-                        );
-
-                    return res.json({
-                        success: true,
-                        type: 'credit_purchase',
-                        credited: result.credited,
-                        jobs: jobCount,
-                        balance: result.balance,
-                        message: result.credited ?
-                            `${jobCount} job credits added!` :
-                            'Payment already processed.'
-                    });
-                }
-
                 const plan =
-                    metadata.plan || 'starter';
+                    data.data.metadata?.plan ||
+                    'professional';
 
                 await supabase
                     .from('subscriptions')
@@ -1757,8 +1677,6 @@ app.post(
 
                 return res.json({
                     success: true,
-                    type: 'subscription',
-                    plan,
                     message:
                         'Subscription activated!'
                 });
@@ -1795,7 +1713,9 @@ app.post(
                         PAYSTACK_SECRET_KEY
                     )
                     .update(
-                        req.rawBody || Buffer.from(JSON.stringify(req.body))
+                        JSON.stringify(
+                            req.body
+                        )
                     )
                     .digest('hex');
 
@@ -1844,28 +1764,66 @@ app.post(
                             10
                         ) || 25;
 
-                    try {
-                        const result =
-                            await processCreditPurchase(
-                                user_id,
-                                reference,
-                                jobCount,
-                                pack
+                    /*
+                     * Prevent accidental duplicate
+                     * crediting if Paystack retries
+                     * the webhook.
+                     *
+                     * Check whether this reference
+                     * has already been recorded.
+                     */
+                    const {
+                        data:
+                            existingTransaction
+                    } = await supabase
+                        .from(
+                            'credit_transactions'
+                        )
+                        .select('id')
+                        .eq(
+                            'reference',
+                            reference
+                        )
+                        .eq(
+                            'type',
+                            'purchase'
+                        )
+                        .maybeSingle();
+
+                    if (
+                        !existingTransaction
+                    ) {
+                        await addCredits(
+                            user_id,
+                            jobCount,
+                            `Credit pack: ${pack || 'Starter'} (${jobCount} jobs)`,
+                            reference,
+                            {
+                                pack,
+                                jobs:
+                                    jobCount
+                            }
+                        );
+
+                        await supabase
+                            .from(
+                                'transactions'
+                            )
+                            .update({
+                                status:
+                                    'completed'
+                            })
+                            .eq(
+                                'reference',
+                                reference
                             );
 
-                        if (result.credited) {
-                            console.log(
-                                `✅ Credits added: ${jobCount} jobs for user ${user_id}`
-                            );
-                        } else {
-                            console.log(
-                                `ℹ️ Credit purchase already processed: ${reference}`
-                            );
-                        }
-                    } catch (creditError) {
-                        console.error(
-                            'Webhook credit purchase failed:',
-                            creditError.message
+                        console.log(
+                            `✅ Credits added: ${jobCount} jobs for user ${user_id}`
+                        );
+                    } else {
+                        console.log(
+                            `ℹ️ Credit purchase already processed: ${reference}`
                         );
                     }
                 }
@@ -2187,11 +2145,6 @@ app.post(
 
                 throw error;
             }
-
-            // Track lifetime usage regardless of which access path
-            // (free/credit/subscription) allowed this job — this is
-            // what makes the free-tier count immune to delete+recreate.
-            await incrementLifetimeJobsUsed(userId);
 
             res.json({
                 ...data,
