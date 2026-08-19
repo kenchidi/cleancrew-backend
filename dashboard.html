@@ -1418,7 +1418,7 @@
                 <p style="font-size:13px;color:var(--slate);margin:0 0 14px;">
                     Free jobs left: <span id="freeJobsLabel" style="font-weight:700;color:var(--green);">—</span> / 25
                 </p>
-                <div class="credit-packs-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));">
+                <div class="credit-packs-grid">
                     <div class="credit-pack">
                         <div class="pack-name">Starter</div>
                         <div class="pack-jobs">20 jobs</div>
@@ -1437,7 +1437,14 @@
                         <div class="pack-price">₦20,000<br><span style="font-size:11px;">₦200/job</span></div>
                         <button type="button" class="btn btn-primary btn-sm" onclick="buyCredits('professional')">Buy</button>
                     </div>
+                    <div class="credit-pack">
+                        <div class="pack-name">Enterprise</div>
+                        <div class="pack-jobs">275 jobs</div>
+                        <div class="pack-price">₦50,000<br><span style="font-size:11px;">₦182/job</span></div>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="buyCredits('enterprise')">Buy</button>
+                    </div>
                 </div>
+                <p style="font-size:11px;color:var(--slate-light,var(--slate));margin-top:8px;">Credit pack pricing is provisional — confirm before launch.</p>
                 <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">
                     <p style="margin:0;font-size:13px;color:var(--ink-soft);">
                         📌 Or subscribe for <strong>unlimited</strong>: <strong>₦12,500/month</strong>
@@ -2552,6 +2559,16 @@
                     renderOverview(jobs, clients);
                     renderJobs(jobs);
                     renderClients(clients);
+
+                    // Reuse this same jobs fetch for the free-jobs
+                    // counter instead of firing a second, separate
+                    // request for identical data.
+                    var used = (jobs || []).length;
+                    var left = Math.max(0, 25 - used);
+                    var el = document.getElementById('freeJobsLabel');
+                    var badge = document.getElementById('freeJobsBadge');
+                    if (el) el.textContent = String(left);
+                    if (badge) badge.textContent = 'Free jobs: ' + left;
                 })
                 .catch(function(e) {
                     console.error('Render error:', e);
@@ -2915,14 +2932,12 @@
         // ─── ──────────────────────────────────────────────────────
         function applyFeatureRestrictions(plan) {
             plan = plan || 'free';
-            var isUnlimited = plan === 'professional' || plan === 'enterprise';
             var isFree = plan === 'free';
-            var isStarter = plan === 'starter';
 
             var badge = document.getElementById('planBadge');
             if (badge) {
                 badge.textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
-                badge.className = 'plan-badge ' + (isFree || isStarter ? 'trial' : 'active');
+                badge.className = 'plan-badge ' + (isFree ? 'trial' : 'active');
                 badge.style.display = 'inline-block';
             }
 
@@ -2935,21 +2950,12 @@
             var inventoryTab = document.getElementById('tabInventory');
             if (inventoryTab) inventoryTab.style.display = 'inline-block';
 
+            // WhatsApp messaging is unlimited on every plan, including
+            // free (and the free 25-lifetime-job period) — this warning
+            // no longer applies to anyone and is always hidden.
             var whatsappWarning = document.getElementById('whatsappLimitWarning');
             if (whatsappWarning) {
-                var showWaLimit = isFree || isStarter;
-                whatsappWarning.style.display = showWaLimit ? 'block' : 'none';
-                if (showWaLimit) {
-                    var messageData = JSON.parse(localStorage.getItem('cleancrew_message_history') || '[]');
-                    var thisMonth = new Date().getMonth();
-                    var thisYear = new Date().getFullYear();
-                    var count = messageData.filter(function(m) {
-                        var d = new Date(m.sentAt);
-                        return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
-                    }).length;
-                    var waLimit = isFree ? 30 : 100;
-                    document.getElementById('whatsappLimitCount').textContent = count + '/' + waLimit;
-                }
+                whatsappWarning.style.display = 'none';
             }
         }
 
@@ -3754,7 +3760,6 @@
             checkSubscription();
             checkPaystackReturn();
             refreshCredits();
-            refreshFreeJobs();
             renderAll();
         }
 
