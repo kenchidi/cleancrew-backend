@@ -113,7 +113,20 @@
         .price-card li { font-size: 14px; padding: 8px 0; border-bottom: 1px solid var(--border); display: flex; gap: 10px; }
         .price-card li:last-child { border-bottom: 0; }
         .price-card li::before { content: "✓"; color: var(--green); font-weight: 800; }
-        .packs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 8px; }
+        .packs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 8px; }
+        @media (max-width: 900px) { .packs { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 480px) { .packs { grid-template-columns: 1fr; } }
+        .pack .buy-hint { margin-top: 10px; font-size: 11px; font-weight: 700; color: var(--blue); opacity: .85; }
+        .path-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 900px; margin: 0 auto 28px; }
+        .path-item { background: var(--white); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; text-align: center; }
+        .path-item strong { display: block; font-size: 14px; margin-bottom: 4px; }
+        .path-item span { font-size: 12px; color: var(--slate); }
+        .faq { max-width: 720px; margin: 36px auto 0; }
+        .faq details { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
+        .faq summary { font-weight: 800; font-size: 14px; cursor: pointer; list-style: none; }
+        .faq summary::-webkit-details-marker { display: none; }
+        .faq details p { margin-top: 8px; font-size: 13.5px; color: var(--slate); }
+        .compare-note { text-align: center; font-size: 13px; color: var(--slate); margin-top: 14px; }
         .pack { border: 1.5px solid var(--border); border-radius: 14px; padding: 16px 14px; text-align: center; background: var(--white); transition: .15s; }
         .pack:hover { border-color: var(--blue); transform: translateY(-2px); }
         .pack.best { border-color: var(--blue); background: var(--blue-mist); }
@@ -137,7 +150,7 @@
         .sticky-cta { display: none; position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 40; background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 10px; box-shadow: var(--shadow-lg); }
         .sticky-cta .btn { width: 100%; }
         @media (max-width: 900px) {
-            .hero-grid, .features, .steps, .quotes, .packs { grid-template-columns: 1fr; }
+            .hero-grid, .features, .steps, .quotes, .path-strip { grid-template-columns: 1fr; }
             .mock { transform: none; }
             .nav-links { display: none; position: absolute; top: 68px; left: 0; right: 0; background: #fff; border-bottom: 1px solid var(--border); flex-direction: column; padding: 12px 20px 16px; }
             .nav-links.open { display: flex; }
@@ -261,6 +274,11 @@
                     <h2>Simple pricing. Your pace.</h2>
                     <p>Start free. Buy credits when you’re busy. Subscribe only when unlimited makes sense.</p>
                 </div>
+                <div class="path-strip reveal">
+                    <div class="path-item"><strong>1 · Try free</strong><span>25 jobs for life · no card</span></div>
+                    <div class="path-item"><strong>2 · Buy credits</strong><span>Only when free jobs run out</span></div>
+                    <div class="path-item"><strong>3 · Go unlimited</strong><span>₦12,500/mo if you outgrow packs</span></div>
+                </div>
                 <div class="price-tabs" role="tablist">
                     <button type="button" class="on" data-panel="free">Free</button>
                     <button type="button" data-panel="credits">Credits</button>
@@ -289,9 +307,30 @@
                             <div class="amount">From ₦5,000</div>
                             <p class="desc">After your 25 free jobs, top up only when you have work.</p>
                             <div class="packs">
-                                <div class="pack"><div class="name">Starter</div><div class="jobs">20</div><div class="naira">₦5,000</div><div class="unit">₦250 / job</div></div>
-                                <div class="pack"><div class="name">Business</div><div class="jobs">45</div><div class="naira">₦10,000</div><div class="unit">₦222 / job</div></div>
-                                <div class="pack best"><div class="name">Growth</div><div class="jobs">100</div><div class="naira">₦20,000</div><div class="unit">₦200 / job</div></div>
+                                <div class="pack">
+                                    <div class="name">Starter</div>
+                                    <div class="jobs">20 jobs</div>
+                                    <div class="naira">₦5,000</div>
+                                    <div class="unit">₦250 / job</div>
+                                </div>
+                                <div class="pack">
+                                    <div class="name">Business</div>
+                                    <div class="jobs">45 jobs</div>
+                                    <div class="naira">₦10,000</div>
+                                    <div class="unit">₦222 / job</div>
+                                </div>
+                                <div class="pack best">
+                                    <div class="name">Growth</div>
+                                    <div class="jobs">100 jobs</div>
+                                    <div class="naira">₦20,000</div>
+                                    <div class="unit">₦200 / job · best value</div>
+                                </div>
+                                <div class="pack">
+                                    <div class="name">Enterprise</div>
+                                    <div class="jobs">275 jobs</div>
+                                    <div class="naira">₦50,000</div>
+                                    <div class="unit">₦182 / job</div>
+                                </div>
                             </div>
                             <p style="margin-top:16px;font-size:13px;color:var(--slate);text-align:center;">Buy packs inside the dashboard after you sign up.</p>
                             <a class="btn btn-ghost" href="signup.html" style="width:100%;margin-top:12px;">Start free, buy later</a>
@@ -313,6 +352,26 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="faq reveal">
+                    <details open>
+                        <summary>Do free jobs expire at the end of the month?</summary>
+                        <p>No. You get <strong>25 free jobs for the life of your account</strong> — not a monthly reset and not a short trial that disappears.</p>
+                    </details>
+                    <details>
+                        <summary>What happens after the 25 free jobs?</summary>
+                        <p>You can buy job credits (pay only for the work you take on) or subscribe to Unlimited for ₦12,500/month if you run jobs every day.</p>
+                    </details>
+                    <details>
+                        <summary>Is this only for cleaning?</summary>
+                        <p>No. CleanCrew supports <strong>cleaning and laundry</strong> in one dashboard — switch mode when you work.</p>
+                    </details>
+                    <details>
+                        <summary>Can staff use it without seeing my revenue?</summary>
+                        <p>Yes. Use the optional <strong>owner PIN / revenue lock</strong> so money totals stay private while jobs still get logged.</p>
+                    </details>
+                </div>
+
             </div>
         </section>
 
