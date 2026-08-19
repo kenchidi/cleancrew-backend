@@ -2262,6 +2262,106 @@ app.delete(
 
 // ─── INVENTORY ───────────────────────────────────────────────
 
+
+// ─── UPDATE JOB ─────────────────────────────────────────────
+
+app.put(
+    '/api/jobs/:id',
+    authenticate,
+    async (req, res) => {
+        try {
+            const userId = req.user.id;
+            const jobId = req.params.id;
+
+            // Only allow safe fields to be updated
+            const allowed = [
+                'status',
+                'client',
+                'service',
+                'amount',
+                'date',
+                'notes',
+                'mode',
+                'service_type',
+                'items',
+                'rooms',
+                'property_size',
+                'phone',
+                'address'
+            ];
+            const patch = {};
+            allowed.forEach(function (key) {
+                if (req.body[key] !== undefined) {
+                    patch[key] = req.body[key];
+                }
+            });
+
+            if (Object.keys(patch).length === 0) {
+                return res.status(400).json({
+                    error: 'No valid fields to update'
+                });
+            }
+
+            const {
+                data,
+                error
+            } = await supabase
+                .from('jobs')
+                .update(patch)
+                .eq('id', jobId)
+                .eq('user_id', userId)
+                .select()
+                .single();
+
+            if (error) {
+                throw error;
+            }
+
+            if (!data) {
+                return res.status(404).json({
+                    error: 'Job not found'
+                });
+            }
+
+            res.json(data);
+        } catch (error) {
+            console.error('Error updating job:', error);
+            res.status(500).json({
+                error: error.message
+            });
+        }
+    }
+);
+
+// ─── DELETE JOB ─────────────────────────────────────────────
+
+app.delete(
+    '/api/jobs/:id',
+    authenticate,
+    async (req, res) => {
+        try {
+            const {
+                error
+            } = await supabase
+                .from('jobs')
+                .delete()
+                .eq('id', req.params.id)
+                .eq('user_id', req.user.id);
+
+            if (error) {
+                throw error;
+            }
+
+            res.json({ success: true });
+        } catch (error) {
+            console.error('Error deleting job:', error);
+            res.status(500).json({
+                error: error.message
+            });
+        }
+    }
+);
+
 app.get(
     '/api/inventory',
     authenticate,
