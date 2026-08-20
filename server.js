@@ -4611,6 +4611,82 @@ app.get(
     }
 );
 
+
+// ─── VOICE JOB PARSE (prototype) ─────────────────────────────
+// Optional OPENAI_API_KEY improves parsing; otherwise returns heuristic null (client parses).
+app.post('/api/jobs/parse-voice', authenticate, async (req, res) => {
+    try {
+        const transcript = (req.body && req.body.transcript) || '';
+        const mode = (req.body && req.body.mode) || 'cleaning';
+        if (!transcript || transcript.length < 3) {
+            return res.status(400).json({ error: 'Transcript required' });
+        }
+
+        const apiKey = process.env.OPENAI_API_KEY || process.env.GROQ_API_KEY;
+        if (!apiKey) {
+            return res.json({
+                draft: null,
+                source: 'client',
+                message: 'No AI key configured — using on-device parse'
+            });
+        }
+
+        const isGroq = !!process.env.GROQ_API_KEY && !process.env.OPENAI_API_KEY;
+        const url = isGroq
+            ? 'https://api.groq.com/openai/v1/chat/completions'
+            : 'https://api.openai.com/v1/chat/completions';
+        const model = isGroq ? 'llama-3.1-8b-instant' : 'gpt-4o-mini';
+
+        const system = `You extract cleaning/laundry job fields from short spoken English (including Nigerian English).
+Return ONLY valid JSON with keys:
+mode ("cleaning"|"laundry"), client (string), phone (string), service (string),
+amount (number|null), date (YYYY-MM-DD|null), notes (string),
+rooms (number|null), property_size (string),
+items (array of {name, qty, price}).
+Use mode hint: ${mode}. Prefer null over guessing amounts. items only for laundry.`;
+
+        const resp = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + apiKey
+            },
+            body: JSON.stringify({
+                model,
+                temperature: 0.1,
+                response_format: { type: 'json_object' },
+                messages: [
+                    { role: 'system', content: system },
+                    { role: 'user', content: transcript }
+                ]
+            })
+        });
+
+        if (!resp.ok) {
+            const errText = await resp.text();
+            console.error('Voice parse AI error:', errText.slice(0, 300));
+            return res.json({ draft: null, source: 'client', error: 'AI unavailable' });
+        }
+
+        const data = await resp.json();
+        const content = data.choices && data.choices[0] && data.choices[0].message
+            ? data.choices[0].message.content
+            : '{}';
+        let draft;
+        try {
+            draft = JSON.parse(content);
+        } catch (e) {
+            draft = null;
+        }
+
+        return res.json({ draft, source: isGroq ? 'groq' : 'openai' });
+    } catch (error) {
+        console.error('parse-voice error:', error);
+        res.status(500).json({ error: error.message || 'Parse failed' });
+    }
+});
+
+
 // ─── START SERVER ────────────────────────────────────────────
 
 const PORT =

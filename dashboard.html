@@ -1195,6 +1195,27 @@
         }
         #revenueStatCard { position: relative; }
         .unlock-revenue-btn { margin-top: 6px; font-size: 12px; }
+        .voice-job-bar {
+            display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+            padding: 12px 14px; margin-bottom: 14px;
+            background: linear-gradient(135deg, #EBF3FE 0%, #F0FDF4 100%);
+            border: 1.5px solid #BFDBFE; border-radius: var(--radius-sm);
+        }
+        .voice-job-bar .voice-hint { flex: 1; min-width: 160px; font-size: 12px; color: var(--slate); line-height: 1.4; }
+        .voice-job-bar .voice-hint strong { color: var(--ink); }
+        .voice-job-bar .voice-status { font-size: 12px; font-weight: 700; color: var(--blue); min-height: 18px; }
+        .voice-job-bar.listening { border-color: var(--green); background: #ECFDF5; }
+        .voice-job-bar.listening .voice-status { color: var(--green); }
+        .btn-voice {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: var(--ink); color: #fff; border: none;
+            border-radius: 100px; padding: 10px 16px; font-family: inherit;
+            font-size: 13px; font-weight: 700; cursor: pointer;
+        }
+        .btn-voice:hover { opacity: 0.9; }
+        .btn-voice.listening { background: var(--red); animation: voicePulse 1.2s ease infinite; }
+        @keyframes voicePulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,.35); } 50% { box-shadow: 0 0 0 8px rgba(220,38,38,0); } }
+
         body { overflow-x: hidden; }
         #tab-messages, #tab-messages .card { max-width: 100%; overflow-x: hidden; }
 
@@ -3176,6 +3197,341 @@
             });
         }
 
+
+        // ─── VOICE → JOB DRAFT (prototype) ─────────────────────────
+        var jobVoiceRecognition = null;
+        var jobVoiceListening = false;
+
+        function setVoiceJobStatus(msg) {
+            var el = document.getElementById('voiceJobStatus');
+            if (el) el.textContent = msg || '';
+        }
+
+        function parseNairaAmount(text) {
+            if (!text) return null;
+            var t = String(text).toLowerCase().replace(/,/g, '');
+            // 45k / 8.5k
+            var k = t.match(/(?:₦\s*)?(\d+(?:\.\d+)?)\s*k\b/);
+            if (k) return Math.round(parseFloat(k[1]) * 1000);
+            // 8,500 or 8500 or ₦8500
+            var n = t.match(/₦\s*(\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)\s*(?:naira|naira only)?/);
+            // Prefer explicit amounts near keywords
+            var near = t.match(/(?:for|charge|total|amount|pay|price)?\s*(?:₦\s*)?(\d{3,7})(?:\s*(?:naira|naira only))?/);
+            if (near) return parseInt(near[1], 10);
+            var all = t.match(/\b(\d{3,7})\b/g);
+            if (all && all.length) {
+                // pick largest plausible amount
+                var nums = all.map(function(x) { return parseInt(x, 10); }).filter(function(x) { return x >= 100; });
+                if (nums.length) return Math.max.apply(null, nums);
+            }
+            return null;
+        }
+
+        function parseRelativeDate(text) {
+            var t = String(text).toLowerCase();
+            var d = new Date();
+            function ymd(dt) {
+                return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+            }
+            if (/\btoday\b/.test(t)) return ymd(d);
+            if (/\btomorrow\b/.test(t)) { d.setDate(d.getDate() + 1); return ymd(d); }
+            var days = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+            for (var i = 0; i < days.length; i++) {
+                if (t.indexOf(days[i]) >= 0) {
+                    var diff = (i - d.getDay() + 7) % 7;
+                    if (diff === 0) diff = 7;
+                    d.setDate(d.getDate() + diff);
+                    return ymd(d);
+                }
+            }
+            var dm = t.match(/\b(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?\b/);
+            if (dm) {
+                var day = parseInt(dm[1], 10);
+                var month = parseInt(dm[2], 10) - 1;
+                var year = dm[3] ? parseInt(dm[3], 10) : d.getFullYear();
+                if (year < 100) year += 2000;
+                var dt = new Date(year, month, day);
+                if (!isNaN(dt.getTime())) return ymd(dt);
+            }
+            return ymd(new Date()); // default today
+        }
+
+        function parseVoiceJobTranscript(transcript) {
+            var raw = (transcript || '').trim();
+            var lower = raw.toLowerCase();
+            var mode = currentServiceType === 'laundry' ? 'laundry' : 'cleaning';
+            if (/\b(laundry|shirts?|trousers?|pants?|bedsheets?|suit|dry\s*clean)\b/.test(lower)) mode = 'laundry';
+            if (/\b(clean(ing)?|deep clean|3-?bed|bedroom|office tidy|post[-\s]?construction)\b/.test(lower)) {
+                if (!/\b(shirts?|trousers?|laundry)\b/.test(lower)) mode = 'cleaning';
+            }
+
+            var result = {
+                mode: mode,
+                client: '',
+                phone: '',
+                service: '',
+                amount: null,
+                date: parseRelativeDate(lower),
+                notes: raw,
+                rooms: null,
+                property_size: '',
+                items: []
+            };
+
+            // Phone
+            var ph = raw.match(/\b(0\d{10}|\+?234\d{10})\b/);
+            if (ph) result.phone = ph[1];
+
+            // Amount
+            result.amount = parseNairaAmount(lower);
+
+            // Client: first proper-ish name chunk before numbers / keywords
+            var clientMatch = raw.match(/^([A-Za-z][A-Za-z\.\'\-]+(?:\s+[A-Za-z][A-Za-z\.\'\-]+){0,2})\b/);
+            if (clientMatch) {
+                var c = clientMatch[1].trim();
+                if (!/^(today|tomorrow|monday|friday|laundry|cleaning|deep)$/i.test(c)) {
+                    result.client = c;
+                }
+            }
+            var forMatch = raw.match(/\b(?:for|client)\s+([A-Za-z][A-Za-z\.\'\-]+(?:\s+[A-Za-z][A-Za-z\.\'\-]+)?)/i);
+            if (forMatch) result.client = forMatch[1].trim();
+
+            if (mode === 'laundry') {
+                if (/wash\s*and\s*iron|wash\s*&\s*iron/i.test(lower)) result.service = 'Wash & Iron';
+                else if (/dry\s*clean/i.test(lower)) result.service = 'Dry Cleaning';
+                else if (/iron\s*only/i.test(lower)) result.service = 'Iron Only';
+                else if (/wash\s*and\s*fold|wash\s*&\s*fold/i.test(lower)) result.service = 'Wash & Fold';
+                else result.service = 'Wash & Fold';
+
+                var itemPatterns = [
+                    { re: /(\d+)\s*(shirts?|t-?shirts?)/gi, name: 'Shirt' },
+                    { re: /(\d+)\s*(trousers?|pants?)/gi, name: 'Trouser' },
+                    { re: /(\d+)\s*(bed\s*sheets?|bedsheets?)/gi, name: 'Bedsheet' },
+                    { re: /(\d+)\s*(suits?)/gi, name: 'Suit' },
+                    { re: /(\d+)\s*(dresses?)/gi, name: 'Dress' },
+                    { re: /(\d+)\s*(skirts?)/gi, name: 'Skirt' },
+                    { re: /(\d+)\s*(jackets?)/gi, name: 'Jacket' },
+                    { re: /(\d+)\s*(wrappers?)/gi, name: 'Wrapper' },
+                    { re: /(\d+)\s*(duvets?)/gi, name: 'Duvet' }
+                ];
+                itemPatterns.forEach(function(p) {
+                    var m;
+                    var r = new RegExp(p.re.source, p.re.flags);
+                    while ((m = r.exec(raw)) !== null) {
+                        result.items.push({ name: p.name, qty: parseInt(m[1], 10), price: 0 });
+                    }
+                });
+            } else {
+                if (/post[-\s]?construction/i.test(lower)) result.service = 'Post-Construction';
+                else if (/deep\s*clean/i.test(lower)) result.service = 'Deep Cleaning';
+                else if (/office/i.test(lower)) result.service = 'Office Cleaning';
+                else if (/move\s*in|move\s*out/i.test(lower)) result.service = 'Move In/Out';
+                else result.service = 'Home Cleaning';
+
+                var rooms = lower.match(/\b(\d+)\s*[-\s]?(bed(room)?s?|rooms?)\b/);
+                if (rooms) {
+                    result.rooms = parseInt(rooms[1], 10);
+                    if (result.rooms === 1) result.property_size = '1-bed';
+                    else if (result.rooms === 2) result.property_size = '2-bed';
+                    else if (result.rooms === 3) result.property_size = '3-bed';
+                    else if (result.rooms >= 4) result.property_size = '4+';
+                }
+                if (/\bstudio\b/.test(lower)) result.property_size = 'Studio';
+            }
+
+            return result;
+        }
+
+        function applyVoiceJobDraft(draft) {
+            if (!draft) return;
+            if (draft.mode && draft.mode !== currentServiceType) {
+                // Switch mode if speech clearly indicates the other service
+                try {
+                    if (typeof setServiceType === 'function') setServiceType(draft.mode);
+                    else if (typeof switchService === 'function') switchService(draft.mode);
+                    else currentServiceType = draft.mode;
+                } catch (e) {}
+            }
+
+            var clientEl = document.getElementById('jClient');
+            var phoneEl = document.getElementById('jPhone');
+            var serviceEl = document.getElementById('jService');
+            var amountEl = document.getElementById('jAmount');
+            var dateEl = document.getElementById('jDate');
+            var notesEl = document.getElementById('jNotes');
+            var roomsEl = document.getElementById('jRooms');
+            var sizeEl = document.getElementById('jPropertySize');
+
+            if (clientEl && draft.client) clientEl.value = draft.client;
+            if (phoneEl && draft.phone) phoneEl.value = draft.phone;
+            if (amountEl && draft.amount != null) amountEl.value = draft.amount;
+            if (dateEl && draft.date) dateEl.value = draft.date;
+            if (notesEl) {
+                var note = draft.notes || '';
+                notesEl.value = note ? ('Voice: ' + note) : notesEl.value;
+            }
+
+            if (serviceEl && draft.service) {
+                var opts = serviceEl.options;
+                var found = false;
+                for (var i = 0; i < opts.length; i++) {
+                    if (opts[i].text.toLowerCase() === String(draft.service).toLowerCase() ||
+                        opts[i].value.toLowerCase() === String(draft.service).toLowerCase()) {
+                        serviceEl.selectedIndex = i;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    // try partial
+                    for (var j = 0; j < opts.length; j++) {
+                        if (opts[j].text.toLowerCase().indexOf(String(draft.service).toLowerCase().slice(0, 6)) >= 0) {
+                            serviceEl.selectedIndex = j;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (currentServiceType === 'cleaning' || draft.mode === 'cleaning') {
+                if (roomsEl && draft.rooms) roomsEl.value = draft.rooms;
+                if (sizeEl && draft.property_size) {
+                    for (var s = 0; s < sizeEl.options.length; s++) {
+                        if (sizeEl.options[s].value === draft.property_size || sizeEl.options[s].text === draft.property_size) {
+                            sizeEl.selectedIndex = s;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if ((currentServiceType === 'laundry' || draft.mode === 'laundry') && draft.items && draft.items.length) {
+                laundryItems = [];
+                var list = document.getElementById('laundryItemsList');
+                if (list) {
+                    draft.items.forEach(function(it) {
+                        addLaundryItemRow(it.name, it.qty, it.price || 0);
+                    });
+                    // apply price list names
+                    laundryItems.forEach(function(it, idx) {
+                        if (typeof onLaundryItemName === 'function') onLaundryItemName(idx, it.name);
+                    });
+                    if (typeof updateLaundryTotals === 'function') updateLaundryTotals();
+                    var total = typeof calcLaundryItemsTotal === 'function' ? calcLaundryItemsTotal() : 0;
+                    if (amountEl && total > 0) amountEl.value = total;
+                }
+            }
+
+            showToast('Voice draft applied — check fields, then save', 'success');
+        }
+
+        function toggleJobVoice() {
+            var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                showToast('Voice needs Chrome or Edge on this device', 'error');
+                setVoiceJobStatus('Not supported in this browser');
+                return;
+            }
+
+            var btn = document.getElementById('voiceJobBtn');
+            var bar = document.getElementById('voiceJobBar');
+            var label = document.getElementById('voiceJobBtnLabel');
+
+            if (jobVoiceListening && jobVoiceRecognition) {
+                try { jobVoiceRecognition.stop(); } catch (e) {}
+                jobVoiceListening = false;
+                if (btn) btn.classList.remove('listening');
+                if (bar) bar.classList.remove('listening');
+                if (label) label.textContent = '🎤 Speak job';
+                setVoiceJobStatus('Stopped');
+                return;
+            }
+
+            jobVoiceRecognition = new SpeechRecognition();
+            jobVoiceRecognition.lang = 'en-NG';
+            jobVoiceRecognition.interimResults = true;
+            jobVoiceRecognition.continuous = false;
+            jobVoiceRecognition.maxAlternatives = 1;
+
+            jobVoiceRecognition.onstart = function() {
+                jobVoiceListening = true;
+                if (btn) btn.classList.add('listening');
+                if (bar) bar.classList.add('listening');
+                if (label) label.textContent = '⏹ Stop';
+                setVoiceJobStatus('Listening… speak now');
+            };
+
+            jobVoiceRecognition.onerror = function(ev) {
+                jobVoiceListening = false;
+                if (btn) btn.classList.remove('listening');
+                if (bar) bar.classList.remove('listening');
+                if (label) label.textContent = '🎤 Speak job';
+                var err = (ev && ev.error) || 'error';
+                if (err === 'not-allowed') setVoiceJobStatus('Microphone blocked — allow mic access');
+                else setVoiceJobStatus('Voice error: ' + err);
+                showToast('Voice input failed', 'error');
+            };
+
+            jobVoiceRecognition.onend = function() {
+                jobVoiceListening = false;
+                if (btn) btn.classList.remove('listening');
+                if (bar) bar.classList.remove('listening');
+                if (label) label.textContent = '🎤 Speak job';
+            };
+
+            jobVoiceRecognition.onresult = function(event) {
+                var transcript = '';
+                for (var i = event.resultIndex; i < event.results.length; i++) {
+                    transcript += event.results[i][0].transcript;
+                }
+                transcript = transcript.trim();
+                if (!transcript) return;
+                setVoiceJobStatus('Heard: “' + transcript + '”');
+                if (event.results[event.results.length - 1].isFinal) {
+                    var draft = parseVoiceJobTranscript(transcript);
+                    // Optional: try backend enhance (non-blocking)
+                    enhanceVoiceDraft(transcript, draft).then(function(better) {
+                        applyVoiceJobDraft(better || draft);
+                    }).catch(function() {
+                        applyVoiceJobDraft(draft);
+                    });
+                }
+            };
+
+            try {
+                jobVoiceRecognition.start();
+            } catch (e) {
+                showToast('Could not start microphone', 'error');
+            }
+        }
+
+        function enhanceVoiceDraft(transcript, localDraft) {
+            return fetch(API_URL + '/jobs/parse-voice', {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({
+                    transcript: transcript,
+                    mode: currentServiceType
+                })
+            }).then(function(res) {
+                if (!res.ok) return localDraft;
+                return res.json();
+            }).then(function(data) {
+                if (!data || !data.draft) return localDraft;
+                // Merge: prefer backend fields when present
+                var d = data.draft;
+                var merged = Object.assign({}, localDraft);
+                Object.keys(d).forEach(function(k) {
+                    if (d[k] !== null && d[k] !== undefined && d[k] !== '') {
+                        if (k === 'items' && (!d[k] || !d[k].length)) return;
+                        merged[k] = d[k];
+                    }
+                });
+                return merged;
+            }).catch(function() { return localDraft; });
+        }
+
+
         function openModal(type) {
             modalType = type;
             laundryItems = [];
@@ -3220,7 +3576,14 @@
                         '</div>';
                 }
 
-                f.innerHTML = '<div class="form-group"><label>Client Name</label><input type="text" id="jClient" required /></div>' +
+                f.innerHTML =
+                    '<div class="voice-job-bar" id="voiceJobBar">' +
+                    '<button type="button" class="btn-voice" id="voiceJobBtn" onclick="toggleJobVoice()">' +
+                    '<span id="voiceJobBtnLabel">🎤 Speak job</span></button>' +
+                    '<div class="voice-hint"><strong>Voice draft (beta)</strong> — e.g. “Ada, 12 shirts 4 trousers, 8500, Friday” or “Deep clean 3-bed Lekki, 45k Saturday”</div>' +
+                    '<div class="voice-status" id="voiceJobStatus"></div>' +
+                    '</div>' +
+                    '<div class="form-group"><label>Client Name</label><input type="text" id="jClient" required /></div>' +
                     '<div class="form-group"><label>Phone</label><input type="tel" id="jPhone" /></div>' +
                     '<div class="form-group"><label>Service</label><select id="jService">' + serviceOptions + '</select></div>' +
                     modeExtra +
