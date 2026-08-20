@@ -1195,26 +1195,32 @@
         }
         #revenueStatCard { position: relative; }
         .unlock-revenue-btn { margin-top: 6px; font-size: 12px; }
-        .voice-job-bar {
-            display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
-            padding: 12px 14px; margin-bottom: 14px;
-            background: linear-gradient(135deg, #EBF3FE 0%, #F0FDF4 100%);
-            border: 1.5px solid #BFDBFE; border-radius: var(--radius-sm);
+        .credits-section-highlight {
+            outline: 2px solid var(--blue);
+            box-shadow: 0 0 0 6px rgba(26,109,219,.12), var(--shadow-md);
+            transition: outline .2s, box-shadow .2s;
         }
-        .voice-job-bar .voice-hint { flex: 1; min-width: 160px; font-size: 12px; color: var(--slate); line-height: 1.4; }
-        .voice-job-bar .voice-hint strong { color: var(--ink); }
-        .voice-job-bar .voice-status { font-size: 12px; font-weight: 700; color: var(--blue); min-height: 18px; }
-        .voice-job-bar.listening { border-color: var(--green); background: #ECFDF5; }
-        .voice-job-bar.listening .voice-status { color: var(--green); }
-        .btn-voice {
-            display: inline-flex; align-items: center; gap: 6px;
-            background: var(--ink); color: #fff; border: none;
-            border-radius: 100px; padding: 10px 16px; font-family: inherit;
-            font-size: 13px; font-weight: 700; cursor: pointer;
+        .out-of-jobs-banner {
+            display: none;
+            margin-bottom: 14px;
+            padding: 14px 16px;
+            border-radius: var(--radius-sm);
+            border: 1.5px solid #FDE68A;
+            background: #FFFBEB;
+            color: #92400E;
+            font-size: 13px;
+            line-height: 1.45;
         }
-        .btn-voice:hover { opacity: 0.9; }
-        .btn-voice.listening { background: var(--red); animation: voicePulse 1.2s ease infinite; }
-        @keyframes voicePulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,.35); } 50% { box-shadow: 0 0 0 8px rgba(220,38,38,0); } }
+        .out-of-jobs-banner.show { display: block; }
+        .out-of-jobs-banner strong { color: #78350F; }
+        .out-of-jobs-banner .banner-actions {
+            display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
+        }
+        #outOfJobsOverlay .modal-box { max-width: 420px; text-align: center; }
+        #outOfJobsOverlay .modal-box h3 { justify-content: center; margin-bottom: 8px; }
+        #outOfJobsOverlay .modal-box p { color: var(--slate); font-size: 14px; margin-bottom: 18px; line-height: 1.5; }
+        #outOfJobsOverlay .ooj-actions { display: flex; flex-direction: column; gap: 10px; }
+
 
         body { overflow-x: hidden; }
         #tab-messages, #tab-messages .card { max-width: 100%; overflow-x: hidden; }
@@ -1453,6 +1459,14 @@
                 <div class="card-header">
                     <h3><svg class="icon"><use href="#ic-wallet"/></svg> Job credits</h3>
                     <button type="button" class="btn btn-outline btn-sm" onclick="refreshCredits(); refreshFreeJobs();">Refresh</button>
+                </div>
+                <div class="out-of-jobs-banner" id="outOfJobsBanner">
+                    <strong>You've used your free jobs.</strong>
+                    Buy a credit pack below to keep adding jobs — or go unlimited for ₦12,500/month.
+                    <div class="banner-actions">
+                        <button type="button" class="btn btn-primary btn-sm" onclick="buyCredits('professional')">Buy Growth (100 jobs)</button>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="subscribeToPlan('starter')">Go Unlimited</button>
+                    </div>
                 </div>
                 <p style="font-size:15px;font-weight:800;margin:0 0 4px;">
                     Balance: <span id="creditBalanceLabel" style="color:var(--blue);">0</span> credits
@@ -1766,6 +1780,22 @@
     </div>
 
     <!-- ─── MODAL ─── -->
+    <!-- Out of jobs upgrade prompt -->
+    <div class="modal-overlay" id="outOfJobsOverlay" onclick="if(event.target===this)closeOutOfJobsModal()">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3><svg class="icon"><use href="#ic-wallet"/></svg> Keep adding jobs</h3>
+                <button type="button" class="modal-close" onclick="closeOutOfJobsModal()" aria-label="Close">&times;</button>
+            </div>
+            <p id="outOfJobsMessage">You've used all 25 free jobs and have no credits left. Choose how you want to continue:</p>
+            <div class="ooj-actions">
+                <button type="button" class="btn btn-primary btn-block" onclick="closeOutOfJobsModal(); goToCredits(true);">Buy job credits</button>
+                <button type="button" class="btn btn-secondary btn-block" onclick="closeOutOfJobsModal(); subscribeToPlan('starter');">Go unlimited — ₦12,500/mo</button>
+                <button type="button" class="btn btn-outline btn-block" onclick="closeOutOfJobsModal()">Not now</button>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
         <div class="modal-box">
             <div class="modal-header">
@@ -1794,12 +1824,60 @@
         const API_URL = 'https://cleancrew-backend.onrender.com/api';
         var creditBalance = 0;
 
-        function goToCredits() {
+        function goToCredits(highlight) {
             switchTab('overview');
             setTimeout(function() {
                 var el = document.getElementById('creditsSection');
-                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    if (highlight) {
+                        el.classList.add('credits-section-highlight');
+                        setTimeout(function() { el.classList.remove('credits-section-highlight'); }, 2800);
+                    }
+                }
             }, 80);
+        }
+
+        function showOutOfJobsModal(message) {
+            var msg = document.getElementById('outOfJobsMessage');
+            if (msg && message) msg.textContent = message;
+            var overlay = document.getElementById('outOfJobsOverlay');
+            if (overlay) overlay.classList.add('active');
+        }
+
+        function closeOutOfJobsModal() {
+            var overlay = document.getElementById('outOfJobsOverlay');
+            if (overlay) overlay.classList.remove('active');
+        }
+
+        function updateOutOfJobsBanner(freeLeft, credits) {
+            var banner = document.getElementById('outOfJobsBanner');
+            if (!banner) return;
+            var free = Number(freeLeft);
+            var cred = Number(credits);
+            if (isNaN(free)) free = 0;
+            if (isNaN(cred)) cred = creditBalance || 0;
+            // Show when no free jobs left (credits may still be > 0 — still nudge packs)
+            if (free <= 0) {
+                banner.classList.add('show');
+                if (cred <= 0) {
+                    banner.innerHTML = '<strong>No free jobs left and no credits.</strong> ' +
+                        'Buy a pack below to add jobs, or go unlimited for ₦12,500/month.' +
+                        '<div class="banner-actions">' +
+                        '<button type="button" class="btn btn-primary btn-sm" onclick="buyCredits(\'professional\')">Buy Growth (100 jobs)</button>' +
+                        '<button type="button" class="btn btn-secondary btn-sm" onclick="subscribeToPlan(\'starter\')">Go Unlimited</button>' +
+                        '</div>';
+                } else {
+                    banner.innerHTML = '<strong>Free jobs used up.</strong> You still have <strong>' + cred +
+                        ' credit(s)</strong>. When those run out, buy another pack or go unlimited.' +
+                        '<div class="banner-actions">' +
+                        '<button type="button" class="btn btn-primary btn-sm" onclick="buyCredits(\'professional\')">Top up credits</button>' +
+                        '<button type="button" class="btn btn-secondary btn-sm" onclick="subscribeToPlan(\'starter\')">Go Unlimited</button>' +
+                        '</div>';
+                }
+            } else {
+                banner.classList.remove('show');
+            }
         }
 
         function refreshFreeJobs() {
@@ -1820,6 +1898,9 @@
                             if (cb) cb.textContent = 'Credits: ' + creditBalance;
                             if (cl) cl.textContent = String(creditBalance);
                         }
+                        if (typeof updateOutOfJobsBanner === 'function') {
+                            updateOutOfJobsBanner(left, creditBalance);
+                        }
                         return left;
                     }
                     return getJobs().then(function(jobs) {
@@ -1829,6 +1910,10 @@
                         var badge = document.getElementById('freeJobsBadge');
                         if (el) el.textContent = String(left);
                         if (badge) badge.textContent = 'Free jobs: ' + left;
+                        if (typeof updateOutOfJobsBanner === 'function') {
+                            var c = (q && typeof q.credits === 'number') ? q.credits : creditBalance;
+                            updateOutOfJobsBanner(left, c);
+                        }
                         return left;
                     });
                 })
@@ -1844,6 +1929,11 @@
                     var label = document.getElementById('creditBalanceLabel');
                     if (badge) badge.textContent = 'Credits: ' + creditBalance;
                     if (label) label.textContent = String(creditBalance);
+                    var freeEl = document.getElementById('freeJobsLabel');
+                    if (freeEl && typeof updateOutOfJobsBanner === 'function') {
+                        var fl = parseInt(freeEl.textContent, 10);
+                        if (!isNaN(fl)) updateOutOfJobsBanner(fl, creditBalance);
+                    }
                     return creditBalance;
                 })
                 .catch(function() {
@@ -3198,368 +3288,6 @@
         }
 
 
-        // ─── VOICE → JOB DRAFT (prototype) ─────────────────────────
-        var jobVoiceRecognition = null;
-        var jobVoiceListening = false;
-        var jobVoiceTranscript = '';
-        var jobVoiceHoldActive = false;
-
-        function setVoiceJobStatus(msg) {
-            var el = document.getElementById('voiceJobStatus');
-            if (el) el.textContent = msg || '';
-        }
-
-        function getVoiceJobUi() {
-            return {
-                btn: document.getElementById('voiceJobBtn'),
-                bar: document.getElementById('voiceJobBar'),
-                label: document.getElementById('voiceJobBtnLabel')
-            };
-        }
-
-        function setVoiceListeningUi(on) {
-            var ui = getVoiceJobUi();
-            jobVoiceListening = !!on;
-            if (ui.btn) ui.btn.classList.toggle('listening', !!on);
-            if (ui.bar) ui.bar.classList.toggle('listening', !!on);
-            if (ui.label) ui.label.textContent = on ? '⏹ Release when done' : '🎤 Hold to speak';
-        }
-
-
-        function parseNairaAmount(text) {
-            if (!text) return null;
-            var t = String(text).toLowerCase().replace(/,/g, '');
-            var k = t.match(/(?:₦\s*)?(\d+(?:\.\d+)?)\s*k\b/);
-            if (k) return Math.round(parseFloat(k[1]) * 1000);
-            var near = t.match(/(?:for|charge|total|amount|pay|price)?\s*(?:₦\s*)?(\d{3,7})\b/);
-            if (near) return parseInt(near[1], 10);
-            var all = t.match(/\b(\d{3,7})\b/g);
-            if (all && all.length) {
-                var nums = all.map(function(x) { return parseInt(x, 10); }).filter(function(x) { return x >= 100; });
-                if (nums.length) return Math.max.apply(null, nums);
-            }
-            return null;
-        }
-
-        function parseRelativeDate(text) {
-            var t = String(text).toLowerCase();
-            var d = new Date();
-            function ymd(dt) {
-                return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
-            }
-            if (/\btoday\b/.test(t)) return ymd(d);
-            if (/\btomorrow\b/.test(t)) { d.setDate(d.getDate() + 1); return ymd(d); }
-            var days = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
-            for (var i = 0; i < days.length; i++) {
-                if (t.indexOf(days[i]) >= 0) {
-                    var diff = (i - d.getDay() + 7) % 7;
-                    if (diff === 0) diff = 7;
-                    d.setDate(d.getDate() + diff);
-                    return ymd(d);
-                }
-            }
-            return ymd(new Date());
-        }
-
-        function parseVoiceJobTranscript(transcript) {
-            var raw = (transcript || '').trim();
-            var lower = raw.toLowerCase();
-            var mode = (typeof currentServiceType !== 'undefined' && currentServiceType === 'laundry') ? 'laundry' : 'cleaning';
-            if (/\b(laundry|shirts?|trousers?|pants?|bedsheets?|suit|dry\s*clean)\b/.test(lower)) mode = 'laundry';
-            if (/\b(clean(ing)?|deep clean|3-?bed|bedroom|office tidy|post[-\s]?construction)\b/.test(lower)) {
-                if (!/\b(shirts?|trousers?|laundry)\b/.test(lower)) mode = 'cleaning';
-            }
-
-            var result = {
-                mode: mode,
-                client: '',
-                phone: '',
-                service: '',
-                amount: null,
-                date: parseRelativeDate(lower),
-                notes: raw,
-                rooms: null,
-                property_size: '',
-                items: []
-            };
-
-            var ph = raw.match(/\b(0\d{10}|\+?234\d{10})\b/);
-            if (ph) result.phone = ph[1];
-            result.amount = parseNairaAmount(lower);
-
-            var clientMatch = raw.match(/^([A-Za-z][A-Za-z\.\'\-]+(?:\s+[A-Za-z][A-Za-z\.\'\-]+){0,2})\b/);
-            if (clientMatch) {
-                var c = clientMatch[1].trim();
-                if (!/^(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday|laundry|cleaning|deep)$/i.test(c)) {
-                    result.client = c;
-                }
-            }
-            var forMatch = raw.match(/\b(?:for|client)\s+([A-Za-z][A-Za-z\.\'\-]+(?:\s+[A-Za-z][A-Za-z\.\'\-]+)?)/i);
-            if (forMatch) result.client = forMatch[1].trim();
-
-            if (mode === 'laundry') {
-                if (/wash\s*and\s*iron|wash\s*&\s*iron/i.test(lower)) result.service = 'Wash & Iron';
-                else if (/dry\s*clean/i.test(lower)) result.service = 'Dry Cleaning';
-                else if (/iron\s*only/i.test(lower)) result.service = 'Iron Only';
-                else result.service = 'Wash & Fold';
-
-                var itemPatterns = [
-                    { re: /(\d+)\s*(shirts?|t-?shirts?)/gi, name: 'Shirt' },
-                    { re: /(\d+)\s*(trousers?|pants?)/gi, name: 'Trouser' },
-                    { re: /(\d+)\s*(bed\s*sheets?|bedsheets?)/gi, name: 'Bedsheet' },
-                    { re: /(\d+)\s*(suits?)/gi, name: 'Suit' },
-                    { re: /(\d+)\s*(dresses?)/gi, name: 'Dress' },
-                    { re: /(\d+)\s*(skirts?)/gi, name: 'Skirt' },
-                    { re: /(\d+)\s*(jackets?)/gi, name: 'Jacket' },
-                    { re: /(\d+)\s*(wrappers?)/gi, name: 'Wrapper' },
-                    { re: /(\d+)\s*(duvets?)/gi, name: 'Duvet' }
-                ];
-                itemPatterns.forEach(function(p) {
-                    var m;
-                    var r = new RegExp(p.re.source, 'gi');
-                    while ((m = r.exec(raw)) !== null) {
-                        result.items.push({ name: p.name, qty: parseInt(m[1], 10), price: 0 });
-                    }
-                });
-            } else {
-                if (/post[-\s]?construction/i.test(lower)) result.service = 'Post-Construction';
-                else if (/deep\s*clean/i.test(lower)) result.service = 'Deep Cleaning';
-                else if (/office/i.test(lower)) result.service = 'Office Cleaning';
-                else if (/move\s*in|move\s*out/i.test(lower)) result.service = 'Move In/Out';
-                else result.service = 'Home Cleaning';
-
-                var rooms = lower.match(/\b(\d+)\s*[-\s]?(bed(room)?s?|rooms?)\b/);
-                if (rooms) {
-                    result.rooms = parseInt(rooms[1], 10);
-                    if (result.rooms === 1) result.property_size = '1-bed';
-                    else if (result.rooms === 2) result.property_size = '2-bed';
-                    else if (result.rooms === 3) result.property_size = '3-bed';
-                    else if (result.rooms >= 4) result.property_size = '4+';
-                }
-                if (/\bstudio\b/.test(lower)) result.property_size = 'Studio';
-            }
-            return result;
-        }
-
-        function applyVoiceJobDraft(draft) {
-            if (!draft) {
-                setVoiceJobStatus('Could not understand — try again');
-                return;
-            }
-            try {
-                var clientEl = document.getElementById('jClient');
-                var phoneEl = document.getElementById('jPhone');
-                var serviceEl = document.getElementById('jService');
-                var amountEl = document.getElementById('jAmount');
-                var dateEl = document.getElementById('jDate');
-                var notesEl = document.getElementById('jNotes');
-                var roomsEl = document.getElementById('jRooms');
-                var sizeEl = document.getElementById('jPropertySize');
-
-                if (clientEl && draft.client) clientEl.value = draft.client;
-                if (phoneEl && draft.phone) phoneEl.value = draft.phone;
-                if (amountEl && draft.amount != null && !isNaN(draft.amount)) amountEl.value = draft.amount;
-                if (dateEl && draft.date) dateEl.value = draft.date;
-                if (notesEl && draft.notes) notesEl.value = 'Voice: ' + draft.notes;
-
-                if (serviceEl && draft.service) {
-                    var opts = serviceEl.options;
-                    for (var i = 0; i < opts.length; i++) {
-                        var ot = opts[i].text.toLowerCase();
-                        var ds = String(draft.service).toLowerCase();
-                        if (ot === ds || ot.indexOf(ds.slice(0, 6)) >= 0 || ds.indexOf(ot.slice(0, 6)) >= 0) {
-                            serviceEl.selectedIndex = i;
-                            break;
-                        }
-                    }
-                }
-
-                if (roomsEl && draft.rooms) roomsEl.value = draft.rooms;
-                if (sizeEl && draft.property_size) {
-                    for (var s = 0; s < sizeEl.options.length; s++) {
-                        if (sizeEl.options[s].value === draft.property_size || sizeEl.options[s].text === draft.property_size) {
-                            sizeEl.selectedIndex = s;
-                            break;
-                        }
-                    }
-                }
-
-                if (draft.items && draft.items.length && document.getElementById('laundryItemsList')) {
-                    laundryItems = [];
-                    document.getElementById('laundryItemsList').innerHTML = '';
-                    draft.items.forEach(function(it) {
-                        addLaundryItemRow(it.name, it.qty, it.price || 0);
-                    });
-                    laundryItems.forEach(function(it, idx) {
-                        if (typeof onLaundryItemName === 'function') onLaundryItemName(idx, it.name);
-                    });
-                    if (typeof updateLaundryTotals === 'function') updateLaundryTotals();
-                    var total = 0;
-                    if (typeof calcLaundryItemsTotal === 'function') total = calcLaundryItemsTotal();
-                    else if (typeof laundryItemsTotal === 'function') total = laundryItemsTotal();
-                    if (amountEl && total > 0) amountEl.value = total;
-                }
-
-                setVoiceJobStatus('Filled — review and save');
-                if (typeof showToast === 'function') showToast('Voice draft applied — check fields, then save', 'success');
-            } catch (err) {
-                console.error('applyVoiceJobDraft', err);
-                setVoiceJobStatus('Fill failed: ' + (err.message || 'error'));
-            }
-        }
-
-        function processJobVoiceTranscript(transcript) {
-            transcript = (transcript || '').trim();
-            if (!transcript) {
-                setVoiceJobStatus('No speech detected — hold and try again');
-                return;
-            }
-            setVoiceJobStatus('Heard: “' + transcript + '” — filling form…');
-            var draft = parseVoiceJobTranscript(transcript);
-            // Fill immediately from on-device parse (don't wait on network)
-            applyVoiceJobDraft(draft);
-            // Optional backend improve (may refine fields if AI key configured)
-            if (typeof enhanceVoiceDraft === 'function') {
-                enhanceVoiceDraft(transcript, draft).then(function(better) {
-                    if (better && better !== draft) applyVoiceJobDraft(better);
-                }).catch(function() {});
-            }
-        }
-
-        function ensureJobVoiceRecognition() {
-            var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) return null;
-
-            if (jobVoiceRecognition) return jobVoiceRecognition;
-
-            jobVoiceRecognition = new SpeechRecognition();
-            jobVoiceRecognition.lang = 'en-NG';
-            jobVoiceRecognition.interimResults = true;
-            jobVoiceRecognition.continuous = true; // keep listening until user releases
-            jobVoiceRecognition.maxAlternatives = 1;
-
-            jobVoiceRecognition.onstart = function() {
-                setVoiceListeningUi(true);
-                setVoiceJobStatus('Listening… release when finished');
-            };
-
-            jobVoiceRecognition.onerror = function(ev) {
-                var err = (ev && ev.error) || 'error';
-                // 'aborted' is normal when we stop on release
-                if (err === 'aborted' || err === 'no-speech') return;
-                setVoiceListeningUi(false);
-                jobVoiceHoldActive = false;
-                if (err === 'not-allowed') setVoiceJobStatus('Microphone blocked — allow mic access');
-                else setVoiceJobStatus('Voice error: ' + err);
-            };
-
-            jobVoiceRecognition.onend = function() {
-                // If user still holding (some browsers end early), restart
-                if (jobVoiceHoldActive) {
-                    try {
-                        jobVoiceRecognition.start();
-                        return;
-                    } catch (e) {}
-                }
-                setVoiceListeningUi(false);
-            };
-
-            jobVoiceRecognition.onresult = function(event) {
-                var piece = '';
-                for (var i = event.resultIndex; i < event.results.length; i++) {
-                    piece += event.results[i][0].transcript;
-                }
-                // Rebuild full transcript from all results for accuracy
-                var full = '';
-                for (var j = 0; j < event.results.length; j++) {
-                    full += event.results[j][0].transcript;
-                }
-                jobVoiceTranscript = full.trim();
-                if (jobVoiceTranscript) {
-                    setVoiceJobStatus('Listening… “' + jobVoiceTranscript + '”');
-                }
-            };
-
-            return jobVoiceRecognition;
-        }
-
-        function startJobVoiceHold(e) {
-            if (e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                showToast('Voice needs Chrome or Edge on this device', 'error');
-                setVoiceJobStatus('Not supported in this browser');
-                return;
-            }
-
-            jobVoiceHoldActive = true;
-            jobVoiceTranscript = '';
-            var rec = ensureJobVoiceRecognition();
-            if (!rec) return;
-
-            try {
-                rec.start();
-                setVoiceListeningUi(true);
-                setVoiceJobStatus('Listening… release when finished');
-            } catch (err) {
-                // Already started — ignore
-                setVoiceListeningUi(true);
-                setVoiceJobStatus('Listening… release when finished');
-            }
-        }
-
-        function endJobVoiceHold(e) {
-            if (e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            if (!jobVoiceHoldActive && !jobVoiceListening) return;
-
-            jobVoiceHoldActive = false;
-            var transcript = jobVoiceTranscript || '';
-
-            if (jobVoiceRecognition) {
-                try { jobVoiceRecognition.stop(); } catch (err) {}
-            }
-            setVoiceListeningUi(false);
-
-            // Wait for final recognition chunks, then fill form
-            setTimeout(function() {
-                var finalText = (jobVoiceTranscript || transcript || '').trim();
-                processJobVoiceTranscript(finalText);
-            }, 450);
-        }
-
-        function enhanceVoiceDraft(transcript, localDraft) {
-            return fetch(API_URL + '/jobs/parse-voice', {
-                method: 'POST',
-                headers: getHeaders(),
-                body: JSON.stringify({
-                    transcript: transcript,
-                    mode: currentServiceType
-                })
-            }).then(function(res) {
-                if (!res.ok) return localDraft;
-                return res.json();
-            }).then(function(data) {
-                if (!data || !data.draft) return localDraft;
-                // Merge: prefer backend fields when present
-                var d = data.draft;
-                var merged = Object.assign({}, localDraft);
-                Object.keys(d).forEach(function(k) {
-                    if (d[k] !== null && d[k] !== undefined && d[k] !== '') {
-                        if (k === 'items' && (!d[k] || !d[k].length)) return;
-                        merged[k] = d[k];
-                    }
-                });
-                return merged;
-            }).catch(function() { return localDraft; });
-        }
-
-
         function openModal(type) {
             modalType = type;
             laundryItems = [];
@@ -3604,16 +3332,7 @@
                         '</div>';
                 }
 
-                f.innerHTML =
-                    '<div class="voice-job-bar" id="voiceJobBar">' +
-                    '<button type="button" class="btn-voice" id="voiceJobBtn" ' +
-                    'onmousedown="startJobVoiceHold(event)" onmouseup="endJobVoiceHold(event)" ' +
-                    'ontouchstart="startJobVoiceHold(event)" ontouchend="endJobVoiceHold(event)" ontouchcancel="endJobVoiceHold(event)">' +
-                    '<span id="voiceJobBtnLabel">🎤 Hold to speak</span></button>' +
-                    '<div class="voice-hint"><strong>Voice draft (beta)</strong> — <em>Press and hold</em> the mic, speak, then release. e.g. “Ada, 12 shirts 4 trousers, 8500, Friday”</div>' +
-                    '<div class="voice-status" id="voiceJobStatus"></div>' +
-                    '</div>' +
-                    '<div class="form-group"><label>Client Name</label><input type="text" id="jClient" required /></div>' +
+                f.innerHTML = '<div class="form-group"><label>Client Name</label><input type="text" id="jClient" required /></div>' +
                     '<div class="form-group"><label>Phone</label><input type="tel" id="jPhone" /></div>' +
                     '<div class="form-group"><label>Service</label><select id="jService">' + serviceOptions + '</select></div>' +
                     modeExtra +
@@ -3725,13 +3444,14 @@
                         console.error('Error creating job:', e);
                         var code = e.code || '';
                         var msg = e.message || 'Failed to add job';
-                        showToast(msg, 'error');
                         if (code === 'NO_JOBS_REMAINING' || code === 'INSUFFICIENT_CREDITS' ||
-                            /free jobs|credits|limit/i.test(msg)) {
-                            setTimeout(function() {
-                                closeModal();
-                                goToCredits();
-                            }, 600);
+                            /free jobs|credits|limit|no jobs remaining/i.test(msg)) {
+                            closeModal();
+                            showOutOfJobsModal(msg || "You've used all free jobs. Buy credits or go unlimited to continue.");
+                            refreshFreeJobs();
+                            refreshCredits();
+                        } else {
+                            showToast(msg, 'error');
                         }
                     });
 
