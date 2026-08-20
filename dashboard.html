@@ -1258,7 +1258,7 @@
         .credit-badge:hover { background: #DBEAFE; }
         .credit-packs-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: 12px;
             margin-top: 12px;
         }
@@ -1268,10 +1268,25 @@
             padding: 14px 12px;
             text-align: center;
             background: var(--white);
+            min-width: 0;
         }
         .credit-pack .pack-name { font-weight: 800; font-size: 14px; }
-        .credit-pack .pack-jobs { font-size: 20px; font-weight: 900; color: var(--blue); margin: 6px 0; }
+        .credit-pack .pack-jobs { font-size: 20px; font-weight: 900; color: var(--blue); margin: 6px 0; line-height: 1.15; }
         .credit-pack .pack-price { font-size: 13px; color: var(--slate); margin-bottom: 10px; }
+        .credit-pack .btn { width: 100%; }
+        @media (max-width: 900px) {
+            .credit-packs-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        @media (max-width: 420px) {
+            .credit-packs-grid {
+                grid-template-columns: 1fr;
+            }
+            .credit-pack {
+                padding: 16px 14px;
+            }
+        }
         .invoice-pdf-status.generated { color: var(--green); font-size: 11px; font-weight: 700; }
         .invoice-pdf-status.not-generated { color: var(--slate); font-size: 11px; }
 
@@ -1418,7 +1433,7 @@
                 <p style="font-size:13px;color:var(--slate);margin:0 0 14px;">
                     Free jobs left: <span id="freeJobsLabel" style="font-weight:700;color:var(--green);">—</span> / 25
                 </p>
-                <div class="credit-packs-grid" style="grid-template-columns:repeat(4,minmax(0,1fr));">
+                <div class="credit-packs-grid">
                     <div class="credit-pack">
                         <div class="pack-name">Starter</div>
                         <div class="pack-jobs">20 jobs</div>
