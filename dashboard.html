@@ -1529,13 +1529,6 @@
                     </button>
                 </div>
 
-                <div class="whatsapp-limit-warning" id="whatsappLimitWarning">
-                    <p>
-                        <span><svg class="icon" style="color:var(--amber);"><use href="#ic-alert"/></svg> You've used <span id="whatsappLimitCount">0/100</span> WhatsApp messages this month.</span>
-                        <a href="#plansSection" onclick="goToPlans(event)">Upgrade plan →</a>
-                    </p>
-                </div>
-
                 <div class="template-row">
                     <button type="button" class="btn btn-outline btn-sm" onclick="setTemplate('newmonth')">🎉 New Month</button>
                     <button type="button" class="btn btn-outline btn-sm" onclick="setTemplate('festival')">🎄 Festival</button>
@@ -3037,22 +3030,6 @@
             var inventoryTab = document.getElementById('tabInventory');
             if (inventoryTab) inventoryTab.style.display = 'inline-block';
 
-            var whatsappWarning = document.getElementById('whatsappLimitWarning');
-            if (whatsappWarning) {
-                var showWaLimit = isFree || isStarter;
-                whatsappWarning.style.display = showWaLimit ? 'block' : 'none';
-                if (showWaLimit) {
-                    var messageData = JSON.parse(localStorage.getItem('cleancrew_message_history') || '[]');
-                    var thisMonth = new Date().getMonth();
-                    var thisYear = new Date().getFullYear();
-                    var count = messageData.filter(function(m) {
-                        var d = new Date(m.sentAt);
-                        return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
-                    }).length;
-                    var waLimit = isFree ? 30 : 100;
-                    document.getElementById('whatsappLimitCount').textContent = count + '/' + waLimit;
-                }
-            }
         }
 
         // ─── ──────────────────────────────────────────────────────
@@ -3541,21 +3518,6 @@
                     }).filter(function(p) { return p && p !== 'N/A' && p !== ''; });
 
                     if (phones.length === 0) { showToast('No phone numbers found for selected clients', 'error'); return; }
-
-                    if (currentUserPlan === 'starter') {
-                        var messageData = JSON.parse(localStorage.getItem('cleancrew_message_history') || '[]');
-                        var thisMonth = new Date().getMonth();
-                        var thisYear = new Date().getFullYear();
-                        var count = messageData.filter(function(m) {
-                            var d = new Date(m.sentAt);
-                            return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
-                        }).length;
-                        if (count + phones.length > 100) {
-                            showToast('You\'ve reached your monthly limit of 100 messages. Upgrade to Professional for unlimited messaging.',
-                                'error');
-                            return;
-                        }
-                    }
 
                     var message = {
                         id: Date.now(),
