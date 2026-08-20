@@ -3225,6 +3225,189 @@
             if (ui.label) ui.label.textContent = on ? '⏹ Release when done' : '🎤 Hold to speak';
         }
 
+
+        function parseNairaAmount(text) {
+            if (!text) return null;
+            var t = String(text).toLowerCase().replace(/,/g, '');
+            var k = t.match(/(?:₦\s*)?(\d+(?:\.\d+)?)\s*k\b/);
+            if (k) return Math.round(parseFloat(k[1]) * 1000);
+            var near = t.match(/(?:for|charge|total|amount|pay|price)?\s*(?:₦\s*)?(\d{3,7})\b/);
+            if (near) return parseInt(near[1], 10);
+            var all = t.match(/\b(\d{3,7})\b/g);
+            if (all && all.length) {
+                var nums = all.map(function(x) { return parseInt(x, 10); }).filter(function(x) { return x >= 100; });
+                if (nums.length) return Math.max.apply(null, nums);
+            }
+            return null;
+        }
+
+        function parseRelativeDate(text) {
+            var t = String(text).toLowerCase();
+            var d = new Date();
+            function ymd(dt) {
+                return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+            }
+            if (/\btoday\b/.test(t)) return ymd(d);
+            if (/\btomorrow\b/.test(t)) { d.setDate(d.getDate() + 1); return ymd(d); }
+            var days = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+            for (var i = 0; i < days.length; i++) {
+                if (t.indexOf(days[i]) >= 0) {
+                    var diff = (i - d.getDay() + 7) % 7;
+                    if (diff === 0) diff = 7;
+                    d.setDate(d.getDate() + diff);
+                    return ymd(d);
+                }
+            }
+            return ymd(new Date());
+        }
+
+        function parseVoiceJobTranscript(transcript) {
+            var raw = (transcript || '').trim();
+            var lower = raw.toLowerCase();
+            var mode = (typeof currentServiceType !== 'undefined' && currentServiceType === 'laundry') ? 'laundry' : 'cleaning';
+            if (/\b(laundry|shirts?|trousers?|pants?|bedsheets?|suit|dry\s*clean)\b/.test(lower)) mode = 'laundry';
+            if (/\b(clean(ing)?|deep clean|3-?bed|bedroom|office tidy|post[-\s]?construction)\b/.test(lower)) {
+                if (!/\b(shirts?|trousers?|laundry)\b/.test(lower)) mode = 'cleaning';
+            }
+
+            var result = {
+                mode: mode,
+                client: '',
+                phone: '',
+                service: '',
+                amount: null,
+                date: parseRelativeDate(lower),
+                notes: raw,
+                rooms: null,
+                property_size: '',
+                items: []
+            };
+
+            var ph = raw.match(/\b(0\d{10}|\+?234\d{10})\b/);
+            if (ph) result.phone = ph[1];
+            result.amount = parseNairaAmount(lower);
+
+            var clientMatch = raw.match(/^([A-Za-z][A-Za-z\.\'\-]+(?:\s+[A-Za-z][A-Za-z\.\'\-]+){0,2})\b/);
+            if (clientMatch) {
+                var c = clientMatch[1].trim();
+                if (!/^(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday|laundry|cleaning|deep)$/i.test(c)) {
+                    result.client = c;
+                }
+            }
+            var forMatch = raw.match(/\b(?:for|client)\s+([A-Za-z][A-Za-z\.\'\-]+(?:\s+[A-Za-z][A-Za-z\.\'\-]+)?)/i);
+            if (forMatch) result.client = forMatch[1].trim();
+
+            if (mode === 'laundry') {
+                if (/wash\s*and\s*iron|wash\s*&\s*iron/i.test(lower)) result.service = 'Wash & Iron';
+                else if (/dry\s*clean/i.test(lower)) result.service = 'Dry Cleaning';
+                else if (/iron\s*only/i.test(lower)) result.service = 'Iron Only';
+                else result.service = 'Wash & Fold';
+
+                var itemPatterns = [
+                    { re: /(\d+)\s*(shirts?|t-?shirts?)/gi, name: 'Shirt' },
+                    { re: /(\d+)\s*(trousers?|pants?)/gi, name: 'Trouser' },
+                    { re: /(\d+)\s*(bed\s*sheets?|bedsheets?)/gi, name: 'Bedsheet' },
+                    { re: /(\d+)\s*(suits?)/gi, name: 'Suit' },
+                    { re: /(\d+)\s*(dresses?)/gi, name: 'Dress' },
+                    { re: /(\d+)\s*(skirts?)/gi, name: 'Skirt' },
+                    { re: /(\d+)\s*(jackets?)/gi, name: 'Jacket' },
+                    { re: /(\d+)\s*(wrappers?)/gi, name: 'Wrapper' },
+                    { re: /(\d+)\s*(duvets?)/gi, name: 'Duvet' }
+                ];
+                itemPatterns.forEach(function(p) {
+                    var m;
+                    var r = new RegExp(p.re.source, 'gi');
+                    while ((m = r.exec(raw)) !== null) {
+                        result.items.push({ name: p.name, qty: parseInt(m[1], 10), price: 0 });
+                    }
+                });
+            } else {
+                if (/post[-\s]?construction/i.test(lower)) result.service = 'Post-Construction';
+                else if (/deep\s*clean/i.test(lower)) result.service = 'Deep Cleaning';
+                else if (/office/i.test(lower)) result.service = 'Office Cleaning';
+                else if (/move\s*in|move\s*out/i.test(lower)) result.service = 'Move In/Out';
+                else result.service = 'Home Cleaning';
+
+                var rooms = lower.match(/\b(\d+)\s*[-\s]?(bed(room)?s?|rooms?)\b/);
+                if (rooms) {
+                    result.rooms = parseInt(rooms[1], 10);
+                    if (result.rooms === 1) result.property_size = '1-bed';
+                    else if (result.rooms === 2) result.property_size = '2-bed';
+                    else if (result.rooms === 3) result.property_size = '3-bed';
+                    else if (result.rooms >= 4) result.property_size = '4+';
+                }
+                if (/\bstudio\b/.test(lower)) result.property_size = 'Studio';
+            }
+            return result;
+        }
+
+        function applyVoiceJobDraft(draft) {
+            if (!draft) {
+                setVoiceJobStatus('Could not understand — try again');
+                return;
+            }
+            try {
+                var clientEl = document.getElementById('jClient');
+                var phoneEl = document.getElementById('jPhone');
+                var serviceEl = document.getElementById('jService');
+                var amountEl = document.getElementById('jAmount');
+                var dateEl = document.getElementById('jDate');
+                var notesEl = document.getElementById('jNotes');
+                var roomsEl = document.getElementById('jRooms');
+                var sizeEl = document.getElementById('jPropertySize');
+
+                if (clientEl && draft.client) clientEl.value = draft.client;
+                if (phoneEl && draft.phone) phoneEl.value = draft.phone;
+                if (amountEl && draft.amount != null && !isNaN(draft.amount)) amountEl.value = draft.amount;
+                if (dateEl && draft.date) dateEl.value = draft.date;
+                if (notesEl && draft.notes) notesEl.value = 'Voice: ' + draft.notes;
+
+                if (serviceEl && draft.service) {
+                    var opts = serviceEl.options;
+                    for (var i = 0; i < opts.length; i++) {
+                        var ot = opts[i].text.toLowerCase();
+                        var ds = String(draft.service).toLowerCase();
+                        if (ot === ds || ot.indexOf(ds.slice(0, 6)) >= 0 || ds.indexOf(ot.slice(0, 6)) >= 0) {
+                            serviceEl.selectedIndex = i;
+                            break;
+                        }
+                    }
+                }
+
+                if (roomsEl && draft.rooms) roomsEl.value = draft.rooms;
+                if (sizeEl && draft.property_size) {
+                    for (var s = 0; s < sizeEl.options.length; s++) {
+                        if (sizeEl.options[s].value === draft.property_size || sizeEl.options[s].text === draft.property_size) {
+                            sizeEl.selectedIndex = s;
+                            break;
+                        }
+                    }
+                }
+
+                if (draft.items && draft.items.length && document.getElementById('laundryItemsList')) {
+                    laundryItems = [];
+                    document.getElementById('laundryItemsList').innerHTML = '';
+                    draft.items.forEach(function(it) {
+                        addLaundryItemRow(it.name, it.qty, it.price || 0);
+                    });
+                    laundryItems.forEach(function(it, idx) {
+                        if (typeof onLaundryItemName === 'function') onLaundryItemName(idx, it.name);
+                    });
+                    if (typeof updateLaundryTotals === 'function') updateLaundryTotals();
+                    var total = 0;
+                    if (typeof calcLaundryItemsTotal === 'function') total = calcLaundryItemsTotal();
+                    else if (typeof laundryItemsTotal === 'function') total = laundryItemsTotal();
+                    if (amountEl && total > 0) amountEl.value = total;
+                }
+
+                setVoiceJobStatus('Filled — review and save');
+                if (typeof showToast === 'function') showToast('Voice draft applied — check fields, then save', 'success');
+            } catch (err) {
+                console.error('applyVoiceJobDraft', err);
+                setVoiceJobStatus('Fill failed: ' + (err.message || 'error'));
+            }
+        }
+
         function processJobVoiceTranscript(transcript) {
             transcript = (transcript || '').trim();
             if (!transcript) {
@@ -3233,11 +3416,14 @@
             }
             setVoiceJobStatus('Heard: “' + transcript + '” — filling form…');
             var draft = parseVoiceJobTranscript(transcript);
-            enhanceVoiceDraft(transcript, draft).then(function(better) {
-                applyVoiceJobDraft(better || draft);
-            }).catch(function() {
-                applyVoiceJobDraft(draft);
-            });
+            // Fill immediately from on-device parse (don't wait on network)
+            applyVoiceJobDraft(draft);
+            // Optional backend improve (may refine fields if AI key configured)
+            if (typeof enhanceVoiceDraft === 'function') {
+                enhanceVoiceDraft(transcript, draft).then(function(better) {
+                    if (better && better !== draft) applyVoiceJobDraft(better);
+                }).catch(function() {});
+            }
         }
 
         function ensureJobVoiceRecognition() {
@@ -3333,18 +3519,18 @@
             if (!jobVoiceHoldActive && !jobVoiceListening) return;
 
             jobVoiceHoldActive = false;
-            var transcript = jobVoiceTranscript;
+            var transcript = jobVoiceTranscript || '';
 
             if (jobVoiceRecognition) {
                 try { jobVoiceRecognition.stop(); } catch (err) {}
             }
             setVoiceListeningUi(false);
 
-            // Small delay so final recognition results can flush
+            // Wait for final recognition chunks, then fill form
             setTimeout(function() {
                 var finalText = (jobVoiceTranscript || transcript || '').trim();
                 processJobVoiceTranscript(finalText);
-            }, 280);
+            }, 450);
         }
 
         function enhanceVoiceDraft(transcript, localDraft) {
@@ -3422,7 +3608,6 @@
                     '<div class="voice-job-bar" id="voiceJobBar">' +
                     '<button type="button" class="btn-voice" id="voiceJobBtn" ' +
                     'onmousedown="startJobVoiceHold(event)" onmouseup="endJobVoiceHold(event)" ' +
-                    'onmouseleave="endJobVoiceHold(event)" ' +
                     'ontouchstart="startJobVoiceHold(event)" ontouchend="endJobVoiceHold(event)" ontouchcancel="endJobVoiceHold(event)">' +
                     '<span id="voiceJobBtnLabel">🎤 Hold to speak</span></button>' +
                     '<div class="voice-hint"><strong>Voice draft (beta)</strong> — <em>Press and hold</em> the mic, speak, then release. e.g. “Ada, 12 shirts 4 trousers, 8500, Friday”</div>' +
