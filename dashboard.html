@@ -1515,7 +1515,8 @@
             <div class="card">
                 <div class="card-header">
                     <h3 id="jobsTitle"><svg class="icon"><use href="#ic-clipboard"/></svg> All Jobs</h3>
-                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                        <input type="search" id="jobsSearch" placeholder="Search jobs…" oninput="renderJobs()" autocomplete="off" style="padding:6px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-family:inherit;min-width:140px;max-width:200px;background:var(--white);color:var(--ink);" />
                         <button class="btn btn-primary btn-sm" onclick="openModal('job')">
                             <svg class="icon"><use href="#ic-plus"/></svg> New Job
                         </button>
@@ -1552,9 +1553,12 @@
             <div class="card">
                 <div class="card-header">
                     <h3><svg class="icon"><use href="#ic-user"/></svg> All Clients</h3>
-                    <button class="btn btn-primary btn-sm" onclick="openModal('client')">
-                        <svg class="icon"><use href="#ic-plus"/></svg> Add Client
-                    </button>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                        <input type="search" id="clientsSearch" placeholder="Search clients…" oninput="renderClientsFromSearch()" autocomplete="off" style="padding:6px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-family:inherit;min-width:140px;max-width:200px;background:var(--white);color:var(--ink);" />
+                        <button class="btn btn-primary btn-sm" onclick="openModal('client')">
+                            <svg class="icon"><use href="#ic-plus"/></svg> Add Client
+                        </button>
+                    </div>
                 </div>
                 <div class="table-wrap">
                     <table>
@@ -2695,6 +2699,7 @@
         // ─── ──────────────────────────────────────────────────────
 
         var jobsData = [];
+        var clientsData = [];
         var inventoryData = [];
 
         function renderInventory() {
@@ -2744,7 +2749,7 @@
                         var del = row.querySelector('.inv-del');
                         if (inc) inc.onclick = function() { adjustInventoryQty(id, 1); };
                         if (dec) dec.onclick = function() { adjustInventoryQty(id, -1); };
-                        if (del) del.onclick = function() { deleteInventoryItem(id); };
+                        if (del) del.onclick = function(ev) { if (ev) { ev.preventDefault(); ev.stopPropagation(); } deleteInventory(id); };
                     });
                 })
                 .catch(function(e) {
@@ -2776,6 +2781,7 @@
                     var jobs = results[0];
                     var clients = results[1];
                     jobsData = jobs;
+                    clientsData = clients || [];
                     renderOverview(jobs, clients);
                     renderJobs(jobs);
                     renderClients(clients);
@@ -2856,9 +2862,23 @@
                 });
             }
 
+            var qEl = document.getElementById('jobsSearch');
+            var q = qEl ? qEl.value.trim().toLowerCase() : '';
+            if (q) {
+                filtered = filtered.filter(function(j) {
+                    var blob = [j.client, j.phone, j.service, j.status, j.notes, j.number, j.property_size]
+                        .map(function(x) { return String(x || '').toLowerCase(); }).join(' ');
+                    return blob.indexOf(q) !== -1;
+                });
+            }
+
             var tbody = document.getElementById('jobsTable');
             if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);">No ' + modeLabel + ' jobs found</td></tr>';
+                var qEl2 = document.getElementById('jobsSearch');
+                var q2 = qEl2 ? qEl2.value.trim() : '';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);">' +
+                    (q2 ? 'No jobs match “' + q2 + '”' : ('No ' + modeLabel + ' jobs found')) +
+                    '</td></tr>';
                 return;
             }
 
@@ -2902,13 +2922,34 @@
             }).join('');
         }
 
+        function renderClientsFromSearch() {
+            if (typeof clientsData !== 'undefined' && clientsData && clientsData.length) {
+                renderClients(clientsData);
+            } else {
+                getClients().then(function(c) { renderClients(c || []); }).catch(function() {});
+            }
+        }
+
         function renderClients(clients) {
+            clients = clients || [];
             var tbody = document.getElementById('clientsTable');
-            if (clients.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);">No clients yet</td></tr>';
+            var qEl = document.getElementById('clientsSearch');
+            var q = qEl ? qEl.value.trim().toLowerCase() : '';
+            var list = clients;
+            if (q) {
+                list = clients.filter(function(c) {
+                    var blob = [c.name, c.phone, c.email, c.location, c.notes]
+                        .map(function(x) { return String(x || '').toLowerCase(); }).join(' ');
+                    return blob.indexOf(q) !== -1;
+                });
+            }
+            if (list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);">' +
+                    (q ? 'No clients match “' + qEl.value.trim() + '”' : 'No clients yet') +
+                    '</td></tr>';
                 return;
             }
-            tbody.innerHTML = clients.map(function(c, i) {
+            tbody.innerHTML = list.map(function(c, i) {
                 var clientJobs = jobsData ? jobsData.filter(function(j) {
                     return j.client === c.name;
                 }) : [];
