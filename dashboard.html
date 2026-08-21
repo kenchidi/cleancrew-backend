@@ -562,8 +562,8 @@
             color: #1E40AF;
         }
         .status-badge.collected {
-            background: #DBEAFE;
-            color: #1E40AF;
+            background: #E0E7FF;
+            color: #3730A3;
         }
         .status-badge.washed {
             background: #E0E7FF;
@@ -1554,7 +1554,8 @@
                             <option value="all">All Status</option>
                             <option value="pending">Pending</option>
                             <option value="in-progress">In Progress</option>
-                            <option value="completed">Completed</option>
+                            <option value="completed">Completed (ready)</option>
+                            <option value="collected">Collected</option>
                             <option value="cancelled">Cancelled</option>
                         </select>
                     </div>
@@ -2849,13 +2850,13 @@
 
             var total = filteredJobs.length;
             var completed = filteredJobs.filter(function(j) {
-                return j.status === 'completed' || j.status === 'delivered';
+                return j.status === 'completed' || j.status === 'delivered' || j.status === 'collected';
             }).length;
             var pending = filteredJobs.filter(function(j) {
                 return j.status === 'pending' || j.status === 'in-progress';
             }).length;
             var revenue = filteredJobs.filter(function(j) {
-                return j.status === 'completed' || j.status === 'delivered';
+                return j.status === 'completed' || j.status === 'delivered' || j.status === 'collected';
             }).reduce(function(sum, j) {
                 return sum + (j.amount || 0);
             }, 0);
@@ -2977,6 +2978,8 @@
                     statusBtns = '<button type="button" class="btn btn-success btn-sm" onclick="updateJobStatus(\'' + j.id + '\',\'in-progress\');closeJobDetail();">Start job</button>';
                 } else if (j.status === 'in-progress') {
                     statusBtns = '<button type="button" class="btn btn-success btn-sm" onclick="updateJobStatus(\'' + j.id + '\',\'completed\');closeJobDetail();">Mark complete</button>';
+                } else if (j.status === 'completed' && getJobMode(j) === 'laundry') {
+                    statusBtns = '<button type="button" class="btn btn-primary btn-sm" onclick="markJobCollected(\'' + j.id + '\');closeJobDetail();">Mark collected</button>';
                 }
                 actions.innerHTML = statusBtns + tel + wa +
                     '<button type="button" class="btn btn-outline btn-sm" onclick="closeJobDetail()">Close</button>';
@@ -3023,8 +3026,13 @@
 
             tbody.innerHTML = filtered.map(function(j, i) {
                 var actionButtons = '';
-                if (j.status === 'pending') actionButtons = '<button class="btn btn-success btn-sm" onclick="updateJobStatus(\'' + j.id + '\', \'in-progress\')">Start</button>';
-                else if (j.status === 'in-progress') actionButtons = '<button class="btn btn-success btn-sm" onclick="updateJobStatus(\'' + j.id + '\', \'completed\')">Complete</button>';
+                if (j.status === 'pending') {
+                    actionButtons = '<button class="btn btn-success btn-sm" onclick="updateJobStatus(\'' + j.id + '\', \'in-progress\')">Start</button>';
+                } else if (j.status === 'in-progress') {
+                    actionButtons = '<button class="btn btn-success btn-sm" onclick="updateJobStatus(\'' + j.id + '\', \'completed\')">Complete</button>';
+                } else if (j.status === 'completed' && currentServiceType === 'laundry') {
+                    actionButtons = '<button class="btn btn-primary btn-sm" onclick="markJobCollected(\'' + j.id + '\')">Collected</button>';
+                }
 
                 var cancelButton = (j.status === 'pending' || j.status === 'in-progress') ?
                     '<button class="btn btn-danger btn-sm" onclick="updateJobStatus(\'' + j.id + '\', \'cancelled\')">Cancel</button>' : '';
@@ -3104,7 +3112,7 @@
                     return j.client === c.name;
                 }) : [];
                 var totalSpent = clientJobs.filter(function(j) {
-                    return j.status === 'completed' || j.status === 'delivered';
+                    return j.status === 'completed' || j.status === 'delivered' || j.status === 'collected';
                 }).reduce(function(sum, j) {
                     return sum + (j.amount || 0);
                 }, 0);
@@ -3242,12 +3250,40 @@
         function updateJobStatus(id, status) {
             updateJob(id, { status: status })
                 .then(function() {
-                    showToast('Job ' + status, 'success');
+                    var msg = 'Job updated';
+                    if (status === 'collected') msg = 'Marked as collected — customer picked up';
+                    else if (status === 'completed') msg = 'Marked complete (ready for pickup)';
+                    else if (status === 'in-progress') msg = 'Job started';
+                    else if (status === 'cancelled') msg = 'Job cancelled';
+                    else msg = 'Job ' + status;
+                    showToast(msg, 'success');
                     renderAll();
                 })
                 .catch(function(e) {
                     console.error('updateJobStatus', e);
                     showToast((e && e.message) || 'Failed to update job', 'error');
+                });
+        }
+
+        function markJobCollected(id) {
+            var j = (typeof findJobById === 'function') ? findJobById(id) : null;
+            updateJob(id, { status: 'collected' })
+                .then(function() {
+                    showToast('Marked as collected — customer picked up', 'success');
+                    renderAll();
+                    if (!j) return;
+                    var raw = String(j.phone || '').replace(/\D/g, '');
+                    if (raw.length < 10) return;
+                    var name = j.client || 'Customer';
+                    if (!confirm('Send WhatsApp pickup confirmation to ' + name + '?')) return;
+                    var phone = raw;
+                    if (phone.startsWith('0')) phone = '234' + phone.slice(1);
+                    if (!phone.startsWith('234') && phone.length >= 10) phone = '234' + phone;
+                    var text = 'Hi ' + name + ', this confirms your laundry has been collected from our shop. Thank you for choosing us!';
+                    window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(text), '_blank');
+                })
+                .catch(function(e) {
+                    showToast((e && e.message) || 'Failed to mark collected', 'error');
                 });
         }
 
