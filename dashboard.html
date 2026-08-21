@@ -1195,6 +1195,36 @@
         }
         #revenueStatCard { position: relative; }
         .unlock-revenue-btn { margin-top: 6px; font-size: 12px; }
+        tr.job-row { cursor: pointer; }
+        tr.job-row:hover td { background: var(--blue-mist); }
+        .note-pill {
+            display: inline-flex; align-items: center; gap: 3px;
+            font-size: 10px; font-weight: 700; color: var(--blue-dark);
+            background: var(--blue-light); padding: 2px 8px; border-radius: 100px;
+            margin-left: 6px; vertical-align: middle;
+        }
+        .job-detail-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px;
+            margin-bottom: 16px; text-align: left;
+        }
+        .job-detail-grid .full { grid-column: 1 / -1; }
+        .job-detail-label {
+            font-size: 11px; font-weight: 700; color: var(--slate);
+            text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px;
+        }
+        .job-detail-value { font-size: 14px; font-weight: 600; color: var(--ink); word-break: break-word; }
+        .job-notes-box {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 12px 14px;
+            font-size: 14px; line-height: 1.5; color: var(--ink); white-space: pre-wrap;
+            text-align: left;
+        }
+        .job-notes-box.empty { color: var(--slate); font-weight: 500; }
+        .job-detail-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        @media (max-width: 480px) {
+            .job-detail-grid { grid-template-columns: 1fr; }
+        }
+
         .credits-section-highlight {
             outline: 2px solid var(--blue);
             box-shadow: 0 0 0 6px rgba(26,109,219,.12), var(--shadow-md);
@@ -1797,6 +1827,18 @@
                 <button type="button" class="btn btn-secondary btn-block" onclick="closeOutOfJobsModal(); subscribeToPlan('starter');">Go unlimited — ₦12,500/mo</button>
                 <button type="button" class="btn btn-outline btn-block" onclick="closeOutOfJobsModal()">Not now</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Job detail (notes + full story) -->
+    <div class="modal-overlay" id="jobDetailOverlay" onclick="if(event.target===this)closeJobDetail()">
+        <div class="modal-box" style="max-width:520px;">
+            <div class="modal-header">
+                <h3 id="jobDetailTitle"><svg class="icon"><use href="#ic-clipboard"/></svg> Job details</h3>
+                <button type="button" class="modal-close" onclick="closeJobDetail()" aria-label="Close">&times;</button>
+            </div>
+            <div id="jobDetailBody"></div>
+            <div class="job-detail-actions" id="jobDetailActions"></div>
         </div>
     </div>
 
@@ -2847,6 +2889,103 @@
             }
         }
 
+
+        function findJobById(id) {
+            if (!id) return null;
+            var list = jobsData || [];
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].id === id) return list[i];
+            }
+            return null;
+        }
+
+        function closeJobDetail() {
+            var el = document.getElementById('jobDetailOverlay');
+            if (el) el.classList.remove('active');
+        }
+
+        function openJobDetail(id) {
+            var j = findJobById(id);
+            if (!j) {
+                // Try refresh then open
+                getJobs().then(function(jobs) {
+                    jobsData = jobs || [];
+                    var found = findJobById(id);
+                    if (found) openJobDetail(id);
+                    else if (typeof showToast === 'function') showToast('Job not found', 'error');
+                }).catch(function() {
+                    if (typeof showToast === 'function') showToast('Job not found', 'error');
+                });
+                return;
+            }
+
+            var mode = getJobMode(j);
+            var modeLabel = mode === 'laundry' ? 'Laundry' : 'Cleaning';
+            var hasNotes = j.notes && String(j.notes).trim() && String(j.notes).trim().toLowerCase() !== 'none';
+            var notesText = hasNotes ? String(j.notes).trim() : 'No notes for this job.';
+
+            var extra = '';
+            if (mode === 'laundry') {
+                var itemsArr = j.items;
+                if (typeof itemsArr === 'string') {
+                    try { itemsArr = JSON.parse(itemsArr); } catch (e) { itemsArr = []; }
+                }
+                if (itemsArr && itemsArr.length) {
+                    extra = itemsArr.map(function(it) {
+                        return (it.qty || 1) + '× ' + (it.name || 'Item') +
+                            (it.price ? (' @ ₦' + Number(it.price).toLocaleString()) : '');
+                    }).join(', ');
+                }
+            } else {
+                var bits = [];
+                if (j.rooms) bits.push(j.rooms + ' room' + (j.rooms > 1 ? 's' : ''));
+                if (j.property_size) bits.push(j.property_size);
+                extra = bits.join(' · ');
+            }
+
+            var title = document.getElementById('jobDetailTitle');
+            if (title) {
+                title.innerHTML = '<svg class="icon"><use href="#ic-clipboard"/></svg> ' +
+                    (j.client || 'Job') + ' · ' + modeLabel;
+            }
+
+            var body = document.getElementById('jobDetailBody');
+            if (body) {
+                body.innerHTML =
+                    '<div class="job-detail-grid">' +
+                    '<div><div class="job-detail-label">Client</div><div class="job-detail-value">' + (j.client || '—') + '</div></div>' +
+                    '<div><div class="job-detail-label">Phone</div><div class="job-detail-value">' + (j.phone || '—') + '</div></div>' +
+                    '<div><div class="job-detail-label">Service</div><div class="job-detail-value">' + (j.service || '—') + '</div></div>' +
+                    '<div><div class="job-detail-label">Status</div><div class="job-detail-value"><span class="status-badge ' + (j.status || '') + '">' + (j.status || '—') + '</span></div></div>' +
+                    '<div><div class="job-detail-label">Date</div><div class="job-detail-value">' + (j.date || '—') + '</div></div>' +
+                    '<div><div class="job-detail-label">Amount</div><div class="job-detail-value">₦' + Number(j.amount || 0).toLocaleString() + '</div></div>' +
+                    (extra ? '<div class="full"><div class="job-detail-label">' + (mode === 'laundry' ? 'Items' : 'Property') + '</div><div class="job-detail-value">' + extra + '</div></div>' : '') +
+                    '<div class="full"><div class="job-detail-label">Notes</div>' +
+                    '<div class="job-notes-box' + (hasNotes ? '' : ' empty') + '">' + notesText.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div></div>' +
+                    '</div>';
+            }
+
+            var actions = document.getElementById('jobDetailActions');
+            if (actions) {
+                var phone = (j.phone || '').replace(/[^\d+]/g, '');
+                var tel = phone ? ('<a class="btn btn-secondary btn-sm" href="tel:' + phone + '">Call</a>') : '';
+                var wa = '<button type="button" class="btn btn-whatsapp btn-sm" onclick="sendSingleWhatsApp(\'' +
+                    String(j.client || '').replace(/'/g, "\\'") + '\', \'' + String(j.phone || '').replace(/'/g, "\\'") +
+                    '\')">WhatsApp</button>';
+                var statusBtns = '';
+                if (j.status === 'pending') {
+                    statusBtns = '<button type="button" class="btn btn-success btn-sm" onclick="updateJobStatus(\'' + j.id + '\',\'in-progress\');closeJobDetail();">Start job</button>';
+                } else if (j.status === 'in-progress') {
+                    statusBtns = '<button type="button" class="btn btn-success btn-sm" onclick="updateJobStatus(\'' + j.id + '\',\'completed\');closeJobDetail();">Mark complete</button>';
+                }
+                actions.innerHTML = statusBtns + tel + wa +
+                    '<button type="button" class="btn btn-outline btn-sm" onclick="closeJobDetail()">Close</button>';
+            }
+
+            var overlay = document.getElementById('jobDetailOverlay');
+            if (overlay) overlay.classList.add('active');
+        }
+
         function renderJobs(jobs) {
             jobs = jobs || jobsData;
             var filter = document.getElementById('jobFilter') ? document.getElementById('jobFilter').value : 'all';
@@ -2903,18 +3042,29 @@
                     detail = bits.join(' · ');
                 }
 
-                return '<tr>' +
+                var hasNotes = j.notes && String(j.notes).trim() && String(j.notes).trim().toLowerCase() !== 'none';
+                var noteIcon = hasNotes
+                    ? '<span class="note-pill" title="Has notes">📝 Note</span>'
+                    : '';
+
+                // Stop row click when using action buttons
+                actionButtons = actionButtons.replace(/onclick="/g, 'onclick="event.stopPropagation();');
+                cancelButton = cancelButton.replace(/onclick="/g, 'onclick="event.stopPropagation();');
+
+                return '<tr class="job-row" onclick="openJobDetail(\'' + j.id + '\')">' +
                     '<td>' + (i + 1) + '</td>' +
-                    '<td><strong>' + j.client + '</strong><br><span style="font-size:11px;color:var(--slate);">' + (j.phone || '') + '</span></td>' +
+                    '<td><strong>' + j.client + '</strong>' + noteIcon +
+                    '<br><span style="font-size:11px;color:var(--slate);">' + (j.phone || '') + '</span></td>' +
                     '<td>' + modeIcon + ' ' + (j.service || 'N/A') +
                     (detail ? '<br><span style="font-size:11px;color:var(--slate);">' + detail + '</span>' : '') +
                     '</td>' +
                     '<td>' + (j.date || 'N/A') + '</td>' +
                     '<td><strong>₦' + (j.amount || 0).toLocaleString() + '</strong></td>' +
                     '<td><span class="status-badge ' + j.status + '">' + j.status + '</span></td>' +
-                    '<td><div class="table-actions">' +
+                    '<td><div class="table-actions" onclick="event.stopPropagation()">' +
                     actionButtons +
                     cancelButton +
+                    '<button type="button" class="btn btn-outline btn-sm" onclick="openJobDetail(\'' + j.id + '\')">View</button>' +
                     '<button class="btn btn-whatsapp btn-sm" onclick="sendSingleWhatsApp(\'' + j.client + '\', \'' + (j.phone || '') + '\')"><svg class="icon"><use href="#ic-chat"/></svg></button>' +
                     '<button class="btn btn-danger btn-sm" onclick="deleteJobItem(\'' + j.id + '\')"><svg class="icon"><use href="#ic-trash"/></svg></button>' +
                     '</div></td>' +
