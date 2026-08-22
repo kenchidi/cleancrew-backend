@@ -1353,6 +1353,218 @@
         .invoice-pdf-status.generated { color: var(--green); font-size: 11px; font-weight: 700; }
         .invoice-pdf-status.not-generated { color: var(--slate); font-size: 11px; }
 
+
+        /* ===== REDESIGN SHELL: sidebar layout ===== */
+        .dashboard-layout { display: flex; min-height: 100vh; background: var(--surface); }
+        .sidebar {
+            width: 260px; background: var(--white); border-right: 1.5px solid var(--border);
+            display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0;
+            z-index: 50; transition: transform 0.25s ease;
+        }
+        .sidebar-header {
+            padding: 20px 20px 16px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; color: var(--ink);
+        }
+        .sidebar-header .mark {
+            width: 36px; height: 36px; border-radius: 10px; background: var(--blue);
+            display: grid; place-items: center; flex-shrink: 0;
+        }
+        .sidebar-header .mark svg { width: 20px; height: 20px; }
+        .sidebar .nav-links { flex: 1; padding: 12px; overflow-y: auto; }
+        .sidebar .nav-links button {
+            display: flex; align-items: center; gap: 12px; width: 100%;
+            padding: 12px 14px; border-radius: 12px; font-size: 14px; font-weight: 600;
+            color: var(--slate); background: transparent; border: 0; cursor: pointer;
+            font-family: inherit; text-align: left; margin-bottom: 4px; transition: 0.15s;
+        }
+        .sidebar .nav-links button:hover { background: var(--surface); color: var(--ink); }
+        .sidebar .nav-links button.active { background: var(--blue-mist); color: var(--blue); }
+        .sidebar .nav-links button svg { width: 18px; height: 18px; flex-shrink: 0; }
+        .sidebar-footer { padding: 12px; border-top: 1px solid var(--border); }
+        .sidebar-footer .btn-logout {
+            display: flex; align-items: center; gap: 10px; width: 100%;
+            padding: 12px 14px; border-radius: 12px; font-size: 14px; font-weight: 600;
+            color: var(--red); background: #FEF2F2; border: 0; cursor: pointer; font-family: inherit;
+        }
+        .main-shell { flex: 1; margin-left: 260px; min-width: 0; display: flex; flex-direction: column; min-height: 100vh; }
+        .top-bar-redesign {
+            position: sticky; top: 0; z-index: 30;
+            background: rgba(255,255,255,0.92); backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border); padding: 12px 24px;
+            display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+        }
+        .mobile-menu-btn {
+            display: none; background: var(--white); border: 1.5px solid var(--border);
+            border-radius: 8px; padding: 8px; cursor: pointer;
+        }
+        .top-bar-redesign .user-stats { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .main-shell .container { max-width: none; margin: 0; padding: 20px 24px 40px; width: 100%; }
+        /* Hide old top header chrome — identity lives in sidebar */
+        .main-shell .header { display: none !important; }
+        .main-shell .nav-tabs { display: none !important; }
+        .sidebar-backdrop {
+            display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.4);
+            z-index: 45;
+        }
+        .sidebar-backdrop.show { display: block; }
+        @media (max-width: 900px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); box-shadow: var(--shadow-lg); }
+            .main-shell { margin-left: 0; }
+            .mobile-menu-btn { display: inline-flex; align-items: center; justify-content: center; }
+            .main-shell .container { padding: 16px; }
+        }
+
+
+        /* ===== DEMO POLISH: serious-tool first impression ===== */
+        body {
+            background:
+                radial-gradient(1200px 500px at 10% -10%, rgba(26,109,219,0.07), transparent 55%),
+                radial-gradient(900px 400px at 100% 0%, rgba(22,163,74,0.05), transparent 50%),
+                var(--surface);
+        }
+        .container { padding-top: 16px; }
+        .header {
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            border-radius: var(--radius);
+            padding: 14px 18px;
+            margin-bottom: 14px;
+        }
+        .header .logo .word { letter-spacing: -0.03em; }
+        .nav-tabs {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 6px;
+            box-shadow: var(--shadow-sm);
+            gap: 4px;
+            margin-bottom: 18px;
+        }
+        .nav-tabs button {
+            border-radius: 10px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+        .nav-tabs button.active {
+            background: var(--blue);
+            color: #fff;
+            box-shadow: var(--shadow-blue);
+        }
+        .nav-tabs button.active .icon { stroke: #fff; color: #fff; }
+        .stat-card {
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 4px;
+            background: var(--border);
+        }
+        .stat-card.primary::before { background: var(--blue); }
+        .stat-card.green::before { background: var(--green); }
+        .stat-card.orange::before { background: var(--amber); }
+        .stat-card .stat-label {
+            font-size: 11px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--slate);
+        }
+        .stat-card .stat-value {
+            font-size: 28px;
+            letter-spacing: -0.03em;
+        }
+        .card {
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+        }
+        .card-header h3 {
+            font-size: 15px;
+            letter-spacing: -0.02em;
+        }
+        .btn-primary {
+            background: var(--blue-gradient);
+            box-shadow: var(--shadow-blue);
+            font-weight: 800;
+        }
+        .btn-primary:hover {
+            filter: brightness(1.03);
+            transform: translateY(-1px);
+        }
+        .btn-sm { font-weight: 700; }
+        table th {
+            font-size: 11px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        table tr:hover td { background: var(--blue-mist); }
+        .empty-state {
+            text-align: center;
+            padding: 36px 20px;
+            color: var(--slate);
+        }
+        .empty-state strong {
+            display: block;
+            color: var(--ink);
+            font-size: 15px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+        .empty-state span {
+            font-size: 13px;
+            color: var(--slate);
+            display: block;
+            margin-bottom: 14px;
+            max-width: 320px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.45;
+        }
+        .demo-strip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            background: linear-gradient(135deg, #0F4FA8 0%, #1A6DDB 55%, #2563EB 100%);
+            color: #fff;
+            border-radius: var(--radius);
+            padding: 14px 18px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-blue);
+        }
+        .demo-strip strong { font-weight: 800; letter-spacing: -0.02em; }
+        .demo-strip p { margin: 2px 0 0; font-size: 13px; opacity: 0.92; line-height: 1.4; }
+        .demo-strip .btn {
+            background: #fff;
+            color: var(--blue-dark);
+            border: 0;
+            font-weight: 800;
+            box-shadow: none;
+        }
+        .demo-strip .btn:hover { filter: none; background: #F8FAFC; }
+        .status-badge {
+            letter-spacing: 0.04em;
+        }
+        .credit-badge {
+            font-weight: 700;
+            border-radius: 100px;
+        }
+        /* Soften redesign sidebar if present — keep consistent */
+        .sidebar {
+            box-shadow: 4px 0 24px rgba(11,21,38,0.04);
+        }
+        .top-bar-redesign {
+            box-shadow: 0 1px 0 var(--border);
+        }
+
     </style>
 </head>
 <body>
@@ -1384,7 +1596,74 @@
         </defs>
     </svg>
 
+
+    <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
+    <div class="dashboard-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <span class="mark">
+                    <svg viewBox="0 0 100 100" fill="none">
+                        <path d="M80 34 C74 22 62 14 48 14 C28 14 12 30 12 50 C12 70 28 86 48 86 C62 86 74 78 80 66" stroke="white" stroke-width="13" stroke-linecap="round"/>
+                        <g transform="translate(68,46)"><path d="M0,-9 L1.6,-1.6 L9,0 L1.6,1.6 L0,9 L-1.6,1.6 L-9,0 L-1.6,-1.6 Z" fill="white"/></g>
+                    </svg>
+                </span>
+                CleanCrew
+            </div>
+            <nav class="nav-links" id="sidebarNav">
+                <button type="button" class="active" data-tab="overview" onclick="switchTab('overview')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    Overview
+                </button>
+                <button type="button" data-tab="jobs" onclick="switchTab('jobs')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    Jobs
+                </button>
+                <button type="button" data-tab="clients" onclick="switchTab('clients')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    Clients
+                </button>
+                <button type="button" data-tab="messages" onclick="switchTab('messages')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                    Messages
+                </button>
+                <button type="button" data-tab="inventory" onclick="switchTab('inventory')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                    Inventory
+                </button>
+                <button type="button" data-tab="staff" onclick="switchTab('staff')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    Staff
+                </button>
+                <button type="button" data-tab="invoices" onclick="switchTab('invoices')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                    Invoices
+                </button>
+                <button type="button" data-tab="settings" onclick="switchTab('settings')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/></svg>
+                    Settings
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <button type="button" class="btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </aside>
+        <div class="main-shell">
+            <header class="top-bar-redesign">
+                <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleSidebar()" aria-label="Menu">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                </button>
+                <div class="service-toggle" style="margin:0;">
+                    <button type="button" class="cleaning active" id="modeCleaning" onclick="setServiceType('cleaning')">Cleaning</button>
+                    <button type="button" class="laundry" id="modeLaundry" onclick="setServiceType('laundry')">Laundry</button>
+                </div>
+                <div class="user-stats">
+                    <span id="freeJobsBadge" class="credit-badge" style="background:#D1FAE5;color:#065F46;border-color:#A7F3D0;">Free jobs: —</span>
+                    <span id="creditBadge" class="credit-badge" onclick="goToCredits()">Credits: 0</span>
+                    <span class="email" id="userEmail" style="font-size:12px;color:var(--slate);"></span>
+                </div>
+            </header>
     <div class="container">
+
 
         <!-- ─── HEADER ─── -->
         <div class="header">
@@ -1400,15 +1679,15 @@
                 <span class="word">Clean<span>Crew</span>.</span>
             </a>
             <div class="user-info">
-                <span class="email" id="userEmail">Loading...</span>
+                <span class="email" id="userEmailOld">Loading...</span>
                 <span id="planBadge" class="plan-badge active" style="display:none;"></span>
-                <span id="freeJobsBadge" class="credit-badge" style="background:#D1FAE5;color:#065F46;border-color:#A7F3D0;" title="Free jobs left (lifetime)">Free jobs: —</span>
-                <span id="creditBadge" class="credit-badge" onclick="goToCredits()" title="Purchased job credits">Credits: 0</span>
+                <span id="freeJobsBadgeOld" class="credit-badge" style="background:#D1FAE5;color:#065F46;border-color:#A7F3D0;" title="Free jobs left (lifetime)">Free jobs: —</span>
+                <span id="creditBadgeOld" class="credit-badge" onclick="goToCredits()" title="Purchased job credits">Credits: 0</span>
                 <div class="service-toggle">
-                    <button type="button" class="cleaning active" id="modeCleaning" onclick="setServiceType('cleaning')">
+                    <button type="button" class="cleaning active" id="modeCleaningOld" onclick="setServiceType('cleaning')">
                         <svg class="icon"><use href="#ic-sparkle"/></svg> Cleaning
                     </button>
-                    <button type="button" class="laundry" id="modeLaundry" onclick="setServiceType('laundry')">
+                    <button type="button" class="laundry" id="modeLaundryOld" onclick="setServiceType('laundry')">
                         <svg class="icon"><use href="#ic-laundry"/></svg> Laundry
                     </button>
                 </div>
@@ -1448,6 +1727,15 @@
 
         <!-- ════ OVERVIEW TAB ════ -->
         <div class="tab-content active" id="tab-overview">
+
+        <div class="demo-strip" id="demoStrip">
+            <div>
+                <strong>Your shop command center</strong>
+                <p>Track jobs, clients, and payments in one place — built for cleaning &amp; laundry businesses.</p>
+            </div>
+            <button type="button" class="btn btn-sm" onclick="openModal('job')">+ New job</button>
+        </div>
+
             <div class="stats-grid">
                 <div class="stat-card primary">
                     <span class="stat-icon"><svg class="icon"><use href="#ic-clipboard"/></svg></span>
@@ -2210,37 +2498,39 @@
                 el.classList.remove('active');
             });
             document.querySelectorAll('.nav-tabs button').forEach(function(el) {
-                if (el.textContent.toLowerCase().includes(tab) ||
-                    (tab === 'overview' && el.textContent.includes('Overview')) ||
-                    (tab === 'jobs' && el.textContent.includes('Jobs')) ||
-                    (tab === 'clients' && el.textContent.includes('Clients')) ||
-                    (tab === 'messages' && el.textContent.includes('Messages')) ||
-                    (tab === 'inventory' && el.textContent.includes('Inventory')) ||
-                    (tab === 'staff' && el.textContent.includes('Staff')) ||
-                    (tab === 'invoices' && el.textContent.includes('Invoices')) ||
-                    (tab === 'settings' && el.textContent.includes('Settings'))) {
+                var onclick = el.getAttribute('onclick') || '';
+                if (onclick.indexOf("'" + tab + "'") !== -1 || onclick.indexOf('"' + tab + '"') !== -1) {
                     el.classList.add('active');
                 }
             });
+            // Sidebar redesign sync
+            document.querySelectorAll('#sidebarNav button').forEach(function(el) {
+                el.classList.toggle('active', el.getAttribute('data-tab') === tab);
+            });
+            closeSidebar();
 
-            if (tab === 'messages') {
-                renderMessages();
+            if (tab === 'jobs' && typeof renderJobs === 'function') renderJobs();
+            if (tab === 'clients' && typeof renderClients === 'function') {
+                if (typeof clientsData !== 'undefined' && clientsData) renderClients(clientsData);
             }
-            if (tab === 'inventory') {
-                if (typeof renderInventory === 'function') {
-                    renderInventory();
-                }
-            }
-            if (tab === 'staff') {
-                renderStaff();
-            }
-            if (tab === 'invoices') {
-                renderInvoices();
-            }
-            if (tab === 'settings') {
-                loadInvoiceSettings();
-            }
-            renderAll();
+            if (tab === 'inventory' && typeof renderInventory === 'function') renderInventory();
+            if (tab === 'staff' && typeof renderStaff === 'function') renderStaff();
+            if (tab === 'invoices' && typeof renderInvoices === 'function') renderInvoices();
+            if (tab === 'messages' && typeof renderMessages === 'function') renderMessages();
+        }
+
+        function toggleSidebar() {
+            var sb = document.getElementById('sidebar');
+            var bd = document.getElementById('sidebarBackdrop');
+            if (!sb) return;
+            sb.classList.toggle('open');
+            if (bd) bd.classList.toggle('show', sb.classList.contains('open'));
+        }
+        function closeSidebar() {
+            var sb = document.getElementById('sidebar');
+            var bd = document.getElementById('sidebarBackdrop');
+            if (sb) sb.classList.remove('open');
+            if (bd) bd.classList.remove('show');
         }
 
         function goToPlans(e) {
@@ -2760,7 +3050,7 @@
                         return cat !== 'laundry' && cat.indexOf('laundry') === -1;
                     });
                     if (filtered.length === 0) {
-                        list.innerHTML = '<p style="color:var(--slate);">No inventory items yet. Tap + to add one.</p>';
+                        list.innerHTML = '<div class="empty-state"><strong>No inventory items</strong><span>Track supplies for this service mode so you never run short mid-job.</span><button type="button" class="btn btn-primary btn-sm" onclick="openModal(\'inventory\')">+ Add item</button></div>';
                         return;
                     }
                     var rows = filtered.map(function(it, i) {
@@ -2869,7 +3159,7 @@
             var recent = filteredJobs.slice(0, 5);
             var container = document.getElementById('recentJobs');
             if (recent.length === 0) {
-                container.innerHTML = '<p style="color:var(--slate);">No ' + modeLabel + ' jobs yet</p>';
+                container.innerHTML = '<div class="empty-state" style="padding:24px 12px;"><strong>No recent ' + modeLabel + ' jobs</strong><span>Create a job to see it here instantly.</span></div>';
             } else {
                 container.innerHTML = recent.map(function(j) {
                     return '<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);">' +
@@ -3018,9 +3308,11 @@
             if (filtered.length === 0) {
                 var qEl2 = document.getElementById('jobsSearch');
                 var q2 = qEl2 ? qEl2.value.trim() : '';
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);">' +
-                    (q2 ? 'No jobs match “' + q2 + '”' : ('No ' + modeLabel + ' jobs found')) +
-                    '</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state">' +
+                    (q2
+                        ? ('<strong>No matches</strong><span>Nothing found for “' + q2 + '”. Try another name or clear search.</span>')
+                        : ('<strong>No ' + modeLabel + ' jobs yet</strong><span>Add your first job to start tracking work and payments.</span><button type="button" class="btn btn-primary btn-sm" onclick="openModal(\'job\')">+ New job</button>')) +
+                    '</div></td></tr>';
                 return;
             }
 
@@ -3102,9 +3394,11 @@
                 });
             }
             if (list.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);">' +
-                    (q ? 'No clients match “' + qEl.value.trim() + '”' : 'No clients yet') +
-                    '</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state">' +
+                    (q
+                        ? ('<strong>No matches</strong><span>No clients match “' + qEl.value.trim() + '”.</span>')
+                        : ('<strong>No clients yet</strong><span>Save client details once — reuse them on every job.</span><button type="button" class="btn btn-primary btn-sm" onclick="openModal(\'client\')">+ Add client</button>')) +
+                    '</div></td></tr>';
                 return;
             }
             tbody.innerHTML = list.map(function(c, i) {
@@ -4215,6 +4509,9 @@
         });
     </script>
 
+
+        </div><!-- /main-shell -->
+    </div><!-- /dashboard-layout -->
 
     <a class="support-fab" id="supportFab" href="https://wa.me/2347057295546?text=Hi%20CleanCrew%20support%2C%20I%20need%20help%20with%20my%20account." target="_blank" rel="noopener noreferrer" title="Chat with CleanCrew support" aria-label="WhatsApp support" onclick="event.stopPropagation();">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
