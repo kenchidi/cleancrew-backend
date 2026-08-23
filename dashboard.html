@@ -553,6 +553,23 @@
             background: #FEF3C7;
             color: #92400E;
         }
+        .status-badge.draft {
+            background: #F1F5F9;
+            color: #475569;
+        }
+        .btn-quick {
+            background: #0F172A;
+            color: #fff;
+            border: none;
+            font-weight: 800;
+        }
+        .btn-quick:hover { filter: brightness(1.08); }
+        .quick-hint {
+            font-size: 12px;
+            color: var(--slate);
+            margin: -4px 0 12px;
+            line-height: 1.4;
+        }
         .status-badge.completed {
             background: #D1FAE5;
             color: #065F46;
@@ -1733,7 +1750,10 @@
                 <strong>Your shop command center</strong>
                 <p>Track jobs, clients, and payments in one place — built for cleaning &amp; laundry businesses.</p>
             </div>
-            <button type="button" class="btn btn-sm" onclick="openModal('job')">+ New job</button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button type="button" class="btn btn-sm" style="background:#0F172A;color:#fff;" onclick="openQuickCapture()">⚡ Quick capture</button>
+                <button type="button" class="btn btn-sm" onclick="openModal('job')">+ Full job</button>
+            </div>
         </div>
 
             <div class="stats-grid">
@@ -1835,11 +1855,15 @@
                     <h3 id="jobsTitle"><svg class="icon"><use href="#ic-clipboard"/></svg> All Jobs</h3>
                     <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
                         <input type="search" id="jobsSearch" placeholder="Search jobs…" oninput="renderJobs()" autocomplete="off" style="padding:6px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-family:inherit;min-width:140px;max-width:200px;background:var(--white);color:var(--ink);" />
+                        <button type="button" class="btn btn-quick btn-sm" onclick="openQuickCapture()" title="Fast note while customer waits">
+                            ⚡ Quick capture
+                        </button>
                         <button class="btn btn-primary btn-sm" onclick="openModal('job')">
-                            <svg class="icon"><use href="#ic-plus"/></svg> New Job
+                            <svg class="icon"><use href="#ic-plus"/></svg> Full job
                         </button>
                         <select id="jobFilter" onchange="renderJobs()" style="padding:6px 12px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-size:12px; font-family:inherit; background:var(--white); color:var(--ink);">
                             <option value="all">All Status</option>
+                            <option value="draft">Draft (needs details)</option>
                             <option value="pending">Pending</option>
                             <option value="in-progress">In Progress</option>
                             <option value="completed">Completed (ready)</option>
@@ -2128,6 +2152,42 @@
             </div>
             <div id="jobDetailBody"></div>
             <div class="job-detail-actions" id="jobDetailActions"></div>
+        </div>
+    </div>
+
+
+    <!-- Quick capture (counter rush) -->
+    <div class="modal-overlay" id="quickCaptureOverlay" onclick="if(event.target===this)closeQuickCapture()">
+        <div class="modal-box" style="max-width:420px;">
+            <div class="modal-header">
+                <h3><svg class="icon"><use href="#ic-plus"/></svg> Quick capture</h3>
+                <button type="button" class="modal-close" onclick="closeQuickCapture()" aria-label="Close">&times;</button>
+            </div>
+            <p class="quick-hint">Customer in a hurry? Save a short note now. Finish items &amp; price when it is calm.</p>
+            <div class="form-grid" style="display:grid;gap:12px;">
+                <div class="form-group">
+                    <label>Client name *</label>
+                    <input type="text" id="qcClient" placeholder="Name or nickname" autocomplete="name" />
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" id="qcPhone" placeholder="Optional" autocomplete="tel" />
+                </div>
+                <div class="form-group full-width">
+                    <label>What did they drop / need? *</label>
+                    <textarea id="qcNotes" rows="3" placeholder="e.g. 8 shirts, 3 trousers, blue bag — ready Friday"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Amount (₦) optional</label>
+                    <input type="number" id="qcAmount" min="0" step="100" placeholder="Can add later" />
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="saveQuickCapture()">
+                Save draft
+            </button>
+            <button type="button" class="btn btn-outline" style="width:100%;margin-top:8px;" onclick="closeQuickCapture();openModal('job');">
+                Full form instead
+            </button>
         </div>
     </div>
 
@@ -3264,7 +3324,9 @@
                     String(j.client || '').replace(/'/g, "\\'") + '\', \'' + String(j.phone || '').replace(/'/g, "\\'") +
                     '\')">WhatsApp</button>';
                 var statusBtns = '';
-                if (j.status === 'pending') {
+                if (j.status === 'draft') {
+                    statusBtns = '<button type="button" class="btn btn-primary btn-sm" onclick="finishDraftJob(\'' + j.id + '\');">Finish details</button>';
+                } else if (j.status === 'pending') {
                     statusBtns = '<button type="button" class="btn btn-success btn-sm" onclick="updateJobStatus(\'' + j.id + '\',\'in-progress\');closeJobDetail();">Start job</button>';
                 } else if (j.status === 'in-progress') {
                     statusBtns = '<button type="button" class="btn btn-success btn-sm" onclick="updateJobStatus(\'' + j.id + '\',\'completed\');closeJobDetail();">Mark complete</button>';
@@ -3318,7 +3380,9 @@
 
             tbody.innerHTML = filtered.map(function(j, i) {
                 var actionButtons = '';
-                if (j.status === 'pending') {
+                if (j.status === 'draft') {
+                    actionButtons = '<button class="btn btn-primary btn-sm" onclick="finishDraftJob(\'' + j.id + '\')">Finish details</button>';
+                } else if (j.status === 'pending') {
                     actionButtons = '<button class="btn btn-success btn-sm" onclick="updateJobStatus(\'' + j.id + '\', \'in-progress\')">Start</button>';
                 } else if (j.status === 'in-progress') {
                     actionButtons = '<button class="btn btn-success btn-sm" onclick="updateJobStatus(\'' + j.id + '\', \'completed\')">Complete</button>';
@@ -3326,7 +3390,7 @@
                     actionButtons = '<button class="btn btn-primary btn-sm" onclick="markJobCollected(\'' + j.id + '\')">Collected</button>';
                 }
 
-                var cancelButton = (j.status === 'pending' || j.status === 'in-progress') ?
+                var cancelButton = (j.status === 'draft' || j.status === 'pending' || j.status === 'in-progress') ?
                     '<button class="btn btn-danger btn-sm" onclick="updateJobStatus(\'' + j.id + '\', \'cancelled\')">Cancel</button>' : '';
 
                 var detail = '';
@@ -3808,6 +3872,97 @@
             });
         }
 
+
+
+        function openQuickCapture() {
+            var o = document.getElementById('quickCaptureOverlay');
+            if (!o) return;
+            var c = document.getElementById('qcClient');
+            var p = document.getElementById('qcPhone');
+            var n = document.getElementById('qcNotes');
+            var a = document.getElementById('qcAmount');
+            if (c) c.value = '';
+            if (p) p.value = '';
+            if (n) n.value = '';
+            if (a) a.value = '';
+            o.classList.add('active');
+            setTimeout(function() { if (c) c.focus(); }, 100);
+        }
+        function closeQuickCapture() {
+            var o = document.getElementById('quickCaptureOverlay');
+            if (o) o.classList.remove('active');
+        }
+        function saveQuickCapture() {
+            var client = (document.getElementById('qcClient') || {}).value;
+            client = (client || '').trim();
+            var phone = ((document.getElementById('qcPhone') || {}).value || '').trim();
+            var notes = ((document.getElementById('qcNotes') || {}).value || '').trim();
+            var amountRaw = ((document.getElementById('qcAmount') || {}).value || '').trim();
+            var amount = amountRaw === '' ? 0 : parseFloat(amountRaw);
+            if (!client) { showToast('Client name is required', 'error'); return; }
+            if (!notes) { showToast('Write a short note (items / when ready)', 'error'); return; }
+            if (isNaN(amount) || amount < 0) amount = 0;
+            var today = new Date();
+            var dateStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+            var jobData = {
+                client: client,
+                phone: phone || 'N/A',
+                mode: currentServiceType,
+                service_type: currentServiceType,
+                service: 'Quick capture',
+                amount: amount,
+                date: dateStr,
+                status: 'draft',
+                notes: notes,
+                items: [],
+                rooms: null,
+                property_size: null
+            };
+            createJob(jobData)
+                .then(function() {
+                    showToast('Draft saved — finish details when you can', 'success');
+                    closeQuickCapture();
+                    refreshFreeJobs();
+                    refreshCredits();
+                    renderAll();
+                    if (typeof switchTab === 'function') switchTab('jobs');
+                })
+                .catch(function(e) {
+                    console.error('quick capture', e);
+                    var code = e && e.code || '';
+                    var msg = (e && e.message) || 'Failed to save draft';
+                    if (code === 'NO_JOBS_REMAINING' || code === 'INSUFFICIENT_CREDITS' ||
+                        /free jobs|credits|limit|no jobs remaining/i.test(msg)) {
+                        closeQuickCapture();
+                        showOutOfJobsModal(msg);
+                        refreshFreeJobs();
+                        refreshCredits();
+                    } else {
+                        showToast(msg, 'error');
+                    }
+                });
+        }
+        function finishDraftJob(id) {
+            var j = typeof findJobById === 'function' ? findJobById(id) : null;
+            if (!j) {
+                showToast('Job not found', 'error');
+                return;
+            }
+            // Promote draft → pending then open full form prefilled for details
+            updateJob(id, { status: 'pending' })
+                .then(function() {
+                    return getJobs();
+                })
+                .then(function(jobs) {
+                    jobsData = jobs || [];
+                    openJobDetail(id);
+                    showToast('Draft opened — add price & items in Full job if needed', 'success');
+                    renderAll();
+                })
+                .catch(function(e) {
+                    showToast((e && e.message) || 'Could not update draft', 'error');
+                });
+        }
 
         function openModal(type) {
             modalType = type;
