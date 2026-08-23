@@ -3759,6 +3759,7 @@
         // ─── MODAL ────────────────────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
         var modalType = '';
+        var jobEditId = null;
         var laundryItems = [];
 
         function addLaundryItemRow(name, qty, price) {
@@ -3942,26 +3943,85 @@
                     }
                 });
         }
+        function populateJobFormFromJob(j) {
+            if (!j) return;
+            var el;
+            el = document.getElementById('jClient'); if (el) el.value = j.client || '';
+            el = document.getElementById('jPhone'); if (el) el.value = (j.phone && j.phone !== 'N/A') ? j.phone : '';
+            el = document.getElementById('jService');
+            if (el && j.service && j.service !== 'Quick capture') {
+                el.value = j.service;
+                // if custom service not in list, still try
+            }
+            el = document.getElementById('jAmount'); if (el) el.value = j.amount != null ? j.amount : '';
+            el = document.getElementById('jDate'); if (el) el.value = j.date || '';
+            el = document.getElementById('jStatus');
+            if (el) {
+                // Draft finishing → default to pending
+                el.value = (j.status === 'draft') ? 'pending' : (j.status || 'pending');
+            }
+            el = document.getElementById('jNotes'); if (el) el.value = (j.notes && j.notes !== 'None') ? j.notes : '';
+            el = document.getElementById('jRooms'); if (el && j.rooms != null) el.value = j.rooms;
+            el = document.getElementById('jPropertySize'); if (el && j.property_size) el.value = j.property_size;
+
+            var mode = (typeof getJobMode === 'function') ? getJobMode(j) : currentServiceType;
+            if (mode === 'laundry') {
+                var items = j.items;
+                if (typeof items === 'string') {
+                    try { items = JSON.parse(items); } catch (e) { items = []; }
+                }
+                laundryItems = [];
+                if (items && items.length) {
+                    items.forEach(function(it) {
+                        laundryItems.push({
+                            name: it.name || '',
+                            qty: it.qty || it.quantity || 1,
+                            price: it.price || 0
+                        });
+                    });
+                }
+                if (typeof renderLaundryItemRows === 'function') {
+                    renderLaundryItemRows();
+                } else if (typeof addLaundryItemRow === 'function' && laundryItems.length === 0) {
+                    // ensure at least one empty row for input
+                    addLaundryItemRow();
+                } else if (document.getElementById('laundryItemsList') && laundryItems.length) {
+                    // fallback render
+                    var list = document.getElementById('laundryItemsList');
+                    if (list && typeof renderLaundryItems === 'function') renderLaundryItems();
+                }
+            }
+        }
+
         function finishDraftJob(id) {
             var j = typeof findJobById === 'function' ? findJobById(id) : null;
             if (!j) {
-                showToast('Job not found', 'error');
+                showToast('Job not found — refresh and try again', 'error');
                 return;
             }
-            // Promote draft → pending then open full form prefilled for details
-            updateJob(id, { status: 'pending' })
-                .then(function() {
-                    return getJobs();
-                })
-                .then(function(jobs) {
-                    jobsData = jobs || [];
-                    openJobDetail(id);
-                    showToast('Draft opened — add price & items in Full job if needed', 'success');
-                    renderAll();
-                })
-                .catch(function(e) {
-                    showToast((e && e.message) || 'Could not update draft', 'error');
-                });
+            // Align mode toggle with the draft
+            var mode = (typeof getJobMode === 'function') ? getJobMode(j) : currentServiceType;
+            if (mode && typeof setServiceType === 'function' && mode !== currentServiceType) {
+                setServiceType(mode);
+            }
+            jobEditId = id;
+            closeJobDetail();
+            openModal('job');
+            modalType = 'editJob';
+            var title = document.getElementById('modalTitle');
+            if (title) {
+                title.innerHTML = '<svg class="icon"><use href="#ic-clipboard"/></svg> Finish job details';
+            }
+            // Form fields are built inside openModal — populate next tick
+            setTimeout(function() {
+                populateJobFormFromJob(j);
+                // Prefill service if still "Quick capture"
+                var svc = document.getElementById('jService');
+                if (svc && (!j.service || j.service === 'Quick capture')) {
+                    // leave first real option selected
+                }
+                showToast('Complete the form, then Save', 'success');
+            }, 50);
         }
 
         function openModal(type) {
@@ -4054,6 +4114,7 @@
         }
 
         function closeModal() {
+            jobEditId = null;
             document.getElementById('modalOverlay').classList.remove('active');
             laundryItems = [];
         }
@@ -4061,7 +4122,7 @@
         function saveModalForm(e) {
             e.preventDefault();
 
-            if (modalType === 'job') {
+            if (modalType === 'job' || modalType === 'editJob') {
                 var client = document.getElementById('jClient').value.trim();
                 var phone = document.getElementById('jPhone').value.trim();
                 var service = document.getElementById('jService').value;
@@ -4070,7 +4131,17 @@
                 var status = document.getElementById('jStatus').value;
                 var notes = document.getElementById('jNotes').value.trim();
 
-                if (!client || !amount || !date) { showToast('Fill all fields', 'error'); return; }
+                if (!client || !date) { showToast('Client and date are required', 'error'); return; }
+                if (isNaN(amount) || amount < 0) { showToast('Enter a valid amount', 'error'); return; }
+                if (modalType === 'editJob' && amount === 0) {
+                    showToast('Enter the job amount before saving', 'error');
+                    return;
+                }
+                if (modalType === 'job' && (!amount && amount !== 0)) {
+                    showToast('Fill all fields', 'error');
+                    return;
+                }
+                if (modalType === 'job' && !amount) { showToast('Fill all fields', 'error'); return; }
 
                 var jobData = {
                     client: client,
@@ -4080,7 +4151,7 @@
                     service: service,
                     amount: amount,
                     date: date,
-                    status: status,
+                    status: status || 'pending',
                     notes: notes || 'None',
                     items: [],
                     rooms: null,
@@ -4101,7 +4172,23 @@
                     jobData.property_size = propEl && propEl.value ? propEl.value : null;
                 }
 
-                createJob(jobData)
+                // Finishing a draft always leaves draft status
+                if (modalType === 'editJob' && jobData.status === 'draft') {
+                    jobData.status = 'pending';
+                }
+
+                var savePromise;
+                if (modalType === 'editJob' && jobEditId) {
+                    savePromise = updateJob(jobEditId, jobData).then(function() {
+                        showToast('Job details saved', 'success');
+                    });
+                } else {
+                    savePromise = createJob(jobData).then(function() {
+                        showToast('Job added!', 'success');
+                    });
+                }
+
+                savePromise
                     .then(function() {
                         if (currentServiceType === 'laundry' && jobData.items && jobData.items.length) {
                             jobData.items.forEach(function(it) {
@@ -4110,16 +4197,15 @@
                                 }
                             });
                         }
-                        showToast('Job added!', 'success');
                         closeModal();
                         refreshFreeJobs();
                         refreshCredits();
                         renderAll();
                     })
                     .catch(function(e) {
-                        console.error('Error creating job:', e);
+                        console.error('Error saving job:', e);
                         var code = e.code || '';
-                        var msg = e.message || 'Failed to add job';
+                        var msg = e.message || 'Failed to save job';
                         if (code === 'NO_JOBS_REMAINING' || code === 'INSUFFICIENT_CREDITS' ||
                             /free jobs|credits|limit|no jobs remaining/i.test(msg)) {
                             closeModal();
