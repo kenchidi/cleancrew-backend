@@ -26,6 +26,9 @@ console.log(
     'Supabase service role key loaded:',
     !!process.env.SUPABASE_SERVICE_ROLE_KEY
 );
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error('CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing — job inserts will hit RLS.');
+}
 
 // Diagnostic: verify service role key
 try {
@@ -2084,30 +2087,38 @@ app.post(
                 req.body.service_type ||
                 'cleaning';
 
+            // Only columns the jobs table expects — never spread req.body
+            // (unknown fields + wrong client can trigger RLS / schema errors)
             const job = {
-                ...req.body,
-
-                user_id:
-                    userId,
-
+                user_id: userId,
+                client: req.body.client || '',
+                phone: req.body.phone || null,
+                service: req.body.service || null,
+                amount: req.body.amount != null ? Number(req.body.amount) : 0,
+                date: req.body.date || null,
+                status: req.body.status || 'pending',
+                notes: req.body.notes || null,
                 mode,
-
-                service_type:
-                    mode,
-
-                items:
-                    req.body.items ||
-                    req.body.laundry_items ||
-                    [],
-
-                rooms:
-                    req.body.rooms ??
-                    null,
-
-                property_size:
-                    req.body.property_size ||
-                    null
+                service_type: mode,
+                items: req.body.items || req.body.laundry_items || [],
+                rooms: req.body.rooms != null && req.body.rooms !== ''
+                    ? Number(req.body.rooms)
+                    : null,
+                property_size: req.body.property_size || null,
+                number: req.body.number || null,
+                staff_cost: req.body.staff_cost != null ? Number(req.body.staff_cost) : undefined,
+                materials_cost: req.body.materials_cost != null ? Number(req.body.materials_cost) : undefined,
+                other_cost: req.body.other_cost != null ? Number(req.body.other_cost) : undefined
             };
+
+            // Drop null optional keys that may not exist on older schemas
+            Object.keys(job).forEach(function (k) {
+                if (job[k] === null || job[k] === undefined) {
+                    delete job[k];
+                }
+            });
+            // Always keep user_id
+            job.user_id = userId;
 
             const {
                 data,
@@ -2119,10 +2130,6 @@ app.post(
                 .single();
 
             if (error) {
-                /*
-                 * If job creation fails after a credit
-                 * was consumed, return that credit.
-                 */
                 if (creditConsumed) {
                     try {
                         await addCredits(
@@ -2130,10 +2137,7 @@ app.post(
                             1,
                             'Refund: failed job creation',
                             null,
-                            {
-                                reason:
-                                    'job_insert_failed'
-                            }
+                            { reason: 'job_insert_failed' }
                         );
                     } catch (refundError) {
                         console.error(
@@ -2141,6 +2145,20 @@ app.post(
                             refundError
                         );
                     }
+                }
+
+                const msg = error.message || String(error);
+                console.error('Job insert failed:', msg, error.code || '', error.details || '');
+
+                // Surface RLS clearly — almost always wrong/missing SERVICE_ROLE key
+                if (/row-level security|RLS/i.test(msg)) {
+                    return res.status(500).json({
+                        error:
+                            'Database security blocked this job (RLS). ' +
+                            'On Render, set SUPABASE_SERVICE_ROLE_KEY to the service_role key from Supabase (Settings → API), not the anon key. Then redeploy.',
+                        code: 'RLS_JOBS_INSERT',
+                        detail: msg
+                    });
                 }
 
                 throw error;
@@ -2349,7 +2367,10 @@ app.put(
                 'rooms',
                 'property_size',
                 'phone',
-                'address'
+                'address',
+                'staff_cost',
+                'materials_cost',
+                'other_cost'
             ];
             const patch = {};
             allowed.forEach(function (key) {

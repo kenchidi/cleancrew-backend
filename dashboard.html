@@ -1237,6 +1237,33 @@
             text-align: left;
         }
         .job-notes-box.empty { color: var(--slate); font-weight: 500; }
+        .job-cost-box {
+            margin-top: 8px; padding: 14px; border-radius: var(--radius-sm);
+            border: 1px solid var(--border); background: var(--surface); text-align: left;
+        }
+        .job-cost-box h4 {
+            font-size: 12px; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 0.04em; color: var(--slate); margin: 0 0 10px;
+        }
+        .job-cost-row {
+            display: grid; grid-template-columns: 1fr 120px; gap: 8px;
+            align-items: center; margin-bottom: 8px;
+        }
+        .job-cost-row label { font-size: 13px; font-weight: 600; color: var(--ink); }
+        .job-cost-row input {
+            width: 100%; padding: 8px 10px; border: 1.5px solid var(--border);
+            border-radius: 8px; font-family: inherit; font-size: 14px;
+        }
+        .job-profit-line {
+            margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border);
+            display: flex; justify-content: space-between; align-items: center; gap: 8px;
+        }
+        .job-profit-line strong { font-size: 18px; font-weight: 900; color: var(--green); }
+        .job-profit-line strong.muted { color: var(--slate); font-size: 15px; font-weight: 700; }
+        .job-cost-locked {
+            font-size: 13px; color: var(--slate); padding: 10px 0 0;
+        }
+
         .job-detail-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
         @media (max-width: 480px) {
             .job-detail-grid { grid-template-columns: 1fr; }
@@ -3255,6 +3282,127 @@
             if (el) el.classList.remove('active');
         }
 
+
+        function jobHasAnyCost(j) {
+            if (!j) return false;
+            var s = Number(j.staff_cost);
+            var m = Number(j.materials_cost);
+            var o = Number(j.other_cost);
+            return (s > 0) || (m > 0) || (o > 0);
+        }
+
+        function calcJobProfit(j) {
+            var amount = Number(j.amount || 0);
+            if (!amount || amount <= 0) return null;
+            if (!jobHasAnyCost(j)) return null;
+            var staff = Number(j.staff_cost) || 0;
+            var mat = Number(j.materials_cost) || 0;
+            var other = Number(j.other_cost) || 0;
+            return amount - staff - mat - other;
+        }
+
+        function buildJobCostSectionHtml(j) {
+            // Owner only: same gate as revenue (unlocked or no PIN set)
+            var ownerOk = (typeof revenueUnlocked !== 'undefined' && revenueUnlocked) ||
+                (typeof hasOwnerPin !== 'undefined' && !hasOwnerPin);
+            if (!ownerOk) {
+                return '<div class="job-cost-box"><h4>Job profit (direct costs)</h4>' +
+                    '<p class="job-cost-locked">🔒 Unlock revenue with your owner PIN to view and edit costs &amp; profit.</p></div>';
+            }
+            var staff = j.staff_cost != null ? Number(j.staff_cost) : '';
+            var mat = j.materials_cost != null ? Number(j.materials_cost) : '';
+            var other = j.other_cost != null ? Number(j.other_cost) : '';
+            if (staff === 0) staff = '';
+            if (mat === 0) mat = '';
+            if (other === 0) other = '';
+            var profit = calcJobProfit(j);
+            var profitHtml = (profit === null)
+                ? '<strong class="muted">—</strong><span style="font-size:12px;color:var(--slate);">Add costs to see profit</span>'
+                : ('<strong>₦' + Number(profit).toLocaleString() + '</strong>' +
+                    (Number(j.amount) > 0
+                        ? '<span style="font-size:12px;color:var(--slate);">' +
+                          Math.round((profit / Number(j.amount)) * 100) + '% margin</span>'
+                        : ''));
+            return '<div class="job-cost-box" id="jobCostBox">' +
+                '<h4>Job profit (direct costs) · owner</h4>' +
+                '<div class="job-cost-row"><label>Staff cost (₦)</label>' +
+                '<input type="number" id="jdStaffCost" min="0" step="100" placeholder="0" value="' + staff + '" oninput="refreshJobProfitPreview()" /></div>' +
+                '<div class="job-cost-row"><label>Materials (₦)</label>' +
+                '<input type="number" id="jdMaterialsCost" min="0" step="100" placeholder="0" value="' + mat + '" oninput="refreshJobProfitPreview()" /></div>' +
+                '<div class="job-cost-row"><label>Other (₦)</label>' +
+                '<input type="number" id="jdOtherCost" min="0" step="100" placeholder="0" value="' + other + '" oninput="refreshJobProfitPreview()" /></div>' +
+                '<div class="job-profit-line"><span style="font-size:13px;font-weight:700;color:var(--ink);">Profit</span>' +
+                '<span id="jdProfitDisplay" style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">' + profitHtml + '</span></div>' +
+                '<button type="button" class="btn btn-primary btn-sm" style="width:100%;margin-top:12px;" onclick="saveJobCosts(\'' + j.id + '\')">Save costs</button>' +
+                '<p style="font-size:11px;color:var(--slate);margin-top:8px;line-height:1.4;">Amount − staff − materials − other. Not full business net profit.</p>' +
+                '</div>';
+        }
+
+        function refreshJobProfitPreview() {
+            var amountEl = null;
+            // amount from current job in jobsData via cost box parent — use open job id from save button
+            var box = document.getElementById('jobCostBox');
+            if (!box) return;
+            var btn = box.querySelector('button[onclick*="saveJobCosts"]');
+            var id = null;
+            if (btn) {
+                var m = (btn.getAttribute('onclick') || '').match(/saveJobCosts\\('([^']+)'\\)/);
+                if (m) id = m[1];
+            }
+            var j = id && typeof findJobById === 'function' ? findJobById(id) : null;
+            var amount = j ? Number(j.amount || 0) : 0;
+            var staff = parseFloat((document.getElementById('jdStaffCost') || {}).value) || 0;
+            var mat = parseFloat((document.getElementById('jdMaterialsCost') || {}).value) || 0;
+            var other = parseFloat((document.getElementById('jdOtherCost') || {}).value) || 0;
+            var disp = document.getElementById('jdProfitDisplay');
+            if (!disp) return;
+            if (!amount || amount <= 0) {
+                disp.innerHTML = '<strong class="muted">—</strong>';
+                return;
+            }
+            if (staff <= 0 && mat <= 0 && other <= 0) {
+                disp.innerHTML = '<strong class="muted">—</strong><span style="font-size:12px;color:var(--slate);">Add costs to see profit</span>';
+                return;
+            }
+            var profit = amount - staff - mat - other;
+            disp.innerHTML = '<strong>₦' + profit.toLocaleString() + '</strong>' +
+                '<span style="font-size:12px;color:var(--slate);">' + Math.round((profit / amount) * 100) + '% margin</span>';
+        }
+
+        function saveJobCosts(id) {
+            var staff = parseFloat((document.getElementById('jdStaffCost') || {}).value);
+            var mat = parseFloat((document.getElementById('jdMaterialsCost') || {}).value);
+            var other = parseFloat((document.getElementById('jdOtherCost') || {}).value);
+            if (isNaN(staff)) staff = 0;
+            if (isNaN(mat)) mat = 0;
+            if (isNaN(other)) other = 0;
+            if (staff < 0 || mat < 0 || other < 0) {
+                showToast('Costs cannot be negative', 'error');
+                return;
+            }
+            updateJob(id, {
+                staff_cost: staff,
+                materials_cost: mat,
+                other_cost: other
+            })
+                .then(function() {
+                    showToast('Costs saved', 'success');
+                    return getJobs();
+                })
+                .then(function(jobs) {
+                    jobsData = jobs || [];
+                    openJobDetail(id);
+                })
+                .catch(function(e) {
+                    var msg = (e && e.message) || 'Failed to save costs';
+                    if (/column|schema|staff_cost|materials_cost/i.test(msg)) {
+                        showToast('Add cost columns in Supabase (see setup SQL). ' + msg, 'error');
+                    } else {
+                        showToast(msg, 'error');
+                    }
+                });
+        }
+
         function openJobDetail(id) {
             var j = findJobById(id);
             if (!j) {
@@ -3302,6 +3450,7 @@
 
             var body = document.getElementById('jobDetailBody');
             if (body) {
+                var costHtml = buildJobCostSectionHtml(j);
                 body.innerHTML =
                     '<div class="job-detail-grid">' +
                     '<div><div class="job-detail-label">Client</div><div class="job-detail-value">' + (j.client || '—') + '</div></div>' +
@@ -3313,6 +3462,7 @@
                     (extra ? '<div class="full"><div class="job-detail-label">' + (mode === 'laundry' ? 'Items' : 'Property') + '</div><div class="job-detail-value">' + extra + '</div></div>' : '') +
                     '<div class="full"><div class="job-detail-label">Notes</div>' +
                     '<div class="job-notes-box' + (hasNotes ? '' : ' empty') + '">' + notesText.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div></div>' +
+                    '<div class="full">' + costHtml + '</div>' +
                     '</div>';
             }
 
@@ -3615,7 +3765,20 @@
                     else if (status === 'cancelled') msg = 'Job cancelled';
                     else msg = 'Job ' + status;
                     showToast(msg, 'success');
-                    renderAll();
+                    return getJobs().then(function(jobs) {
+                        jobsData = jobs || [];
+                        renderAll();
+                        // Optional cost nudge when completing (owner only, no costs yet)
+                        if (status === 'completed') {
+                            var j = findJobById(id);
+                            var ownerOk = revenueUnlocked || !hasOwnerPin;
+                            if (j && ownerOk && !jobHasAnyCost(j) && Number(j.amount) > 0) {
+                                if (confirm('Add staff & materials costs for this job to see profit?')) {
+                                    openJobDetail(id);
+                                }
+                            }
+                        }
+                    });
                 })
                 .catch(function(e) {
                     console.error('updateJobStatus', e);
