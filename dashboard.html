@@ -1263,6 +1263,66 @@
         .job-cost-locked {
             font-size: 13px; color: var(--slate); padding: 10px 0 0;
         }
+        .profit-report {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+        .profit-report-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px 18px 16px;
+            box-shadow: var(--shadow-sm);
+        }
+        .profit-report-card h4 {
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--slate);
+            margin: 0 0 12px;
+        }
+        .profit-report-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        .profit-report-row span { color: var(--slate); }
+        .profit-report-row strong { font-weight: 800; color: var(--ink); }
+        .profit-report-row.total {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border);
+            margin-bottom: 0;
+        }
+        .profit-report-row.total strong {
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--green);
+            letter-spacing: -0.02em;
+        }
+        .profit-report-note {
+            font-size: 11px;
+            color: var(--slate);
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+        .profit-report-locked {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 20px;
+            color: var(--slate);
+            font-size: 13px;
+        }
+        @media (max-width: 640px) {
+            .profit-report { grid-template-columns: 1fr; }
+        }
+
 
         .job-detail-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
         @media (max-width: 480px) {
@@ -1799,6 +1859,23 @@
                     <span class="stat-icon"><svg class="icon"><use href="#ic-bell"/></svg></span>
                     <div class="stat-label">Pending</div>
                     <div class="stat-value" id="ovPending">0</div>
+                </div>
+            </div>
+
+            <div class="profit-report" id="profitReport">
+                <div class="profit-report-card" id="profitReportMonth">
+                    <h4>This month · direct profit</h4>
+                    <div class="profit-report-row"><span>Revenue</span><strong id="prMonthRevenue">—</strong></div>
+                    <div class="profit-report-row"><span>Staff + materials + other</span><strong id="prMonthCosts">—</strong></div>
+                    <div class="profit-report-row total"><span>Profit</span><strong id="prMonthProfit">—</strong></div>
+                    <p class="profit-report-note" id="prMonthNote">Based on completed jobs in this service mode.</p>
+                </div>
+                <div class="profit-report-card" id="profitReportYear">
+                    <h4>This year · direct profit</h4>
+                    <div class="profit-report-row"><span>Revenue</span><strong id="prYearRevenue">—</strong></div>
+                    <div class="profit-report-row"><span>Staff + materials + other</span><strong id="prYearCosts">—</strong></div>
+                    <div class="profit-report-row total"><span>Profit</span><strong id="prYearProfit">—</strong></div>
+                    <p class="profit-report-note" id="prYearNote">Based on completed jobs in this service mode.</p>
                 </div>
             </div>
 
@@ -2846,36 +2923,32 @@
             var el = document.getElementById('ovRevenue');
             var card = document.getElementById('revenueStatCard');
             var btn = document.getElementById('unlockRevenueBtn');
-            if (!el) return;
-
-            // No PIN set yet — show real amount and invite owner to set PIN
-            if (!hasOwnerPin) {
-                el.textContent = '₦' + Number(realRevenueValue || 0).toLocaleString();
-                if (card) card.classList.remove('revenue-locked');
-                if (btn) {
-                    btn.style.display = 'inline-flex';
-                    btn.textContent = 'Set PIN to lock';
+            if (el) {
+                if (!hasOwnerPin) {
+                    el.textContent = '₦' + Number(realRevenueValue || 0).toLocaleString();
+                    if (card) card.classList.remove('revenue-locked');
+                    if (btn) {
+                        btn.style.display = 'inline-flex';
+                        btn.textContent = 'Set PIN to lock';
+                    }
+                } else if (revenueUnlocked) {
+                    el.textContent = '₦' + Number(realRevenueValue || 0).toLocaleString();
+                    if (card) card.classList.remove('revenue-locked');
+                    if (btn) {
+                        btn.style.display = 'inline-flex';
+                        btn.textContent = '🔒 Lock revenue';
+                    }
+                } else {
+                    el.textContent = '₦••••';
+                    if (card) card.classList.add('revenue-locked');
+                    if (btn) {
+                        btn.style.display = 'inline-flex';
+                        btn.textContent = '🔓 Unlock with PIN';
+                    }
                 }
-                return;
             }
-
-            // PIN set + unlocked this session — show real amount
-            if (revenueUnlocked) {
-                el.textContent = '₦' + Number(realRevenueValue || 0).toLocaleString();
-                if (card) card.classList.remove('revenue-locked');
-                if (btn) {
-                    btn.style.display = 'inline-flex';
-                    btn.textContent = '🔒 Lock revenue';
-                }
-                return;
-            }
-
-            // PIN set + locked — never put the real number in the DOM (prevents flash on refresh)
-            el.textContent = '₦••••';
-            if (card) card.classList.add('revenue-locked');
-            if (btn) {
-                btn.style.display = 'inline-flex';
-                btn.textContent = '🔓 Unlock with PIN';
+            if (typeof renderProfitReport === 'function') {
+                renderProfitReport(typeof jobsData !== 'undefined' ? jobsData : []);
             }
         }
 
@@ -2888,6 +2961,7 @@
                 revenueUnlocked = !revenueLocked;
                 if (!hasOwnerPin) {
                     revenueUnlocked = true;
+                    if (typeof renderProfitReport === 'function') renderProfitReport(jobsData || []);
                 }
                 applyRevenueDisplay();
             } catch (e) {
@@ -3218,6 +3292,119 @@
                 });
         }
 
+
+        function jobDateObj(j) {
+            var raw = j.date || j.created_at || '';
+            if (!raw) return null;
+            var d = new Date(raw);
+            if (isNaN(d.getTime())) {
+                // try YYYY-MM-DD
+                var p = String(raw).slice(0, 10).split('-');
+                if (p.length === 3) d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+            }
+            return isNaN(d.getTime()) ? null : d;
+        }
+
+        function summarizeProfitForJobs(jobs) {
+            var revenue = 0;
+            var costs = 0;
+            var done = 0;
+            var withCosts = 0;
+            (jobs || []).forEach(function(j) {
+                var st = (j.status || '').toLowerCase();
+                if (st !== 'completed' && st !== 'delivered' && st !== 'collected') return;
+                done += 1;
+                revenue += Number(j.amount) || 0;
+                var s = Number(j.staff_cost) || 0;
+                var m = Number(j.materials_cost) || 0;
+                var o = Number(j.other_cost) || 0;
+                if (s > 0 || m > 0 || o > 0) withCosts += 1;
+                costs += s + m + o;
+            });
+            return {
+                revenue: revenue,
+                costs: costs,
+                profit: revenue - costs,
+                done: done,
+                withCosts: withCosts
+            };
+        }
+
+        function renderProfitReport(jobs) {
+            var el = document.getElementById('profitReport');
+            if (!el) return;
+
+            var ownerOk = (typeof revenueUnlocked !== 'undefined' && revenueUnlocked) ||
+                (typeof hasOwnerPin !== 'undefined' && !hasOwnerPin);
+
+            if (!ownerOk) {
+                el.innerHTML = '<div class="profit-report-locked">🔒 Unlock revenue with your owner PIN to see monthly and yearly profit reports.</div>';
+                return;
+            }
+
+            // Restore structure if we replaced with locked message
+            if (!document.getElementById('prMonthProfit')) {
+                el.innerHTML =
+                    '<div class="profit-report-card" id="profitReportMonth">' +
+                    '<h4>This month · direct profit</h4>' +
+                    '<div class="profit-report-row"><span>Revenue</span><strong id="prMonthRevenue">—</strong></div>' +
+                    '<div class="profit-report-row"><span>Staff + materials + other</span><strong id="prMonthCosts">—</strong></div>' +
+                    '<div class="profit-report-row total"><span>Profit</span><strong id="prMonthProfit">—</strong></div>' +
+                    '<p class="profit-report-note" id="prMonthNote"></p></div>' +
+                    '<div class="profit-report-card" id="profitReportYear">' +
+                    '<h4>This year · direct profit</h4>' +
+                    '<div class="profit-report-row"><span>Revenue</span><strong id="prYearRevenue">—</strong></div>' +
+                    '<div class="profit-report-row"><span>Staff + materials + other</span><strong id="prYearCosts">—</strong></div>' +
+                    '<div class="profit-report-row total"><span>Profit</span><strong id="prYearProfit">—</strong></div>' +
+                    '<p class="profit-report-note" id="prYearNote"></p></div>';
+            }
+
+            var now = new Date();
+            var y = now.getFullYear();
+            var m = now.getMonth();
+
+            var modeJobs = (jobs || []).filter(function(j) {
+                return typeof getJobMode === 'function' ? getJobMode(j) === currentServiceType : true;
+            });
+
+            var monthJobs = modeJobs.filter(function(j) {
+                var d = jobDateObj(j);
+                return d && d.getFullYear() === y && d.getMonth() === m;
+            });
+            var yearJobs = modeJobs.filter(function(j) {
+                var d = jobDateObj(j);
+                return d && d.getFullYear() === y;
+            });
+
+            var ms = summarizeProfitForJobs(monthJobs);
+            var ys = summarizeProfitForJobs(yearJobs);
+
+            function naira(n) { return '₦' + Number(n || 0).toLocaleString(); }
+
+            var set = function(id, val) {
+                var node = document.getElementById(id);
+                if (node) node.textContent = val;
+            };
+            set('prMonthRevenue', naira(ms.revenue));
+            set('prMonthCosts', naira(ms.costs));
+            set('prMonthProfit', naira(ms.profit));
+            set('prYearRevenue', naira(ys.revenue));
+            set('prYearCosts', naira(ys.costs));
+            set('prYearProfit', naira(ys.profit));
+
+            var modeLabel = currentServiceType === 'laundry' ? 'laundry' : 'cleaning';
+            var monthNote = document.getElementById('prMonthNote');
+            var yearNote = document.getElementById('prYearNote');
+            if (monthNote) {
+                monthNote.textContent = ms.done + ' completed ' + modeLabel + ' jobs · ' +
+                    ms.withCosts + ' with costs filled. Missing costs count as ₦0.';
+            }
+            if (yearNote) {
+                yearNote.textContent = ys.done + ' completed ' + modeLabel + ' jobs · ' +
+                    ys.withCosts + ' with costs filled. Missing costs count as ₦0.';
+            }
+        }
+
         function renderOverview(jobs, clients) {
             var filteredJobs = jobs.filter(function(j) {
                 return getJobMode(j) === currentServiceType;
@@ -3242,6 +3429,8 @@
             realRevenueValue = revenue;
             applyRevenueDisplay();
             document.getElementById('ovPending').textContent = pending;
+
+            renderProfitReport(filteredJobs);
 
             var recent = filteredJobs.slice(0, 5);
             var container = document.getElementById('recentJobs');
