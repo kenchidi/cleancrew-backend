@@ -2226,7 +2226,7 @@
             <p id="outOfJobsMessage">You've used all 25 free jobs and have no credits left. Choose how you want to continue:</p>
             <div class="ooj-actions">
                 <button type="button" class="btn btn-primary btn-block" onclick="closeOutOfJobsModal(); goToCredits(true);">Buy job credits</button>
-                <button type="button" class="btn btn-secondary btn-block" onclick="closeOutOfJobsModal(); subscribeToPlan('starter');">Go unlimited — ₦12,500/mo</button>
+                <button type="button" class="btn btn-secondary btn-block" onclick="closeOutOfJobsModal(); subscribeToPlan('starter');">Go unlimited</button>
                 <button type="button" class="btn btn-outline btn-block" onclick="closeOutOfJobsModal()">Not now</button>
             </div>
         </div>
@@ -2279,7 +2279,7 @@
                     <textarea id="qcNotes" rows="3" placeholder="e.g. 8 shirts, 3 trousers, blue bag — ready Friday"></textarea>
                 </div>
                 <div class="form-group">
-                    <label>Amount (₦) optional</label>
+                    <label id="qcAmountLabel">Amount (<span class="currency-symbol">₦</span>) optional</label>
                     <input type="number" id="qcAmount" min="0" step="100" placeholder="Can add later" />
                 </div>
             </div>
@@ -2352,6 +2352,11 @@
             localStorage.setItem('cleancrew_country', USER_COUNTRY);
             var sel = document.getElementById('settingsCountry');
             if (sel) sel.value = USER_COUNTRY;
+            document.querySelectorAll('.currency-symbol').forEach(function(el) {
+                el.textContent = moneySymbol();
+            });
+            var qcLab = document.getElementById('qcAmountLabel');
+            if (qcLab) qcLab.innerHTML = 'Amount (' + moneySymbol() + ') optional';
             if (typeof renderCreditPacksUI === 'function') renderCreditPacksUI();
             if (typeof renderAll === 'function') renderAll();
             if (typeof showToast === 'function') {
@@ -2478,7 +2483,7 @@
                 banner.classList.add('show');
                 if (cred <= 0) {
                     banner.innerHTML = '<strong>No free jobs left and no credits.</strong> ' +
-                        'Buy a pack below to add jobs, or go unlimited for ₦12,500/month.' +
+                        'Buy a pack below to add jobs, or go unlimited for ' + formatMoney(getUnlimitedPrice()) + '/month.' +
                         '<div class="banner-actions">' +
                         '<button type="button" class="btn btn-primary btn-sm" onclick="buyCredits(\'professional\')">Buy Growth (100 jobs)</button>' +
                         '<button type="button" class="btn btn-secondary btn-sm" onclick="subscribeToPlan(\'starter\')">Go Unlimited</button>' +
@@ -2599,6 +2604,11 @@
         try {
             var _sel = document.getElementById('settingsCountry');
             if (_sel) _sel.value = getUserCountry();
+            document.querySelectorAll('.currency-symbol').forEach(function(el) {
+                el.textContent = moneySymbol();
+            });
+            var qcLab = document.getElementById('qcAmountLabel');
+            if (qcLab) qcLab.innerHTML = 'Amount (' + moneySymbol() + ') optional';
             renderCreditPacksUI();
         } catch (e) {}
 
@@ -3291,7 +3301,7 @@
 
                 var msg = 'Hi ' + client + ', here is your CleanCrew invoice' +
                     (number ? ' (' + number + ')' : '') +
-                    (amountDue != null ? ' for ₦' + Number(amountDue).toLocaleString() : '') +
+                    (amountDue != null ? ' for ' + formatMoney(amountDue) : '') +
                     '. Thank you for your business!';
                 if (inv.pdf_url) msg += '\n\nView your invoice: ' + inv.pdf_url;
 
@@ -3532,11 +3542,11 @@
             var yearNote = document.getElementById('prYearNote');
             if (monthNote) {
                 monthNote.textContent = ms.done + ' completed ' + modeLabel + ' jobs · ' +
-                    ms.withCosts + ' with costs filled. Missing costs count as ₦0.';
+                    ms.withCosts + ' with costs filled. Missing costs count as ' + moneySymbol() + '0.';
             }
             if (yearNote) {
                 yearNote.textContent = ys.done + ' completed ' + modeLabel + ' jobs · ' +
-                    ys.withCosts + ' with costs filled. Missing costs count as ₦0.';
+                    ys.withCosts + ' with costs filled. Missing costs count as ' + moneySymbol() + '0.';
             }
         }
 
@@ -3582,7 +3592,7 @@
                         '</span>' +
                         '</div>' +
                         '<div style="text-align:right;">' +
-                        '<span style="font-weight:700;">₦' + (j.amount || 0).toLocaleString() + '</span>' +
+                        '<span style="font-weight:700;">' + formatMoney(j.amount) + '</span>' +
                         '<br>' +
                         '<span class="status-badge ' + j.status + '">' + j.status + '</span>' +
                         '</div>' +
@@ -3642,18 +3652,18 @@
             var profit = calcJobProfit(j);
             var profitHtml = (profit === null)
                 ? '<strong class="muted">—</strong><span style="font-size:12px;color:var(--slate);">Add costs to see profit</span>'
-                : ('<strong>₦' + Number(profit).toLocaleString() + '</strong>' +
+                : ('<strong>' + formatMoney(profit) + '</strong>' +
                     (Number(j.amount) > 0
                         ? '<span style="font-size:12px;color:var(--slate);">' +
                           Math.round((profit / Number(j.amount)) * 100) + '% margin</span>'
                         : ''));
             return '<div class="job-cost-box" id="jobCostBox">' +
                 '<h4>Job profit (direct costs) · owner</h4>' +
-                '<div class="job-cost-row"><label>Staff cost (₦)</label>' +
+                '<div class="job-cost-row"><label>Staff cost (' + moneySymbol() + ')</label>' +
                 '<input type="number" id="jdStaffCost" min="0" step="100" placeholder="0" value="' + staff + '" oninput="refreshJobProfitPreview()" /></div>' +
-                '<div class="job-cost-row"><label>Materials (₦)</label>' +
+                '<div class="job-cost-row"><label>Materials (' + moneySymbol() + ')</label>' +
                 '<input type="number" id="jdMaterialsCost" min="0" step="100" placeholder="0" value="' + mat + '" oninput="refreshJobProfitPreview()" /></div>' +
-                '<div class="job-cost-row"><label>Other (₦)</label>' +
+                '<div class="job-cost-row"><label>Other (' + moneySymbol() + ')</label>' +
                 '<input type="number" id="jdOtherCost" min="0" step="100" placeholder="0" value="' + other + '" oninput="refreshJobProfitPreview()" /></div>' +
                 '<div class="job-profit-line"><span style="font-size:13px;font-weight:700;color:var(--ink);">Profit</span>' +
                 '<span id="jdProfitDisplay" style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">' + profitHtml + '</span></div>' +
@@ -3689,7 +3699,7 @@
                 return;
             }
             var profit = amount - staff - mat - other;
-            disp.innerHTML = '<strong>₦' + profit.toLocaleString() + '</strong>' +
+            disp.innerHTML = '<strong>' + formatMoney(profit) + '</strong>' +
                 '<span style="font-size:12px;color:var(--slate);">' + Math.round((profit / amount) * 100) + '% margin</span>';
         }
 
@@ -3756,7 +3766,7 @@
                 if (itemsArr && itemsArr.length) {
                     extra = itemsArr.map(function(it) {
                         return (it.qty || 1) + '× ' + (it.name || 'Item') +
-                            (it.price ? (' @ ₦' + Number(it.price).toLocaleString()) : '');
+                            (it.price ? (' @ ' + formatMoney(it.price)) : '');
                     }).join(', ');
                 }
             } else {
@@ -3897,7 +3907,7 @@
                     (detail ? '<br><span style="font-size:11px;color:var(--slate);">' + detail + '</span>' : '') +
                     '</td>' +
                     '<td>' + (j.date || 'N/A') + '</td>' +
-                    '<td><strong>₦' + (j.amount || 0).toLocaleString() + '</strong></td>' +
+                    '<td><strong>' + formatMoney(j.amount) + '</strong></td>' +
                     '<td><span class="status-badge ' + j.status + '">' + j.status + '</span></td>' +
                     '<td><div class="table-actions" onclick="event.stopPropagation()">' +
                     actionButtons +
@@ -3954,7 +3964,7 @@
                     '<td>' + (c.phone || 'N/A') + '</td>' +
                     '<td>' + (c.location || 'N/A') + '</td>' +
                     '<td>' + clientJobs.length + '</td>' +
-                    '<td><strong>₦' + totalSpent.toLocaleString() + '</strong></td>' +
+                    '<td><strong>' + formatMoney(totalSpent) + '</strong></td>' +
                     '<td><div class="table-actions">' +
                     '<button class="btn btn-whatsapp btn-sm" onclick="sendSingleWhatsApp(\'' + c.name + '\', \'' + (c.phone || '') + '\')"><svg class="icon"><use href="#ic-chat"/></svg></button>' +
                     '<button class="btn btn-danger btn-sm" onclick="deleteClientItem(\'' + c.id + '\')"><svg class="icon"><use href="#ic-trash"/></svg></button>' +
@@ -4018,7 +4028,7 @@
                         };
                         var statusColor = statusColors[status] || statusColors.unpaid;
                         var paidLabel = amountPaid > 0 ?
-                            '<br><span style="font-size:11px;color:var(--slate);">Paid ₦' + Number(amountPaid).toLocaleString() + '</span>' :
+                            '<br><span style="font-size:11px;color:var(--slate);">Paid ' + formatMoney(amountPaid) + '</span>' :
                             '';
 
                         var pdfStatus = inv.pdf_url ? '<span class="invoice-pdf-status generated">✅ PDF</span>' :
@@ -4041,7 +4051,7 @@
                             '<td>' + (i + 1) + '</td>' +
                             '<td><strong>' + (inv.number || inv.invoice_numb || 'N/A') + '</strong><br>' + pdfStatus + '</td>' +
                             '<td>' + (inv.client || 'N/A') + '</td>' +
-                            '<td><strong>₦' + Number(amountDue).toLocaleString() + '</strong>' + paidLabel + '</td>' +
+                            '<td><strong>' + formatMoney(amountDue) + '</strong>' + paidLabel + '</td>' +
                             '<td><span style="padding:2px 10px;border-radius:100px;font-size:10px;font-weight:700;' + statusColor + '">' + status + '</span></td>' +
                             '<td>' + date + '</td>' +
                             '<td><div class="table-actions">' + actions + '</div></td>' +
@@ -4069,9 +4079,9 @@
             f.innerHTML =
                 '<input type="hidden" id="payInvoiceId" value="' + inv.id + '" />' +
                 '<div class="form-group full-width"><label>Client</label><input type="text" value="' + (inv.client || '') + '" disabled /></div>' +
-                '<div class="form-group"><label>Amount due</label><input type="text" value="₦' + amountDue.toLocaleString() + '" disabled /></div>' +
-                '<div class="form-group"><label>Already paid</label><input type="text" value="₦' + amountPaid.toLocaleString() + '" disabled /></div>' +
-                '<div class="form-group"><label>Payment amount (₦) *</label><input type="number" id="payAmount" min="0" step="0.01" value="' + remaining + '" required /></div>' +
+                '<div class="form-group"><label>Amount due</label><input type="text" value="' + formatMoney(amountDue) + '" disabled /></div>' +
+                '<div class="form-group"><label>Already paid</label><input type="text" value="' + formatMoney(amountPaid) + '" disabled /></div>' +
+                '<div class="form-group"><label>Payment amount (' + moneySymbol() + ') *</label><input type="number" id="payAmount" min="0" step="0.01" value="' + remaining + '" required /></div>' +
                 '<div class="form-group full-width"><label>Note (optional)</label><textarea id="payNote" placeholder="Bank transfer, cash, etc."></textarea></div>';
             document.getElementById('modalOverlay').classList.add('active');
         }
@@ -4277,7 +4287,7 @@
             if (laundryItems.length === 0) {
                 container.innerHTML = '<p style="font-size:12px;color:var(--slate);margin:0;">No items yet. Add shirts, trousers, etc.</p>';
                 var tot = document.getElementById('laundryJobTotal');
-                if (tot) tot.textContent = '₦0';
+                if (tot) tot.textContent = formatMoney(0);
                 return;
             }
             var priceOptions = Object.keys(laundryPriceMap).sort().map(function(n) {
@@ -4291,7 +4301,7 @@
                     'oninput="laundryItems[' + i + '].qty=parseInt(this.value,10)||1;updateLaundryTotals()" style="width:64px;padding:6px 8px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;" />' +
                     '<input type="number" min="0" step="50" value="' + (item.price || 0) + '" ' +
                     'oninput="laundryItems[' + i + '].price=parseFloat(this.value)||0;updateLaundryTotals()" style="width:88px;padding:6px 8px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;" title="Unit price" />' +
-                    '<span style="font-size:12px;color:var(--slate);min-width:64px;">₦' + laundryLineTotal(item).toLocaleString() + '</span>' +
+                    '<span style="font-size:12px;color:var(--slate);min-width:64px;">' + formatMoney(laundryLineTotal(item)) + '</span>' +
                     '<button type="button" class="remove-item" onclick="removeLaundryItemRow(' + i + ')" title="Remove">×</button>' +
                     '</div>';
             }).join('') + '<datalist id="laundryPriceNames">' + priceOptions + '</datalist>';
@@ -4317,7 +4327,7 @@
         function updateLaundryTotals() {
             var total = laundryJobTotal();
             var totEl = document.getElementById('laundryJobTotal');
-            if (totEl) totEl.textContent = '₦' + total.toLocaleString();
+            if (totEl) totEl.textContent = formatMoney(total);
             var amountEl = document.getElementById('jAmount');
             if (amountEl && currentServiceType === 'laundry') {
                 amountEl.value = total > 0 ? total : amountEl.value;
@@ -4550,7 +4560,7 @@
                         '<div id="laundryItemsList" class="laundry-items"></div>' +
                         '<button type="button" class="btn btn-outline btn-sm" onclick="addLaundryItemRow()" style="margin-top:6px;">' +
                         '<svg class="icon"><use href="#ic-plus"/></svg> Add item</button>' +
-                        '<p style="margin:10px 0 0;font-size:14px;font-weight:700;">Total: <span id="laundryJobTotal">₦0</span></p>' +
+                        '<p style="margin:10px 0 0;font-size:14px;font-weight:700;">Total: <span id="laundryJobTotal">' + moneySymbol() + '0</span></p>' +
                         '<p style="margin:4px 0 0;font-size:11px;color:var(--slate);">Unit price auto-fills from your laundry price list when the name matches.</p>' +
                         '</div>';
                 }
@@ -4559,7 +4569,7 @@
                     '<div class="form-group"><label>Phone</label><input type="tel" id="jPhone" /></div>' +
                     '<div class="form-group"><label>Service</label><select id="jService">' + serviceOptions + '</select></div>' +
                     modeExtra +
-                    '<div class="form-group"><label>Amount (₦)</label><input type="number" id="jAmount" required /></div>' +
+                    '<div class="form-group"><label>Amount (' + moneySymbol() + ')</label><input type="number" id="jAmount" required /></div>' +
                     '<div class="form-group"><label>Date</label><input type="date" id="jDate" required /></div>' +
                     '<div class="form-group"><label>Status</label><select id="jStatus"><option value="pending">Pending</option><option value="in-progress">In Progress</option><option value="completed">Completed</option></select></div>' +
                     '<div class="form-group full-width"><label>Notes</label><textarea id="jNotes" placeholder="Access codes, special requests…"></textarea></div>';
@@ -4591,7 +4601,7 @@
                     '<div class="form-group"><label>Role</label><select id="sRole"><option>Cleaner</option><option>Supervisor</option><option>Manager</option><option>Admin</option></select></div>';
             } else if (type === 'invoice') {
                 f.innerHTML = '<div class="form-group"><label>Client *</label><input type="text" id="invClient" required /></div>' +
-                    '<div class="form-group"><label>Amount (₦) *</label><input type="number" id="invAmount" required /></div>' +
+                    '<div class="form-group"><label>Amount (' + moneySymbol() + ') *</label><input type="number" id="invAmount" required /></div>' +
                     '<div class="form-group"><label>Date</label><input type="date" id="invDate" required /></div>' +
                     '<div class="form-group"><label>Status</label><select id="invStatus"><option value="pending">Pending</option><option value="paid">Paid</option><option value="overdue">Overdue</option></select></div>' +
                     '<div class="form-group full-width"><label>Description</label><textarea id="invDescription" placeholder="What is this invoice for?"></textarea></div>';
