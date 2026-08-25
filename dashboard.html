@@ -1904,10 +1904,10 @@
                 </div>
                 <div class="out-of-jobs-banner" id="outOfJobsBanner">
                     <strong>You've used your free jobs.</strong>
-                    Buy a credit pack below to keep adding jobs — or go unlimited for ₦12,500/month.
+                    Buy a credit pack below to keep adding jobs — or go unlimited.
                     <div class="banner-actions">
                         <button type="button" class="btn btn-primary btn-sm" onclick="buyCredits('professional')">Buy Growth (100 jobs)</button>
-                        <button type="button" class="btn btn-secondary btn-sm" onclick="subscribeToPlan('starter')">Go Unlimited</button>
+                        <button type="button" class="btn btn-secondary btn-sm" id="goUnlimitedBtn" onclick="subscribeToPlan('starter')">Go Unlimited</button>
                     </div>
                 </div>
                 <p style="font-size:15px;font-weight:800;margin:0 0 4px;">
@@ -1916,37 +1916,14 @@
                 <p style="font-size:13px;color:var(--slate);margin:0 0 14px;">
                     Free jobs left: <span id="freeJobsLabel" style="font-weight:700;color:var(--green);">—</span> / 25
                 </p>
-                <div class="credit-packs-grid">
-                    <div class="credit-pack">
-                        <div class="pack-name">Starter</div>
-                        <div class="pack-jobs">20 jobs</div>
-                        <div class="pack-price">₦5,000<br><span style="font-size:11px;">₦250/job</span></div>
-                        <button type="button" class="btn btn-primary btn-sm" onclick="buyCredits('starter')">Buy</button>
-                    </div>
-                    <div class="credit-pack">
-                        <div class="pack-name">Business</div>
-                        <div class="pack-jobs">45 jobs</div>
-                        <div class="pack-price">₦10,000<br><span style="font-size:11px;">₦222/job</span></div>
-                        <button type="button" class="btn btn-primary btn-sm" onclick="buyCredits('business')">Buy</button>
-                    </div>
-                    <div class="credit-pack" style="border-color:var(--blue);background:var(--blue-mist);">
-                        <div class="pack-name">⭐ Growth</div>
-                        <div class="pack-jobs">100 jobs</div>
-                        <div class="pack-price">₦20,000<br><span style="font-size:11px;">₦200/job</span></div>
-                        <button type="button" class="btn btn-primary btn-sm" onclick="buyCredits('professional')">Buy</button>
-                    </div>
-                    <div class="credit-pack">
-                        <div class="pack-name">Enterprise</div>
-                        <div class="pack-jobs">275 jobs</div>
-                        <div class="pack-price">₦50,000<br><span style="font-size:11px;">₦182/job</span></div>
-                        <button type="button" class="btn btn-primary btn-sm" onclick="buyCredits('enterprise')">Buy</button>
-                    </div>
+                <div class="credit-packs-grid" id="creditPacksGrid">
+                    <!-- filled by renderCreditPacksUI() -->
                 </div>
                 <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">
-                    <p style="margin:0;font-size:13px;color:var(--ink-soft);">
-                        📌 Or subscribe for <strong>unlimited</strong>: <strong>₦12,500/month</strong>
+                    <p id="creditsUnlimitedHint" style="margin:0;font-size:13px;color:var(--ink-soft);">
+                        📌 Or subscribe for unlimited
                     </p>
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="subscribeToPlan('starter')">Go Unlimited</button>
+                    <button type="button" class="btn btn-secondary btn-sm" id="goUnlimitedBtn" onclick="subscribeToPlan('starter')">Go Unlimited</button>
                 </div>
             </div>
 
@@ -2183,6 +2160,14 @@
                 </div>
                 <form id="invoiceSettingsForm" class="settings-form" onsubmit="saveInvoiceSettings(event)">
                     <div class="form-group">
+                        <label>Country / currency</label>
+                        <select id="settingsCountry" onchange="setUserCountry(this.value)">
+                            <option value="NG">Nigeria (₦ Naira)</option>
+                            <option value="GH">Ghana (GH₵ Cedis)</option>
+                        </select>
+                        <p style="font-size:12px;color:var(--slate);margin-top:6px;">Ghana accounts see prices in cedis and pay via MTN MoMo. Nigeria uses Paystack (₦).</p>
+                    </div>
+                    <div class="form-group">
                         <label>Business Name</label>
                         <input type="text" id="settingsBusinessName" placeholder="e.g. CleanCrew Laundry & Cleaning" />
                     </div>
@@ -2244,6 +2229,18 @@
                 <button type="button" class="btn btn-secondary btn-block" onclick="closeOutOfJobsModal(); subscribeToPlan('starter');">Go unlimited — ₦12,500/mo</button>
                 <button type="button" class="btn btn-outline btn-block" onclick="closeOutOfJobsModal()">Not now</button>
             </div>
+        </div>
+    </div>
+
+
+    <!-- Ghana MoMo payment -->
+    <div class="modal-overlay" id="momoPayOverlay" onclick="if(event.target===this)closeMomoPay()">
+        <div class="modal-box" style="max-width:420px;">
+            <div class="modal-header">
+                <h3>Pay with MoMo (Ghana)</h3>
+                <button type="button" class="modal-close" onclick="closeMomoPay()" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body" id="momoPayBody" style="padding:16px 20px 20px;"></div>
         </div>
     </div>
 
@@ -2322,6 +2319,126 @@
         // ─── ──────────────────────────────────────────────────────
         const API_URL = 'https://cleancrew-backend.onrender.com/api';
         var creditBalance = 0;
+
+        // ─── Country / currency (NG = Naira, GH = Cedis + manual MoMo) ───
+        var USER_COUNTRY = localStorage.getItem('cleancrew_country') || 'NG';
+        var MOMO_CONFIG = {
+            number: '08143010625',
+            name: 'Chidinma Ogbonnaya',
+            network: 'MTN MoMo',
+            whatsapp: '2347057295546'
+        };
+        var PACKS_BY_COUNTRY = {
+            NG: {
+                starter:      { jobs: 20,  price: 5000,  per: 250,  label: 'Starter' },
+                business:     { jobs: 45,  price: 10000, per: 222,  label: 'Business' },
+                professional: { jobs: 100, price: 20000, per: 200,  label: 'Growth' },
+                enterprise:   { jobs: 275, price: 50000, per: 182,  label: 'Enterprise' }
+            },
+            GH: {
+                starter:      { jobs: 20,  price: 60,  per: 3,   label: 'Starter' },
+                business:     { jobs: 45,  price: 120, per: 2.67, label: 'Business' },
+                professional: { jobs: 100, price: 240, per: 2.4, label: 'Growth' },
+                enterprise:   { jobs: 275, price: 550, per: 2,   label: 'Enterprise' }
+            }
+        };
+        var UNLIMITED_PRICE = { NG: 12500, GH: 150 };
+
+        function getUserCountry() {
+            return (localStorage.getItem('cleancrew_country') || USER_COUNTRY || 'NG') === 'GH' ? 'GH' : 'NG';
+        }
+        function setUserCountry(code) {
+            USER_COUNTRY = (code === 'GH') ? 'GH' : 'NG';
+            localStorage.setItem('cleancrew_country', USER_COUNTRY);
+            var sel = document.getElementById('settingsCountry');
+            if (sel) sel.value = USER_COUNTRY;
+            if (typeof renderCreditPacksUI === 'function') renderCreditPacksUI();
+            if (typeof renderAll === 'function') renderAll();
+            if (typeof showToast === 'function') {
+                showToast(USER_COUNTRY === 'GH' ? 'Currency: Ghana Cedis (GH₵)' : 'Currency: Naira (₦)', 'success');
+            }
+        }
+        function moneySymbol() {
+            return getUserCountry() === 'GH' ? 'GH₵' : '₦';
+        }
+        function formatMoney(n) {
+            var num = Number(n);
+            if (isNaN(num)) num = 0;
+            return moneySymbol() + num.toLocaleString(undefined, { maximumFractionDigits: 2 });
+        }
+        function getPacks() {
+            return PACKS_BY_COUNTRY[getUserCountry()] || PACKS_BY_COUNTRY.NG;
+        }
+        function getUnlimitedPrice() {
+            return UNLIMITED_PRICE[getUserCountry()] || UNLIMITED_PRICE.NG;
+        }
+        function renderCreditPacksUI() {
+            var grid = document.getElementById('creditPacksGrid');
+            if (!grid) return;
+            var packs = getPacks();
+            var order = ['starter', 'business', 'professional', 'enterprise'];
+            var html = '';
+            order.forEach(function(key) {
+                var pk = packs[key];
+                if (!pk) return;
+                var best = key === 'professional';
+                html += '<div class="credit-pack"' + (best ? ' style="border-color:var(--blue);background:var(--blue-mist);"' : '') + '>' +
+                    '<div class="pack-name">' + (best ? '⭐ ' : '') + pk.label + '</div>' +
+                    '<div class="pack-jobs">' + pk.jobs + ' jobs</div>' +
+                    '<div class="pack-price">' + formatMoney(pk.price) +
+                    '<br><span style="font-size:11px;">' + formatMoney(pk.per) + '/job</span></div>' +
+                    '<button type="button" class="btn btn-primary btn-sm" onclick="buyCredits(\'' + key + '\')">Buy</button></div>';
+            });
+            grid.innerHTML = html;
+            var hint = document.getElementById('creditsUnlimitedHint');
+            if (hint) {
+                hint.innerHTML = '📌 Or subscribe for unlimited: <strong id="unlimitedPriceLabel">' + formatMoney(getUnlimitedPrice()) + '/month</strong>';
+            }
+            var unlBtn = document.getElementById('goUnlimitedBtn');
+            if (unlBtn) {
+                unlBtn.textContent = 'Go Unlimited — ' + formatMoney(getUnlimitedPrice()) + '/mo';
+            }
+        }
+        function openMomoPay(opts) {
+            opts = opts || {};
+            var overlay = document.getElementById('momoPayOverlay');
+            var body = document.getElementById('momoPayBody');
+            if (!overlay || !body) {
+                alert('Pay ' + formatMoney(opts.amount) + ' via MoMo to ' + MOMO_CONFIG.number + ' (' + MOMO_CONFIG.name + '), then WhatsApp proof to 07057295546');
+                return;
+            }
+            var email = '';
+            try {
+                var el = document.getElementById('userEmail');
+                if (el && el.textContent) email = el.textContent.trim();
+            } catch (e) {}
+            if (!email || email === 'Loading...') {
+                email = localStorage.getItem('cleancrew_email') || 'your-signup-email';
+            }
+            var amount = opts.amount || 0;
+            var title = opts.title || 'CleanCrew credits';
+            var wa = String(MOMO_CONFIG.whatsapp || '2347057295546').replace(/\D/g, '');
+            var text = 'Hi CleanCrew, I paid ' + formatMoney(amount) + ' for ' + title +
+                '. MoMo to ' + MOMO_CONFIG.number + '. Reference/email: ' + email;
+            body.innerHTML =
+                '<p style="font-size:14px;color:var(--slate);margin:0 0 12px;line-height:1.45;">' +
+                'Ghana payments use <strong>MTN MoMo</strong>. Pay the amount below, then send the screenshot to support on WhatsApp.</p>' +
+                '<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px;font-size:14px;line-height:1.6;">' +
+                '<div><strong>Amount:</strong> ' + formatMoney(amount) + '</div>' +
+                '<div><strong>Network:</strong> ' + MOMO_CONFIG.network + '</div>' +
+                '<div><strong>MoMo number:</strong> ' + MOMO_CONFIG.number + '</div>' +
+                '<div><strong>Name:</strong> ' + MOMO_CONFIG.name + '</div>' +
+                '<div><strong>Reference:</strong> ' + email + '</div>' +
+                '</div>' +
+                '<a class="btn btn-primary" style="width:100%;text-align:center;margin-bottom:8px;" target="_blank" rel="noopener" href="https://wa.me/' + wa +
+                '?text=' + encodeURIComponent(text) + '">Send payment proof on WhatsApp</a>' +
+                '<button type="button" class="btn btn-outline" style="width:100%;" onclick="closeMomoPay()">Close</button>';
+            overlay.classList.add('active');
+        }
+        function closeMomoPay() {
+            var overlay = document.getElementById('momoPayOverlay');
+            if (overlay) overlay.classList.remove('active');
+        }
 
         function goToCredits(highlight) {
             switchTab('overview');
@@ -2441,6 +2558,16 @@
         }
 
         function buyCredits(pack) {
+            var packs = getPacks();
+            var pk = packs[pack];
+            if (!pk) {
+                showToast('Unknown credit pack', 'error');
+                return;
+            }
+            if (getUserCountry() === 'GH') {
+                openMomoPay({ title: pk.label + ' (' + pk.jobs + ' jobs)', amount: pk.price });
+                return;
+            }
             showToast('Opening payment...', '');
             fetch(API_URL + '/credits/initialize', {
                 method: 'POST',
@@ -2468,6 +2595,12 @@
         var revenueLocked = true;
 
         let TOKEN = localStorage.getItem('cleancrew_token');
+
+        try {
+            var _sel = document.getElementById('settingsCountry');
+            if (_sel) _sel.value = getUserCountry();
+            renderCreditPacksUI();
+        } catch (e) {}
 
         if (!TOKEN) {
             window.location.href = 'login.html';
@@ -2925,14 +3058,14 @@
             var btn = document.getElementById('unlockRevenueBtn');
             if (el) {
                 if (!hasOwnerPin) {
-                    el.textContent = '₦' + Number(realRevenueValue || 0).toLocaleString();
+                    el.textContent = formatMoney(realRevenueValue || 0);
                     if (card) card.classList.remove('revenue-locked');
                     if (btn) {
                         btn.style.display = 'inline-flex';
                         btn.textContent = 'Set PIN to lock';
                     }
                 } else if (revenueUnlocked) {
-                    el.textContent = '₦' + Number(realRevenueValue || 0).toLocaleString();
+                    el.textContent = formatMoney(realRevenueValue || 0);
                     if (card) card.classList.remove('revenue-locked');
                     if (btn) {
                         btn.style.display = 'inline-flex';
@@ -3270,6 +3403,8 @@
 
 
         function renderAll() {
+            try { renderCreditPacksUI(); } catch (e) {}
+
             Promise.all([getJobs(), getClients()])
                 .then(function(results) {
                     var jobs = results[0];
@@ -3379,7 +3514,7 @@
             var ms = summarizeProfitForJobs(monthJobs);
             var ys = summarizeProfitForJobs(yearJobs);
 
-            function naira(n) { return '₦' + Number(n || 0).toLocaleString(); }
+            function naira(n) { return formatMoney(n || 0); }
 
             var set = function(id, val) {
                 var node = document.getElementById(id);
@@ -3647,7 +3782,7 @@
                     '<div><div class="job-detail-label">Service</div><div class="job-detail-value">' + (j.service || '—') + '</div></div>' +
                     '<div><div class="job-detail-label">Status</div><div class="job-detail-value"><span class="status-badge ' + (j.status || '') + '">' + (j.status || '—') + '</span></div></div>' +
                     '<div><div class="job-detail-label">Date</div><div class="job-detail-value">' + (j.date || '—') + '</div></div>' +
-                    '<div><div class="job-detail-label">Amount</div><div class="job-detail-value">₦' + Number(j.amount || 0).toLocaleString() + '</div></div>' +
+                    '<div><div class="job-detail-label">Amount</div><div class="job-detail-value">' + formatMoney(j.amount) + '</div></div>' +
                     (extra ? '<div class="full"><div class="job-detail-label">' + (mode === 'laundry' ? 'Items' : 'Property') + '</div><div class="job-detail-value">' + extra + '</div></div>' : '') +
                     '<div class="full"><div class="job-detail-label">Notes</div>' +
                     '<div class="job-notes-box' + (hasNotes ? '' : ' empty') + '">' + notesText.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div></div>' +
@@ -4938,6 +5073,10 @@
 
         function subscribeToPlan(plan) {
             if (!plan) plan = selectedPlan;
+            if (typeof getUserCountry === 'function' && getUserCountry() === 'GH') {
+                openMomoPay({ title: 'Unlimited monthly', amount: getUnlimitedPrice() });
+                return;
+            }
             fetch(API_URL + '/paystack/initialize', {
                     method: 'POST',
                     headers: getHeaders(),
