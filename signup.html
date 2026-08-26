@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#1A6DDB" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="CleanCrew" />
+    <meta name="application-name" content="CleanCrew" />
     <title>Sign Up — CleanCrew</title>
     <meta name="description" content="Create your CleanCrew account and start managing your cleaning business." />
 
@@ -378,6 +384,15 @@
                 signupBtn.innerHTML = '<svg class="icon"><use href="#ic-arrow"/></svg> Create Account';
             }
         });
+    </script>
+
+    <script>
+    (function () {
+      if (!('serviceWorker' in navigator)) return;
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/sw.js').catch(function () {});
+      });
+    })();
     </script>
 </body>
 </html>

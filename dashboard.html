@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#1A6DDB" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="CleanCrew" />
+    <meta name="application-name" content="CleanCrew" />
     <title>CleanCrew — Dashboard</title>
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png?v=2" />
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png?v=2" />
@@ -1669,9 +1675,49 @@
             box-shadow: 0 1px 0 var(--border);
         }
 
-    </style>
+    
+        /* PWA install banner */
+        .pwa-install-banner {
+            display: none;
+            position: fixed;
+            left: 12px; right: 12px; bottom: 12px;
+            z-index: 9999;
+            background: var(--ink);
+            color: #fff;
+            border-radius: 16px;
+            padding: 14px 16px;
+            box-shadow: 0 12px 40px rgba(0,0,0,.25);
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            line-height: 1.35;
+        }
+        .pwa-install-banner.show { display: flex; }
+        .pwa-install-banner strong { display: block; font-size: 14px; margin-bottom: 2px; }
+        .pwa-install-banner .pwa-actions { display: flex; gap: 8px; flex-shrink: 0; margin-left: auto; }
+        .pwa-install-banner button {
+            border: 0; border-radius: 10px; padding: 8px 12px;
+            font-family: inherit; font-weight: 700; font-size: 12px; cursor: pointer;
+        }
+        .pwa-install-banner .pwa-install-btn { background: var(--blue); color: #fff; }
+        .pwa-install-banner .pwa-dismiss-btn { background: transparent; color: rgba(255,255,255,.75); }
+        @media (min-width: 768px) {
+            .pwa-install-banner { max-width: 420px; left: auto; right: 20px; bottom: 20px; }
+        }
+</style>
 </head>
 <body>
+    <div class="pwa-install-banner" id="pwaInstallBanner" role="dialog" aria-label="Install app">
+        <div>
+            <strong>Add CleanCrew to your phone</strong>
+            <span>Install for quick access — opens like an app</span>
+        </div>
+        <div class="pwa-actions">
+            <button type="button" class="pwa-dismiss-btn" id="pwaDismissBtn">Not now</button>
+            <button type="button" class="pwa-install-btn" id="pwaInstallBtn">Install</button>
+        </div>
+    </div>
+
 
     <!-- ============================================
     ICON SPRITE
@@ -5258,5 +5304,76 @@
     <a class="support-fab" id="supportFab" href="https://wa.me/2347057295546?text=Hi%20CleanCrew%20support%2C%20I%20need%20help%20with%20my%20account." target="_blank" rel="noopener noreferrer" title="Chat with CleanCrew support" aria-label="WhatsApp support" onclick="event.stopPropagation();">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
     </a>
+    <script>
+
+        // ─── PWA install (Add to Home Screen) ─────────────────
+        (function () {
+            var deferredPrompt = null;
+            var banner = document.getElementById('pwaInstallBanner');
+            var installBtn = document.getElementById('pwaInstallBtn');
+            var dismissBtn = document.getElementById('pwaDismissBtn');
+            var DISMISS_KEY = 'cleancrew_pwa_dismiss';
+
+            function isStandalone() {
+                return window.matchMedia('(display-mode: standalone)').matches ||
+                    window.navigator.standalone === true;
+            }
+            function dismissed() {
+                try { return localStorage.getItem(DISMISS_KEY) === '1'; } catch (e) { return false; }
+            }
+            function showBanner() {
+                if (!banner || isStandalone() || dismissed()) return;
+                banner.classList.add('show');
+            }
+            function hideBanner() {
+                if (banner) banner.classList.remove('show');
+            }
+
+            window.addEventListener('beforeinstallprompt', function (e) {
+                e.preventDefault();
+                deferredPrompt = e;
+                showBanner();
+            });
+
+            if (installBtn) {
+                installBtn.addEventListener('click', function () {
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        deferredPrompt.userChoice.then(function () {
+                            deferredPrompt = null;
+                            hideBanner();
+                        });
+                    } else {
+                        // iOS / browsers without beforeinstallprompt
+                        var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+                        if (isIOS) {
+                            alert('On iPhone: tap the Share button, then “Add to Home Screen”.');
+                        } else {
+                            alert('Use your browser menu → Install app / Add to Home screen.');
+                        }
+                        hideBanner();
+                    }
+                });
+            }
+            if (dismissBtn) {
+                dismissBtn.addEventListener('click', function () {
+                    try { localStorage.setItem(DISMISS_KEY, '1'); } catch (e) {}
+                    hideBanner();
+                });
+            }
+
+            // iOS: show soft tip once (no beforeinstallprompt on Safari)
+            if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !isStandalone() && !dismissed()) {
+                setTimeout(showBanner, 2500);
+            }
+
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function () {
+                    navigator.serviceWorker.register('/sw.js').catch(function () {});
+                });
+            }
+        })();
+
+    </script>
 </body>
 </html>

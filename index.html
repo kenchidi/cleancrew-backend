@@ -2,6 +2,13 @@
 <html lang="en">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#1A6DDB" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="CleanCrew" />
+    <meta name="application-name" content="CleanCrew" />
+
     <title>CleanCrew — Run cleaning & laundry jobs without the chaos</title>
     <meta name="description" content="CleanCrew helps cleaning and laundry businesses track jobs, clients, inventory, invoices and staff. 25 free jobs for life. Local pricing in your dashboard. Free to start — no card required." />
     <meta property="og:title" content="CleanCrew — Cleaning & laundry ops, simplified" />
@@ -490,6 +497,15 @@
                 revealEls.forEach(function (el) { el.classList.add('in'); });
             }
         })();
+    </script>
+
+    <script>
+    (function () {
+      if (!('serviceWorker' in navigator)) return;
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/sw.js').catch(function () {});
+      });
+    })();
     </script>
 </body>
 </html>
