@@ -312,43 +312,73 @@
             stroke: #fff;
         }
 
+        .mode-switch-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .mode-switch-wrap .mode-label {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--slate);
+            white-space: nowrap;
+        }
         .service-toggle {
             display: flex;
-            gap: 4px;
+            gap: 0;
             background: var(--surface);
-            border-radius: var(--radius-sm);
-            padding: 3px;
-            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 4px;
+            border: 1.5px solid var(--border);
+            box-shadow: var(--shadow-sm);
         }
         .service-toggle button {
             display: flex;
             align-items: center;
-            gap: 5px;
-            padding: 6px 14px;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 14px;
             border: none;
             background: transparent;
-            border-radius: 8px;
+            border-radius: 9px;
             font-family: inherit;
-            font-size: 12px;
-            font-weight: 600;
+            font-size: 13px;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.15s ease;
             color: var(--slate);
+            min-height: 36px;
         }
         .service-toggle button .icon {
-            width: 14px;
-            height: 14px;
+            width: 15px;
+            height: 15px;
+            flex-shrink: 0;
+        }
+        .service-toggle button:not(.active):hover {
+            color: var(--ink);
+            background: rgba(255,255,255,.6);
         }
         .service-toggle button.active {
             background: var(--white);
             color: var(--ink);
-            box-shadow: var(--shadow-sm);
+            box-shadow: 0 1px 3px rgba(11,21,38,.12);
         }
         .service-toggle button.cleaning.active {
-            color: var(--blue);
+            background: var(--blue);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(26,109,219,.35);
         }
         .service-toggle button.laundry.active {
-            color: var(--whatsapp);
+            background: var(--whatsapp, #25D366);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(37,211,102,.35);
+        }
+        @media (max-width: 480px) {
+            .mode-switch-wrap .mode-label { display: none; }
+            .service-toggle button { padding: 8px 12px; font-size: 12px; }
         }
 
         /* ============================================
@@ -1802,9 +1832,16 @@
                 <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleSidebar()" aria-label="Menu">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
                 </button>
-                <div class="service-toggle" style="margin:0;">
-                    <button type="button" class="cleaning active" id="modeCleaning" onclick="setServiceType('cleaning')">Cleaning</button>
-                    <button type="button" class="laundry" id="modeLaundry" onclick="setServiceType('laundry')">Laundry</button>
+                <div class="mode-switch-wrap">
+                    <span class="mode-label">Mode</span>
+                    <div class="service-toggle" style="margin:0;" role="group" aria-label="Business mode">
+                        <button type="button" class="cleaning active" id="modeCleaning" onclick="setServiceType('cleaning')" aria-pressed="true">
+                            <span aria-hidden="true">🧹</span> Cleaning
+                        </button>
+                        <button type="button" class="laundry" id="modeLaundry" onclick="setServiceType('laundry')" aria-pressed="false">
+                            <span aria-hidden="true">👕</span> Laundry
+                        </button>
+                    </div>
                 </div>
                 <div class="user-stats">
                     <span id="freeJobsBadge" class="credit-badge" style="background:#D1FAE5;color:#065F46;border-color:#A7F3D0;">Free jobs: —</span>
@@ -1833,13 +1870,16 @@
                 <span id="planBadge" class="plan-badge active" style="display:none;"></span>
                 <span id="freeJobsBadgeOld" class="credit-badge" style="background:#D1FAE5;color:#065F46;border-color:#A7F3D0;" title="Free jobs left (lifetime)">Free jobs: —</span>
                 <span id="creditBadgeOld" class="credit-badge" onclick="goToCredits()" title="Purchased job credits">Credits: 0</span>
-                <div class="service-toggle">
-                    <button type="button" class="cleaning active" id="modeCleaningOld" onclick="setServiceType('cleaning')">
-                        <svg class="icon"><use href="#ic-sparkle"/></svg> Cleaning
-                    </button>
-                    <button type="button" class="laundry" id="modeLaundryOld" onclick="setServiceType('laundry')">
-                        <svg class="icon"><use href="#ic-laundry"/></svg> Laundry
-                    </button>
+                <div class="mode-switch-wrap">
+                    <span class="mode-label">Mode</span>
+                    <div class="service-toggle" role="group" aria-label="Business mode">
+                        <button type="button" class="cleaning active" id="modeCleaningOld" onclick="setServiceType('cleaning')" aria-pressed="true">
+                            <span aria-hidden="true">🧹</span> Cleaning
+                        </button>
+                        <button type="button" class="laundry" id="modeLaundryOld" onclick="setServiceType('laundry')" aria-pressed="false">
+                            <span aria-hidden="true">👕</span> Laundry
+                        </button>
+                    </div>
                 </div>
                 <button class="logout-btn" onclick="logout()">
                     <svg class="icon"><use href="#ic-x"/></svg> Logout
@@ -2822,9 +2862,12 @@
 
             document.querySelectorAll('.service-toggle button').forEach(function(btn) {
                 btn.classList.remove('active');
+                btn.setAttribute('aria-pressed', 'false');
             });
-            var activeBtn = document.querySelector('.service-toggle .' + type);
-            if (activeBtn) activeBtn.classList.add('active');
+            document.querySelectorAll('.service-toggle button.' + type).forEach(function(btn) {
+                btn.classList.add('active');
+                btn.setAttribute('aria-pressed', 'true');
+            });
 
             var label = type === 'laundry' ? 'Laundry' : 'Cleaning';
             var recentEl = document.getElementById('recentJobsTitle');
