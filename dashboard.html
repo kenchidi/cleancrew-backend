@@ -3959,6 +3959,13 @@
             if (overlay) overlay.classList.add('active');
         }
 
+
+        document.addEventListener('click', function(e) {
+            document.querySelectorAll('details.job-more[open]').forEach(function(d) {
+                if (!d.contains(e.target)) d.removeAttribute('open');
+            });
+        });
+
         function renderJobs(jobs) {
             jobs = jobs || jobsData;
             var filter = document.getElementById('jobFilter') ? document.getElementById('jobFilter').value : 'all';
@@ -4029,9 +4036,15 @@
                     ? '<span class="note-pill" title="Has notes">📝 Note</span>'
                     : '';
 
-                // Stop row click when using action buttons
-                actionButtons = actionButtons.replace(/onclick="/g, 'onclick="event.stopPropagation();');
-                cancelButton = cancelButton.replace(/onclick="/g, 'onclick="event.stopPropagation();');
+                // Primary action + compact "More" menu (mobile-friendly)
+                var primary = actionButtons.replace(/onclick="/g, 'onclick="event.stopPropagation();');
+                var moreItems = '';
+                moreItems += '<button type="button" onclick="event.stopPropagation();openJobDetail(\'' + j.id + '\')">View details</button>';
+                moreItems += '<button type="button" onclick="event.stopPropagation();sendSingleWhatsApp(\'' + j.client + '\', \'' + (j.phone || '') + '\')">WhatsApp</button>';
+                if (j.status === 'draft' || j.status === 'pending' || j.status === 'in-progress') {
+                    moreItems += '<button type="button" class="danger" onclick="event.stopPropagation();updateJobStatus(\'' + j.id + '\', \'cancelled\')">Cancel job</button>';
+                }
+                moreItems += '<button type="button" class="danger" onclick="event.stopPropagation();deleteJobItem(\'' + j.id + '\')">Delete</button>';
 
                 return '<tr class="job-row" onclick="openJobDetail(\'' + j.id + '\')">' +
                     '<td>' + (i + 1) + '</td>' +
@@ -4043,13 +4056,14 @@
                     '<td>' + (j.date || 'N/A') + '</td>' +
                     '<td><strong>' + formatMoney(j.amount) + '</strong></td>' +
                     '<td><span class="status-badge ' + j.status + '">' + j.status + '</span></td>' +
-                    '<td><div class="table-actions" onclick="event.stopPropagation()">' +
-                    actionButtons +
-                    cancelButton +
-                    '<button type="button" class="btn btn-outline btn-sm" onclick="openJobDetail(\'' + j.id + '\')">View</button>' +
-                    '<button class="btn btn-whatsapp btn-sm" onclick="sendSingleWhatsApp(\'' + j.client + '\', \'' + (j.phone || '') + '\')"><svg class="icon"><use href="#ic-chat"/></svg></button>' +
-                    '<button class="btn btn-danger btn-sm" onclick="deleteJobItem(\'' + j.id + '\')"><svg class="icon"><use href="#ic-trash"/></svg></button>' +
-                    '</div></td>' +
+                    '<td><div class="job-actions" onclick="event.stopPropagation()">' +
+                    '<div class="job-actions-primary">' +
+                    (primary || '') +
+                    '<details class="job-more">' +
+                    '<summary title="More actions" onclick="event.stopPropagation()">···</summary>' +
+                    '<div class="job-more-menu">' + moreItems + '</div>' +
+                    '</details>' +
+                    '</div></div></td>' +
                     '</tr>';
             }).join('');
         }
