@@ -4300,10 +4300,15 @@
                     '<td>' + (c.location || 'N/A') + '</td>' +
                     '<td>' + clientJobs.length + '</td>' +
                     '<td><strong>' + formatMoney(totalSpent) + '</strong></td>' +
-                    '<td><div class="table-actions">' +
-                    '<button type="button" class="btn btn-whatsapp btn-sm" title="WhatsApp" onclick="sendSingleWhatsApp(\'' + escJsAttr(c.name) + '\', \'' + escJsAttr(c.phone || '') + '\')"><svg class="icon"><use href="#ic-chat"/></svg></button>' +
-                    '<button type="button" class="btn btn-danger btn-sm" title="Delete client" onclick="deleteClientItem(\'' + escJsAttr(c.id) + '\')"><svg class="icon"><use href="#ic-trash"/></svg></button>' +
-                    '</div></td>' +
+                    '<td><div class="job-actions" onclick="event.stopPropagation()">' +
+                    '<div class="job-actions-primary">' +
+                    '<button type="button" class="btn btn-whatsapp btn-sm" onclick="sendSingleWhatsApp(\'' + escJsAttr(c.name) + '\', \'' + escJsAttr(c.phone || '') + '\')">WhatsApp</button>' +
+                    '<details class="job-more">' +
+                    '<summary title="More actions" onclick="event.stopPropagation()">···</summary>' +
+                    '<div class="job-more-menu">' +
+                    '<button type="button" class="danger" onclick="event.stopPropagation();deleteClientItem(\'' + escJsAttr(c.id) + '\')">Delete client</button>' +
+                    '</div></details>' +
+                    '</div></div></td>' +
                     '</tr>';
             }).join('');
         }
@@ -4323,10 +4328,15 @@
                             '<td>' + (s.phone || 'N/A') + '</td>' +
                             '<td>' + (s.role || 'Cleaner') + '</td>' +
                             '<td>0</td>' +
-                            '<td><div class="table-actions">' +
-                            '<button type="button" class="btn btn-whatsapp btn-sm" title="WhatsApp" onclick="sendSingleWhatsApp(\'' + escJsAttr(s.name) + '\', \'' + escJsAttr(s.phone || '') + '\')"><svg class="icon"><use href="#ic-chat"/></svg></button>' +
-                            '<button type="button" class="btn btn-danger btn-sm" title="Delete staff" onclick="deleteStaffItem(\'' + escJsAttr(s.id) + '\')"><svg class="icon"><use href="#ic-trash"/></svg></button>' +
-                            '</div></td>' +
+                            '<td><div class="job-actions" onclick="event.stopPropagation()">' +
+                            '<div class="job-actions-primary">' +
+                            '<button type="button" class="btn btn-whatsapp btn-sm" onclick="sendSingleWhatsApp(\'' + escJsAttr(s.name) + '\', \'' + escJsAttr(s.phone || '') + '\')">WhatsApp</button>' +
+                            '<details class="job-more">' +
+                            '<summary title="More actions" onclick="event.stopPropagation()">···</summary>' +
+                            '<div class="job-more-menu">' +
+                            '<button type="button" class="danger" onclick="event.stopPropagation();deleteStaffItem(\'' + escJsAttr(s.id) + '\')">Delete staff</button>' +
+                            '</div></details>' +
+                            '</div></div></td>' +
                             '</tr>';
                     }).join('');
                 })
@@ -4369,19 +4379,28 @@
                         var pdfStatus = inv.pdf_url ? '<span class="invoice-pdf-status generated">✅ PDF</span>' :
                             '<span class="invoice-pdf-status not-generated">⏳ Not generated</span>';
 
-                        var actions = '';
                         var invId = escJsAttr(inv.id);
-                        if (inv.pdf_url) {
-                            actions += '<button type="button" class="btn btn-outline btn-sm" title="View PDF" onclick="window.open(\'' + escJsAttr(inv.pdf_url) + '\',\'_blank\')">View PDF</button>';
-                            actions += '<button type="button" class="btn btn-primary btn-sm" title="Regenerate PDF" onclick="generateInvoicePDF(\'' + invId + '\')">Regen PDF</button>';
-                        } else {
-                            actions += '<button type="button" class="btn btn-primary btn-sm" title="Generate PDF" onclick="generateInvoicePDF(\'' + invId + '\')">Generate PDF</button>';
-                        }
-                        actions += '<button type="button" class="btn btn-whatsapp btn-sm" title="Share on WhatsApp" onclick="shareInvoiceWhatsApp(\'' + invId + '\')"><svg class="icon"><use href="#ic-chat"/></svg></button>';
+                        var primaryBtn = '';
                         if (status !== 'paid') {
-                            actions += '<button type="button" class="btn btn-success btn-sm" title="Record payment" onclick="openRecordPayment(\'' + invId + '\')">💰</button>';
+                            primaryBtn = '<button type="button" class="btn btn-success btn-sm" onclick="openRecordPayment(\'' + invId + '\')">Record pay</button>';
+                        } else if (inv.pdf_url) {
+                            primaryBtn = '<button type="button" class="btn btn-outline btn-sm" onclick="window.open(\'' + escJsAttr(inv.pdf_url) + '\',\'_blank\')">View PDF</button>';
+                        } else {
+                            primaryBtn = '<button type="button" class="btn btn-primary btn-sm" onclick="generateInvoicePDF(\'' + invId + '\')">PDF</button>';
                         }
-                        actions += '<button type="button" class="btn btn-danger btn-sm" title="Delete invoice" onclick="deleteInvoiceItem(\'' + invId + '\')"><svg class="icon"><use href="#ic-trash"/></svg></button>';
+
+                        var moreItems = '';
+                        if (inv.pdf_url) {
+                            moreItems += '<button type="button" onclick="event.stopPropagation();window.open(\'' + escJsAttr(inv.pdf_url) + '\',\'_blank\')">View PDF</button>';
+                            moreItems += '<button type="button" onclick="event.stopPropagation();generateInvoicePDF(\'' + invId + '\')">Regen PDF</button>';
+                        } else {
+                            moreItems += '<button type="button" onclick="event.stopPropagation();generateInvoicePDF(\'' + invId + '\')">Generate PDF</button>';
+                        }
+                        moreItems += '<button type="button" onclick="event.stopPropagation();shareInvoiceWhatsApp(\'' + invId + '\')">WhatsApp</button>';
+                        if (status !== 'paid') {
+                            moreItems += '<button type="button" onclick="event.stopPropagation();openRecordPayment(\'' + invId + '\')">Record payment</button>';
+                        }
+                        moreItems += '<button type="button" class="danger" onclick="event.stopPropagation();deleteInvoiceItem(\'' + invId + '\')">Delete invoice</button>';
 
                         return '<tr>' +
                             '<td>' + (i + 1) + '</td>' +
@@ -4390,7 +4409,14 @@
                             '<td><strong>' + formatMoney(amountDue) + '</strong>' + paidLabel + '</td>' +
                             '<td><span style="padding:2px 10px;border-radius:100px;font-size:10px;font-weight:700;' + statusColor + '">' + status + '</span></td>' +
                             '<td>' + date + '</td>' +
-                            '<td><div class="table-actions">' + actions + '</div></td>' +
+                            '<td><div class="job-actions" onclick="event.stopPropagation()">' +
+                            '<div class="job-actions-primary">' +
+                            primaryBtn +
+                            '<details class="job-more">' +
+                            '<summary title="More actions" onclick="event.stopPropagation()">···</summary>' +
+                            '<div class="job-more-menu">' + moreItems + '</div>' +
+                            '</details>' +
+                            '</div></div></td>' +
                             '</tr>';
                     }).join('');
                 })
@@ -5654,6 +5680,13 @@
             }
         })();
 
-    </script>
+    
+        // Close ··· menus when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.closest && e.target.closest('.job-more')) return;
+            document.querySelectorAll('details.job-more[open]').forEach(function(d) { d.open = false; });
+        });
+
+</script>
 </body>
 </html>
