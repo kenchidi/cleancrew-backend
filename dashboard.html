@@ -1579,6 +1579,13 @@
             border: 1px solid #BFDBFE;
         }
         .credit-badge:hover { background: #DBEAFE; }
+        .credit-packs-scroll-hint {
+            display: none;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--slate);
+            margin: 4px 0 0;
+        }
         .credit-packs-grid {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1587,27 +1594,96 @@
         }
         .credit-pack {
             border: 1.5px solid var(--border);
-            border-radius: var(--radius);
-            padding: 14px 12px;
-            text-align: center;
+            border-radius: 16px;
+            padding: 18px 16px 16px;
+            text-align: left;
             background: var(--white);
             min-width: 0;
+            display: flex;
+            flex-direction: column;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
         }
-        .credit-pack .pack-name { font-weight: 800; font-size: 14px; }
-        .credit-pack .pack-jobs { font-size: 20px; font-weight: 900; color: var(--blue); margin: 6px 0; line-height: 1.15; }
-        .credit-pack .pack-price { font-size: 13px; color: var(--slate); margin-bottom: 10px; }
-        .credit-pack .btn { width: 100%; }
+        .credit-pack:hover {
+            border-color: #BFDBFE;
+            box-shadow: 0 8px 24px rgba(15, 79, 168, 0.08);
+        }
+        .credit-pack.is-best {
+            border-color: var(--blue);
+            background: linear-gradient(180deg, var(--blue-mist) 0%, var(--white) 55%);
+            box-shadow: 0 8px 24px rgba(26, 109, 219, 0.12);
+        }
+        .credit-pack .pack-badge {
+            display: inline-block;
+            align-self: flex-start;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--blue-dark);
+            background: var(--blue-light);
+            padding: 3px 8px;
+            border-radius: 100px;
+            margin-bottom: 10px;
+        }
+        .credit-pack .pack-name {
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--slate);
+            margin: 0 0 4px;
+        }
+        .credit-pack .pack-jobs {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--ink);
+            margin: 0 0 8px;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+        }
+        .credit-pack .pack-jobs span {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--slate);
+            letter-spacing: 0;
+        }
+        .credit-pack .pack-price {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--ink);
+            margin: 0 0 2px;
+        }
+        .credit-pack .pack-per {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--slate);
+            margin: 0 0 14px;
+        }
+        .credit-pack .btn {
+            width: 100%;
+            margin-top: auto;
+            border-radius: 10px;
+            font-weight: 700;
+        }
         @media (max-width: 900px) {
+            .credit-packs-scroll-hint { display: block; }
             .credit-packs-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
+                display: flex;
+                flex-direction: row;
+                flex-wrap: nowrap;
+                gap: 12px;
+                overflow-x: auto;
+                overflow-y: hidden;
+                scroll-snap-type: x mandatory;
+                -webkit-overflow-scrolling: touch;
+                padding: 4px 4px 14px;
+                margin-left: -4px;
+                margin-right: -4px;
+                scrollbar-width: none;
             }
-        }
-        @media (max-width: 420px) {
-            .credit-packs-grid {
-                grid-template-columns: 1fr;
-            }
+            .credit-packs-grid::-webkit-scrollbar { display: none; }
             .credit-pack {
-                padding: 16px 14px;
+                flex: 0 0 min(72vw, 260px);
+                scroll-snap-align: start;
+                max-width: 280px;
             }
         }
         .invoice-pdf-status.generated { color: var(--green); font-size: 11px; font-weight: 700; }
@@ -2129,6 +2205,7 @@
                     <strong style="color:var(--ink);">Pay only for what you use.</strong>
                     Credits are spent when you add a job — <strong style="color:var(--ink);">they don’t expire</strong>.
                 </p>
+                <p class="credit-packs-scroll-hint">Swipe for more packs →</p>
                 <div class="credit-packs-grid" id="creditPacksGrid">
                     <!-- filled by renderCreditPacksUI() -->
                 </div>
@@ -2600,13 +2677,13 @@
                 var pk = packs[key];
                 if (!pk) return;
                 var best = key === 'professional';
-                html += '<div class="credit-pack"' + (best ? ' style="border-color:var(--blue);background:var(--blue-mist);"' : '') + '>' +
-                    '<div class="pack-name">' + (best ? '⭐ ' : '') + pk.label + '</div>' +
-                    '<div class="pack-jobs">' + pk.jobs + ' jobs</div>' +
-                    '<div class="pack-price">' + formatMoney(pk.price) +
-                    '<br><span style="font-size:11px;">' + formatMoney(pk.per) + '/job</span></div>' +
-                    '<button type="button" class="btn btn-primary btn-sm" onclick="buyCredits(\'' + key + '\')">Buy</button></div>';
-            });
+                html += '<div class="credit-pack' + (best ? ' is-best' : '') + '">' +
+                    (best ? '<span class="pack-badge">Popular</span>' : '') +
+                    '<div class="pack-name">' + pk.label + '</div>' +
+                    '<div class="pack-jobs">' + pk.jobs + ' <span>jobs</span></div>' +
+                    '<div class="pack-price">' + formatMoney(pk.price) + '</div>' +
+                    '<div class="pack-per">' + formatMoney(pk.per) + ' per job</div>' +
+                    '<button type="button" class="btn btn-primary btn-sm" onclick="buyCredits(\'' + key + '\')">Buy pack</button></div>';
             grid.innerHTML = html;
             var hint = document.getElementById('creditsUnlimitedHint');
             if (hint) {
