@@ -2684,6 +2684,7 @@
                     '<div class="pack-price">' + formatMoney(pk.price) + '</div>' +
                     '<div class="pack-per">' + formatMoney(pk.per) + ' per job</div>' +
                     '<button type="button" class="btn btn-primary btn-sm" onclick="buyCredits(\'' + key + '\')">Buy pack</button></div>';
+            });
             grid.innerHTML = html;
             var hint = document.getElementById('creditsUnlimitedHint');
             if (hint) {
