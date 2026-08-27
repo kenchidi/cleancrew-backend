@@ -3582,14 +3582,9 @@
                     phone = match ? (match.phone || '') : '';
                 }
 
-                // Normalize Nigerian WhatsApp numbers to 234XXXXXXXXXX.
-                var digits = String(phone || '').replace(/\D/g, '');
-                if (digits.startsWith('00234')) digits = digits.substring(2);
-                if (digits.startsWith('0')) digits = '234' + digits.substring(1);
-                else if (digits.length === 10) digits = '234' + digits;
-
-                if (!/^234\d{10}$/.test(digits)) {
-                    showToast('No valid WhatsApp number found for ' + client, 'error');
+                var digits = typeof normalizeWaPhone === 'function' ? normalizeWaPhone(phone) : null;
+                if (!digits) {
+                    showToast('No valid WhatsApp number found for ' + client + '. Add their phone on the Clients tab.', 'error');
                     return;
                 }
 
@@ -4230,6 +4225,36 @@
             }).join('');
         }
 
+
+        function escJsAttr(s) {
+            return String(s == null ? '' : s)
+                .replace(/\\/g, '\\\\')
+                .replace(/'/g, "\\'")
+                .replace(/\n/g, ' ')
+                .replace(/\r/g, '');
+        }
+
+        function normalizeWaPhone(phone) {
+            var digits = String(phone || '').replace(/\D/g, '');
+            if (!digits) return null;
+            if (digits.indexOf('00') === 0) digits = digits.substring(2);
+            // Nigeria: 0 + 10 digits
+            if (digits.charAt(0) === '0' && digits.length === 11) {
+                digits = '234' + digits.substring(1);
+            }
+            // Nigeria: 10 digits starting 7/8/9
+            else if (digits.length === 10 && /^[789]/.test(digits)) {
+                digits = '234' + digits;
+            }
+            // Ghana: 0 + 9 digits
+            else if (digits.charAt(0) === '0' && digits.length === 10) {
+                digits = '233' + digits.substring(1);
+            }
+            if (/^234\d{10}$/.test(digits) || /^233\d{9}$/.test(digits)) return digits;
+            if (digits.length >= 11 && digits.length <= 15) return digits;
+            return null;
+        }
+
         function renderClientsFromSearch() {
             if (typeof clientsData !== 'undefined' && clientsData && clientsData.length) {
                 renderClients(clientsData);
@@ -4276,8 +4301,8 @@
                     '<td>' + clientJobs.length + '</td>' +
                     '<td><strong>' + formatMoney(totalSpent) + '</strong></td>' +
                     '<td><div class="table-actions">' +
-                    '<button class="btn btn-whatsapp btn-sm" onclick="sendSingleWhatsApp(\'' + c.name + '\', \'' + (c.phone || '') + '\')"><svg class="icon"><use href="#ic-chat"/></svg></button>' +
-                    '<button class="btn btn-danger btn-sm" onclick="deleteClientItem(\'' + c.id + '\')"><svg class="icon"><use href="#ic-trash"/></svg></button>' +
+                    '<button type="button" class="btn btn-whatsapp btn-sm" title="WhatsApp" onclick="sendSingleWhatsApp(\'' + escJsAttr(c.name) + '\', \'' + escJsAttr(c.phone || '') + '\')"><svg class="icon"><use href="#ic-chat"/></svg></button>' +
+                    '<button type="button" class="btn btn-danger btn-sm" title="Delete client" onclick="deleteClientItem(\'' + escJsAttr(c.id) + '\')"><svg class="icon"><use href="#ic-trash"/></svg></button>' +
                     '</div></td>' +
                     '</tr>';
             }).join('');
@@ -4299,8 +4324,8 @@
                             '<td>' + (s.role || 'Cleaner') + '</td>' +
                             '<td>0</td>' +
                             '<td><div class="table-actions">' +
-                            '<button class="btn btn-whatsapp btn-sm" onclick="sendSingleWhatsApp(\'' + s.name + '\', \'' + (s.phone || '') + '\')"><svg class="icon"><use href="#ic-chat"/></svg></button>' +
-                            '<button class="btn btn-danger btn-sm" onclick="deleteStaffItem(\'' + s.id + '\')"><svg class="icon"><use href="#ic-trash"/></svg></button>' +
+                            '<button type="button" class="btn btn-whatsapp btn-sm" title="WhatsApp" onclick="sendSingleWhatsApp(\'' + escJsAttr(s.name) + '\', \'' + escJsAttr(s.phone || '') + '\')"><svg class="icon"><use href="#ic-chat"/></svg></button>' +
+                            '<button type="button" class="btn btn-danger btn-sm" title="Delete staff" onclick="deleteStaffItem(\'' + escJsAttr(s.id) + '\')"><svg class="icon"><use href="#ic-trash"/></svg></button>' +
                             '</div></td>' +
                             '</tr>';
                     }).join('');
@@ -4345,17 +4370,18 @@
                             '<span class="invoice-pdf-status not-generated">⏳ Not generated</span>';
 
                         var actions = '';
+                        var invId = escJsAttr(inv.id);
                         if (inv.pdf_url) {
-                            actions += '<button class="btn btn-outline btn-sm" onclick="window.open(\'' + inv.pdf_url + '\',\'_blank\')">View PDF</button>';
-                            actions += '<button class="btn btn-primary btn-sm" onclick="generateInvoicePDF(\'' + inv.id + '\')">Regen PDF</button>';
+                            actions += '<button type="button" class="btn btn-outline btn-sm" title="View PDF" onclick="window.open(\'' + escJsAttr(inv.pdf_url) + '\',\'_blank\')">View PDF</button>';
+                            actions += '<button type="button" class="btn btn-primary btn-sm" title="Regenerate PDF" onclick="generateInvoicePDF(\'' + invId + '\')">Regen PDF</button>';
                         } else {
-                            actions += '<button class="btn btn-primary btn-sm" onclick="generateInvoicePDF(\'' + inv.id + '\')">Generate PDF</button>';
+                            actions += '<button type="button" class="btn btn-primary btn-sm" title="Generate PDF" onclick="generateInvoicePDF(\'' + invId + '\')">Generate PDF</button>';
                         }
-                        actions += '<button class="btn btn-whatsapp btn-sm" onclick="shareInvoiceWhatsApp(\'' + inv.id + '\')"><svg class="icon"><use href="#ic-chat"/></svg></button>';
+                        actions += '<button type="button" class="btn btn-whatsapp btn-sm" title="Share on WhatsApp" onclick="shareInvoiceWhatsApp(\'' + invId + '\')"><svg class="icon"><use href="#ic-chat"/></svg></button>';
                         if (status !== 'paid') {
-                            actions += '<button class="btn btn-success btn-sm" onclick="openRecordPayment(\'' + inv.id + '\')">💰</button>';
+                            actions += '<button type="button" class="btn btn-success btn-sm" title="Record payment" onclick="openRecordPayment(\'' + invId + '\')">💰</button>';
                         }
-                        actions += '<button class="btn btn-danger btn-sm" onclick="deleteInvoiceItem(\'' + inv.id + '\')"><svg class="icon"><use href="#ic-trash"/></svg></button>';
+                        actions += '<button type="button" class="btn btn-danger btn-sm" title="Delete invoice" onclick="deleteInvoiceItem(\'' + invId + '\')"><svg class="icon"><use href="#ic-trash"/></svg></button>';
 
                         return '<tr>' +
                             '<td>' + (i + 1) + '</td>' +
@@ -4465,46 +4491,57 @@
         }
 
         function deleteClientItem(id) {
-            if (!confirm('Delete this client?')) return;
+            if (!id) { showToast('Client not found', 'error'); return; }
+            if (!confirm('Delete this client? This cannot be undone.')) return;
             deleteClient(id)
                 .then(function() {
                     showToast('Client deleted', 'success');
-                    renderAll();
+                    return getClients();
                 })
-                .catch(function() {
-                    showToast('Failed to delete client', 'error');
+                .then(function(clients) {
+                    clientsData = clients || [];
+                    renderClients(clientsData);
+                    if (typeof renderAll === 'function') renderAll();
+                })
+                .catch(function(e) {
+                    console.error('deleteClient', e);
+                    showToast((e && e.message) || 'Failed to delete client', 'error');
                 });
         }
 
         function deleteStaffItem(id) {
-            if (!confirm('Delete this staff member?')) return;
+            if (!id) { showToast('Staff not found', 'error'); return; }
+            if (!confirm('Delete this staff member? This cannot be undone.')) return;
             fetch(API_URL + '/staff/' + id, {
                     method: 'DELETE',
                     headers: getHeaders()
                 })
                 .then(function(res) {
-                    if (!res.ok) throw new Error('Failed to delete staff');
+                    if (!res.ok) return parseApiError(res);
                     showToast('Staff deleted', 'success');
                     renderStaff();
                 })
-                .catch(function() {
-                    showToast('Failed to delete staff', 'error');
+                .catch(function(e) {
+                    console.error('deleteStaff', e);
+                    showToast((e && e.message) || 'Failed to delete staff', 'error');
                 });
         }
 
         function deleteInvoiceItem(id) {
-            if (!confirm('Delete this invoice?')) return;
+            if (!id) { showToast('Invoice not found', 'error'); return; }
+            if (!confirm('Delete this invoice? This cannot be undone.')) return;
             fetch(API_URL + '/invoices/' + id, {
                     method: 'DELETE',
                     headers: getHeaders()
                 })
                 .then(function(res) {
-                    if (!res.ok) throw new Error('Failed to delete invoice');
+                    if (!res.ok) return parseApiError(res);
                     showToast('Invoice deleted', 'success');
                     renderInvoices();
                 })
-                .catch(function() {
-                    showToast('Failed to delete invoice', 'error');
+                .catch(function(e) {
+                    console.error('deleteInvoice', e);
+                    showToast((e && e.message) || 'Failed to delete invoice', 'error');
                 });
         }
 
@@ -5174,34 +5211,20 @@
         }
 
         function sendSingleWhatsApp(name, phone) {
-    if (!phone || phone === 'N/A' || phone === '') {
-        showToast('No phone number available for this contact', 'error');
-        return;
-    }
-    
-    // ─── FIX: Properly format phone number ───
-    var formattedPhone = phone.replace(/[^\d]/g, ''); // Remove all non-digits
-    
-    // If number starts with 0, remove it
-    if (formattedPhone.startsWith('0')) {
-        formattedPhone = formattedPhone.substring(1);
-    }
-    
-    // If number doesn't start with 234, add it
-    if (!formattedPhone.startsWith('234') && formattedPhone.length >= 10) {
-        formattedPhone = '234' + formattedPhone;
-    }
-    
-    if (formattedPhone.length < 10) {
-        showToast('Invalid phone number format', 'error');
-        return;
-    }
-    
-    var message = '🧹 Hello ' + name + '! 👋\n\nThis is a reminder about your upcoming service.\n\nThank you for choosing CleanCrew! 🧹';
-    var url = 'https://wa.me/' + formattedPhone + '?text=' + encodeURIComponent(message);
-    window.open(url, '_blank');
-    showToast('Opening WhatsApp...', 'whatsapp');
-}
+            if (!phone || phone === 'N/A' || String(phone).trim() === '') {
+                showToast('No phone number for ' + (name || 'this contact'), 'error');
+                return;
+            }
+            var formatted = normalizeWaPhone(phone);
+            if (!formatted) {
+                showToast('Invalid phone number format', 'error');
+                return;
+            }
+            var message = 'Hello ' + (name || 'there') + '!\n\nThis is a message from CleanCrew regarding your service.\n\nThank you!';
+            var url = 'https://wa.me/' + formatted + '?text=' + encodeURIComponent(message);
+            window.open(url, '_blank');
+            showToast('Opening WhatsApp…', 'whatsapp');
+        }
 
         function sendBulkWhatsApp() {
             var body = document.getElementById('msgBody').value.trim();
@@ -5245,11 +5268,8 @@
                     showToast('Sending to ' + recipientNames.length + ' client(s)', 'whatsapp');
 
                     if (phones.length > 0) {
-                        var digits = String(phones[0]).replace(/\D/g, '');
-                        if (digits.startsWith('00234')) digits = digits.substring(2);
-                        if (digits.startsWith('0')) digits = '234' + digits.substring(1);
-                        else if (digits.length === 10) digits = '234' + digits;
-                        if (!/^234\d{10}$/.test(digits)) {
+                        var digits = normalizeWaPhone(phones[0]);
+                        if (!digits) {
                             showToast('Invalid WhatsApp number for the selected client', 'error');
                             return;
                         }
