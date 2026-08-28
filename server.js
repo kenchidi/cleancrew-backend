@@ -19,7 +19,14 @@ app.use(express.static(__dirname));
 
 const supabase = createClient(
     process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
+    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    {
+        auth: {
+            persistSession: false,
+            autoRefreshToken: false,
+            detectSessionInUrl: false
+        }
+    }
 );
 
 console.log(
@@ -2152,10 +2159,14 @@ app.post(
 
                 // Surface RLS clearly — almost always wrong/missing SERVICE_ROLE key
                 if (/row-level security|RLS/i.test(msg)) {
+                    console.error(
+                        'RLS on jobs insert — user:',
+                        userId,
+                        '| key role check: ensure SUPABASE_SERVICE_ROLE_KEY is service_role, not anon'
+                    );
                     return res.status(500).json({
                         error:
-                            'Database security blocked this job (RLS). ' +
-                            'On Render, set SUPABASE_SERVICE_ROLE_KEY to the service_role key from Supabase (Settings → API), not the anon key. Then redeploy.',
+                            'Could not save this job right now. Please try again in a moment. If it keeps failing, contact support on WhatsApp.',
                         code: 'RLS_JOBS_INSERT',
                         detail: msg
                     });
