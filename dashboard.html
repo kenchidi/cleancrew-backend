@@ -1893,6 +1893,159 @@
             font-weight: 700;
             border-radius: 100px;
         }
+
+
+        .onboarding-card {
+            background: linear-gradient(180deg, #F0F9FF 0%, var(--white) 100%);
+            border: 1px solid var(--blue-light);
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-sm);
+        }
+        .onboarding-card h3 {
+            margin: 0 0 4px;
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--ink);
+            letter-spacing: -0.02em;
+        }
+        .onboarding-card > p {
+            margin: 0 0 14px;
+            font-size: 13px;
+            color: var(--slate);
+            line-height: 1.4;
+        }
+        .onboarding-steps {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .onboarding-steps li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--ink);
+            padding: 10px 12px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+        }
+        .onboarding-steps li.done {
+            opacity: 0.7;
+        }
+        .onboarding-steps li.done .ob-check {
+            background: var(--green);
+            color: #fff;
+            border-color: var(--green);
+        }
+        .onboarding-steps .ob-check {
+            flex-shrink: 0;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 800;
+            color: transparent;
+        }
+        .onboarding-steps li.done .ob-check::after {
+            content: '✓';
+            color: #fff;
+        }
+        .onboarding-steps .ob-action {
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+        .onboarding-steps .ob-action .btn {
+            padding: 6px 10px;
+            font-size: 12px;
+        }
+        .onboarding-card .ob-dismiss {
+            margin-top: 12px;
+            background: none;
+            border: none;
+            color: var(--slate);
+            font-size: 12px;
+            font-family: inherit;
+            cursor: pointer;
+            text-decoration: underline;
+            padding: 0;
+        }
+        #profitReport.is-soft-hidden,
+        .stats-grid.is-soft-hidden {
+            /* keep layout simple for brand-new users — still show stats */
+        }
+        .first-run-hero {
+            text-align: center;
+            padding: 28px 16px;
+            border: 1.5px dashed var(--border);
+            border-radius: var(--radius);
+            background: var(--surface);
+            margin-bottom: 16px;
+        }
+        .first-run-hero strong {
+            display: block;
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--ink);
+            margin-bottom: 6px;
+        }
+        .first-run-hero span {
+            display: block;
+            font-size: 13px;
+            color: var(--slate);
+            margin-bottom: 16px;
+            line-height: 1.45;
+            max-width: 320px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .first-run-hero .btn-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .credits-quiet-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 4px 0;
+        }
+        .credits-quiet-stats {
+            font-size: 13px;
+            color: var(--slate);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+        }
+        .credits-quiet-stats strong {
+            color: var(--ink);
+            font-weight: 800;
+        }
+        .credits-quiet-dot { opacity: 0.5; }
+        .credits-manager-panel {
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+        }
+        .credits-manager-panel[hidden] {
+            display: none !important;
+        }
+
         /* Soften redesign sidebar if present — keep consistent */
         .sidebar {
             box-shadow: 4px 0 24px rgba(11,21,38,0.04);
@@ -2119,12 +2272,44 @@
 
         <div class="demo-strip" id="demoStrip">
             <div>
-                <strong>Your shop command center</strong>
-                <p>Track jobs, clients, and payments in one place — built for cleaning &amp; laundry businesses.</p>
+                <strong id="demoStripTitle">Track your jobs here</strong>
+                <p id="demoStripSub">When a customer books or drops clothes, add the job — then mark it done when you finish.</p>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
                 <button type="button" class="btn btn-sm" style="background:#0F172A;color:#fff;" onclick="openQuickCapture()">⚡ Quick capture</button>
                 <button type="button" class="btn btn-sm" onclick="openModal('job')">+ Full job</button>
+            </div>
+        </div>
+
+        <div class="onboarding-card" id="onboardingCard" hidden>
+            <h3>Get started in 3 steps</h3>
+            <p>Most shops only need this to begin. You can explore the rest later.</p>
+            <ul class="onboarding-steps">
+                <li id="obStepJob">
+                    <span class="ob-check" aria-hidden="true"></span>
+                    <span>Add your first job</span>
+                    <span class="ob-action"><button type="button" class="btn btn-primary btn-sm" onclick="openQuickCapture()">Add job</button></span>
+                </li>
+                <li id="obStepStatus">
+                    <span class="ob-check" aria-hidden="true"></span>
+                    <span>Update a job status (start or complete)</span>
+                    <span class="ob-action"><button type="button" class="btn btn-outline btn-sm" onclick="switchTab('jobs')">Open jobs</button></span>
+                </li>
+                <li id="obStepClient">
+                    <span class="ob-check" aria-hidden="true"></span>
+                    <span>Save a client <span style="font-weight:500;color:var(--slate);">(optional)</span></span>
+                    <span class="ob-action"><button type="button" class="btn btn-outline btn-sm" onclick="openModal('client')">Add client</button></span>
+                </li>
+            </ul>
+            <button type="button" class="ob-dismiss" onclick="dismissOnboarding()">Hide this checklist</button>
+        </div>
+
+        <div id="firstRunHero" class="first-run-hero" hidden>
+            <strong>No jobs yet — add your first one</strong>
+            <span>Customer waiting? Use Quick capture. Have full details? Use Full job.</span>
+            <div class="btn-row">
+                <button type="button" class="btn btn-primary" onclick="openQuickCapture()">⚡ Quick capture</button>
+                <button type="button" class="btn btn-outline" onclick="openModal('job')">+ Full job</button>
             </div>
         </div>
 
@@ -2183,37 +2368,36 @@
 
             <!-- ─── JOB CREDITS + simple unlimited CTA ─── -->
             <div class="card" id="creditsSection">
-                <div class="card-header">
-                    <h3><svg class="icon"><use href="#ic-wallet"/></svg> Job credits</h3>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="refreshCredits(); refreshFreeJobs();">Refresh</button>
-                </div>
                 <div class="out-of-jobs-banner" id="outOfJobsBanner">
                     <strong>You've used your free jobs.</strong>
-                    Buy a credit pack below to keep adding jobs — or go unlimited.
+                    Add credits or go unlimited to keep creating jobs.
                     <div class="banner-actions">
-                        <button type="button" class="btn btn-primary btn-sm" onclick="buyCredits('professional')">Buy Growth (100 jobs)</button>
-                        <button type="button" class="btn btn-secondary btn-sm" id="goUnlimitedBtn" onclick="subscribeToPlan('starter')">Go Unlimited</button>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="openCreditsManager()">View credit options</button>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="subscribeToPlan('starter')">Go Unlimited</button>
                     </div>
                 </div>
-                <p style="font-size:15px;font-weight:800;margin:0 0 4px;">
-                    Balance: <span id="creditBalanceLabel" style="color:var(--blue);">0</span> credits
-                </p>
-                <p style="font-size:13px;color:var(--slate);margin:0 0 6px;">
-                    Free jobs left: <span id="freeJobsLabel" style="font-weight:700;color:var(--green);">—</span> / 25
-                </p>
-                <p id="creditsValueProp" style="font-size:13px;color:var(--ink-soft);margin:0 0 14px;line-height:1.45;padding:10px 12px;background:var(--blue-mist);border:1px solid var(--blue-light);border-radius:10px;">
-                    <strong style="color:var(--ink);">Pay only for what you use.</strong>
-                    Credits are spent when you add a job — <strong style="color:var(--ink);">they don’t expire</strong>.
-                </p>
-                <p class="credit-packs-scroll-hint">Swipe for more packs →</p>
-                <div class="credit-packs-grid" id="creditPacksGrid">
-                    <!-- filled by renderCreditPacksUI() -->
+                <div class="credits-quiet-bar">
+                    <div class="credits-quiet-stats">
+                        <span>Free jobs left: <strong id="freeJobsLabel">—</strong> / 25</span>
+                        <span class="credits-quiet-dot">·</span>
+                        <span>Credits: <strong id="creditBalanceLabel">0</strong></span>
+                    </div>
+                    <button type="button" class="btn btn-outline btn-sm" id="manageCreditsBtn" onclick="toggleCreditsManager()">Manage credits</button>
                 </div>
-                <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">
-                    <p id="creditsUnlimitedHint" style="margin:0;font-size:13px;color:var(--ink-soft);">
-                        📌 Or subscribe for unlimited
+                <div id="creditsManagerPanel" class="credits-manager-panel" hidden>
+                    <p id="creditsValueProp" style="font-size:13px;color:var(--ink-soft);margin:0 0 12px;line-height:1.45;">
+                        Pay only for what you use. Credits are spent when you add a job — they don’t expire.
                     </p>
-                    <button type="button" class="btn btn-secondary btn-sm" id="goUnlimitedBtn" onclick="subscribeToPlan('starter')">Go Unlimited</button>
+                    <p class="credit-packs-scroll-hint">Swipe for more packs →</p>
+                    <div class="credit-packs-grid" id="creditPacksGrid">
+                        <!-- filled by renderCreditPacksUI() -->
+                    </div>
+                    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">
+                        <p id="creditsUnlimitedHint" style="margin:0;font-size:13px;color:var(--ink-soft);">
+                            Or subscribe for unlimited jobs
+                        </p>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="subscribeToPlan('starter')">Go Unlimited · ₦12,500/mo</button>
+                    </div>
                 </div>
             </div>
 
@@ -2736,6 +2920,31 @@
             if (overlay) overlay.classList.remove('active');
         }
 
+
+        function openCreditsManager() {
+            var panel = document.getElementById('creditsManagerPanel');
+            var btn = document.getElementById('manageCreditsBtn');
+            if (!panel) return;
+            panel.hidden = false;
+            if (btn) btn.textContent = 'Hide options';
+            if (typeof renderCreditPacksUI === 'function') renderCreditPacksUI();
+            try {
+                document.getElementById('creditsSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } catch (e) {}
+        }
+
+        function toggleCreditsManager() {
+            var panel = document.getElementById('creditsManagerPanel');
+            var btn = document.getElementById('manageCreditsBtn');
+            if (!panel) return;
+            if (panel.hidden) {
+                openCreditsManager();
+            } else {
+                panel.hidden = true;
+                if (btn) btn.textContent = 'Manage credits';
+            }
+        }
+
         function goToCredits(highlight) {
             switchTab('overview');
             setTimeout(function() {
@@ -2747,6 +2956,7 @@
                         setTimeout(function() { el.classList.remove('credits-section-highlight'); }, 2800);
                     }
                 }
+                if (typeof openCreditsManager === 'function') openCreditsManager();
             }, 80);
         }
 
@@ -3880,6 +4090,69 @@
             }
         }
 
+
+        function isOnboardingDismissed() {
+            try { return localStorage.getItem('cleancrew_onboarding_done') === '1'; } catch (e) { return false; }
+        }
+        function dismissOnboarding() {
+            try { localStorage.setItem('cleancrew_onboarding_done', '1'); } catch (e) {}
+            var card = document.getElementById('onboardingCard');
+            if (card) card.hidden = true;
+        }
+        function updateOnboardingUI(jobs, clients) {
+            var card = document.getElementById('onboardingCard');
+            var hero = document.getElementById('firstRunHero');
+            if (!card) return;
+
+            jobs = jobs || [];
+            clients = clients || [];
+            var hasJob = jobs.length > 0;
+            var hasProgress = jobs.some(function(j) {
+                var s = (j.status || '').toLowerCase();
+                return s === 'in-progress' || s === 'completed' || s === 'collected' || s === 'delivered' || s === 'cancelled';
+            });
+            var hasClient = clients.length > 0;
+            var allDone = hasJob && hasProgress && hasClient;
+
+            if (isOnboardingDismissed() || allDone) {
+                card.hidden = true;
+                if (allDone) {
+                    try { localStorage.setItem('cleancrew_onboarding_done', '1'); } catch (e) {}
+                }
+            } else {
+                card.hidden = false;
+                var stepJob = document.getElementById('obStepJob');
+                var stepStatus = document.getElementById('obStepStatus');
+                var stepClient = document.getElementById('obStepClient');
+                if (stepJob) stepJob.classList.toggle('done', hasJob);
+                if (stepStatus) stepStatus.classList.toggle('done', hasProgress);
+                if (stepClient) stepClient.classList.toggle('done', hasClient);
+                // Hide action buttons on completed steps
+                if (stepJob) {
+                    var a = stepJob.querySelector('.ob-action');
+                    if (a) a.style.display = hasJob ? 'none' : '';
+                }
+                if (stepStatus) {
+                    var a2 = stepStatus.querySelector('.ob-action');
+                    if (a2) a2.style.display = hasProgress ? 'none' : '';
+                }
+                if (stepClient) {
+                    var a3 = stepClient.querySelector('.ob-action');
+                    if (a3) a3.style.display = hasClient ? 'none' : '';
+                }
+            }
+
+            if (hero) {
+                hero.hidden = hasJob;
+            }
+
+            // Soft-hide profit until they have at least one job (less overwhelm)
+            var profit = document.getElementById('profitReport');
+            if (profit) {
+                profit.style.display = hasJob ? '' : 'none';
+            }
+        }
+
         function renderOverview(jobs, clients) {
             var filteredJobs = jobs.filter(function(j) {
                 return getJobMode(j) === currentServiceType;
@@ -3910,10 +4183,16 @@
             var recent = filteredJobs.slice(0, 5);
             var container = document.getElementById('recentJobs');
             if (recent.length === 0) {
-                container.innerHTML = '<div class="empty-state" style="padding:24px 12px;"><strong>No recent ' + modeLabel + ' jobs</strong><span>Create a job to see it here instantly.</span></div>';
+                container.innerHTML = '<div class="empty-state" style="padding:24px 12px;">' +
+                    '<strong>No ' + modeLabel + ' jobs yet</strong>' +
+                    '<span>When a customer books or drops clothes, add them here.</span>' +
+                    '<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px;">' +
+                    '<button type="button" class="btn btn-primary btn-sm" onclick="openQuickCapture()">⚡ Quick capture</button>' +
+                    '<button type="button" class="btn btn-outline btn-sm" onclick="openModal('job')">+ Full job</button>' +
+                    '</div></div>';
             } else {
                 container.innerHTML = recent.map(function(j) {
-                    return '<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);">' +
+                    return '<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); cursor:pointer;" onclick="openJobDetail(\'' + j.id + '\')">' +
                         '<div>' +
                         '<strong>' + j.client + '</strong>' +
                         '<br>' +
@@ -3929,6 +4208,9 @@
                         '</div>';
                 }).join('');
             }
+
+            // First-login checklist (uses all jobs/clients, not only current mode)
+            updateOnboardingUI(jobs, clients);
         }
 
 
