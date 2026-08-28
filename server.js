@@ -2175,6 +2175,18 @@ app.post(
                 throw error;
             }
 
+            // Optional staff assignments: [{ staff_id, role: 'lead'|'crew' }]
+            try {
+                const assignments = Array.isArray(req.body.staff_assignments)
+                    ? req.body.staff_assignments
+                    : [];
+                if (assignments.length && data && data.id) {
+                    await replaceJobStaff(userId, data.id, assignments);
+                }
+            } catch (staffErr) {
+                console.error('Job created but staff assign failed:', staffErr.message || staffErr);
+            }
+
             res.json({
                 ...data,
 
@@ -2206,6 +2218,180 @@ app.post(
         }
     }
 );
+
+
+// ─── JOB ↔ STAFF ASSIGNMENTS ─────────────────────────────────
+
+async function assertJobOwned(userId, jobId) {
+    const { data, error } = await supabase
+        .from('jobs')
+        .select('id')
+        .eq('id', jobId)
+        .eq('user_id', userId)
+        .maybeSingle();
+    if (error) throw error;
+    if (!data) {
+        const err = new Error('Job not found');
+        err.status = 404;
+        throw err;
+    }
+    return data;
+}
+
+async function replaceJobStaff(userId, jobId, assignments) {
+    await assertJobOwned(userId, jobId);
+
+    const cleaned = (assignments || [])
+        .filter(function (a) { return a && a.staff_id; })
+        .map(function (a) {
+            const role = a.role === 'lead' ? 'lead' : 'crew';
+            return { job_id: jobId, staff_id: a.staff_id, role: role };
+        });
+
+    const leads = cleaned.filter(function (a) { return a.role === 'lead'; });
+    if (cleaned.length && leads.length === 0) {
+        cleaned[0].role = 'lead';
+    }
+    if (leads.length > 1) {
+        let seen = false;
+        cleaned.forEach(function (a) {
+            if (a.role === 'lead') {
+                if (seen) a.role = 'crew';
+                else seen = true;
+            }
+        });
+    }
+
+    const { error: delErr } = await supabase
+        .from('job_staff')
+        .delete()
+        .eq('job_id', jobId);
+    if (delErr) throw delErr;
+
+    if (!cleaned.length) return [];
+
+    const staffIds = cleaned.map(function (a) { return a.staff_id; });
+    const { data: ownedStaff, error: stErr } = await supabase
+        .from('staff')
+        .select('id')
+        .eq('user_id', userId)
+        .in('id', staffIds);
+    if (stErr) throw stErr;
+    const allowed = new Set((ownedStaff || []).map(function (s) { return s.id; }));
+    const rows = cleaned.filter(function (a) { return allowed.has(a.staff_id); });
+    if (!rows.length) return [];
+
+    const { data, error } = await supabase
+        .from('job_staff')
+        .insert(rows)
+        .select();
+    if (error) throw error;
+    return data || [];
+}
+
+app.get('/api/jobs/:id/staff', authenticate, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const jobId = req.params.id;
+        await assertJobOwned(userId, jobId);
+        const { data, error } = await supabase
+            .from('job_staff')
+            .select('id, job_id, staff_id, role, created_at')
+            .eq('job_id', jobId);
+        if (error) throw error;
+        res.json(data || []);
+    } catch (error) {
+        console.error('GET job staff:', error);
+        res.status(error.status || 500).json({ error: error.message });
+    }
+});
+
+app.put('/api/jobs/:id/staff', authenticate, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const jobId = req.params.id;
+        const assignments = Array.isArray(req.body.staff_assignments)
+            ? req.body.staff_assignments
+            : (Array.isArray(req.body) ? req.body : []);
+        const data = await replaceJobStaff(userId, jobId, assignments);
+        res.json(data);
+    } catch (error) {
+        console.error('PUT job staff:', error);
+        res.status(error.status || 500).json({ error: error.message });
+    }
+});
+
+app.get('/api/staff/:id/jobs', authenticate, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const staffId = req.params.id;
+        const { data: st, error: stErr } = await supabase
+            .from('staff')
+            .select('id, name')
+            .eq('id', staffId)
+            .eq('user_id', userId)
+            .maybeSingle();
+        if (stErr) throw stErr;
+        if (!st) return res.status(404).json({ error: 'Staff not found' });
+
+        const { data: links, error } = await supabase
+            .from('job_staff')
+            .select('role, job_id')
+            .eq('staff_id', staffId);
+        if (error) throw error;
+
+        const jobIds = (links || []).map(function (r) { return r.job_id; }).filter(Boolean);
+        if (!jobIds.length) return res.json({ staff: st, jobs: [] });
+
+        const roleByJob = {};
+        (links || []).forEach(function (r) { roleByJob[r.job_id] = r.role; });
+
+        const { data: jobs, error: jErr } = await supabase
+            .from('jobs')
+            .select('id, client, phone, service, amount, date, status, mode, service_type, notes')
+            .eq('user_id', userId)
+            .in('id', jobIds)
+            .order('date', { ascending: false });
+        if (jErr) throw jErr;
+
+        const out = (jobs || []).map(function (j) {
+            return Object.assign({}, j, { assignment_role: roleByJob[j.id] || 'crew' });
+        });
+        res.json({ staff: st, jobs: out });
+    } catch (error) {
+        console.error('GET staff jobs:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/staff-assignment-counts', authenticate, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { data: staffList, error: sErr } = await supabase
+            .from('staff')
+            .select('id')
+            .eq('user_id', userId);
+        if (sErr) throw sErr;
+        const ids = (staffList || []).map(function (s) { return s.id; });
+        if (!ids.length) return res.json({});
+
+        const { data: links, error } = await supabase
+            .from('job_staff')
+            .select('staff_id')
+            .in('staff_id', ids);
+        if (error) throw error;
+
+        const counts = {};
+        ids.forEach(function (id) { counts[id] = 0; });
+        (links || []).forEach(function (row) {
+            if (row.staff_id) counts[row.staff_id] = (counts[row.staff_id] || 0) + 1;
+        });
+        res.json(counts);
+    } catch (error) {
+        console.error('staff counts:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
 
 // ─── CLIENTS ─────────────────────────────────────────────────
 
@@ -2415,6 +2601,15 @@ app.put(
                 return res.status(404).json({
                     error: 'Job not found'
                 });
+            }
+
+            // Optional staff re-assignment on job update
+            if (Array.isArray(req.body.staff_assignments)) {
+                try {
+                    await replaceJobStaff(userId, jobId, req.body.staff_assignments);
+                } catch (staffErr) {
+                    console.error('Job updated but staff assign failed:', staffErr.message || staffErr);
+                }
             }
 
             res.json(data);

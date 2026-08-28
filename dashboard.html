@@ -2016,6 +2016,60 @@
             justify-content: center;
         }
 
+
+        .staff-assign-box {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+            background: var(--surface);
+        }
+        .staff-assign-box label.staff-assign-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .staff-assign-box label.staff-assign-row:last-child { border-bottom: none; }
+        .staff-assign-box select.staff-role {
+            margin-left: auto;
+            padding: 4px 8px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-family: inherit;
+            font-size: 12px;
+        }
+        .staff-jobs-overlay {
+            position: fixed; inset: 0; z-index: 1200;
+            background: rgba(15, 23, 42, 0.45);
+            display: none; align-items: flex-end; justify-content: center;
+            padding: 12px;
+        }
+        .staff-jobs-overlay.active { display: flex; }
+        .staff-jobs-sheet {
+            background: var(--white);
+            border-radius: 16px 16px 12px 12px;
+            width: 100%; max-width: 480px;
+            max-height: 85vh; overflow: auto;
+            padding: 18px 16px 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,.2);
+        }
+        @media (min-width: 768px) {
+            .staff-jobs-overlay { align-items: center; }
+            .staff-jobs-sheet { border-radius: 16px; }
+        }
+        .staff-jobs-sheet h3 { margin: 0 0 4px; font-size: 17px; font-weight: 800; }
+        .staff-jobs-sheet .sub { font-size: 13px; color: var(--slate); margin-bottom: 14px; }
+        .staff-job-row {
+            display: flex; justify-content: space-between; gap: 10px;
+            padding: 10px 0; border-bottom: 1px solid var(--border);
+            cursor: pointer; font-size: 13px;
+        }
+        .staff-job-row:hover { background: var(--surface); }
+
         .credits-quiet-bar {
             display: flex;
             flex-wrap: wrap;
@@ -4408,6 +4462,7 @@
                     (extra ? '<div class="full"><div class="job-detail-label">' + (mode === 'laundry' ? 'Items' : 'Property') + '</div><div class="job-detail-value">' + extra + '</div></div>' : '') +
                     '<div class="full"><div class="job-detail-label">Notes</div>' +
                     '<div class="job-notes-box' + (hasNotes ? '' : ' empty') + '">' + notesText.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div></div>' +
+                    '<div class="full"><div class="job-detail-label">Assigned staff</div><div class="job-detail-value" id="jobDetailStaff">Loading…</div></div>' +
                     '<div class="full">' + costHtml + '</div>' +
                     '</div>';
             }
@@ -4435,6 +4490,29 @@
 
             var overlay = document.getElementById('jobDetailOverlay');
             if (overlay) overlay.classList.add('active');
+            // Load assigned staff names
+            var staffEl = document.getElementById('jobDetailStaff');
+            if (staffEl && j.id) {
+                apiFetch('/jobs/' + encodeURIComponent(j.id) + '/staff')
+                    .then(function(res) { return res.ok ? res.json() : []; })
+                    .then(function(rows) {
+                        if (!rows || !rows.length) {
+                            staffEl.textContent = 'None assigned';
+                            return;
+                        }
+                        return getStaff().then(function(staff) {
+                            var byId = {};
+                            (staff || []).forEach(function(s) { byId[s.id] = s.name; });
+                            staffEl.textContent = rows.map(function(r) {
+                                var name = byId[r.staff_id] || 'Staff';
+                                return name + (r.role === 'lead' ? ' (Lead)' : '');
+                            }).join(', ');
+                        });
+                    })
+                    .catch(function() {
+                        if (staffEl) staffEl.textContent = '—';
+                    });
+            }
         }
 
 
@@ -4634,27 +4712,149 @@
             }).join('');
         }
 
+
+        var staffListCache = [];
+        var staffAssignmentCounts = {};
+
+        function fetchStaffAssignmentCounts() {
+            return apiFetch('/staff-assignment-counts').then(function(res) {
+                if (!res.ok) return {};
+                return res.json();
+            }).then(function(counts) {
+                staffAssignmentCounts = counts || {};
+                return staffAssignmentCounts;
+            }).catch(function() {
+                staffAssignmentCounts = {};
+                return {};
+            });
+        }
+
+        function collectStaffAssignments() {
+            var box = document.getElementById('jobStaffAssign');
+            if (!box) return [];
+            var rows = box.querySelectorAll('.staff-assign-row');
+            var out = [];
+            rows.forEach(function(row) {
+                var cb = row.querySelector('input[type="checkbox"]');
+                if (!cb || !cb.checked) return;
+                var roleSel = row.querySelector('select.staff-role');
+                out.push({
+                    staff_id: cb.value,
+                    role: roleSel && roleSel.value === 'lead' ? 'lead' : 'crew'
+                });
+            });
+            // Ensure one lead if any selected
+            if (out.length) {
+                var hasLead = out.some(function(a) { return a.role === 'lead'; });
+                if (!hasLead) out[0].role = 'lead';
+            }
+            return out;
+        }
+
+        function setJobStaffAssignments(jobId, assignments) {
+            return fetch(API_URL + '/jobs/' + jobId + '/staff', {
+                method: 'PUT',
+                headers: getHeaders(),
+                body: JSON.stringify({ staff_assignments: assignments || [] })
+            }).then(function(res) {
+                if (!res.ok) return parseApiError(res);
+                return res.json();
+            });
+        }
+
+        function loadStaffAssignUI(selectedIds, roleMap) {
+            selectedIds = selectedIds || [];
+            roleMap = roleMap || {};
+            var box = document.getElementById('jobStaffAssign');
+            if (!box) return Promise.resolve();
+            return getStaff().then(function(staff) {
+                staffListCache = staff || [];
+                if (!staffListCache.length) {
+                    box.innerHTML = '<p style="font-size:12px;color:var(--slate);margin:0;">No staff yet. Add team members under Staff, then assign them here.</p>';
+                    return;
+                }
+                box.innerHTML = staffListCache.map(function(s) {
+                    var checked = selectedIds.indexOf(s.id) !== -1;
+                    var role = roleMap[s.id] || 'crew';
+                    return '<label class="staff-assign-row">' +
+                        '<input type="checkbox" value="' + escJsAttr(s.id) + '"' + (checked ? ' checked' : '') + ' />' +
+                        '<span>' + escJsAttr(s.name) + (s.role ? ' <span style="color:var(--slate);font-weight:500;">(' + escJsAttr(s.role) + ')</span>' : '') + '</span>' +
+                        '<select class="staff-role" onclick="event.stopPropagation()">' +
+                        '<option value="crew"' + (role !== 'lead' ? ' selected' : '') + '>Crew</option>' +
+                        '<option value="lead"' + (role === 'lead' ? ' selected' : '') + '>Lead</option>' +
+                        '</select></label>';
+                }).join('');
+            }).catch(function() {
+                box.innerHTML = '<p style="font-size:12px;color:var(--slate);margin:0;">Could not load staff.</p>';
+            });
+        }
+
+        function openStaffJobs(staffId, staffName) {
+            var overlay = document.getElementById('staffJobsOverlay');
+            var title = document.getElementById('staffJobsTitle');
+            var sub = document.getElementById('staffJobsSub');
+            var list = document.getElementById('staffJobsList');
+            if (!overlay || !list) return;
+            if (title) title.textContent = (staffName || 'Staff') + ' — assigned jobs';
+            if (sub) sub.textContent = 'Loading…';
+            list.innerHTML = '';
+            overlay.classList.add('active');
+            apiFetch('/staff/' + encodeURIComponent(staffId) + '/jobs')
+                .then(function(res) {
+                    if (!res.ok) return parseApiError(res);
+                    return res.json();
+                })
+                .then(function(data) {
+                    var jobs = (data && data.jobs) || [];
+                    if (sub) sub.textContent = jobs.length ? (jobs.length + ' job(s)') : 'No jobs assigned yet';
+                    if (!jobs.length) {
+                        list.innerHTML = '<p style="color:var(--slate);font-size:13px;">Assign them when creating or editing a job.</p>';
+                        return;
+                    }
+                    list.innerHTML = jobs.map(function(j) {
+                        var role = j.assignment_role === 'lead' ? 'Lead' : 'Crew';
+                        return '<div class="staff-job-row" onclick="closeStaffJobs();openJobDetail(\'' + escJsAttr(j.id) + '\')">' +
+                            '<div><strong>' + escJsAttr(j.client || 'Job') + '</strong><br>' +
+                            '<span style="color:var(--slate);font-size:12px;">' + escJsAttr(j.date || '') + ' · ' + role + '</span></div>' +
+                            '<div style="text-align:right;"><span class="status-badge ' + escJsAttr(j.status || '') + '">' + escJsAttr(j.status || '') + '</span><br>' +
+                            '<strong>' + formatMoney(j.amount || 0) + '</strong></div></div>';
+                    }).join('');
+                })
+                .catch(function(e) {
+                    if (sub) sub.textContent = 'Could not load jobs';
+                    list.innerHTML = '<p style="color:#B91C1C;font-size:13px;">' + escJsAttr((e && e.message) || 'Error') + '</p>';
+                });
+        }
+        function closeStaffJobs() {
+            var overlay = document.getElementById('staffJobsOverlay');
+            if (overlay) overlay.classList.remove('active');
+        }
+
         function renderStaff() {
-            getStaff()
-                .then(function(staff) {
+            Promise.all([getStaff(), fetchStaffAssignmentCounts()])
+                .then(function(results) {
+                    var staff = results[0] || [];
+                    staffListCache = staff;
                     var tbody = document.getElementById('staffTable');
-                    if (!staff || staff.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--slate);">No staff members yet</td></tr>';
+                    if (!staff.length) {
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--slate);">No staff members yet. Add your team, then assign them on jobs.</td></tr>';
                         return;
                     }
                     tbody.innerHTML = staff.map(function(s, i) {
+                        var count = staffAssignmentCounts[s.id] != null ? staffAssignmentCounts[s.id] : 0;
                         return '<tr>' +
                             '<td>' + (i + 1) + '</td>' +
-                            '<td><strong>' + s.name + '</strong></td>' +
+                            '<td><strong>' + (s.name || '') + '</strong></td>' +
                             '<td>' + (s.phone || 'N/A') + '</td>' +
                             '<td>' + (s.role || 'Cleaner') + '</td>' +
-                            '<td>0</td>' +
+                            '<td><button type="button" class="btn btn-outline btn-sm" title="View assigned jobs" onclick="openStaffJobs(\'' + escJsAttr(s.id) + '\', \'' + escJsAttr(s.name || '') + '\')">' + count + '</button></td>' +
                             '<td><div class="job-actions" onclick="event.stopPropagation()">' +
                             '<div class="job-actions-primary">' +
                             '<button type="button" class="btn btn-whatsapp btn-sm" onclick="sendSingleWhatsApp(\'' + escJsAttr(s.name) + '\', \'' + escJsAttr(s.phone || '') + '\')">WhatsApp</button>' +
                             '<details class="job-more">' +
                             '<summary title="More actions" onclick="event.stopPropagation()">···</summary>' +
                             '<div class="job-more-menu">' +
+                            '<button type="button" onclick="event.stopPropagation();openStaffJobs(\'' + escJsAttr(s.id) + '\', \'' + escJsAttr(s.name || '') + '\')">View jobs</button>' +
                             '<button type="button" class="danger" onclick="event.stopPropagation();deleteStaffItem(\'' + escJsAttr(s.id) + '\')">Delete staff</button>' +
                             '</div></details>' +
                             '</div></div></td>' +
@@ -4663,7 +4863,8 @@
                 })
                 .catch(function(e) {
                     console.error('Failed to render staff:', e);
-                    document.getElementById('staffTable').innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--slate);">Failed to load staff</td></tr>';
+                    var tbody = document.getElementById('staffTable');
+                    if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--slate);">Failed to load staff</td></tr>';
                 });
         }
 
@@ -5219,11 +5420,25 @@
             // Form fields are built inside openModal — populate next tick
             setTimeout(function() {
                 populateJobFormFromJob(j);
-                // Prefill service if still "Quick capture"
                 var svc = document.getElementById('jService');
                 if (svc && (!j.service || j.service === 'Quick capture')) {
                     // leave first real option selected
                 }
+                // Load current staff assignments for this job
+                apiFetch('/jobs/' + encodeURIComponent(id) + '/staff')
+                    .then(function(res) { return res.ok ? res.json() : []; })
+                    .then(function(rows) {
+                        var ids = [];
+                        var roles = {};
+                        (rows || []).forEach(function(r) {
+                            if (r.staff_id) {
+                                ids.push(r.staff_id);
+                                roles[r.staff_id] = r.role || 'crew';
+                            }
+                        });
+                        return loadStaffAssignUI(ids, roles);
+                    })
+                    .catch(function() { loadStaffAssignUI([], {}); });
                 showToast('Complete the form, then Save', 'success');
             }, 50);
         }
@@ -5282,7 +5497,7 @@
                     '<div class="form-group"><label>Amount (' + moneySymbol() + ')</label><input type="number" id="jAmount" required /></div>' +
                     '<div class="form-group"><label>Date</label><input type="date" id="jDate" required /></div>' +
                     '<div class="form-group"><label>Status</label><select id="jStatus"><option value="pending">Pending</option><option value="in-progress">In Progress</option><option value="completed">Completed</option></select></div>' +
-                    '<div class="form-group full-width"><label>Notes</label><textarea id="jNotes" placeholder="Access codes, special requests…"></textarea></div>';
+                    '<div class="form-group full-width"><label>Assign staff</label><div id="jobStaffAssign" class="staff-assign-box"><p style="font-size:12px;color:var(--slate);margin:0;">Loading staff…</p></div><p style="font-size:11px;color:var(--slate);margin:6px 0 0;">Optional. Pick who works this job — one Lead if several.</p></div><div class="form-group full-width"><label>Notes</label><textarea id="jNotes" placeholder="Access codes, special requests…"></textarea></div>';
 
                 if (currentServiceType === 'laundry') {
                     laundryItems = [];
@@ -5318,6 +5533,9 @@
             }
 
             document.getElementById('modalOverlay').classList.add('active');
+            if (type === 'job' || type === 'editJob') {
+                loadStaffAssignUI([], {});
+            }
         }
 
         function closeModal() {
@@ -5384,13 +5602,29 @@
                     jobData.status = 'pending';
                 }
 
+                var staffAssignments = collectStaffAssignments();
+                jobData.staff_assignments = staffAssignments;
+
                 var savePromise;
                 if (modalType === 'editJob' && jobEditId) {
                     savePromise = updateJob(jobEditId, jobData).then(function() {
+                        return setJobStaffAssignments(jobEditId, staffAssignments).catch(function(err) {
+                            console.error('staff assign', err);
+                            showToast('Job saved, but staff assignment failed — check Staff table setup', 'error');
+                        });
+                    }).then(function() {
                         showToast('Job details saved', 'success');
                     });
                 } else {
-                    savePromise = createJob(jobData).then(function() {
+                    savePromise = createJob(jobData).then(function(created) {
+                        var newId = created && (created.id || (created.data && created.data.id));
+                        if (newId && staffAssignments.length) {
+                            return setJobStaffAssignments(newId, staffAssignments).catch(function(err) {
+                                console.error('staff assign', err);
+                            }).then(function() { return created; });
+                        }
+                        return created;
+                    }).then(function() {
                         showToast('Job added!', 'success');
                     });
                 }
@@ -6028,5 +6262,15 @@
         });
 
 </script>
+
+    <div class="staff-jobs-overlay" id="staffJobsOverlay" onclick="if(event.target===this)closeStaffJobs()">
+        <div class="staff-jobs-sheet" role="dialog" aria-labelledby="staffJobsTitle">
+            <h3 id="staffJobsTitle">Assigned jobs</h3>
+            <p class="sub" id="staffJobsSub">Jobs this staff member is on</p>
+            <div id="staffJobsList"></div>
+            <button type="button" class="btn btn-outline btn-sm" style="width:100%;margin-top:14px;" onclick="closeStaffJobs()">Close</button>
+        </div>
+    </div>
+
 </body>
 </html>
