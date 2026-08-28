@@ -4775,17 +4775,28 @@
         function updateJobStatus(id, status) {
             updateJob(id, { status: status })
                 .then(function() {
+                    var jPre = typeof findJobById === 'function' ? findJobById(id) : null;
+                    var mode = jPre && typeof getJobMode === 'function' ? getJobMode(jPre) : currentServiceType;
                     var msg = 'Job updated';
-                    if (status === 'collected') msg = 'Marked as collected — customer picked up';
-                    else if (status === 'completed') msg = 'Marked complete (ready for pickup)';
-                    else if (status === 'in-progress') msg = 'Job started';
-                    else if (status === 'cancelled') msg = 'Job cancelled';
-                    else msg = 'Job ' + status;
+                    if (status === 'collected') {
+                        msg = 'Marked as collected — customer picked up';
+                    } else if (status === 'completed') {
+                        // "Ready for pickup" is laundry language only
+                        msg = (mode === 'laundry')
+                            ? 'Marked complete — ready for pickup'
+                            : 'Job completed';
+                    } else if (status === 'in-progress') {
+                        msg = 'Job started';
+                    } else if (status === 'cancelled') {
+                        msg = 'Job cancelled';
+                    } else {
+                        msg = 'Job ' + status;
+                    }
                     showToast(msg, 'success');
                     return getJobs().then(function(jobs) {
                         jobsData = jobs || [];
                         renderAll();
-                        // Optional cost nudge when completing (owner only, no costs yet)
+                        // Optional cost nudge when completing (owner only, no costs yet) — keep for both modes
                         if (status === 'completed') {
                             var j = findJobById(id);
                             var ownerOk = revenueUnlocked || !hasOwnerPin;
