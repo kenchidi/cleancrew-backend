@@ -3060,20 +3060,28 @@
             return (job && (job.mode || job.service_type)) || 'cleaning';
         }
 
-        function setServiceType(type) {
+        function syncServiceTypeUI(type) {
             if (type !== 'cleaning' && type !== 'laundry') type = 'cleaning';
-            currentServiceType = type;
-            try { localStorage.setItem('cleancrew_mode', type); } catch (e) {}
-
             document.querySelectorAll('.service-toggle button').forEach(function(btn) {
-                btn.classList.remove('active');
-                btn.setAttribute('aria-pressed', 'false');
+                var isMatch = btn.classList.contains(type);
+                btn.classList.toggle('active', isMatch);
+                btn.setAttribute('aria-pressed', isMatch ? 'true' : 'false');
             });
-            document.querySelectorAll('.service-toggle button.' + type).forEach(function(btn) {
-                btn.classList.add('active');
-                btn.setAttribute('aria-pressed', 'true');
+            // Explicit IDs (top bar + any legacy toggle)
+            ['modeCleaning', 'modeCleaningOld'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) {
+                    el.classList.toggle('active', type === 'cleaning');
+                    el.setAttribute('aria-pressed', type === 'cleaning' ? 'true' : 'false');
+                }
             });
-
+            ['modeLaundry', 'modeLaundryOld'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) {
+                    el.classList.toggle('active', type === 'laundry');
+                    el.setAttribute('aria-pressed', type === 'laundry' ? 'true' : 'false');
+                }
+            });
             var label = type === 'laundry' ? 'Laundry' : 'Cleaning';
             var recentEl = document.getElementById('recentJobsTitle');
             var jobsEl = document.getElementById('jobsTitle');
@@ -3081,8 +3089,39 @@
             if (recentEl) recentEl.innerHTML = '<svg class="icon"><use href="#ic-clipboard"/></svg> Recent ' + label + ' Jobs';
             if (jobsEl) jobsEl.innerHTML = '<svg class="icon"><use href="#ic-clipboard"/></svg> All ' + label + ' Jobs';
             if (invEl) invEl.innerHTML = '<svg class="icon"><use href="#ic-box"/></svg> ' + label + ' Inventory';
+        }
 
-            renderAll();
+        function getActiveServiceType() {
+            // Prefer in-memory mode; fall back to the button the user sees as active
+            if (currentServiceType === 'laundry' || currentServiceType === 'cleaning') {
+                return currentServiceType;
+            }
+            var active = document.querySelector('.service-toggle button.active');
+            if (active && active.classList.contains('laundry')) return 'laundry';
+            if (active && active.classList.contains('cleaning')) return 'cleaning';
+            try {
+                var saved = localStorage.getItem('cleancrew_mode');
+                if (saved === 'laundry' || saved === 'cleaning') return saved;
+            } catch (e) {}
+            return 'cleaning';
+        }
+
+        function setServiceType(type, opts) {
+            opts = opts || {};
+            if (type !== 'cleaning' && type !== 'laundry') type = 'cleaning';
+            var prev = currentServiceType;
+            currentServiceType = type;
+            try { localStorage.setItem('cleancrew_mode', type); } catch (e) {}
+            syncServiceTypeUI(type);
+            // Rebuild open job form if mode changed while modal is open
+            var overlay = document.getElementById('modalOverlay');
+            if (overlay && overlay.classList.contains('active') && (modalType === 'job' || modalType === 'editJob')) {
+                if (prev !== type && modalType === 'job') {
+                    openModal('job');
+                }
+            }
+            if (opts.skipRender) return;
+            if (typeof renderAll === 'function') renderAll();
         }
 
         // ─── ──────────────────────────────────────────────────────
@@ -4872,7 +4911,9 @@
             // Align mode toggle with the draft
             var mode = (typeof getJobMode === 'function') ? getJobMode(j) : currentServiceType;
             if (mode && typeof setServiceType === 'function' && mode !== currentServiceType) {
-                setServiceType(mode);
+                setServiceType(mode, { skipRender: true });
+            } else {
+                syncServiceTypeUI(currentServiceType);
             }
             jobEditId = id;
             closeJobDetail();
@@ -4910,6 +4951,9 @@
             var f = document.getElementById('modalFormFields');
 
             if (type === 'job') {
+                // Always resolve mode at open-time (fixes stale laundry form on cleaning)
+                currentServiceType = getActiveServiceType();
+                syncServiceTypeUI(currentServiceType);
                 var modeLabel = currentServiceType === 'laundry' ? 'Laundry' : 'Cleaning';
                 var serviceOptions = currentServiceType === 'laundry'
                     ? '<option>Wash & Fold</option><option>Wash & Iron</option><option>Dry Cleaning</option><option>Iron Only</option><option>Commercial Laundry</option>'
@@ -5599,6 +5643,9 @@
                         }
                     }).catch(function() {});
                 } else if (ok) {
+                    // Sync Cleaning/Laundry toggle with saved mode (fixes wrong job form)
+                    syncServiceTypeUI(currentServiceType);
+
                     renderAll();
                     refreshFreeJobs();
                     refreshCredits();
