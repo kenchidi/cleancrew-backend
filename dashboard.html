@@ -3560,7 +3560,21 @@
                         return String(c.name || '').trim().toLowerCase() === name.toLowerCase();
                     });
                 }
-                if (found) return found;
+                if (found) {
+                    // Fill location if client exists but has none yet
+                    var hasLoc = found.location && String(found.location).trim();
+                    if (location && !hasLoc && found.id) {
+                        return fetch(API_URL + '/clients/' + encodeURIComponent(found.id), {
+                            method: 'PUT',
+                            headers: getHeaders(),
+                            body: JSON.stringify({ location: location })
+                        }).then(function(res) {
+                            if (!res.ok) return found;
+                            return res.json().catch(function() { return found; });
+                        }).catch(function() { return found; });
+                    }
+                    return found;
+                }
                 return createClient({
                     name: name,
                     phone: phone || '',

@@ -2177,7 +2177,12 @@ app.post(
 
             // Auto-save client from job form (no need to fill Clients tab separately)
             try {
-                await ensureClientFromJob(userId, data.client || req.body.client, data.phone || req.body.phone);
+                await ensureClientFromJob(
+                    userId,
+                    data.client || req.body.client,
+                    data.phone || req.body.phone,
+                    req.body.location || req.body.client_location || null
+                );
             } catch (clientErr) {
                 console.warn('Auto client save skipped:', clientErr.message || clientErr);
             }
@@ -2296,37 +2301,46 @@ async function replaceJobStaff(userId, jobId, assignments) {
 }
 
 
-async function ensureClientFromJob(userId, clientName, phone) {
+async function ensureClientFromJob(userId, clientName, phone, location) {
     const name = (clientName || '').toString().trim();
     if (!name) return null;
     const phoneVal = (phone || '').toString().trim() || null;
+    // Location is stored on the client, but NEVER used for duplicate matching
+    // (many customers can share the same area / estate)
+    const locationVal = (location || '').toString().trim() || null;
 
     try {
-        // Match existing by phone first, then exact name
+        // Match existing by phone first, then name only — not location
         if (phoneVal) {
             const { data: byPhone } = await supabase
                 .from('clients')
-                .select('id, name, phone')
+                .select('id, name, phone, location')
                 .eq('user_id', userId)
                 .eq('phone', phoneVal)
                 .limit(1);
-            if (byPhone && byPhone.length) return byPhone[0];
+            if (byPhone && byPhone.length) {
+                const patch = {};
+                if (phoneVal && !byPhone[0].phone) patch.phone = phoneVal;
+                if (locationVal && !byPhone[0].location) patch.location = locationVal;
+                if (Object.keys(patch).length) {
+                    await supabase.from('clients').update(patch).eq('id', byPhone[0].id).eq('user_id', userId);
+                }
+                return byPhone[0];
+            }
         }
 
         const { data: byName } = await supabase
             .from('clients')
-            .select('id, name, phone')
+            .select('id, name, phone, location')
             .eq('user_id', userId)
             .ilike('name', name)
             .limit(1);
         if (byName && byName.length) {
-            // Update phone if we have a new one
-            if (phoneVal && !byName[0].phone) {
-                await supabase
-                    .from('clients')
-                    .update({ phone: phoneVal })
-                    .eq('id', byName[0].id)
-                    .eq('user_id', userId);
+            const patch = {};
+            if (phoneVal && !byName[0].phone) patch.phone = phoneVal;
+            if (locationVal && !byName[0].location) patch.location = locationVal;
+            if (Object.keys(patch).length) {
+                await supabase.from('clients').update(patch).eq('id', byName[0].id).eq('user_id', userId);
             }
             return byName[0];
         }
@@ -2334,7 +2348,8 @@ async function ensureClientFromJob(userId, clientName, phone) {
         const row = {
             user_id: userId,
             name: name,
-            phone: phoneVal
+            phone: phoneVal,
+            location: locationVal
         };
         const { data, error } = await supabase
             .from('clients')
@@ -2342,6 +2357,16 @@ async function ensureClientFromJob(userId, clientName, phone) {
             .select()
             .single();
         if (error) {
+            // Retry without location if column missing
+            if (/location|column|schema/i.test(error.message || '')) {
+                const minimal = { user_id: userId, name: name, phone: phoneVal };
+                const retry = await supabase.from('clients').insert(minimal).select().single();
+                if (retry.error) {
+                    console.warn('ensureClientFromJob insert:', retry.error.message);
+                    return null;
+                }
+                return retry.data;
+            }
             console.warn('ensureClientFromJob insert:', error.message);
             return null;
         }
@@ -2562,23 +2587,46 @@ app.post(
                 });
             }
 
+            const name = (req.body.name || '').toString().trim();
+            if (!name) {
+                return res.status(400).json({ error: 'Client name is required' });
+            }
+
             const client = {
-                ...req.body,
-                user_id:
-                    req.user.id
+                user_id: req.user.id,
+                name: name,
+                phone: (req.body.phone || '').toString().trim() || null,
+                email: (req.body.email || '').toString().trim() || null,
+                location: (req.body.location || '').toString().trim() || null,
+                notes: (req.body.notes || '').toString().trim() || null
             };
 
-            const {
-                data,
-                error
-            } = await supabase
+            let { data, error } = await supabase
                 .from('clients')
                 .insert(client)
                 .select()
                 .single();
 
+            if (error && /location|column|schema/i.test(error.message || '')) {
+                const minimal = {
+                    user_id: req.user.id,
+                    name: client.name,
+                    phone: client.phone,
+                    email: client.email,
+                    notes: client.notes
+                };
+                const retry = await supabase.from('clients').insert(minimal).select().single();
+                data = retry.data;
+                error = retry.error;
+                if (error) {
+                    console.error('Client insert without location failed:', error.message);
+                } else {
+                    console.warn('clients.location column missing — add it in Supabase to store location');
+                }
+            }
+
             if (error) {
-                throw error;
+                return res.status(400).json({ error: error.message });
             }
 
             res.json(data);
@@ -2592,6 +2640,59 @@ app.post(
             res.status(500).json({
                 error: error.message
             });
+        }
+    }
+);
+
+
+app.put(
+    '/api/clients/:id',
+    authenticate,
+    async (req, res) => {
+        try {
+            const patch = {};
+            ['name', 'phone', 'email', 'location', 'notes'].forEach(function (k) {
+                if (req.body[k] !== undefined) {
+                    const v = req.body[k];
+                    patch[k] = typeof v === 'string' ? v.trim() : v;
+                }
+            });
+            if (!Object.keys(patch).length) {
+                return res.status(400).json({ error: 'No fields to update' });
+            }
+            const { data, error } = await supabase
+                .from('clients')
+                .update(patch)
+                .eq('id', req.params.id)
+                .eq('user_id', req.user.id)
+                .select()
+                .single();
+            if (error) {
+                if (/location|column|schema/i.test(error.message || '')) {
+                    delete patch.location;
+                    if (!Object.keys(patch).length) {
+                        return res.status(400).json({
+                            error: 'Add a location column on clients in Supabase to save location'
+                        });
+                    }
+                    const retry = await supabase
+                        .from('clients')
+                        .update(patch)
+                        .eq('id', req.params.id)
+                        .eq('user_id', req.user.id)
+                        .select()
+                        .single();
+                    if (retry.error) {
+                        return res.status(400).json({ error: retry.error.message });
+                    }
+                    return res.json(retry.data);
+                }
+                return res.status(400).json({ error: error.message });
+            }
+            res.json(data);
+        } catch (error) {
+            console.error('Error updating client:', error);
+            res.status(500).json({ error: error.message });
         }
     }
 );
