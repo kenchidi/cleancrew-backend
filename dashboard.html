@@ -3543,10 +3543,12 @@
         }
 
 
-        function upsertClientFromJobFields(name, phone) {
+        function upsertClientFromJobFields(name, phone, location) {
             name = (name || '').trim();
             if (!name) return Promise.resolve();
             phone = (phone || '').trim();
+            location = (location || '').trim();
+            // Duplicate match: phone, then name only — never location
             return getClients().then(function(clients) {
                 clients = clients || [];
                 var found = null;
@@ -3559,7 +3561,13 @@
                     });
                 }
                 if (found) return found;
-                return createClient({ name: name, phone: phone || '', email: '', location: '', notes: '' }).catch(function(e) {
+                return createClient({
+                    name: name,
+                    phone: phone || '',
+                    email: '',
+                    location: location || '',
+                    notes: ''
+                }).catch(function(e) {
                     console.warn('Auto client create skipped:', e && e.message);
                 });
             }).catch(function() {});
@@ -5335,6 +5343,7 @@
             var jobData = {
                 client: client,
                 phone: phone || 'N/A',
+                    location: location || null,
                 mode: currentServiceType,
                 service_type: currentServiceType,
                 service: 'Quick capture',
@@ -5375,6 +5384,7 @@
             var el;
             el = document.getElementById('jClient'); if (el) el.value = j.client || '';
             el = document.getElementById('jPhone'); if (el) el.value = (j.phone && j.phone !== 'N/A') ? j.phone : '';
+            el = document.getElementById('jLocation'); if (el) el.value = j.location || '';
             el = document.getElementById('jService');
             if (el && j.service && j.service !== 'Quick capture') {
                 el.value = j.service;
@@ -5516,6 +5526,7 @@
 
                 f.innerHTML = '<div class="form-group"><label>Client Name</label><input type="text" id="jClient" required /></div>' +
                     '<div class="form-group"><label>Phone</label><input type="tel" id="jPhone" /></div>' +
+                    '<div class="form-group"><label>Location</label><input type="text" id="jLocation" placeholder="Area, estate, or address" /></div>' +
                     '<div class="form-group"><label>Service</label><select id="jService">' + serviceOptions + '</select></div>' +
                     modeExtra +
                     '<div class="form-group"><label>Amount (' + moneySymbol() + ')</label><input type="number" id="jAmount" required /></div>' +
@@ -5574,6 +5585,8 @@
             if (modalType === 'job' || modalType === 'editJob') {
                 var client = document.getElementById('jClient').value.trim();
                 var phone = document.getElementById('jPhone').value.trim();
+                var locationEl = document.getElementById('jLocation');
+                var location = locationEl ? locationEl.value.trim() : '';
                 var service = document.getElementById('jService').value;
                 var amount = parseFloat(document.getElementById('jAmount').value);
                 var date = document.getElementById('jDate').value;
@@ -5665,10 +5678,11 @@
                         }
                         var clientName = jobData.client;
                         var clientPhone = jobData.phone;
+                        var clientLocation = jobData.location || location || '';
                         Promise.all([
                             refreshFreeJobs(),
                             refreshCredits(),
-                            upsertClientFromJobFields(clientName, clientPhone),
+                            upsertClientFromJobFields(clientName, clientPhone, clientLocation),
                             typeof getJobs === 'function' ? getJobs().then(function(jobs) {
                                 jobsData = jobs || [];
                                 renderAll();
