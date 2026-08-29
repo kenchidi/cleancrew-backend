@@ -3549,7 +3549,7 @@
                     body: JSON.stringify(staff)
                 })
                 .then(function(res) {
-                    if (!res.ok) throw new Error('Failed to create staff');
+                    if (!res.ok) return parseApiError(res);
                     return res.json();
                 });
         }
@@ -4841,7 +4841,12 @@
                         return;
                     }
                     tbody.innerHTML = staff.map(function(s, i) {
-                        var count = staffAssignmentCounts[s.id] != null ? staffAssignmentCounts[s.id] : 0;
+                        var count = (s.jobs_assigned != null ? s.jobs_assigned : null);
+                        if (count == null) {
+                            count = staffAssignmentCounts[s.id] != null
+                                ? staffAssignmentCounts[s.id]
+                                : (staffAssignmentCounts[String(s.id)] != null ? staffAssignmentCounts[String(s.id)] : 0);
+                        }
                         return '<tr>' +
                             '<td>' + (i + 1) + '</td>' +
                             '<td><strong>' + (s.name || '') + '</strong></td>' +
@@ -5608,29 +5613,30 @@
                 var savePromise;
                 if (modalType === 'editJob' && jobEditId) {
                     savePromise = updateJob(jobEditId, jobData).then(function() {
+                        // Staff assignments sent on body; also PUT explicitly for reliability
                         return setJobStaffAssignments(jobEditId, staffAssignments).catch(function(err) {
                             console.error('staff assign', err);
-                            showToast('Job saved, but staff assignment failed — check Staff table setup', 'error');
+                            showToast('Job saved, but staff assignment failed — run job_staff SQL in Supabase', 'error');
                         });
                     }).then(function() {
                         showToast('Job details saved', 'success');
                     });
                 } else {
+                    // Server assigns staff from staff_assignments — no second request
                     savePromise = createJob(jobData).then(function(created) {
-                        var newId = created && (created.id || (created.data && created.data.id));
-                        if (newId && staffAssignments.length) {
-                            return setJobStaffAssignments(newId, staffAssignments).catch(function(err) {
-                                console.error('staff assign', err);
-                            }).then(function() { return created; });
+                        if (created && created._meta && created._meta.staff_assign_error) {
+                            showToast('Job saved, but staff was not assigned. Run the job_staff SQL in Supabase.', 'error');
+                        } else {
+                            showToast('Job added!', 'success');
                         }
                         return created;
-                    }).then(function() {
-                        showToast('Job added!', 'success');
                     });
                 }
 
                 savePromise
                     .then(function() {
+                        closeModal();
+                        // Background work — do not block UI
                         if (currentServiceType === 'laundry' && jobData.items && jobData.items.length) {
                             jobData.items.forEach(function(it) {
                                 if (it.name && it.price > 0) {
@@ -5638,10 +5644,16 @@
                                 }
                             });
                         }
-                        closeModal();
-                        refreshFreeJobs();
-                        refreshCredits();
-                        renderAll();
+                        Promise.all([
+                            refreshFreeJobs(),
+                            refreshCredits(),
+                            typeof getJobs === 'function' ? getJobs().then(function(jobs) {
+                                jobsData = jobs || [];
+                                renderAll();
+                            }) : Promise.resolve()
+                        ]).catch(function() {
+                            try { renderAll(); } catch (e) {}
+                        });
                     })
                     .catch(function(e) {
                         console.error('Error saving job:', e);
@@ -5710,14 +5722,15 @@
 
                 if (!name) { showToast('Enter name', 'error'); return; }
 
-                createStaff({ name: name, phone: phone || 'N/A', email: email || '', role: role })
+                createStaff({ name: name, phone: phone || '', email: email || '', role: role })
                     .then(function() {
                         showToast('Staff added!', 'success');
                         closeModal();
                         renderStaff();
                     })
-                    .catch(function() {
-                        showToast('Failed to add staff', 'error');
+                    .catch(function(e) {
+                        console.error('Staff create failed:', e);
+                        showToast((e && e.message) || 'Failed to add staff', 'error');
                     });
 
             } else if (modalType === 'invoice') {
