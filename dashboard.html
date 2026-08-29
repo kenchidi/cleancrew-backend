@@ -3542,6 +3542,29 @@
                 });
         }
 
+
+        function upsertClientFromJobFields(name, phone) {
+            name = (name || '').trim();
+            if (!name) return Promise.resolve();
+            phone = (phone || '').trim();
+            return getClients().then(function(clients) {
+                clients = clients || [];
+                var found = null;
+                if (phone) {
+                    found = clients.find(function(c) { return String(c.phone || '').trim() === phone; });
+                }
+                if (!found) {
+                    found = clients.find(function(c) {
+                        return String(c.name || '').trim().toLowerCase() === name.toLowerCase();
+                    });
+                }
+                if (found) return found;
+                return createClient({ name: name, phone: phone || '', email: '', location: '', notes: '' }).catch(function(e) {
+                    console.warn('Auto client create skipped:', e && e.message);
+                });
+            }).catch(function() {});
+        }
+
         function createStaff(staff) {
             return fetch(API_URL + '/staff', {
                     method: 'POST',
@@ -4500,14 +4523,10 @@
                             staffEl.textContent = 'None assigned';
                             return;
                         }
-                        return getStaff().then(function(staff) {
-                            var byId = {};
-                            (staff || []).forEach(function(s) { byId[s.id] = s.name; });
-                            staffEl.textContent = rows.map(function(r) {
-                                var name = byId[r.staff_id] || 'Staff';
-                                return name + (r.role === 'lead' ? ' (Lead)' : '');
-                            }).join(', ');
-                        });
+                        staffEl.textContent = rows.map(function(r) {
+                            var name = r.name || 'Staff';
+                            return name + (r.role === 'lead' ? ' (Lead)' : ' (Crew)');
+                        }).join(', ');
                     })
                     .catch(function() {
                         if (staffEl) staffEl.textContent = '—';
@@ -5625,7 +5644,7 @@
                     // Server assigns staff from staff_assignments — no second request
                     savePromise = createJob(jobData).then(function(created) {
                         if (created && created._meta && created._meta.staff_assign_error) {
-                            showToast('Job saved, but staff was not assigned. Run the job_staff SQL in Supabase.', 'error');
+                            showToast('Job saved, but staff was not assigned. Create the job_staff table in Supabase (SQL).', 'error');
                         } else {
                             showToast('Job added!', 'success');
                         }
@@ -5644,9 +5663,12 @@
                                 }
                             });
                         }
+                        var clientName = jobData.client;
+                        var clientPhone = jobData.phone;
                         Promise.all([
                             refreshFreeJobs(),
                             refreshCredits(),
+                            upsertClientFromJobFields(clientName, clientPhone),
                             typeof getJobs === 'function' ? getJobs().then(function(jobs) {
                                 jobsData = jobs || [];
                                 renderAll();

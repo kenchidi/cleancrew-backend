@@ -2175,7 +2175,15 @@ app.post(
                 throw error;
             }
 
+            // Auto-save client from job form (no need to fill Clients tab separately)
+            try {
+                await ensureClientFromJob(userId, data.client || req.body.client, data.phone || req.body.phone);
+            } catch (clientErr) {
+                console.warn('Auto client save skipped:', clientErr.message || clientErr);
+            }
+
             // Optional staff assignments: [{ staff_id, role: 'lead'|'crew' }]
+            let staffAssignError = null;
             try {
                 const assignments = Array.isArray(req.body.staff_assignments)
                     ? req.body.staff_assignments
@@ -2184,25 +2192,23 @@ app.post(
                     await replaceJobStaff(userId, data.id, assignments);
                 }
             } catch (staffErr) {
-                console.error('Job created but staff assign failed:', staffErr.message || staffErr);
+                staffAssignError = staffErr.message || String(staffErr);
+                console.error('Job created but staff assign failed:', staffAssignError);
             }
+
+            // Parallel meta (faster response)
+            const [free_remaining, credits_remaining] = await Promise.all([
+                getFreeJobsRemaining(userId),
+                getCreditBalance(userId)
+            ]);
 
             res.json({
                 ...data,
-
                 _meta: {
-                    source:
-                        canCreate.source,
-
-                    free_remaining:
-                        await getFreeJobsRemaining(
-                            userId
-                        ),
-
-                    credits_remaining:
-                        await getCreditBalance(
-                            userId
-                        )
+                    source: canCreate.source,
+                    free_remaining,
+                    credits_remaining,
+                    staff_assign_error: staffAssignError
                 }
             });
 
@@ -2289,6 +2295,64 @@ async function replaceJobStaff(userId, jobId, assignments) {
     return data || [];
 }
 
+
+async function ensureClientFromJob(userId, clientName, phone) {
+    const name = (clientName || '').toString().trim();
+    if (!name) return null;
+    const phoneVal = (phone || '').toString().trim() || null;
+
+    try {
+        // Match existing by phone first, then exact name
+        if (phoneVal) {
+            const { data: byPhone } = await supabase
+                .from('clients')
+                .select('id, name, phone')
+                .eq('user_id', userId)
+                .eq('phone', phoneVal)
+                .limit(1);
+            if (byPhone && byPhone.length) return byPhone[0];
+        }
+
+        const { data: byName } = await supabase
+            .from('clients')
+            .select('id, name, phone')
+            .eq('user_id', userId)
+            .ilike('name', name)
+            .limit(1);
+        if (byName && byName.length) {
+            // Update phone if we have a new one
+            if (phoneVal && !byName[0].phone) {
+                await supabase
+                    .from('clients')
+                    .update({ phone: phoneVal })
+                    .eq('id', byName[0].id)
+                    .eq('user_id', userId);
+            }
+            return byName[0];
+        }
+
+        const row = {
+            user_id: userId,
+            name: name,
+            phone: phoneVal
+        };
+        const { data, error } = await supabase
+            .from('clients')
+            .insert(row)
+            .select()
+            .single();
+        if (error) {
+            console.warn('ensureClientFromJob insert:', error.message);
+            return null;
+        }
+        return data;
+    } catch (e) {
+        console.warn('ensureClientFromJob:', e.message || e);
+        return null;
+    }
+}
+
+
 app.get('/api/jobs/:id/staff', authenticate, async (req, res) => {
     try {
         const userId = req.user.id;
@@ -2298,8 +2362,35 @@ app.get('/api/jobs/:id/staff', authenticate, async (req, res) => {
             .from('job_staff')
             .select('id, job_id, staff_id, role, created_at')
             .eq('job_id', jobId);
-        if (error) throw error;
-        res.json(data || []);
+        if (error) {
+            console.warn('GET job staff:', error.message);
+            return res.json([]);
+        }
+        const rows = data || [];
+        if (!rows.length) return res.json([]);
+
+        const ids = rows.map(function (r) { return r.staff_id; });
+        const { data: staffRows } = await supabase
+            .from('staff')
+            .select('id, name, phone, role')
+            .eq('user_id', userId)
+            .in('id', ids);
+        const byId = {};
+        (staffRows || []).forEach(function (s) { byId[s.id] = s; });
+
+        res.json(rows.map(function (r) {
+            const s = byId[r.staff_id] || {};
+            return {
+                id: r.id,
+                job_id: r.job_id,
+                staff_id: r.staff_id,
+                role: r.role,
+                created_at: r.created_at,
+                name: s.name || null,
+                phone: s.phone || null,
+                staff_role: s.role || null
+            };
+        }));
     } catch (error) {
         console.error('GET job staff:', error);
         res.status(error.status || 500).json({ error: error.message });
@@ -2375,21 +2466,29 @@ app.get('/api/staff-assignment-counts', authenticate, async (req, res) => {
         const ids = (staffList || []).map(function (s) { return s.id; });
         if (!ids.length) return res.json({});
 
+        const counts = {};
+        ids.forEach(function (id) { counts[String(id)] = 0; });
+
         const { data: links, error } = await supabase
             .from('job_staff')
             .select('staff_id')
             .in('staff_id', ids);
-        if (error) throw error;
+        if (error) {
+            // Table missing or RLS — return zeros so UI still works
+            console.warn('staff-assignment-counts:', error.message);
+            return res.json(counts);
+        }
 
-        const counts = {};
-        ids.forEach(function (id) { counts[id] = 0; });
         (links || []).forEach(function (row) {
-            if (row.staff_id) counts[row.staff_id] = (counts[row.staff_id] || 0) + 1;
+            if (row.staff_id) {
+                const k = String(row.staff_id);
+                counts[k] = (counts[k] || 0) + 1;
+            }
         });
         res.json(counts);
     } catch (error) {
         console.error('staff counts:', error);
-        res.status(500).json({ error: error.message });
+        res.json({});
     }
 });
 
@@ -3078,28 +3177,53 @@ app.get(
     authenticate,
     async (req, res) => {
         try {
+            const userId = req.user.id;
             const {
                 data,
                 error
             } = await supabase
                 .from('staff')
                 .select('*')
-                .eq(
-                    'user_id',
-                    req.user.id
-                )
-                .order(
-                    'created_at',
-                    {
-                        ascending: false
-                    }
-                );
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false });
 
             if (error) {
                 throw error;
             }
 
-            res.json(data);
+            const list = data || [];
+            const counts = {};
+            list.forEach(function (s) {
+                counts[String(s.id)] = 0;
+            });
+
+            if (list.length) {
+                try {
+                    const ids = list.map(function (s) { return s.id; });
+                    const { data: links, error: cErr } = await supabase
+                        .from('job_staff')
+                        .select('staff_id')
+                        .in('staff_id', ids);
+                    if (!cErr && links) {
+                        links.forEach(function (row) {
+                            const k = String(row.staff_id);
+                            if (counts[k] !== undefined) counts[k] += 1;
+                        });
+                    } else if (cErr) {
+                        console.warn('job_staff counts skipped:', cErr.message);
+                    }
+                } catch (e) {
+                    console.warn('job_staff counts error:', e.message || e);
+                }
+            }
+
+            const withCounts = list.map(function (s) {
+                return Object.assign({}, s, {
+                    jobs_assigned: counts[String(s.id)] || 0
+                });
+            });
+
+            res.json(withCounts);
 
         } catch (error) {
             console.error(
@@ -3141,23 +3265,54 @@ app.post(
                 });
             }
 
+            const name = (req.body.name || req.body.full_name || '').toString().trim();
+            if (!name) {
+                return res.status(400).json({ error: 'Staff name is required' });
+            }
+
+            // Only known columns — spreading req.body can break insert / RLS
             const staff = {
-                ...req.body,
-                user_id:
-                    req.user.id
+                user_id: req.user.id,
+                name: name,
+                phone: (req.body.phone || '').toString().trim() || null,
+                email: (req.body.email || '').toString().trim() || null,
+                role: (req.body.role || 'Cleaner').toString().trim() || 'Cleaner'
             };
 
-            const {
-                data,
-                error
-            } = await supabase
+            let { data, error } = await supabase
                 .from('staff')
                 .insert(staff)
                 .select()
                 .single();
 
+            // Retry without optional columns if schema is minimal
+            if (error && /column|schema|email/i.test(error.message || '')) {
+                const minimal = {
+                    user_id: req.user.id,
+                    name: name,
+                    phone: staff.phone,
+                    role: staff.role
+                };
+                const retry = await supabase
+                    .from('staff')
+                    .insert(minimal)
+                    .select()
+                    .single();
+                data = retry.data;
+                error = retry.error;
+            }
+
             if (error) {
-                throw error;
+                console.error('Staff insert error:', error.message, error.code, error.details);
+                const msg = error.message || 'Failed to create staff';
+                if (/row-level security|RLS/i.test(msg)) {
+                    return res.status(500).json({
+                        error: 'Could not save staff (database security). Check SUPABASE_SERVICE_ROLE_KEY on Render.',
+                        code: 'RLS_STAFF_INSERT',
+                        detail: msg
+                    });
+                }
+                return res.status(400).json({ error: msg });
             }
 
             res.json(data);
