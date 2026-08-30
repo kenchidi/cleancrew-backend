@@ -5968,6 +5968,35 @@
             el = document.getElementById('jRooms'); if (el && j.rooms != null) el.value = j.rooms;
             el = document.getElementById('jPropertySize'); if (el && j.property_size) el.value = j.property_size;
 
+            if (typeof isFumigationService === 'function' && isFumigationService(j.service)) {
+                if (typeof toggleFumigationFields === 'function') toggleFumigationFields();
+                var fumProp = document.getElementById('jFumProperty');
+                var fumRooms = document.getElementById('jFumRooms');
+                var fumPest = document.getElementById('jFumPest');
+                var fumAreas = document.getElementById('jFumAreas');
+                if (fumProp && j.property_size) fumProp.value = j.property_size;
+                if (fumRooms && j.rooms != null) fumRooms.value = j.rooms;
+                var nt = String(j.notes || '');
+                var pestM = nt.match(/Pest:\s*([^\|\]]+)/i);
+                var areasM = nt.match(/Areas:\s*([^\]]+)/i);
+                if (fumPest && pestM) {
+                    var pv = pestM[1].trim();
+                    // match option if possible
+                    for (var oi = 0; oi < fumPest.options.length; oi++) {
+                        if (fumPest.options[oi].value.toLowerCase() === pv.toLowerCase()) {
+                            fumPest.value = fumPest.options[oi].value;
+                            break;
+                        }
+                    }
+                }
+                if (fumAreas && areasM) fumAreas.value = areasM[1].trim();
+                // strip bracket meta from notes field for editing
+                el = document.getElementById('jNotes');
+                if (el) {
+                    el.value = nt.replace(/^\[[^\]]+\]\s*/, '').replace(/^None$/i, '');
+                }
+            }
+
             var mode = (typeof getJobMode === 'function') ? getJobMode(j) : currentServiceType;
             if (mode === 'laundry') {
                 var items = j.items;
@@ -6044,6 +6073,41 @@
             }, 50);
         }
 
+
+        var FUMIGATION_SERVICES = [
+            'Residential fumigation',
+            'Office / commercial fumigation',
+            'Bed bug treatment',
+            'Termite treatment',
+            'General pest control',
+            'Fogging'
+        ];
+
+        function isFumigationService(name) {
+            name = String(name || '').trim();
+            return FUMIGATION_SERVICES.indexOf(name) !== -1;
+        }
+
+        function toggleFumigationFields() {
+            var svc = document.getElementById('jService');
+            var box = document.getElementById('fumigationFields');
+            var cleanBox = document.getElementById('cleaningSizeFields');
+            if (!svc) return;
+            var isFum = isFumigationService(svc.value);
+            if (box) box.style.display = isFum ? '' : 'none';
+            if (cleanBox) cleanBox.style.display = isFum ? 'none' : '';
+        }
+
+        function buildFumigationNotes(pest, areas, baseNotes) {
+            var parts = [];
+            if (pest) parts.push('Pest: ' + pest);
+            if (areas) parts.push('Areas: ' + areas);
+            var prefix = parts.length ? ('[' + parts.join(' | ') + ']') : '';
+            baseNotes = (baseNotes || '').trim();
+            if (prefix && baseNotes) return prefix + ' ' + baseNotes;
+            return prefix || baseNotes || 'None';
+        }
+
         function openModal(type) {
             modalType = type;
             laundryItems = [];
@@ -6066,19 +6130,45 @@
                 var modeLabel = currentServiceType === 'laundry' ? 'Laundry' : 'Cleaning';
                 var serviceOptions = currentServiceType === 'laundry'
                     ? '<option>Wash & Fold</option><option>Wash & Iron</option><option>Dry Cleaning</option><option>Iron Only</option><option>Commercial Laundry</option>'
-                    : '<option>Home Cleaning</option><option>Office Cleaning</option><option>Deep Cleaning</option><option>Post-Construction</option><option>Move In/Out</option>';
+                    : '<optgroup label="Cleaning">' +
+                      '<option>Home Cleaning</option><option>Office Cleaning</option><option>Deep Cleaning</option><option>Post-Construction</option><option>Move In/Out</option>' +
+                      '</optgroup>' +
+                      '<optgroup label="Fumigation">' +
+                      '<option>Residential fumigation</option>' +
+                      '<option>Office / commercial fumigation</option>' +
+                      '<option>Bed bug treatment</option>' +
+                      '<option>Termite treatment</option>' +
+                      '<option>General pest control</option>' +
+                      '<option>Fogging</option>' +
+                      '</optgroup>';
                 titles.job = 'New ' + modeLabel + ' Job';
                 document.getElementById('modalTitle').innerHTML = '<svg class="icon"><use href="#ic-plus"/></svg> ' + titles.job;
 
                 var modeExtra = '';
                 if (currentServiceType === 'cleaning') {
                     modeExtra =
+                        '<div id="cleaningSizeFields">' +
                         '<div class="form-group"><label>Rooms</label><input type="number" id="jRooms" min="1" placeholder="e.g. 3" /></div>' +
                         '<div class="form-group"><label>Property size</label><select id="jPropertySize">' +
                         '<option value="">— Optional —</option>' +
                         '<option>Studio</option><option>1-bed</option><option>2-bed</option><option>3-bed</option><option>4+</option>' +
                         '<option>Office (small)</option><option>Office (large)</option>' +
-                        '</select></div>';
+                        '</select></div></div>' +
+                        '<div id="fumigationFields" class="full-width" style="display:none;">' +
+                        '<div class="form-group"><label>Property type</label><select id="jFumProperty">' +
+                        '<option value="Home">Home</option><option value="Office">Office</option><option value="Other">Other</option>' +
+                        '</select></div>' +
+                        '<div class="form-group"><label>Rooms</label><input type="number" id="jFumRooms" min="1" placeholder="e.g. 3" /></div>' +
+                        '<div class="form-group"><label>Pest focus</label><select id="jFumPest">' +
+                        '<option value="General">General</option>' +
+                        '<option value="Bed bugs">Bed bugs</option>' +
+                        '<option value="Termites">Termites</option>' +
+                        '<option value="Rodents">Rodents</option>' +
+                        '<option value="Other">Other (see notes)</option>' +
+                        '</select></div>' +
+                        '<div class="form-group full-width"><label>Areas to treat</label>' +
+                        '<input type="text" id="jFumAreas" placeholder="e.g. all rooms + kitchen + compound" /></div>' +
+                        '</div>';
                 } else {
                     modeExtra =
                         '<div class="form-group full-width">' +
@@ -6100,6 +6190,13 @@
                     '<div class="form-group"><label>Date</label><input type="date" id="jDate" required /></div>' +
                     '<div class="form-group"><label>Status</label><select id="jStatus"><option value="pending">Pending</option><option value="in-progress">In Progress</option><option value="completed">Completed</option></select></div>' +
                     '<div class="form-group full-width"><label>Assign staff</label><div id="jobStaffAssign" class="staff-assign-box"><p style="font-size:12px;color:var(--slate);margin:0;">Loading staff…</p></div><p style="font-size:11px;color:var(--slate);margin:6px 0 0;">Optional. Pick who works this job — one Lead if several.</p></div><div class="form-group full-width"><label>Notes</label><textarea id="jNotes" placeholder="Access codes, special requests…"></textarea></div>';
+
+                
+                var jSvc = document.getElementById('jService');
+                if (jSvc) {
+                    jSvc.addEventListener('change', toggleFumigationFields);
+                    toggleFumigationFields();
+                }
 
                 if (currentServiceType === 'laundry') {
                     laundryItems = [];
@@ -6195,11 +6292,25 @@
                         return;
                     }
                 } else {
-                    var roomsEl = document.getElementById('jRooms');
-                    var propEl = document.getElementById('jPropertySize');
-                    var roomsVal = roomsEl ? parseInt(roomsEl.value, 10) : null;
-                    jobData.rooms = roomsVal && roomsVal > 0 ? roomsVal : null;
-                    jobData.property_size = propEl && propEl.value ? propEl.value : null;
+                    var serviceName = service;
+                    if (typeof isFumigationService === 'function' && isFumigationService(serviceName)) {
+                        var fumProp = document.getElementById('jFumProperty');
+                        var fumRooms = document.getElementById('jFumRooms');
+                        var fumPest = document.getElementById('jFumPest');
+                        var fumAreas = document.getElementById('jFumAreas');
+                        var roomsVal = fumRooms ? parseInt(fumRooms.value, 10) : null;
+                        jobData.rooms = roomsVal && roomsVal > 0 ? roomsVal : null;
+                        jobData.property_size = fumProp && fumProp.value ? fumProp.value : null;
+                        var pest = fumPest ? fumPest.value : '';
+                        var areas = fumAreas ? fumAreas.value.trim() : '';
+                        jobData.notes = buildFumigationNotes(pest, areas, notes);
+                    } else {
+                        var roomsEl = document.getElementById('jRooms');
+                        var propEl = document.getElementById('jPropertySize');
+                        var roomsVal2 = roomsEl ? parseInt(roomsEl.value, 10) : null;
+                        jobData.rooms = roomsVal2 && roomsVal2 > 0 ? roomsVal2 : null;
+                        jobData.property_size = propEl && propEl.value ? propEl.value : null;
+                    }
                 }
 
                 // Finishing a draft always leaves draft status
