@@ -481,6 +481,16 @@
         .job-more-menu button:hover { background: var(--surface); }
         .job-more-menu button.danger { color: #B91C1C; }
         .job-more-menu button.danger:hover { background: #FEF2F2; }
+        .inv-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+            justify-content: flex-end;
+            min-width: 220px;
+        }
+        .inv-actions .btn-sm { white-space: nowrap; }
+
         @media (max-width: 700px) {
             .job-actions-primary > .btn-sm {
                 padding: 8px 10px;
@@ -5497,29 +5507,19 @@
                             '<span class="invoice-pdf-status not-generated">⏳ Not generated</span>';
 
                         var invId = escJsAttr(inv.id);
-                        var primaryBtn = '';
+                        var actions = '<div class="inv-actions" onclick="event.stopPropagation()">';
                         if (status !== 'paid') {
-                            primaryBtn = '<button type="button" class="btn btn-success btn-sm" onclick="openRecordPayment(\'' + invId + '\')">Record pay</button>';
+                            actions += '<button type="button" class="btn btn-success btn-sm" onclick="openRecordPayment(\'' + invId + '\')">Record pay</button>';
+                            actions += '<button type="button" class="btn btn-outline btn-sm" onclick="editInvoice(\'' + invId + '\')">Edit</button>';
                         }
+                        actions += '<button type="button" class="btn btn-whatsapp btn-sm" onclick="shareInvoiceWhatsApp(\'' + invId + '\')">WhatsApp</button>';
                         if (inv.pdf_url) {
-                            primaryBtn += '<button type="button" class="btn btn-outline btn-sm" onclick="window.open(\'' + escJsAttr(inv.pdf_url) + '\',\'_blank\')">View PDF</button>';
+                            actions += '<button type="button" class="btn btn-outline btn-sm" onclick="window.open(\'' + escJsAttr(inv.pdf_url) + '\',\'_blank\')">View PDF</button>';
                         } else {
-                            primaryBtn += '<button type="button" class="btn btn-primary btn-sm" onclick="generateInvoicePDF(\'' + invId + '\')">PDF</button>';
+                            actions += '<button type="button" class="btn btn-primary btn-sm" onclick="generateInvoicePDF(\'' + invId + '\')">PDF</button>';
                         }
-
-                        var moreItems = '';
-                        if (inv.pdf_url) {
-                            moreItems += '<button type="button" onclick="event.stopPropagation();window.open(\'' + escJsAttr(inv.pdf_url) + '\',\'_blank\')">View PDF</button>';
-                            moreItems += '<button type="button" onclick="event.stopPropagation();generateInvoicePDF(\'' + invId + '\')">Regen PDF</button>';
-                        } else {
-                            moreItems += '<button type="button" onclick="event.stopPropagation();generateInvoicePDF(\'' + invId + '\')">Generate PDF</button>';
-                        }
-                        moreItems += '<button type="button" onclick="event.stopPropagation();shareInvoiceWhatsApp(\'' + invId + '\')">WhatsApp</button>';
-                        if (status !== 'paid') {
-                            moreItems += '<button type="button" onclick="event.stopPropagation();editInvoice(\'' + invId + '\')">Edit invoice</button>';
-                            moreItems += '<button type="button" onclick="event.stopPropagation();openRecordPayment(\'' + invId + '\')">Record payment</button>';
-                        }
-                        moreItems += '<button type="button" class="danger" onclick="event.stopPropagation();deleteInvoiceItem(\'' + invId + '\')">Delete invoice</button>';
+                        actions += '<button type="button" class="btn btn-danger btn-sm" onclick="deleteInvoiceItem(\'' + invId + '\')">Delete</button>';
+                        actions += '</div>';
 
                         return '<tr>' +
                             '<td>' + (i + 1) + '</td>' +
@@ -5528,14 +5528,7 @@
                             '<td><strong>' + formatMoney(amountDue) + '</strong>' + paidLabel + '</td>' +
                             '<td><span style="padding:2px 10px;border-radius:100px;font-size:10px;font-weight:700;' + statusColor + '">' + status + '</span></td>' +
                             '<td>' + date + '</td>' +
-                            '<td><div class="job-actions" onclick="event.stopPropagation()">' +
-                            '<div class="job-actions-primary">' +
-                            primaryBtn +
-                            '<details class="job-more">' +
-                            '<summary title="More actions" onclick="event.stopPropagation()">···</summary>' +
-                            '<div class="job-more-menu">' + moreItems + '</div>' +
-                            '</details>' +
-                            '</div></div></td>' +
+                            '<td>' + actions + '</td>' +
                             '</tr>';
                     }).join('');
                 })
@@ -5760,6 +5753,7 @@
                 '<div class="form-group full-width"><label>Description</label><textarea id="eInvDesc" rows="2">' + descVal + '</textarea></div>';
 
             overlay.classList.add('active');
+            overlay.style.display = 'flex';
         }
 
         function saveEditedInvoice() {
@@ -6360,11 +6354,16 @@
             jobEditId = null;
             clientEditId = null;
             window._editInvoiceId = null;
-            document.getElementById('modalOverlay').classList.remove('active');
+            var mo = document.getElementById('modalOverlay');
+            if (mo) {
+                mo.classList.remove('active');
+                mo.style.display = '';
+            }
             laundryItems = [];
         }
 
         function saveModalForm(e) {
+            if (e && e.preventDefault) e.preventDefault();
             if (modalType === 'edit-invoice') { saveEditedInvoice(); return; }
 
             e.preventDefault();
