@@ -1521,8 +1521,57 @@
         }
         .rev-cal-row {
             display: grid;
-            grid-template-columns: 1.15fr 0.85fr;
+            grid-template-columns: 1fr;
             gap: 12px;
+        }
+        .work-cal-card.is-collapsed .work-cal-body {
+            display: none;
+        }
+        .work-cal-toggle {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: transparent;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            text-align: left;
+            font-family: inherit;
+            color: inherit;
+        }
+        .work-cal-toggle:hover .work-cal-toggle-title {
+            color: var(--blue);
+        }
+        .work-cal-toggle-title {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--slate);
+            margin: 0;
+        }
+        .work-cal-toggle-meta {
+            font-size: 12px;
+            color: var(--slate);
+            font-weight: 600;
+            margin-top: 2px;
+        }
+        .work-cal-chevron {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--slate);
+            flex-shrink: 0;
+            transition: transform 0.15s ease;
+        }
+        .work-cal-card:not(.is-collapsed) .work-cal-chevron {
+            transform: rotate(180deg);
+        }
+        .work-cal-body {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
         }
         .rev-chart-card h4, .work-cal-card h4 {
             font-size: 11px; font-weight: 800; text-transform: uppercase;
@@ -2588,16 +2637,23 @@
                         <div class="rev-bars" id="revBars"></div>
                         <div class="rev-chart-foot" id="revChartFoot">Tap overview after completing jobs to refresh.</div>
                     </div>
-                    <div class="work-cal-card">
-                        <h4>Work calendar</h4>
-                        <p class="work-cal-sub" id="workCalSub">Jobs this month · tap a day</p>
-                        <div class="work-cal-nav">
-                            <button type="button" class="btn btn-outline btn-sm" onclick="shiftWorkCal(-1)">←</button>
-                            <strong id="workCalTitle">—</strong>
-                            <button type="button" class="btn btn-outline btn-sm" onclick="shiftWorkCal(1)">→</button>
+                    <div class="work-cal-card is-collapsed" id="workCalCard">
+                        <button type="button" class="work-cal-toggle" onclick="toggleWorkCal()" aria-expanded="false" id="workCalToggleBtn">
+                            <span>
+                                <div class="work-cal-toggle-title">Work calendar</div>
+                                <div class="work-cal-toggle-meta" id="workCalSub">Jobs this month · tap to open</div>
+                            </span>
+                            <span class="work-cal-chevron" aria-hidden="true">▼</span>
+                        </button>
+                        <div class="work-cal-body" id="workCalBody">
+                            <div class="work-cal-nav">
+                                <button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation();shiftWorkCal(-1)">←</button>
+                                <strong id="workCalTitle">—</strong>
+                                <button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation();shiftWorkCal(1)">→</button>
+                            </div>
+                            <div class="work-cal-grid" id="workCalGrid"></div>
+                            <div class="work-cal-detail is-empty" id="workCalDetail"></div>
                         </div>
-                        <div class="work-cal-grid" id="workCalGrid"></div>
-                        <div class="work-cal-detail is-empty" id="workCalDetail"></div>
                     </div>
                 </div>
             </div>
@@ -4420,7 +4476,26 @@
             }
         }
 
+        function toggleWorkCal() {
+            var card = document.getElementById('workCalCard');
+            var btn = document.getElementById('workCalToggleBtn');
+            if (!card) return;
+            var open = card.classList.contains('is-collapsed');
+            if (open) {
+                card.classList.remove('is-collapsed');
+                if (btn) btn.setAttribute('aria-expanded', 'true');
+                // ensure grid painted when first opened
+                if (typeof renderWorkCalendar === 'function') {
+                    renderWorkCalendar(workCalJobsCache || []);
+                }
+            } else {
+                card.classList.add('is-collapsed');
+                if (btn) btn.setAttribute('aria-expanded', 'false');
+            }
+        }
+
         function shiftWorkCal(delta) {
+
             if (workCalYear == null) {
                 var n = new Date();
                 workCalYear = n.getFullYear();
@@ -4495,9 +4570,14 @@
                 return k.indexOf(workCalYear + '-' + String(workCalMonth + 1).padStart(2, '0')) === 0;
             }).length;
             if (sub) {
-                sub.textContent = workDays
-                    ? (workDays + ' day' + (workDays > 1 ? 's' : '') + ' with jobs · tap a day')
-                    : 'No jobs this month · tap a day';
+                var card = document.getElementById('workCalCard');
+                var collapsed = card && card.classList.contains('is-collapsed');
+                if (workDays) {
+                    sub.textContent = workDays + ' day' + (workDays > 1 ? 's' : '') + ' with jobs' +
+                        (collapsed ? ' · tap to open' : ' · tap a day');
+                } else {
+                    sub.textContent = collapsed ? 'No jobs this month · tap to open' : 'No jobs this month · tap a day';
+                }
             }
 
             if (detail) {
@@ -4540,7 +4620,7 @@
             }
 
             // Restore full structure if we replaced with locked message
-            if (!document.getElementById('prMonthProfit') || !document.getElementById('revBars')) {
+            if (!document.getElementById('prMonthProfit') || !document.getElementById('revBars') || !document.getElementById('workCalCard')) {
                 el.innerHTML =
                     '<div class="profit-report-top">' +
                     '<div class="profit-hero" id="profitHero">' +
@@ -4561,13 +4641,17 @@
                     '<p class="rev-chart-sub" id="revChartSub">Completed jobs in current mode</p>' +
                     '<div class="rev-bars" id="revBars"></div>' +
                     '<div class="rev-chart-foot" id="revChartFoot"></div></div>' +
-                    '<div class="work-cal-card"><h4>Work calendar</h4>' +
-                    '<p class="work-cal-sub" id="workCalSub">Jobs this month · tap a day</p>' +
-                    '<div class="work-cal-nav"><button type="button" class="btn btn-outline btn-sm" onclick="shiftWorkCal(-1)">←</button>' +
+                    '<div class="work-cal-card is-collapsed" id="workCalCard">' +
+                    '<button type="button" class="work-cal-toggle" onclick="toggleWorkCal()" aria-expanded="false" id="workCalToggleBtn">' +
+                    '<span><div class="work-cal-toggle-title">Work calendar</div>' +
+                    '<div class="work-cal-toggle-meta" id="workCalSub">Jobs this month · tap to open</div></span>' +
+                    '<span class="work-cal-chevron" aria-hidden="true">▼</span></button>' +
+                    '<div class="work-cal-body" id="workCalBody">' +
+                    '<div class="work-cal-nav"><button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation();shiftWorkCal(-1)">←</button>' +
                     '<strong id="workCalTitle">—</strong>' +
-                    '<button type="button" class="btn btn-outline btn-sm" onclick="shiftWorkCal(1)">→</button></div>' +
+                    '<button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation();shiftWorkCal(1)">→</button></div>' +
                     '<div class="work-cal-grid" id="workCalGrid"></div>' +
-                    '<div class="work-cal-detail is-empty" id="workCalDetail"></div></div></div>';
+                    '<div class="work-cal-detail is-empty" id="workCalDetail"></div></div></div></div>';
             }
 
             var now = new Date();
