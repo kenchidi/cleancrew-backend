@@ -3887,10 +3887,15 @@
                     body: JSON.stringify(data)
                 })
                 .then(function(res) {
-                    if (!res.ok) throw new Error('Failed to update invoice');
-                    return res.json();
+                    return res.json().then(function(body) {
+                        if (!res.ok) {
+                            throw new Error((body && body.error) || 'Failed to update invoice');
+                        }
+                        return body;
+                    });
                 });
         }
+
 
         function deriveInvoiceStatus(amountDue, amountPaid) {
             var due = parseFloat(amountDue) || 0;
@@ -5492,6 +5497,7 @@
                         }
                         moreItems += '<button type="button" onclick="event.stopPropagation();shareInvoiceWhatsApp(\'' + invId + '\')">WhatsApp</button>';
                         if (status !== 'paid') {
+                            moreItems += '<button type="button" onclick="event.stopPropagation();editInvoice(\'' + invId + '\')">Edit invoice</button>';
                             moreItems += '<button type="button" onclick="event.stopPropagation();openRecordPayment(\'' + invId + '\')">Record payment</button>';
                         }
                         moreItems += '<button type="button" class="danger" onclick="event.stopPropagation();deleteInvoiceItem(\'' + invId + '\')">Delete invoice</button>';
@@ -5684,6 +5690,81 @@
                 .catch(function(e) {
                     console.error('deleteStaff', e);
                     showToast((e && e.message) || 'Failed to delete staff', 'error');
+                });
+        }
+
+
+        function isInvoicePaid(inv) {
+            if (!inv) return false;
+            var st = String(inv.status || '').toLowerCase();
+            var due = Number(inv.amount_due != null ? inv.amount_due : inv.amount) || 0;
+            var paid = Number(inv.amount_paid) || 0;
+            return st === 'paid' || (due > 0 && paid >= due);
+        }
+
+        function editInvoice(id) {
+            var inv = invoicesData.find(function(x) { return x.id === id; });
+            if (!inv) { showToast('Invoice not found', 'error'); return; }
+            if (isInvoicePaid(inv)) {
+                showToast('Paid invoices cannot be edited', 'error');
+                return;
+            }
+            modalType = 'edit-invoice';
+            window._editInvoiceId = id;
+            var overlay = document.getElementById('modalOverlay');
+            var f = document.getElementById('modalForm');
+            if (!overlay || !f) { showToast('Modal unavailable', 'error'); return; }
+            document.getElementById('modalTitle').innerHTML = '<svg class="icon"><use href="#ic-edit"/></svg> Edit invoice';
+            var num = inv.number || inv.invoice_numb || '—';
+            var amountDue = inv.amount_due != null ? inv.amount_due : (inv.amount || 0);
+            var dateVal = inv.date ? String(inv.date).slice(0, 10) : '';
+            var desc = inv.service || inv.description || '';
+            var st = String(inv.status || 'unpaid').toLowerCase();
+            f.innerHTML =
+                '<p style="grid-column:1/-1;font-size:12px;color:var(--slate);margin:0 0 4px;">Invoice <strong>' + num + '</strong> · number and created date cannot be changed. Paid invoices are locked.</p>' +
+                '<div class="form-group"><label>Client</label><input type="text" id="eInvClient" value="' + String(inv.client || '').replace(/"/g, '&quot;') + '" required /></div>' +
+                '<div class="form-group"><label>Amount (' + moneySymbol() + ')</label><input type="number" id="eInvAmount" min="0" step="0.01" value="' + amountDue + '" required /></div>' +
+                '<div class="form-group"><label>Date</label><input type="date" id="eInvDate" value="' + dateVal + '" required /></div>' +
+                '<div class="form-group"><label>Status</label><select id="eInvStatus">' +
+                '<option value="unpaid"' + (st === 'unpaid' || st === 'pending' ? ' selected' : '') + '>Unpaid</option>' +
+                '<option value="partial"' + (st === 'partial' ? ' selected' : '') + '>Partial</option>' +
+                '<option value="overdue"' + (st === 'overdue' ? ' selected' : '') + '>Overdue</option>' +
+                '<option value="cancelled"' + (st === 'cancelled' ? ' selected' : '') + '>Cancelled</option>' +
+                '</select></div>' +
+                '<div class="form-group full-width"><label>Description</label><textarea id="eInvDesc" rows="2">' + String(desc).replace(/</g, '&lt;') + '</textarea></div>';
+            overlay.classList.add('open');
+        }
+
+        function saveEditedInvoice() {
+            var id = window._editInvoiceId;
+            if (!id) return;
+            var client = (document.getElementById('eInvClient') || {}).value;
+            var amount = Number((document.getElementById('eInvAmount') || {}).value);
+            var date = (document.getElementById('eInvDate') || {}).value;
+            var status = (document.getElementById('eInvStatus') || {}).value;
+            var description = (document.getElementById('eInvDesc') || {}).value;
+            if (!client || !client.trim()) { showToast('Client is required', 'error'); return; }
+            if (isNaN(amount) || amount < 0) { showToast('Enter a valid amount', 'error'); return; }
+            if (!date) { showToast('Date is required', 'error'); return; }
+
+            updateInvoice(id, {
+                client: client.trim(),
+                amount_due: amount,
+                amount: amount,
+                date: date,
+                status: status,
+                description: (description || '').trim(),
+                service: (description || '').trim()
+            })
+                .then(function() {
+                    showToast('Invoice updated', 'success');
+                    closeModal();
+                    window._editInvoiceId = null;
+                    modalType = null;
+                    renderInvoices();
+                })
+                .catch(function(e) {
+                    showToast((e && e.message) || 'Failed to update invoice', 'error');
                 });
         }
 
@@ -6256,6 +6337,8 @@
         }
 
         function saveModalForm(e) {
+            if (modalType === 'edit-invoice') { saveEditedInvoice(); return; }
+
             e.preventDefault();
 
             if (modalType === 'job' || modalType === 'editJob') {

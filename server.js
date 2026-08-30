@@ -3195,38 +3195,133 @@ app.put(
     authenticate,
     async (req, res) => {
         try {
-            const {
-                data,
-                error
-            } = await supabase
-                .from('invoices')
-                .update(req.body)
-                .eq(
-                    'id',
-                    req.params.id
-                )
-                .eq(
-                    'user_id',
-                    req.user.id
-                )
-                .select()
-                .single();
+            const userId = req.user.id;
+            const invoiceId = req.params.id;
 
-            if (error) {
-                throw error;
+            const existing = await supabase
+                .from('invoices')
+                .select('*')
+                .eq('id', invoiceId)
+                .eq('user_id', userId)
+                .maybeSingle();
+
+            if (existing.error) throw existing.error;
+            if (!existing.data) {
+                return res.status(404).json({ error: 'Invoice not found' });
             }
 
+            const inv = existing.data;
+            const statusNow = String(inv.status || '').toLowerCase();
+            const amountDueNow = Number(inv.amount_due != null ? inv.amount_due : inv.amount) || 0;
+            const amountPaidNow = Number(inv.amount_paid) || 0;
+            const isPaid = statusNow === 'paid' || (amountDueNow > 0 && amountPaidNow >= amountDueNow);
+
+            // Guardrail: no content edits after fully paid (payment recording uses dedicated fields only via openRecordPayment)
+            // Allow only status/payment-related updates if already paid? User said no edits after paid — block all field edits.
+            if (isPaid) {
+                return res.status(400).json({
+                    error: 'This invoice is paid and cannot be edited. Create a new invoice if you need a correction.'
+                });
+            }
+
+            const body = req.body || {};
+            // Allowed editable fields only — never invoice number / created_at / user_id / job_id reassignment via bulk body
+            const updates = {};
+            const changes = [];
+
+            if (body.client !== undefined) {
+                const v = String(body.client || '').trim();
+                if (v && v !== inv.client) {
+                    updates.client = v;
+                    changes.push('client: ' + (inv.client || '') + ' → ' + v);
+                }
+            }
+            if (body.amount_due !== undefined || body.amount !== undefined) {
+                const v = Number(body.amount_due != null ? body.amount_due : body.amount);
+                if (!isNaN(v) && v >= 0) {
+                    const prev = amountDueNow;
+                    if (v !== prev) {
+                        updates.amount_due = v;
+                        updates.amount = v;
+                        changes.push('amount: ' + prev + ' → ' + v);
+                    }
+                }
+            }
+            if (body.date !== undefined && body.date) {
+                const v = String(body.date).slice(0, 10);
+                const prev = inv.date ? String(inv.date).slice(0, 10) : '';
+                if (v !== prev) {
+                    updates.date = v;
+                    changes.push('date: ' + prev + ' → ' + v);
+                }
+            }
+            if (body.status !== undefined) {
+                const v = String(body.status || '').toLowerCase();
+                const allowed = ['unpaid', 'partial', 'pending', 'paid', 'overdue', 'cancelled'];
+                if (allowed.indexOf(v) !== -1 && v !== statusNow) {
+                    // Don't allow marking paid through generic edit — use Record payment
+                    if (v === 'paid') {
+                        return res.status(400).json({
+                            error: 'Mark as paid using Record payment so amount paid is tracked correctly.'
+                        });
+                    }
+                    updates.status = v;
+                    changes.push('status: ' + statusNow + ' → ' + v);
+                }
+            }
+            if (body.description !== undefined || body.service !== undefined) {
+                const v = String(body.description != null ? body.description : body.service || '').trim();
+                const prev = inv.service || inv.description || '';
+                if (v && v !== prev) {
+                    updates.service = v;
+                    changes.push('description updated');
+                }
+            }
+
+            // Explicitly strip forbidden fields if client sent them
+            // number, invoice_numb, created_at, user_id never applied
+
+            if (!Object.keys(updates).length) {
+                return res.json(inv);
+            }
+
+            // Lightweight audit trail on the row (no extra table required)
+            const stamp = new Date().toISOString();
+            const auditLine = '[' + stamp + ' edit] ' + changes.join('; ');
+            const prevNotes = inv.audit_log || inv.notes || '';
+            updates.updated_at = stamp;
+            // Prefer audit_log column if present; also append to a safe field
+            updates.audit_log = (prevNotes && String(prevNotes).indexOf('[') === 0 ? prevNotes + '\n' : (prevNotes ? prevNotes + '\n' : '')) + auditLine;
+            // If audit_log column doesn't exist, Supabase will error — strip and retry notes-only
+            let data, error;
+            const attempt = await supabase
+                .from('invoices')
+                .update(updates)
+                .eq('id', invoiceId)
+                .eq('user_id', userId)
+                .select()
+                .single();
+            data = attempt.data;
+            error = attempt.error;
+
+            if (error && /audit_log|column/i.test(error.message || '')) {
+                delete updates.audit_log;
+                const retry = await supabase
+                    .from('invoices')
+                    .update(updates)
+                    .eq('id', invoiceId)
+                    .eq('user_id', userId)
+                    .select()
+                    .single();
+                data = retry.data;
+                error = retry.error;
+            }
+
+            if (error) throw error;
             res.json(data);
-
         } catch (error) {
-            console.error(
-                'Error updating invoice:',
-                error
-            );
-
-            res.status(500).json({
-                error: error.message
-            });
+            console.error('Error updating invoice:', error);
+            res.status(500).json({ error: error.message });
         }
     }
 );
