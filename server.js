@@ -4126,32 +4126,59 @@ app.post(
     authenticate,
     async (req, res) => {
         try {
-            const {
-                data,
-                error
-            } = await supabase
-                .from(
-                    'invoice_settings'
-                )
-                .upsert({
-                    user_id:
-                        req.user.id,
+            const userId = req.user.id;
+            const body = req.body || {};
 
-                    ...req.body,
+            // Only allow known columns — never trust client id (would break upsert)
+            const payload = {
+                user_id: userId,
+                business_name: body.business_name != null ? String(body.business_name).trim() : '',
+                business_address: body.business_address != null ? String(body.business_address).trim() : '',
+                phone: body.phone != null ? String(body.phone).trim() : '',
+                email: body.email != null ? String(body.email).trim() : '',
+                bank_name: body.bank_name != null ? String(body.bank_name).trim() : '',
+                account_name: body.account_name != null ? String(body.account_name).trim() : '',
+                account_number: body.account_number != null ? String(body.account_number).trim() : '',
+                payment_whatsapp: body.payment_whatsapp != null ? String(body.payment_whatsapp).trim() : '',
+                updated_at: new Date().toISOString()
+            };
 
-                    updated_at:
-                        new Date()
-                            .toISOString()
-                })
-                .select()
-                .single();
+            // Prefer update-if-exists so unique(user_id) is never violated
+            const existing = await supabase
+                .from('invoice_settings')
+                .select('id')
+                .eq('user_id', userId)
+                .maybeSingle();
+
+            if (existing.error) {
+                throw existing.error;
+            }
+
+            let data, error;
+            if (existing.data && existing.data.id) {
+                const updated = await supabase
+                    .from('invoice_settings')
+                    .update(payload)
+                    .eq('user_id', userId)
+                    .select()
+                    .single();
+                data = updated.data;
+                error = updated.error;
+            } else {
+                const inserted = await supabase
+                    .from('invoice_settings')
+                    .upsert(payload, { onConflict: 'user_id' })
+                    .select()
+                    .single();
+                data = inserted.data;
+                error = inserted.error;
+            }
 
             if (error) {
                 throw error;
             }
 
-            res.json(data);
-
+            res.json(data || payload);
         } catch (error) {
             console.error(
                 'Save invoice settings error:',
