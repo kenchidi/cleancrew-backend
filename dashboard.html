@@ -430,20 +430,39 @@
             color: var(--blue);
             background: var(--blue-mist);
         }
+        .job-more {
+            position: relative;
+        }
         .job-more-menu {
             position: absolute;
             right: 0;
-            top: calc(100% + 4px);
-            z-index: 50;
-            min-width: 160px;
+            bottom: calc(100% + 6px);
+            top: auto;
+            z-index: 80;
+            min-width: 180px;
             background: var(--white);
             border: 1px solid var(--border);
             border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(11,21,38,.14);
+            box-shadow: 0 10px 30px rgba(11,21,38,.16);
             padding: 6px;
             display: flex;
             flex-direction: column;
             gap: 2px;
+        }
+        /* Keep ··· menus visible inside scroll/table areas */
+        .table-wrap {
+            overflow-x: auto;
+            overflow-y: visible;
+        }
+        #tab-invoices .card,
+        #tab-jobs .card,
+        #tab-clients .card {
+            overflow: visible;
+        }
+        #tab-invoices .table-wrap,
+        #tab-jobs .table-wrap {
+            overflow-x: auto;
+            overflow-y: visible;
         }
         .job-more-menu button {
             width: 100%;
@@ -5709,20 +5728,27 @@
                 showToast('Paid invoices cannot be edited', 'error');
                 return;
             }
+            // Close any open ··· menus so they don't steal clicks
+            document.querySelectorAll('details.job-more[open]').forEach(function(d) { d.open = false; });
+
             modalType = 'edit-invoice';
             window._editInvoiceId = id;
             var overlay = document.getElementById('modalOverlay');
-            var f = document.getElementById('modalForm');
+            var f = document.getElementById('modalFormFields');
             if (!overlay || !f) { showToast('Modal unavailable', 'error'); return; }
-            document.getElementById('modalTitle').innerHTML = '<svg class="icon"><use href="#ic-edit"/></svg> Edit invoice';
+
+            document.getElementById('modalTitle').innerHTML = 'Edit invoice';
             var num = inv.number || inv.invoice_numb || '—';
             var amountDue = inv.amount_due != null ? inv.amount_due : (inv.amount || 0);
             var dateVal = inv.date ? String(inv.date).slice(0, 10) : '';
             var desc = inv.service || inv.description || '';
             var st = String(inv.status || 'unpaid').toLowerCase();
+            var clientVal = String(inv.client || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+            var descVal = String(desc || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
             f.innerHTML =
-                '<p style="grid-column:1/-1;font-size:12px;color:var(--slate);margin:0 0 4px;">Invoice <strong>' + num + '</strong> · number and created date cannot be changed. Paid invoices are locked.</p>' +
-                '<div class="form-group"><label>Client</label><input type="text" id="eInvClient" value="' + String(inv.client || '').replace(/"/g, '&quot;') + '" required /></div>' +
+                '<p class="full-width" style="font-size:12px;color:var(--slate);margin:0;">Invoice <strong>' + num + '</strong> · number and created date cannot be changed. Paid invoices stay locked.</p>' +
+                '<div class="form-group"><label>Client</label><input type="text" id="eInvClient" value="' + clientVal + '" required /></div>' +
                 '<div class="form-group"><label>Amount (' + moneySymbol() + ')</label><input type="number" id="eInvAmount" min="0" step="0.01" value="' + amountDue + '" required /></div>' +
                 '<div class="form-group"><label>Date</label><input type="date" id="eInvDate" value="' + dateVal + '" required /></div>' +
                 '<div class="form-group"><label>Status</label><select id="eInvStatus">' +
@@ -5731,8 +5757,9 @@
                 '<option value="overdue"' + (st === 'overdue' ? ' selected' : '') + '>Overdue</option>' +
                 '<option value="cancelled"' + (st === 'cancelled' ? ' selected' : '') + '>Cancelled</option>' +
                 '</select></div>' +
-                '<div class="form-group full-width"><label>Description</label><textarea id="eInvDesc" rows="2">' + String(desc).replace(/</g, '&lt;') + '</textarea></div>';
-            overlay.classList.add('open');
+                '<div class="form-group full-width"><label>Description</label><textarea id="eInvDesc" rows="2">' + descVal + '</textarea></div>';
+
+            overlay.classList.add('active');
         }
 
         function saveEditedInvoice() {
@@ -6332,6 +6359,7 @@
         function closeModal() {
             jobEditId = null;
             clientEditId = null;
+            window._editInvoiceId = null;
             document.getElementById('modalOverlay').classList.remove('active');
             laundryItems = [];
         }
