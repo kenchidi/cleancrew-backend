@@ -5737,11 +5737,13 @@
             var desc = inv.service || inv.description || '';
             var st = String(inv.status || 'unpaid').toLowerCase();
             var clientVal = String(inv.client || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+            var phoneVal = String(inv.phone || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
             var descVal = String(desc || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
             f.innerHTML =
                 '<p class="full-width" style="font-size:12px;color:var(--slate);margin:0;">Invoice <strong>' + num + '</strong> · number and created date cannot be changed. Paid invoices stay locked.</p>' +
                 '<div class="form-group"><label>Client</label><input type="text" id="eInvClient" value="' + clientVal + '" required /></div>' +
+                '<div class="form-group"><label>WhatsApp / phone</label><input type="tel" id="eInvPhone" value="' + phoneVal + '" placeholder="e.g. 0803..." /></div>' +
                 '<div class="form-group"><label>Amount (' + moneySymbol() + ')</label><input type="number" id="eInvAmount" min="0" step="0.01" value="' + amountDue + '" required /></div>' +
                 '<div class="form-group"><label>Date</label><input type="date" id="eInvDate" value="' + dateVal + '" required /></div>' +
                 '<div class="form-group"><label>Status</label><select id="eInvStatus">' +
@@ -5768,8 +5770,11 @@
             if (isNaN(amount) || amount < 0) { showToast('Enter a valid amount', 'error'); return; }
             if (!date) { showToast('Date is required', 'error'); return; }
 
+            var phoneEl = document.getElementById('eInvPhone');
+            var phone = phoneEl ? String(phoneEl.value || '').trim() : '';
             updateInvoice(id, {
                 client: client.trim(),
+                phone: phone,
                 amount_due: amount,
                 amount: amount,
                 date: date,
@@ -6338,6 +6343,7 @@
                     '<div class="form-group"><label>Role</label><select id="sRole"><option>Cleaner</option><option>Supervisor</option><option>Manager</option><option>Admin</option></select></div>';
             } else if (type === 'invoice') {
                 f.innerHTML = '<div class="form-group"><label>Client *</label><input type="text" id="invClient" required /></div>' +
+                    '<div class="form-group"><label>WhatsApp / phone</label><input type="tel" id="invPhone" placeholder="e.g. 0803..." /></div>' +
                     '<div class="form-group"><label>Amount (' + moneySymbol() + ') *</label><input type="number" id="invAmount" required /></div>' +
                     '<div class="form-group"><label>Date</label><input type="date" id="invDate" required /></div>' +
                     '<div class="form-group"><label>Status</label><select id="invStatus"><option value="pending">Pending</option><option value="paid">Paid</option><option value="overdue">Overdue</option></select></div>' +
@@ -6602,6 +6608,7 @@
                 var initialPaid = status === 'paid' ? amount : 0;
                 createInvoice({
                     client: client,
+                    phone: (document.getElementById('invPhone') && document.getElementById('invPhone').value || '').trim(),
                     amount: amount,
                     amount_due: amount,
                     amount_paid: initialPaid,

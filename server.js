@@ -3129,6 +3129,10 @@ app.post(
                 client:
                     req.body.client,
 
+                phone:
+                    req.body.phone ||
+                    null,
+
                 service:
                     req.body.description ||
                     req.body.service ||
@@ -3234,6 +3238,13 @@ app.put(
                 if (v && v !== inv.client) {
                     updates.client = v;
                     changes.push('client: ' + (inv.client || '') + ' → ' + v);
+                }
+            }
+            if (body.phone !== undefined) {
+                const v = String(body.phone || '').trim();
+                if (v !== String(inv.phone || '').trim()) {
+                    updates.phone = v;
+                    changes.push('phone updated');
                 }
             }
             if (body.amount_due !== undefined || body.amount !== undefined) {
