@@ -2681,20 +2681,24 @@
 
         <!-- ════ SETTINGS TAB ════ -->
         <div class="tab-content" id="tab-settings">
-            <div class="card">
+            <div class="card" style="margin-bottom:16px;">
                 <div class="card-header">
-                    <h3><svg class="icon"><use href="#ic-settings"/></svg> Invoice Settings</h3>
-                    <span style="font-size:12px; color:var(--slate);">Customize how your invoices look</span>
+                    <h3><svg class="icon"><use href="#ic-settings"/></svg> Settings</h3>
+                    <span style="font-size:12px; color:var(--slate);">Business profile, invoices &amp; payments</span>
                 </div>
                 <form id="invoiceSettingsForm" class="settings-form" onsubmit="saveInvoiceSettings(event)">
+                    <h4 style="font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;color:var(--slate);margin:0 0 12px;">Country &amp; currency</h4>
                     <div class="form-group">
-                        <label>Country / currency</label>
+                        <label>Operating country</label>
                         <select id="settingsCountry" onchange="setUserCountry(this.value)">
                             <option value="NG">Nigeria (₦ Naira)</option>
                             <option value="GH">Ghana (GH₵ Cedis)</option>
                         </select>
                         <p style="font-size:12px;color:var(--slate);margin-top:6px;">Ghana accounts see prices in cedis and pay via MTN MoMo. Nigeria uses Paystack (₦).</p>
                     </div>
+                    <hr style="border: none; border-top: 1px solid var(--border); margin: 18px 0;" />
+                    <h4 style="font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;color:var(--slate);margin:0 0 12px;">Business on invoices (PDF)</h4>
+                    <p style="font-size:12px;color:var(--slate);margin:0 0 12px;">These details appear on generated invoice PDFs so clients know who to pay.</p>
                     <div class="form-group">
                         <label>Business Name</label>
                         <input type="text" id="settingsBusinessName" placeholder="e.g. CleanCrew Laundry & Cleaning" />
@@ -2713,8 +2717,9 @@
                             <input type="email" id="settingsEmail" placeholder="e.g. hello@cleancrewlaundry.com" />
                         </div>
                     </div>
-                    <hr style="border: none; border-top: 1px solid var(--border); margin: 16px 0;" />
-                    <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">💳 Bank Details (for invoice payments)</h4>
+                    <hr style="border: none; border-top: 1px solid var(--border); margin: 18px 0;" />
+                    <h4 style="font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;color:var(--slate);margin:0 0 12px;">Bank / payment details</h4>
+                    <p style="font-size:12px;color:var(--slate);margin:0 0 12px;">Printed on the PDF so customers can transfer payment to you.</p>
                     <div class="form-row">
                         <div class="form-group">
                             <label>Bank Name</label>
@@ -2738,6 +2743,15 @@
                         <svg class="icon"><use href="#ic-check"/></svg> Save Settings
                     </button>
                 </form>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h3><svg class="icon"><use href="#ic-file"/></svg> Invoice PDFs</h3>
+                </div>
+                <p style="font-size:13px;color:var(--slate);line-height:1.5;margin:0 0 10px;">
+                    Open the <strong>Invoices</strong> tab and tap <strong>PDF</strong> on any invoice to generate a professional PDF using the business name and bank details above.
+                </p>
+                <button type="button" class="btn btn-outline btn-sm" onclick="switchTab('invoices')">Go to Invoices</button>
             </div>
         </div>
 
@@ -3674,6 +3688,18 @@
                 })
                 .then(function(res) {
                     if (!res.ok) throw new Error('Failed to delete job');
+                    return res.json();
+                });
+        }
+
+        function updateClient(id, data) {
+            return fetch(API_URL + '/clients/' + id, {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    body: JSON.stringify(data)
+                })
+                .then(function(res) {
+                    if (!res.ok) return parseApiError(res);
                     return res.json();
                 });
         }
@@ -4742,6 +4768,7 @@
                     '<td><strong>' + formatMoney(totalSpent) + '</strong></td>' +
                     '<td><div class="job-actions" onclick="event.stopPropagation()">' +
                     '<div class="job-actions-primary">' +
+                    '<button type="button" class="btn btn-outline btn-sm" onclick="editClient(\'' + escJsAttr(c.id) + '\')">Edit</button>' +
                     '<button type="button" class="btn btn-whatsapp btn-sm" onclick="sendSingleWhatsApp(\'' + escJsAttr(c.name) + '\', \'' + escJsAttr(c.phone || '') + '\')">WhatsApp</button>' +
                     '<details class="job-more">' +
                     '<summary title="More actions" onclick="event.stopPropagation()">···</summary>' +
@@ -4951,10 +4978,11 @@
                         var primaryBtn = '';
                         if (status !== 'paid') {
                             primaryBtn = '<button type="button" class="btn btn-success btn-sm" onclick="openRecordPayment(\'' + invId + '\')">Record pay</button>';
-                        } else if (inv.pdf_url) {
-                            primaryBtn = '<button type="button" class="btn btn-outline btn-sm" onclick="window.open(\'' + escJsAttr(inv.pdf_url) + '\',\'_blank\')">View PDF</button>';
+                        }
+                        if (inv.pdf_url) {
+                            primaryBtn += '<button type="button" class="btn btn-outline btn-sm" onclick="window.open(\'' + escJsAttr(inv.pdf_url) + '\',\'_blank\')">View PDF</button>';
                         } else {
-                            primaryBtn = '<button type="button" class="btn btn-primary btn-sm" onclick="generateInvoicePDF(\'' + invId + '\')">PDF</button>';
+                            primaryBtn += '<button type="button" class="btn btn-primary btn-sm" onclick="generateInvoicePDF(\'' + invId + '\')">PDF</button>';
                         }
 
                         var moreItems = '';
@@ -5095,6 +5123,35 @@
                 });
         }
 
+
+        function findClientById(id) {
+            if (!id || typeof clientsData === 'undefined' || !clientsData) return null;
+            return clientsData.find(function(c) { return String(c.id) === String(id); }) || null;
+        }
+
+        function editClient(id) {
+            var c = findClientById(id);
+            if (!c) {
+                showToast('Client not found — refresh and try again', 'error');
+                return;
+            }
+            clientEditId = id;
+            openModal('client');
+            modalType = 'editClient';
+            var title = document.getElementById('modalTitle');
+            if (title) {
+                title.innerHTML = '<svg class="icon"><use href="#ic-user"/></svg> Edit client';
+            }
+            setTimeout(function() {
+                var el;
+                el = document.getElementById('cName'); if (el) el.value = c.name || '';
+                el = document.getElementById('cPhone'); if (el) el.value = (c.phone && c.phone !== 'N/A') ? c.phone : '';
+                el = document.getElementById('cEmail'); if (el) el.value = c.email || '';
+                el = document.getElementById('cLocation'); if (el) el.value = c.location || '';
+                el = document.getElementById('cNotes'); if (el) el.value = c.notes || '';
+            }, 40);
+        }
+
         function deleteClientItem(id) {
             if (!id) { showToast('Client not found', 'error'); return; }
             if (!confirm('Delete this client? This cannot be undone.')) return;
@@ -5209,6 +5266,7 @@
         // ─── ──────────────────────────────────────────────────────
         var modalType = '';
         var jobEditId = null;
+        var clientEditId = null;
         var laundryItems = [];
 
         function addLaundryItemRow(name, qty, price) {
@@ -5589,6 +5647,7 @@
 
         function closeModal() {
             jobEditId = null;
+            clientEditId = null;
             document.getElementById('modalOverlay').classList.remove('active');
             laundryItems = [];
         }
@@ -5720,7 +5779,7 @@
                         }
                     });
 
-            } else if (modalType === 'client') {
+            } else if (modalType === 'client' || modalType === 'editClient') {
                 var name = document.getElementById('cName').value.trim();
                 var phone = document.getElementById('cPhone').value.trim();
                 var email = document.getElementById('cEmail').value.trim();
@@ -5729,15 +5788,32 @@
 
                 if (!name) { showToast('Enter name', 'error'); return; }
 
-                createClient({ name: name, phone: phone || 'N/A', email: email || '', location: location || '',
-                        notes: notes || '' })
-                    .then(function() {
+                var payload = {
+                    name: name,
+                    phone: phone || 'N/A',
+                    email: email || '',
+                    location: location || '',
+                    notes: notes || ''
+                };
+
+                var saveP;
+                if (modalType === 'editClient' && clientEditId) {
+                    saveP = updateClient(clientEditId, payload).then(function() {
+                        showToast('Client updated', 'success');
+                    });
+                } else {
+                    saveP = createClient(payload).then(function() {
                         showToast('Client added!', 'success');
+                    });
+                }
+
+                saveP
+                    .then(function() {
                         closeModal();
                         renderAll();
                     })
                     .catch(function() {
-                        showToast('Failed to add client', 'error');
+                        showToast('Failed to save client', 'error');
                     });
 
             } else if (modalType === 'inventory') {
