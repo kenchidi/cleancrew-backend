@@ -3,57 +3,52 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#2B6E8B" />
+    <meta name="theme-color" content="#0F4FA8" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="CleanCrew" />
-    <title>CleanCrew — For the people who make spaces clean and laundry come back fresh.</title>
+    <title>CleanCrew — Jobs, pickups &amp; profit for cleaning and laundry</title>
     <meta name="description" content="Log cleaning and laundry jobs in seconds. Track pickups, clients, and what you keep after staff and materials. 25 free jobs — no card required." />
+    <meta property="og:title" content="CleanCrew — For cleaning &amp; laundry businesses" />
+    <meta property="og:description" content="From the counter to end-of-day profit. Free to start." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.cleancrewapp.com" />
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
     <link rel="manifest" href="site.webmanifest" />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <style>
-        /* ─── Warm Design Tokens ─────────────────────────────── */
         :root {
-            --warm-blue: #2B6E8B;
-            --warm-blue-light: #D4E8F0;
-            --warm-blue-mist: #EDF5F8;
-            --cream: #FBF8F2;
-            --earth: #5B8C5A;
-            --earth-light: #E8F0E4;
-            --amber: #D4A373;
-            --amber-light: #F5E6D4;
-            --ink: #1A1A2E;
-            --soft: #4A4A5A;
-            --muted: #8A8A9A;
-            --line: #E8E4DE;
+            --blue: #1A6DDB;
+            --blue-deep: #0C3D82;
+            --mist: #E8F1FC;
+            --foam: #F4F8FD;
+            --ink: #0B1526;
+            --soft: #3D4D68;
+            --muted: #6B7C94;
+            --line: #E2E9F2;
             --white: #FFFFFF;
-            --radius: 24px;
-            --shadow: 0 24px 64px rgba(26, 26, 46, 0.08);
-            --shadow-sm: 0 4px 16px rgba(26, 26, 46, 0.05);
+            --green: #159A45;
+            --radius: 20px;
+            --shadow: 0 20px 50px rgba(11, 21, 38, 0.1);
+            --shadow-sm: 0 4px 16px rgba(11, 21, 38, 0.06);
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
         body {
             font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
             color: var(--ink);
-            background: var(--cream);
-            line-height: 1.6;
+            background: var(--foam);
+            line-height: 1.55;
             overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
         }
-
         a { color: inherit; text-decoration: none; }
-        .wrap { width: min(1120px, calc(100% - 48px)); margin: 0 auto; }
-
-        /* ─── Navigation ───────────────────────────────────────── */
+        .wrap { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
         .nav {
             position: sticky; top: 0; z-index: 40;
             backdrop-filter: blur(14px);
-            background: rgba(251, 248, 242, 0.85);
+            background: rgba(244, 248, 253, 0.85);
             border-bottom: 1px solid transparent;
             transition: border-color 0.2s, background 0.2s;
         }
@@ -64,106 +59,97 @@
         }
         .brand {
             display: flex; align-items: center; gap: 10px;
-            font-weight: 900; font-size: 1.15rem; letter-spacing: -0.03em;
+            font-weight: 900; font-size: 1.2rem; letter-spacing: -0.03em;
+            color: var(--ink);
         }
-        .brand-mark {
-            width: 40px; height: 40px; border-radius: 11px;
-            overflow: hidden; display: block; flex-shrink: 0;
-            background: var(--warm-blue);
-            box-shadow: 0 8px 20px rgba(43, 110, 139, 0.25);
+        .brand:hover { opacity: 0.9; }
+        .brand-word {
+            font-weight: 900;
+            font-size: 1.25rem;
+            letter-spacing: -0.04em;
+            color: var(--ink);
         }
-        .brand-mark img {
-            width: 100%; height: 100%; object-fit: contain; display: block;
+        .brand-word span {
+            color: var(--blue);
         }
-        .nav-links { display: flex; align-items: center; gap: 6px; }
+        
+        
+        .nav-links { display: flex; align-items: center; gap: 8px; }
         .nav-links a.quiet {
             font-size: 14px; font-weight: 600; color: var(--soft);
-            padding: 8px 14px; border-radius: 999px; transition: background 0.15s;
+            padding: 8px 12px; border-radius: 999px;
         }
-        .nav-links a.quiet:hover { background: var(--warm-blue-mist); color: var(--ink); }
+        .nav-links a.quiet:hover { background: var(--mist); color: var(--ink); }
         .btn {
             display: inline-flex; align-items: center; justify-content: center; gap: 8px;
             font-family: inherit; font-weight: 800; font-size: 14px;
             border-radius: 999px; border: none; cursor: pointer;
-            padding: 12px 22px; transition: transform 0.15s, box-shadow 0.15s;
+            padding: 12px 20px; transition: transform 0.15s, filter 0.15s;
         }
-        .btn:hover { transform: translateY(-2px); }
+        .btn:hover { transform: translateY(-1px); }
         .btn-primary {
-            background: var(--warm-blue);
-            color: #fff; box-shadow: 0 8px 24px rgba(43, 110, 139, 0.3);
+            background: linear-gradient(135deg, #2E7DE8, #0F4FA8);
+            color: #fff; box-shadow: 0 12px 28px rgba(15, 79, 168, 0.3);
         }
-        .btn-primary:hover { box-shadow: 0 12px 32px rgba(43, 110, 139, 0.4); }
         .btn-ghost {
             background: var(--white); color: var(--ink);
             border: 1.5px solid var(--line); box-shadow: var(--shadow-sm);
         }
-        .btn-lg { padding: 15px 28px; font-size: 15px; }
-        .btn-green {
-            background: var(--earth);
-            color: #fff; box-shadow: 0 8px 24px rgba(91, 140, 90, 0.3);
+        .btn-lg { padding: 15px 26px; font-size: 15px; }
+        .hero { position: relative; padding: 48px 0 64px; }
+        .hero::before {
+            content: '';
+            position: absolute; inset: -10% -20% auto -20%; height: 70%;
+            background:
+                radial-gradient(ellipse 50% 60% at 20% 40%, rgba(26, 109, 219, 0.14), transparent 70%),
+                radial-gradient(ellipse 40% 50% at 80% 20%, rgba(14, 116, 144, 0.12), transparent 65%),
+                radial-gradient(ellipse 30% 40% at 60% 80%, rgba(21, 154, 69, 0.08), transparent 60%);
+            pointer-events: none; z-index: 0;
         }
-        .btn-green:hover { box-shadow: 0 12px 32px rgba(91, 140, 90, 0.4); }
-
-        /* ─── Hero ────────────────────────────────────────────── */
-        .hero {
-            position: relative;
-            padding: 56px 0 72px;
-            background: radial-gradient(ellipse 60% 50% at 10% 20%, rgba(212, 232, 240, 0.4), transparent 60%),
-                        radial-gradient(ellipse 50% 40% at 90% 80%, rgba(232, 240, 228, 0.3), transparent 50%);
-        }
+        .hero .wrap { position: relative; z-index: 1; }
         .hero-grid {
             display: grid;
-            grid-template-columns: 1.1fr 0.9fr;
-            gap: 56px;
+            grid-template-columns: 1.05fr 0.95fr;
+            gap: 48px;
             align-items: center;
         }
         .eyebrow {
             display: inline-flex; align-items: center; gap: 8px;
             font-size: 12px; font-weight: 800; letter-spacing: 0.06em;
-            text-transform: uppercase; color: var(--warm-blue);
-            background: var(--warm-blue-mist); border: 1px solid var(--warm-blue-light);
-            padding: 6px 14px; border-radius: 999px; margin-bottom: 20px;
+            text-transform: uppercase; color: var(--blue-deep);
+            background: var(--mist); border: 1px solid #cfe0f8;
+            padding: 6px 12px; border-radius: 999px; margin-bottom: 18px;
         }
         .hero h1 {
-            font-size: clamp(2.4rem, 5vw, 3.6rem);
-            line-height: 1.05; letter-spacing: -0.04em; font-weight: 900;
-            margin-bottom: 18px;
-        }
-        .hero h1 .highlight {
-            background: linear-gradient(135deg, var(--warm-blue), var(--earth));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-size: clamp(2.1rem, 4.5vw, 3.35rem);
+            line-height: 1.08; letter-spacing: -0.04em; font-weight: 900;
+            margin-bottom: 16px;
         }
         .hero-lead {
-            font-size: 1.15rem; color: var(--soft); max-width: 34em;
-            margin-bottom: 28px; line-height: 1.7;
+            font-size: 1.12rem; color: var(--soft); max-width: 34em;
+            margin-bottom: 28px;
         }
-        .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
-        .hero-note {
-            font-size: 13px; color: var(--muted);
-        }
+        .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 22px; }
+        .hero-note { font-size: 13px; color: var(--muted); }
         .hero-note strong { color: var(--soft); }
-
-        /* ─── Phone Mockup (Warm Version) ────────────────────── */
         .stage { position: relative; }
         .phone {
-            background: var(--ink);
-            border-radius: 40px;
-            padding: 14px;
+            background: #0B1526;
+            border-radius: 36px;
+            padding: 12px;
             box-shadow: var(--shadow), 0 0 0 1px rgba(255,255,255,0.06);
             max-width: 340px;
             margin: 0 auto;
-            transform: rotate(-1deg) perspective(800px) rotateY(-4deg);
+            transform: rotate(-2deg);
         }
         .phone-notch {
-            width: 110px; height: 26px; background: var(--ink);
+            width: 110px; height: 26px; background: #0B1526;
             border-radius: 0 0 16px 16px; margin: 0 auto 8px;
         }
         .phone-screen {
-            background: linear-gradient(180deg, #F7F4EF 0%, #FBF8F2 60%, #fff 100%);
+            background: linear-gradient(180deg, #F0F6FF 0%, #F7FAFC 40%, #fff 100%);
             border-radius: 28px;
-            padding: 18px 16px 20px;
+            padding: 16px 14px 18px;
             min-height: 420px;
         }
         .ui-top {
@@ -172,67 +158,52 @@
         }
         .ui-pills { display: flex; gap: 6px; margin-bottom: 12px; }
         .ui-pill {
-            font-size: 11px; font-weight: 800; padding: 6px 12px; border-radius: 999px;
+            font-size: 11px; font-weight: 800; padding: 6px 10px; border-radius: 999px;
             background: #fff; border: 1px solid var(--line); color: var(--soft);
         }
-        .ui-pill.on {
-            background: var(--warm-blue); color: #fff; border-color: var(--warm-blue);
-        }
+        .ui-pill.on { background: var(--blue); color: #fff; border-color: var(--blue); }
         .ui-card {
             background: #fff; border-radius: 16px; padding: 12px 14px;
             border: 1px solid var(--line); margin-bottom: 10px;
             box-shadow: var(--shadow-sm);
         }
-        .ui-card .k {
-            font-size: 10px; font-weight: 800; text-transform: uppercase;
-            letter-spacing: 0.05em; color: var(--muted);
-        }
-        .ui-card .v {
-            font-size: 22px; font-weight: 900; letter-spacing: -0.03em; margin-top: 2px;
-        }
-        .ui-card.warm {
-            background: linear-gradient(145deg, #1A2E3A, #2B6E8B);
+        .ui-card .k { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+        .ui-card .v { font-size: 22px; font-weight: 900; letter-spacing: -0.03em; margin-top: 2px; }
+        .ui-card.dark {
+            background: linear-gradient(145deg, #0F172A, #134E4A);
             color: #fff; border: none;
         }
-        .ui-card.warm .k { color: rgba(255,255,255,0.6); }
+        .ui-card.dark .k { color: rgba(255,255,255,0.65); }
         .ui-row {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 12px;
+            padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 12px;
         }
         .ui-row:last-child { border-bottom: none; }
         .ui-badge {
-            font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 999px;
-            background: var(--earth-light); color: var(--earth);
+            font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 999px;
+            background: #DCFCE7; color: #166534;
         }
-        .ui-badge.warn { background: var(--amber-light); color: #8B6B3D; }
+        .ui-badge.warn { background: #FEF3C7; color: #92400E; }
         .float-tag {
             position: absolute;
             font-size: 12px; font-weight: 800;
             background: #fff; border: 1px solid var(--line);
-            padding: 10px 16px; border-radius: 14px;
+            padding: 10px 14px; border-radius: 14px;
             box-shadow: var(--shadow-sm);
-            color: var(--ink);
         }
-        .float-tag.a { left: -12px; top: 16%; transform: rotate(-4deg); }
-        .float-tag.b { right: -8px; bottom: 24%; transform: rotate(3deg); }
-
-        /* ─── Sections ────────────────────────────────────────── */
+        .float-tag.a { left: -8px; top: 18%; transform: rotate(-6deg); }
+        .float-tag.b { right: -4px; bottom: 22%; transform: rotate(5deg); }
+        .moments { padding: 24px 0 72px; }
         .section-label {
             font-size: 12px; font-weight: 800; letter-spacing: 0.08em;
             text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
         }
         .section-title {
-            font-size: clamp(1.8rem, 3.2vw, 2.4rem);
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
             font-weight: 900; letter-spacing: -0.03em; line-height: 1.15;
-            margin-bottom: 14px;
+            margin-bottom: 12px; max-width: 18em;
         }
-        .section-lead {
-            color: var(--soft); max-width: 36em; font-size: 1.05rem;
-            margin-bottom: 32px; line-height: 1.7;
-        }
-
-        /* ─── Moments (Warm) ──────────────────────────────────── */
-        .moments { padding: 32px 0 72px; }
+        .section-lead { color: var(--soft); max-width: 36em; margin-bottom: 32px; }
         .moment-list { display: flex; flex-direction: column; gap: 16px; }
         .moment {
             display: grid; grid-template-columns: 72px 1fr;
@@ -240,22 +211,20 @@
             background: var(--white);
             border: 1px solid var(--line);
             border-radius: var(--radius);
-            padding: 24px 28px;
+            padding: 22px 24px;
             box-shadow: var(--shadow-sm);
             transition: transform 0.2s, box-shadow 0.2s;
         }
-        .moment:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+        .moment:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
         .moment-icon {
             width: 56px; height: 56px; border-radius: 16px;
-            display: grid; place-items: center; font-size: 24px; font-weight: 900;
-            background: var(--warm-blue-mist); color: var(--warm-blue);
+            display: grid; place-items: center; font-size: 24px;
+            background: var(--mist);
         }
-        .moment:nth-child(2) .moment-icon { background: var(--earth-light); color: var(--earth); }
-        .moment:nth-child(3) .moment-icon { background: var(--amber-light); color: #8B6B3D; }
+        .moment:nth-child(2) .moment-icon { background: #E0F2FE; }
+        .moment:nth-child(3) .moment-icon { background: #DCFCE7; }
         .moment h3 { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 6px; }
-        .moment p { color: var(--soft); font-size: 15px; max-width: 40em; line-height: 1.7; }
-
-        /* ─── Dual (Cleaning + Laundry) ───────────────────────── */
+        .moment p { color: var(--soft); font-size: 15px; max-width: 40em; }
         .dual {
             padding: 56px 0;
             background: var(--white);
@@ -265,33 +234,30 @@
         .dual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .dual-card {
             border-radius: var(--radius);
-            padding: 32px 28px;
-            min-height: 200px;
+            padding: 28px;
+            min-height: 220px;
         }
         .dual-card.clean {
-            background: var(--warm-blue-mist);
-            border: 1px solid var(--warm-blue-light);
+            background: linear-gradient(160deg, #EFF6FF 0%, #DBEAFE 100%);
+            border: 1px solid #BFDBFE;
         }
         .dual-card.laundry {
-            background: var(--earth-light);
-            border: 1px solid #C8DFC4;
+            background: linear-gradient(160deg, #ECFEFF 0%, #CFFAFE 100%);
+            border: 1px solid #A5F3FC;
         }
-        .dual-card .icon { font-size: 32px; margin-bottom: 8px; }
         .dual-card h3 {
-            font-size: 1.4rem; font-weight: 900; letter-spacing: -0.02em;
-            margin-bottom: 8px;
+            font-size: 1.35rem; font-weight: 900; letter-spacing: -0.02em;
+            margin: 10px 0 8px;
         }
-        .dual-card p { color: var(--soft); font-size: 14px; max-width: 28em; line-height: 1.7; }
+        .dual-card p { color: var(--soft); font-size: 14px; max-width: 28em; }
         .dual-card ul {
-            list-style: none; margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px;
+            list-style: none; margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px;
         }
         .dual-card li {
             font-size: 12px; font-weight: 700;
             background: rgba(255,255,255,0.75);
-            padding: 6px 12px; border-radius: 999px; color: var(--ink);
+            padding: 6px 11px; border-radius: 999px; color: var(--ink);
         }
-
-        /* ─── Timeline ────────────────────────────────────────── */
         .day { padding: 72px 0; }
         .timeline {
             display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
@@ -301,113 +267,81 @@
             background: var(--white);
             border: 1px solid var(--line);
             border-radius: 16px;
-            padding: 20px 18px;
-            transition: transform 0.2s;
+            padding: 18px;
         }
-        .t-step:hover { transform: translateY(-3px); }
         .t-step .time {
-            font-size: 11px; font-weight: 800; color: var(--warm-blue);
+            font-size: 11px; font-weight: 800; color: var(--blue);
             text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px;
         }
         .t-step h4 { font-size: 15px; font-weight: 800; margin-bottom: 6px; }
-        .t-step p { font-size: 13px; color: var(--soft); line-height: 1.6; }
-
-        /* ─── Pricing ──────────────────────────────────────────── */
+        .t-step p { font-size: 13px; color: var(--soft); }
         .pricing {
             padding: 64px 0 72px;
-            background: var(--cream);
+            background: linear-gradient(180deg, var(--mist) 0%, var(--foam) 100%);
         }
         .price-box {
             background: var(--white);
             border-radius: calc(var(--radius) + 4px);
             border: 1px solid var(--line);
             box-shadow: var(--shadow);
-            padding: 36px 40px;
+            padding: 32px;
             display: grid;
             grid-template-columns: 1.2fr 1fr;
-            gap: 40px;
+            gap: 32px;
             align-items: center;
         }
         .price-box h2 {
             font-size: 1.75rem; font-weight: 900; letter-spacing: -0.03em;
             margin-bottom: 10px;
         }
-        .price-box > div > p { color: var(--soft); margin-bottom: 18px; line-height: 1.7; }
+        .price-box > div > p { color: var(--soft); margin-bottom: 18px; }
         .checks { list-style: none; display: flex; flex-direction: column; gap: 10px; }
         .checks li {
-            display: flex; gap: 12px; align-items: flex-start;
+            display: flex; gap: 10px; align-items: flex-start;
             font-size: 14px; font-weight: 600; color: var(--soft);
         }
         .checks li span {
             width: 22px; height: 22px; border-radius: 50%;
-            background: var(--earth-light); color: var(--earth);
+            background: #DCFCE7; color: var(--green);
             display: grid; place-items: center; font-size: 12px; flex-shrink: 0;
-            font-weight: 800;
         }
         .price-side {
-            background: linear-gradient(145deg, #1A2E3A, #2B6E8B);
-            color: #fff; border-radius: 18px; padding: 28px 26px;
+            background: linear-gradient(160deg, #0F172A, #0C4A6E);
+            color: #fff; border-radius: 18px; padding: 24px;
         }
         .price-side .big {
-            font-size: 2.6rem; font-weight: 900; letter-spacing: -0.04em;
+            font-size: 2.4rem; font-weight: 900; letter-spacing: -0.04em;
             margin: 6px 0 4px;
         }
-        .price-side .sub { font-size: 13px; opacity: 0.8; margin-bottom: 16px; }
+        .price-side .sub { font-size: 13px; opacity: 0.75; margin-bottom: 16px; }
         .price-side .btn { width: 100%; }
         .price-side .alt {
             text-align: center; font-size: 12px; opacity: 0.7; margin-top: 12px;
         }
-
-        /* ─── CTA ──────────────────────────────────────────────── */
         .cta-band { padding: 56px 0 72px; }
         .cta-inner {
-            background: linear-gradient(145deg, #1A2E3A, #2B6E8B);
+            background: linear-gradient(135deg, #1A6DDB 0%, #0E7490 55%, #0F4FA8 100%);
             border-radius: 28px;
-            padding: 44px 40px;
+            padding: 40px 36px;
             color: #fff;
             display: flex; flex-wrap: wrap; gap: 24px;
             align-items: center; justify-content: space-between;
-            box-shadow: 0 24px 50px rgba(43, 110, 139, 0.25);
-            position: relative;
-            overflow: hidden;
-        }
-        .cta-inner::before {
-            content: '';
-            position: absolute;
-            top: -40%; right: -10%;
-            width: 400px; height: 400px;
-            background: radial-gradient(circle, rgba(255,255,255,0.06), transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-        }
-        .cta-inner::after {
-            content: '';
-            position: absolute;
-            bottom: -30%; left: -5%;
-            width: 300px; height: 300px;
-            background: radial-gradient(circle, rgba(91, 140, 90, 0.15), transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
+            box-shadow: 0 24px 50px rgba(15, 79, 168, 0.25);
         }
         .cta-inner h2 {
             font-size: clamp(1.4rem, 3vw, 1.9rem);
-            font-weight: 900; letter-spacing: -0.03em; margin-bottom: 6px;
-            position: relative; z-index: 1;
+            font-weight: 900; letter-spacing: -0.03em; margin-bottom: 8px;
         }
-        .cta-inner p { opacity: 0.9; max-width: 32em; font-size: 15px; position: relative; z-index: 1; }
-        .cta-actions { display: flex; flex-wrap: wrap; gap: 10px; position: relative; z-index: 1; }
+        .cta-inner p { opacity: 0.9; max-width: 32em; font-size: 15px; }
+        .cta-actions { display: flex; flex-wrap: wrap; gap: 10px; }
         .cta-inner .btn-primary {
-            background: #fff; color: var(--warm-blue);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            background: #fff; color: var(--blue-deep);
+            box-shadow: none;
         }
-        .cta-inner .btn-primary:hover { box-shadow: 0 12px 32px rgba(0,0,0,0.15); }
         .cta-inner .btn-ghost {
             background: transparent; color: #fff;
             border-color: rgba(255,255,255,0.35);
         }
-        .cta-inner .btn-ghost:hover { background: rgba(255,255,255,0.1); }
-
-        /* ─── Footer ───────────────────────────────────────────── */
         footer {
             padding: 28px 0 40px;
             border-top: 1px solid var(--line);
@@ -419,32 +353,25 @@
         }
         .foot-links { display: flex; gap: 16px; flex-wrap: wrap; }
         .foot-links a:hover { color: var(--ink); }
-
-        /* ─── Responsive ───────────────────────────────────────── */
         @media (max-width: 900px) {
             .hero-grid, .dual-grid, .price-box, .timeline { grid-template-columns: 1fr; }
             .phone { transform: none; max-width: 320px; }
             .float-tag { display: none; }
-            .moment { grid-template-columns: 1fr; gap: 12px; }
-            .price-box { padding: 28px 22px; gap: 24px; }
-            .cta-inner { padding: 32px 24px; }
             .nav-links a.quiet { display: none; }
+            .moment { grid-template-columns: 1fr; gap: 12px; }
         }
         @media (max-width: 560px) {
             .wrap { width: min(100% - 28px, 1120px); }
             .hero { padding: 32px 0 48px; }
-            .cta-inner { padding: 24px 20px; }
+            .cta-inner { padding: 28px 22px; }
         }
     </style>
 </head>
 <body>
-
-    <!-- ─── Navigation ───────────────────────────────────────── -->
     <header class="nav" id="nav">
         <div class="wrap nav-inner">
             <a class="brand" href="index.html">
-                <span class="brand-mark"><img src="logo.png" alt="CleanCrew logo" width="40" height="40" /></span>
-                CleanCrew
+                <span class="brand-word">Clean<span>Crew</span></span>
             </a>
             <div class="nav-links">
                 <a class="quiet" href="#how">How it works</a>
@@ -455,19 +382,14 @@
         </div>
     </header>
 
-    <!-- ─── Hero ──────────────────────────────────────────────── -->
     <section class="hero">
         <div class="wrap hero-grid">
             <div>
-                <div class="eyebrow">🧹 Cleaning · Laundry · One place</div>
-                <h1>
-                    For the people who make spaces clean<br />
-                    and laundry <span class="highlight">come back fresh.</span>
-                </h1>
+                <div class="eyebrow">Cleaning · Laundry · One place</div>
+                <h1>The day runs better when every job has a home.</h1>
                 <p class="hero-lead">
-                    CleanCrew is built for the counter, the shop, and the day's work.
-                    Log jobs in seconds, track them through pickup, and see what you
-                    actually keep after staff and materials.
+                    CleanCrew is built for cleaning and laundry businesses — capture work at the counter,
+                    track it through pickup, and see what you actually keep after staff and materials.
                 </p>
                 <div class="hero-actions">
                     <a class="btn btn-primary btn-lg" href="signup.html">Start free — 25 jobs</a>
@@ -476,17 +398,17 @@
                 <p class="hero-note"><strong>No card required.</strong> Works on your phone. Local currency in the app.</p>
             </div>
             <div class="stage">
-                <div class="float-tag a">⚡ Quick capture when they're in a hurry</div>
-                <div class="float-tag b">✅ Ready for pickup</div>
+                <div class="float-tag a">Quick capture when they are in a hurry</div>
+                <div class="float-tag b">Ready for pickup</div>
                 <div class="phone" aria-hidden="true">
                     <div class="phone-notch"></div>
                     <div class="phone-screen">
                         <div class="ui-top"><span>Today</span><span>CleanCrew</span></div>
                         <div class="ui-pills">
-                            <span class="ui-pill on">🧹 Cleaning</span>
-                            <span class="ui-pill">👕 Laundry</span>
+                            <span class="ui-pill on">Cleaning</span>
+                            <span class="ui-pill">Laundry</span>
                         </div>
-                        <div class="ui-card warm">
+                        <div class="ui-card dark">
                             <div class="k">This month · direct profit</div>
                             <div class="v">Your currency</div>
                             <div style="font-size:11px;opacity:0.75;margin-top:6px;">Revenue − staff − materials</div>
@@ -502,7 +424,7 @@
                                 <span class="ui-badge">Ready</span>
                             </div>
                             <div class="ui-row">
-                                <span><strong>Office</strong> · Deep clean</span>
+                                <span><strong>Office</strong> · Fumigation</span>
                                 <span class="ui-badge warn">Pending</span>
                             </div>
                         </div>
@@ -512,7 +434,6 @@
         </div>
     </section>
 
-    <!-- ─── Moments ───────────────────────────────────────────── -->
     <section class="moments" id="how">
         <div class="wrap">
             <div class="section-label">Built for the floor</div>
@@ -523,7 +444,7 @@
                     <div class="moment-icon">1</div>
                     <div>
                         <h3>Catch the job before they leave</h3>
-                        <p>Customers rarely wait for a long form. Quick capture name, phone, and a note — finish details when the line is gone. Laundry items, rooms, or scope when you are ready.</p>
+                        <p>Customers rarely wait for a long form. Quick capture name, phone, and a note — finish details when the line is gone. Laundry items, rooms, or fumigation scope when you are ready.</p>
                     </div>
                 </article>
                 <article class="moment">
@@ -544,14 +465,13 @@
         </div>
     </section>
 
-    <!-- ─── Dual: Cleaning + Laundry ─────────────────────────── -->
     <section class="dual">
         <div class="wrap">
             <div class="section-label">One product · two crafts</div>
             <h2 class="section-title" style="margin-bottom: 28px;">Feels right for detergent days and disinfectant days.</h2>
             <div class="dual-grid">
                 <div class="dual-card clean">
-                    <div class="icon">🧹</div>
+                    <div style="font-size:28px;">*</div>
                     <h3>Cleaning</h3>
                     <p>Homes, offices, deep cleans, move-ins — plus fumigation when that is part of your offer.</p>
                     <ul>
@@ -562,9 +482,9 @@
                     </ul>
                 </div>
                 <div class="dual-card laundry">
-                    <div class="icon">👕</div>
+                    <div style="font-size:28px;">+</div>
                     <h3>Laundry</h3>
-                    <p>Counter drop-offs, item counts, prices that add up, and a clear "collected" when they pick up.</p>
+                    <p>Counter drop-offs, item counts, prices that add up, and a clear collected when they pick up.</p>
                     <ul>
                         <li>Item · qty · price</li>
                         <li>Status to collected</li>
@@ -576,7 +496,6 @@
         </div>
     </section>
 
-    <!-- ─── Timeline ──────────────────────────────────────────── -->
     <section class="day">
         <div class="wrap">
             <div class="section-label">A day with CleanCrew</div>
@@ -607,7 +526,6 @@
         </div>
     </section>
 
-    <!-- ─── Pricing ───────────────────────────────────────────── -->
     <section class="pricing" id="pricing">
         <div class="wrap">
             <div class="price-box">
@@ -633,7 +551,6 @@
         </div>
     </section>
 
-    <!-- ─── CTA ────────────────────────────────────────────────── -->
     <section class="cta-band">
         <div class="wrap">
             <div class="cta-inner">
@@ -643,4 +560,29 @@
                 </div>
                 <div class="cta-actions">
                     <a class="btn btn-primary btn-lg" href="signup.html">Start free</a>
-                    <a class="btn btn-ghost btn-lg" href="login.html">Log in</
+                    <a class="btn btn-ghost btn-lg" href="login.html">Log in</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="wrap foot-inner">
+            <div>© <span id="y"></span> CleanCrew · cleancrewapp.com</div>
+            <div class="foot-links">
+                <a href="signup.html">Sign up</a>
+                <a href="login.html">Log in</a>
+                <a href="https://wa.me/2347057295546" target="_blank" rel="noopener">WhatsApp</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('y').textContent = new Date().getFullYear();
+        var nav = document.getElementById('nav');
+        window.addEventListener('scroll', function () {
+            nav.classList.toggle('scrolled', window.scrollY > 8);
+        }, { passive: true });
+    </script>
+</body>
+</html>
