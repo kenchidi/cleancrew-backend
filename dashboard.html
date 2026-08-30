@@ -4271,7 +4271,10 @@
                         if (currentServiceType === 'laundry') {
                             return cat === 'laundry' || cat.indexOf('laundry') !== -1;
                         }
-                        return cat !== 'laundry' && cat.indexOf('laundry') === -1;
+                        // Cleaning mode: cleaning + fumigation supplies
+                        return cat === 'cleaning' || cat === 'fumigation' ||
+                            cat.indexOf('clean') !== -1 || cat.indexOf('fumig') !== -1 ||
+                            (cat !== 'laundry' && cat.indexOf('laundry') === -1);
                     });
                     if (filtered.length === 0) {
                         list.innerHTML = '<div class="empty-state"><strong>No inventory items</strong><span>Track supplies for this service mode so you never run short mid-job.</span><button type="button" class="btn btn-primary btn-sm" onclick="openModal(\'inventory\')">+ Add item</button></div>';
@@ -6211,13 +6214,21 @@
                     '<div class="form-group"><label>Location</label><input type="text" id="cLocation" /></div>' +
                     '<div class="form-group full-width"><label>Notes</label><textarea id="cNotes"></textarea></div>';
             } else if (type === 'inventory') {
-                var invModeLabel = currentServiceType === 'laundry' ? '👕 Laundry' : '🧹 Cleaning';
-                titles.inventory = 'New ' + (currentServiceType === 'laundry' ? 'Laundry' : 'Cleaning') + ' Item';
+                var catOptions;
+                if (currentServiceType === 'laundry') {
+                    catOptions = '<option value="laundry" selected>Laundry</option>';
+                    titles.inventory = 'New Laundry Item';
+                } else {
+                    catOptions =
+                        '<option value="cleaning" selected>Cleaning</option>' +
+                        '<option value="fumigation">Fumigation</option>';
+                    titles.inventory = 'New Inventory Item';
+                }
                 document.getElementById('modalTitle').innerHTML = '<svg class="icon"><use href="#ic-plus"/></svg> ' + titles.inventory;
                 f.innerHTML = '<div class="form-group"><label>Item Name *</label><input type="text" id="invName" required /></div>' +
-                    '<div class="form-group"><label>Category</label><select id="invCategory"><option value="' + currentServiceType + '" selected>' + invModeLabel + '</option></select></div>' +
-                    '<div class="form-group"><label>Quantity</label><input type="number" id="invQty" required /></div>' +
-                    '<div class="form-group"><label>Min Stock Level</label><input type="number" id="invMin" value="3" /></div>';
+                    '<div class="form-group"><label>Category</label><select id="invCategory">' + catOptions + '</select></div>' +
+                    '<div class="form-group"><label>Quantity</label><input type="number" id="invQty" required min="0" /></div>' +
+                    '<div class="form-group"><label>Min Stock Level</label><input type="number" id="invMin" value="3" min="0" /></div>';
             } else if (type === 'staff') {
                 f.innerHTML = '<div class="form-group"><label>Full Name *</label><input type="text" id="sName" required /></div>' +
                     '<div class="form-group"><label>Phone</label><input type="tel" id="sPhone" /></div>' +
@@ -6443,7 +6454,11 @@
                     })
                     .catch(function(e) {
                         console.error('Inventory create failed:', e);
-                        showToast((e && e.message) || 'Failed to add inventory item', 'error');
+                        var msg = (e && e.message) || 'Failed to add inventory item';
+                        if (/row-level security|rls/i.test(msg)) {
+                            msg = 'Could not save item (database permission). Run the inventory RLS SQL in Supabase, then try again.';
+                        }
+                        showToast(msg, 'error');
                     });
 
             } else if (modalType === 'staff') {
