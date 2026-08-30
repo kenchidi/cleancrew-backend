@@ -1516,21 +1516,26 @@
             background: var(--white);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 16px 16px 14px;
+            padding: 14px 14px 12px;
             box-shadow: var(--shadow-sm);
         }
+        .rev-cal-row {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 12px;
+        }
         .rev-chart-card h4, .work-cal-card h4 {
-            font-size: 12px; font-weight: 800; text-transform: uppercase;
-            letter-spacing: 0.05em; color: var(--slate); margin: 0 0 4px;
+            font-size: 11px; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 0.05em; color: var(--slate); margin: 0 0 2px;
         }
         .rev-chart-sub, .work-cal-sub {
-            font-size: 12px; color: var(--slate); margin: 0 0 14px;
+            font-size: 11px; color: var(--slate); margin: 0 0 10px;
         }
         .rev-bars {
             display: flex;
             align-items: flex-end;
             gap: 8px;
-            height: 120px;
+            height: 100px;
             padding: 0 2px;
         }
         .rev-bar-col {
@@ -1577,38 +1582,40 @@
         }
         .work-cal-nav {
             display: flex; align-items: center; justify-content: space-between;
-            gap: 8px; margin-bottom: 12px;
+            gap: 6px; margin-bottom: 8px;
         }
         .work-cal-nav strong {
-            font-size: 14px; font-weight: 800; color: var(--ink);
+            font-size: 13px; font-weight: 800; color: var(--ink);
         }
+        .work-cal-nav .btn-sm { padding: 4px 8px; font-size: 11px; }
         .work-cal-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 4px;
+            gap: 3px;
         }
         .work-cal-dow {
             text-align: center;
-            font-size: 10px; font-weight: 800; color: var(--slate);
-            text-transform: uppercase; padding: 4px 0;
+            font-size: 9px; font-weight: 800; color: var(--slate);
+            text-transform: uppercase; padding: 2px 0;
         }
         .work-cal-day {
             aspect-ratio: 1;
-            border-radius: 10px;
+            border-radius: 8px;
             border: 1px solid transparent;
             background: var(--surface);
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
-            gap: 2px;
-            font-size: 12px; font-weight: 700; color: var(--ink);
+            gap: 1px;
+            font-size: 11px; font-weight: 700; color: var(--ink);
             cursor: pointer;
-            padding: 2px;
+            padding: 0;
+            min-height: 0;
         }
         .work-cal-day.empty { background: transparent; cursor: default; }
         .work-cal-day.today { border-color: var(--blue); }
         .work-cal-day.selected { border-color: var(--green); background: #ECFDF5; }
         .work-cal-day .dot {
-            width: 5px; height: 5px; border-radius: 50%;
+            width: 4px; height: 4px; border-radius: 50%;
             background: transparent;
         }
         .work-cal-day.lvl1 .dot { background: #93C5FD; }
@@ -1618,10 +1625,15 @@
         .work-cal-day.lvl2 { background: #EFF6FF; }
         .work-cal-day.lvl3 { background: #DBEAFE; }
         .work-cal-detail {
-            margin-top: 12px;
-            padding-top: 12px;
+            margin-top: 8px;
+            padding-top: 8px;
             border-top: 1px solid var(--border);
-            font-size: 13px;
+            font-size: 12px;
+            max-height: 140px;
+            overflow-y: auto;
+        }
+        .work-cal-detail.is-empty {
+            display: none;
         }
         .work-cal-detail .wcd-title {
             font-weight: 800; color: var(--ink); margin-bottom: 8px; font-size: 13px;
@@ -1635,6 +1647,7 @@
         .work-cal-detail .wcd-empty { color: var(--slate); font-size: 12px; }
         @media (max-width: 900px) {
             .profit-report-top { grid-template-columns: 1fr; }
+            .rev-cal-row { grid-template-columns: 1fr; }
         }
 
 
@@ -2568,23 +2581,23 @@
                         <p class="profit-report-note" id="prMonthNote">Missing costs count as ₦0 on profit.</p>
                     </div>
                 </div>
-                <div class="rev-chart-card">
-                    <h4>Last 7 days · revenue</h4>
-                    <p class="rev-chart-sub" id="revChartSub">Completed jobs in current mode</p>
-                    <div class="rev-bars" id="revBars"></div>
-                    <div class="rev-chart-foot" id="revChartFoot">Tap overview after completing jobs to refresh.</div>
-                </div>
-                <div class="work-cal-card">
-                    <h4>Work calendar</h4>
-                    <p class="work-cal-sub">Days you had jobs (excludes drafts &amp; cancelled)</p>
-                    <div class="work-cal-nav">
-                        <button type="button" class="btn btn-outline btn-sm" onclick="shiftWorkCal(-1)">←</button>
-                        <strong id="workCalTitle">—</strong>
-                        <button type="button" class="btn btn-outline btn-sm" onclick="shiftWorkCal(1)">→</button>
+                <div class="rev-cal-row">
+                    <div class="rev-chart-card">
+                        <h4>Last 7 days · revenue</h4>
+                        <p class="rev-chart-sub" id="revChartSub">Completed jobs in current mode</p>
+                        <div class="rev-bars" id="revBars"></div>
+                        <div class="rev-chart-foot" id="revChartFoot">Tap overview after completing jobs to refresh.</div>
                     </div>
-                    <div class="work-cal-grid" id="workCalGrid"></div>
-                    <div class="work-cal-detail" id="workCalDetail">
-                        <div class="wcd-empty">Tap a day to see jobs.</div>
+                    <div class="work-cal-card">
+                        <h4>Work calendar</h4>
+                        <p class="work-cal-sub" id="workCalSub">Jobs this month · tap a day</p>
+                        <div class="work-cal-nav">
+                            <button type="button" class="btn btn-outline btn-sm" onclick="shiftWorkCal(-1)">←</button>
+                            <strong id="workCalTitle">—</strong>
+                            <button type="button" class="btn btn-outline btn-sm" onclick="shiftWorkCal(1)">→</button>
+                        </div>
+                        <div class="work-cal-grid" id="workCalGrid"></div>
+                        <div class="work-cal-detail is-empty" id="workCalDetail"></div>
                     </div>
                 </div>
             </div>
@@ -4477,10 +4490,22 @@
             }
             grid.innerHTML = html;
 
+            var sub = document.getElementById('workCalSub');
+            var workDays = Object.keys(counts).filter(function(k) {
+                return k.indexOf(workCalYear + '-' + String(workCalMonth + 1).padStart(2, '0')) === 0;
+            }).length;
+            if (sub) {
+                sub.textContent = workDays
+                    ? (workDays + ' day' + (workDays > 1 ? 's' : '') + ' with jobs · tap a day')
+                    : 'No jobs this month · tap a day';
+            }
+
             if (detail) {
                 if (!workCalSelected) {
-                    detail.innerHTML = '<div class="wcd-empty">Tap a day to see jobs.</div>';
+                    detail.innerHTML = '';
+                    detail.classList.add('is-empty');
                 } else {
+                    detail.classList.remove('is-empty');
                     var list = jobsByDay[workCalSelected] || [];
                     var label = workCalSelected;
                     try {
@@ -4532,17 +4557,17 @@
                     '<div class="profit-report-row"><span>Jobs done</span><strong id="prMonthJobs">—</strong></div>' +
                     '<div class="profit-report-row"><span>With costs logged</span><strong id="prMonthWithCosts">—</strong></div>' +
                     '<p class="profit-report-note" id="prMonthNote"></p></div></div>' +
-                    '<div class="rev-chart-card"><h4>Last 7 days · revenue</h4>' +
+                    '<div class="rev-cal-row"><div class="rev-chart-card"><h4>Last 7 days · revenue</h4>' +
                     '<p class="rev-chart-sub" id="revChartSub">Completed jobs in current mode</p>' +
                     '<div class="rev-bars" id="revBars"></div>' +
                     '<div class="rev-chart-foot" id="revChartFoot"></div></div>' +
                     '<div class="work-cal-card"><h4>Work calendar</h4>' +
-                    '<p class="work-cal-sub">Days you had jobs (excludes drafts &amp; cancelled)</p>' +
+                    '<p class="work-cal-sub" id="workCalSub">Jobs this month · tap a day</p>' +
                     '<div class="work-cal-nav"><button type="button" class="btn btn-outline btn-sm" onclick="shiftWorkCal(-1)">←</button>' +
                     '<strong id="workCalTitle">—</strong>' +
                     '<button type="button" class="btn btn-outline btn-sm" onclick="shiftWorkCal(1)">→</button></div>' +
                     '<div class="work-cal-grid" id="workCalGrid"></div>' +
-                    '<div class="work-cal-detail" id="workCalDetail"><div class="wcd-empty">Tap a day to see jobs.</div></div></div>';
+                    '<div class="work-cal-detail is-empty" id="workCalDetail"></div></div></div>';
             }
 
             var now = new Date();
