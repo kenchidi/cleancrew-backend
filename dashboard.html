@@ -1420,44 +1420,79 @@
             font-size: 13px; color: var(--slate); padding: 10px 0 0;
         }
         .profit-report {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
+            flex-direction: column;
             gap: 14px;
             margin-bottom: 18px;
         }
+        .profit-report-top {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr 1fr;
+            gap: 12px;
+        }
+        .profit-hero {
+            background: linear-gradient(145deg, #0F172A 0%, #1E293B 55%, #0B3B2E 100%);
+            border-radius: var(--radius);
+            padding: 18px 18px 16px;
+            color: #fff;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+        .profit-hero::after {
+            content: '';
+            position: absolute;
+            right: -20px; top: -20px;
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.15);
+        }
+        .profit-hero .ph-label {
+            font-size: 11px; font-weight: 800; letter-spacing: 0.06em;
+            text-transform: uppercase; color: rgba(255,255,255,0.65); margin: 0 0 8px;
+        }
+        .profit-hero .ph-value {
+            font-size: 28px; font-weight: 900; letter-spacing: -0.03em;
+            line-height: 1.1; margin-bottom: 10px;
+        }
+        .profit-hero .ph-meta {
+            display: flex; flex-wrap: wrap; gap: 10px 14px;
+            font-size: 12px; color: rgba(255,255,255,0.75);
+        }
+        .profit-hero .ph-meta strong { color: #fff; font-weight: 800; }
         .profit-report-card {
             background: var(--white);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 18px 18px 16px;
+            padding: 16px;
             box-shadow: var(--shadow-sm);
         }
         .profit-report-card h4 {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--slate);
-            margin: 0 0 12px;
+            margin: 0 0 10px;
         }
         .profit-report-row {
             display: flex;
             justify-content: space-between;
             align-items: baseline;
             gap: 8px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-size: 13px;
         }
         .profit-report-row span { color: var(--slate); }
         .profit-report-row strong { font-weight: 800; color: var(--ink); }
         .profit-report-row.total {
-            margin-top: 10px;
-            padding-top: 10px;
+            margin-top: 8px;
+            padding-top: 8px;
             border-top: 1px dashed var(--border);
             margin-bottom: 0;
         }
         .profit-report-row.total strong {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 900;
             color: var(--green);
             letter-spacing: -0.02em;
@@ -1465,18 +1500,141 @@
         .profit-report-note {
             font-size: 11px;
             color: var(--slate);
-            margin-top: 10px;
+            margin-top: 8px;
             line-height: 1.4;
         }
         .profit-report-locked {
-            grid-column: 1 / -1;
             text-align: center;
-            padding: 20px;
+            padding: 28px 16px;
             color: var(--slate);
             font-size: 13px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
         }
-        @media (max-width: 640px) {
-            .profit-report { grid-template-columns: 1fr; }
+        .rev-chart-card, .work-cal-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 16px 14px;
+            box-shadow: var(--shadow-sm);
+        }
+        .rev-chart-card h4, .work-cal-card h4 {
+            font-size: 12px; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 0.05em; color: var(--slate); margin: 0 0 4px;
+        }
+        .rev-chart-sub, .work-cal-sub {
+            font-size: 12px; color: var(--slate); margin: 0 0 14px;
+        }
+        .rev-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            height: 120px;
+            padding: 0 2px;
+        }
+        .rev-bar-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            justify-content: flex-end;
+            gap: 6px;
+            min-width: 0;
+            cursor: default;
+        }
+        .rev-bar-track {
+            width: 100%;
+            max-width: 36px;
+            flex: 1;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        .rev-bar {
+            width: 100%;
+            border-radius: 8px 8px 4px 4px;
+            background: linear-gradient(180deg, #3B82F6 0%, #1D4ED8 100%);
+            min-height: 4px;
+            transition: height 0.25s ease;
+        }
+        .rev-bar.muted { background: #E2E8F0; }
+        .rev-bar-label {
+            font-size: 10px; font-weight: 700; color: var(--slate);
+            text-transform: uppercase;
+        }
+        .rev-bar-amt {
+            font-size: 10px; font-weight: 700; color: var(--ink);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        .rev-chart-foot {
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--slate);
+            min-height: 18px;
+        }
+        .work-cal-nav {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 8px; margin-bottom: 12px;
+        }
+        .work-cal-nav strong {
+            font-size: 14px; font-weight: 800; color: var(--ink);
+        }
+        .work-cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        .work-cal-dow {
+            text-align: center;
+            font-size: 10px; font-weight: 800; color: var(--slate);
+            text-transform: uppercase; padding: 4px 0;
+        }
+        .work-cal-day {
+            aspect-ratio: 1;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            background: var(--surface);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 2px;
+            font-size: 12px; font-weight: 700; color: var(--ink);
+            cursor: pointer;
+            padding: 2px;
+        }
+        .work-cal-day.empty { background: transparent; cursor: default; }
+        .work-cal-day.today { border-color: var(--blue); }
+        .work-cal-day.selected { border-color: var(--green); background: #ECFDF5; }
+        .work-cal-day .dot {
+            width: 5px; height: 5px; border-radius: 50%;
+            background: transparent;
+        }
+        .work-cal-day.lvl1 .dot { background: #93C5FD; }
+        .work-cal-day.lvl2 .dot { background: #3B82F6; }
+        .work-cal-day.lvl3 .dot { background: #1D4ED8; }
+        .work-cal-day.lvl1 { background: #F8FAFC; }
+        .work-cal-day.lvl2 { background: #EFF6FF; }
+        .work-cal-day.lvl3 { background: #DBEAFE; }
+        .work-cal-detail {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+            font-size: 13px;
+        }
+        .work-cal-detail .wcd-title {
+            font-weight: 800; color: var(--ink); margin-bottom: 8px; font-size: 13px;
+        }
+        .work-cal-detail .wcd-item {
+            display: flex; justify-content: space-between; gap: 8px;
+            padding: 6px 0; border-bottom: 1px solid var(--border);
+            font-size: 12px;
+        }
+        .work-cal-detail .wcd-item:last-child { border-bottom: none; }
+        .work-cal-detail .wcd-empty { color: var(--slate); font-size: 12px; }
+        @media (max-width: 900px) {
+            .profit-report-top { grid-template-columns: 1fr; }
         }
 
 
@@ -2387,19 +2545,47 @@
             </div>
 
             <div class="profit-report" id="profitReport">
-                <div class="profit-report-card" id="profitReportMonth">
-                    <h4>This month · direct profit</h4>
-                    <div class="profit-report-row"><span>Revenue</span><strong id="prMonthRevenue">—</strong></div>
-                    <div class="profit-report-row"><span>Staff + materials + other</span><strong id="prMonthCosts">—</strong></div>
-                    <div class="profit-report-row total"><span>Profit</span><strong id="prMonthProfit">—</strong></div>
-                    <p class="profit-report-note" id="prMonthNote">Based on completed jobs in this service mode.</p>
+                <div class="profit-report-top">
+                    <div class="profit-hero" id="profitHero">
+                        <div class="ph-label">This month · direct profit</div>
+                        <div class="ph-value" id="prMonthProfit">—</div>
+                        <div class="ph-meta">
+                            <span>Revenue <strong id="prMonthRevenue">—</strong></span>
+                            <span>Costs <strong id="prMonthCosts">—</strong></span>
+                        </div>
+                    </div>
+                    <div class="profit-report-card" id="profitReportYear">
+                        <h4>This year</h4>
+                        <div class="profit-report-row"><span>Revenue</span><strong id="prYearRevenue">—</strong></div>
+                        <div class="profit-report-row"><span>Costs</span><strong id="prYearCosts">—</strong></div>
+                        <div class="profit-report-row total"><span>Profit</span><strong id="prYearProfit">—</strong></div>
+                        <p class="profit-report-note" id="prYearNote">Completed jobs · this mode</p>
+                    </div>
+                    <div class="profit-report-card">
+                        <h4>This month snapshot</h4>
+                        <div class="profit-report-row"><span>Jobs done</span><strong id="prMonthJobs">—</strong></div>
+                        <div class="profit-report-row"><span>With costs logged</span><strong id="prMonthWithCosts">—</strong></div>
+                        <p class="profit-report-note" id="prMonthNote">Missing costs count as ₦0 on profit.</p>
+                    </div>
                 </div>
-                <div class="profit-report-card" id="profitReportYear">
-                    <h4>This year · direct profit</h4>
-                    <div class="profit-report-row"><span>Revenue</span><strong id="prYearRevenue">—</strong></div>
-                    <div class="profit-report-row"><span>Staff + materials + other</span><strong id="prYearCosts">—</strong></div>
-                    <div class="profit-report-row total"><span>Profit</span><strong id="prYearProfit">—</strong></div>
-                    <p class="profit-report-note" id="prYearNote">Based on completed jobs in this service mode.</p>
+                <div class="rev-chart-card">
+                    <h4>Last 7 days · revenue</h4>
+                    <p class="rev-chart-sub" id="revChartSub">Completed jobs in current mode</p>
+                    <div class="rev-bars" id="revBars"></div>
+                    <div class="rev-chart-foot" id="revChartFoot">Tap overview after completing jobs to refresh.</div>
+                </div>
+                <div class="work-cal-card">
+                    <h4>Work calendar</h4>
+                    <p class="work-cal-sub">Days you had jobs (excludes drafts &amp; cancelled)</p>
+                    <div class="work-cal-nav">
+                        <button type="button" class="btn btn-outline btn-sm" onclick="shiftWorkCal(-1)">←</button>
+                        <strong id="workCalTitle">—</strong>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="shiftWorkCal(1)">→</button>
+                    </div>
+                    <div class="work-cal-grid" id="workCalGrid"></div>
+                    <div class="work-cal-detail" id="workCalDetail">
+                        <div class="wcd-empty">Tap a day to see jobs.</div>
+                    </div>
                 </div>
             </div>
 
@@ -4115,6 +4301,11 @@
             return isNaN(d.getTime()) ? null : d;
         }
 
+        var workCalYear = null;
+        var workCalMonth = null; // 0-11
+        var workCalSelected = null; // YYYY-MM-DD
+        var workCalJobsCache = [];
+
         function summarizeProfitForJobs(jobs) {
             var revenue = 0;
             var costs = 0;
@@ -4140,6 +4331,177 @@
             };
         }
 
+        function jobDateKey(j) {
+            var d = typeof jobDateObj === 'function' ? jobDateObj(j) : null;
+            if (!d) return '';
+            var y = d.getFullYear();
+            var m = String(d.getMonth() + 1).padStart(2, '0');
+            var day = String(d.getDate()).padStart(2, '0');
+            return y + '-' + m + '-' + day;
+        }
+
+        function isCompletedJobStatus(st) {
+            st = (st || '').toLowerCase();
+            return st === 'completed' || st === 'delivered' || st === 'collected';
+        }
+
+        function isActiveWorkStatus(st) {
+            st = (st || '').toLowerCase();
+            if (!st || st === 'draft' || st === 'cancelled' || st === 'canceled') return false;
+            return true;
+        }
+
+        function renderWeekRevenueBars(modeJobs) {
+            var barsEl = document.getElementById('revBars');
+            var foot = document.getElementById('revChartFoot');
+            if (!barsEl) return;
+
+            var days = [];
+            var now = new Date();
+            now.setHours(12, 0, 0, 0);
+            for (var i = 6; i >= 0; i--) {
+                var d = new Date(now);
+                d.setDate(now.getDate() - i);
+                var key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+                days.push({ date: d, key: key, label: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()], revenue: 0, count: 0 });
+            }
+            var byKey = {};
+            days.forEach(function(x) { byKey[x.key] = x; });
+
+            (modeJobs || []).forEach(function(j) {
+                if (!isCompletedJobStatus(j.status)) return;
+                var key = jobDateKey(j);
+                if (byKey[key]) {
+                    byKey[key].revenue += Number(j.amount) || 0;
+                    byKey[key].count += 1;
+                }
+            });
+
+            var max = 0;
+            days.forEach(function(x) { if (x.revenue > max) max = x.revenue; });
+            if (max <= 0) max = 1;
+
+            function shortMoney(n) {
+                n = Number(n) || 0;
+                if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'm';
+                if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(/\.0$/, '') + 'k';
+                return String(Math.round(n));
+            }
+
+            barsEl.innerHTML = days.map(function(x) {
+                var h = Math.max(4, Math.round((x.revenue / max) * 100));
+                if (x.revenue <= 0) h = 4;
+                var barClass = x.revenue > 0 ? 'rev-bar' : 'rev-bar muted';
+                return '<div class="rev-bar-col" title="' + x.label + ': ' + (typeof formatMoney === 'function' ? formatMoney(x.revenue) : x.revenue) + '">' +
+                    '<div class="rev-bar-amt">' + (x.revenue > 0 ? shortMoney(x.revenue) : '·') + '</div>' +
+                    '<div class="rev-bar-track"><div class="' + barClass + '" style="height:' + h + '%"></div></div>' +
+                    '<div class="rev-bar-label">' + x.label + '</div></div>';
+            }).join('');
+
+            var weekTotal = days.reduce(function(s, x) { return s + x.revenue; }, 0);
+            var weekJobs = days.reduce(function(s, x) { return s + x.count; }, 0);
+            if (foot) {
+                foot.textContent = weekJobs
+                    ? ('This week: ' + weekJobs + ' completed · ' + (typeof formatMoney === 'function' ? formatMoney(weekTotal) : weekTotal) + ' revenue')
+                    : 'No completed jobs in the last 7 days yet.';
+            }
+        }
+
+        function shiftWorkCal(delta) {
+            if (workCalYear == null) {
+                var n = new Date();
+                workCalYear = n.getFullYear();
+                workCalMonth = n.getMonth();
+            }
+            workCalMonth += delta;
+            if (workCalMonth < 0) { workCalMonth = 11; workCalYear -= 1; }
+            if (workCalMonth > 11) { workCalMonth = 0; workCalYear += 1; }
+            workCalSelected = null;
+            renderWorkCalendar(workCalJobsCache);
+        }
+
+        function selectWorkCalDay(key) {
+            workCalSelected = key;
+            renderWorkCalendar(workCalJobsCache);
+        }
+
+        function renderWorkCalendar(modeJobs) {
+            workCalJobsCache = modeJobs || [];
+            var grid = document.getElementById('workCalGrid');
+            var title = document.getElementById('workCalTitle');
+            var detail = document.getElementById('workCalDetail');
+            if (!grid) return;
+
+            var now = new Date();
+            if (workCalYear == null) {
+                workCalYear = now.getFullYear();
+                workCalMonth = now.getMonth();
+            }
+
+            var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            if (title) title.textContent = monthNames[workCalMonth] + ' ' + workCalYear;
+
+            // Count jobs per day (active work statuses)
+            var counts = {};
+            var jobsByDay = {};
+            (modeJobs || []).forEach(function(j) {
+                if (!isActiveWorkStatus(j.status)) return;
+                var key = jobDateKey(j);
+                if (!key) return;
+                counts[key] = (counts[key] || 0) + 1;
+                if (!jobsByDay[key]) jobsByDay[key] = [];
+                jobsByDay[key].push(j);
+            });
+
+            var first = new Date(workCalYear, workCalMonth, 1);
+            var startPad = first.getDay(); // 0 Sun
+            var daysInMonth = new Date(workCalYear, workCalMonth + 1, 0).getDate();
+            var todayKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+
+            var html = '';
+            ['S','M','T','W','T','F','S'].forEach(function(d) {
+                html += '<div class="work-cal-dow">' + d + '</div>';
+            });
+            for (var i = 0; i < startPad; i++) {
+                html += '<div class="work-cal-day empty"></div>';
+            }
+            for (var day = 1; day <= daysInMonth; day++) {
+                var key = workCalYear + '-' + String(workCalMonth + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+                var c = counts[key] || 0;
+                var lvl = c === 0 ? '' : (c === 1 ? ' lvl1' : (c <= 3 ? ' lvl2' : ' lvl3'));
+                var cls = 'work-cal-day' + lvl;
+                if (key === todayKey) cls += ' today';
+                if (key === workCalSelected) cls += ' selected';
+                html += '<button type="button" class="' + cls + '" onclick="selectWorkCalDay(\'' + key + '\')">' +
+                    '<span>' + day + '</span><span class="dot"></span></button>';
+            }
+            grid.innerHTML = html;
+
+            if (detail) {
+                if (!workCalSelected) {
+                    detail.innerHTML = '<div class="wcd-empty">Tap a day to see jobs.</div>';
+                } else {
+                    var list = jobsByDay[workCalSelected] || [];
+                    var label = workCalSelected;
+                    try {
+                        var p = workCalSelected.split('-');
+                        label = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2])).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+                    } catch (e) {}
+                    if (!list.length) {
+                        detail.innerHTML = '<div class="wcd-title">' + label + '</div><div class="wcd-empty">No jobs this day.</div>';
+                    } else {
+                        var rows = list.slice().sort(function(a, b) {
+                            return String(a.client || '').localeCompare(String(b.client || ''));
+                        }).map(function(j) {
+                            var amt = typeof formatMoney === 'function' ? formatMoney(j.amount || 0) : (j.amount || 0);
+                            return '<div class="wcd-item"><span><strong>' + (j.client || 'Job') + '</strong> · ' + (j.status || '') + '</span><span>' + amt + '</span></div>';
+                        }).join('');
+                        detail.innerHTML = '<div class="wcd-title">' + label + ' · ' + list.length + ' job' + (list.length > 1 ? 's' : '') + '</div>' + rows;
+                    }
+                }
+            }
+        }
+
         function renderProfitReport(jobs) {
             var el = document.getElementById('profitReport');
             if (!el) return;
@@ -4148,25 +4510,39 @@
                 (typeof hasOwnerPin !== 'undefined' && !hasOwnerPin);
 
             if (!ownerOk) {
-                el.innerHTML = '<div class="profit-report-locked">🔒 Unlock revenue with your owner PIN to see monthly and yearly profit reports.</div>';
+                el.innerHTML = '<div class="profit-report-locked">🔒 Unlock revenue with your owner PIN to see profit, the 7-day chart, and work calendar money views.<br><span style="font-size:12px;opacity:0.85">Work activity calendar stays available after unlock.</span></div>';
                 return;
             }
 
-            // Restore structure if we replaced with locked message
-            if (!document.getElementById('prMonthProfit')) {
+            // Restore full structure if we replaced with locked message
+            if (!document.getElementById('prMonthProfit') || !document.getElementById('revBars')) {
                 el.innerHTML =
-                    '<div class="profit-report-card" id="profitReportMonth">' +
-                    '<h4>This month · direct profit</h4>' +
-                    '<div class="profit-report-row"><span>Revenue</span><strong id="prMonthRevenue">—</strong></div>' +
-                    '<div class="profit-report-row"><span>Staff + materials + other</span><strong id="prMonthCosts">—</strong></div>' +
-                    '<div class="profit-report-row total"><span>Profit</span><strong id="prMonthProfit">—</strong></div>' +
-                    '<p class="profit-report-note" id="prMonthNote"></p></div>' +
-                    '<div class="profit-report-card" id="profitReportYear">' +
-                    '<h4>This year · direct profit</h4>' +
+                    '<div class="profit-report-top">' +
+                    '<div class="profit-hero" id="profitHero">' +
+                    '<div class="ph-label">This month · direct profit</div>' +
+                    '<div class="ph-value" id="prMonthProfit">—</div>' +
+                    '<div class="ph-meta"><span>Revenue <strong id="prMonthRevenue">—</strong></span>' +
+                    '<span>Costs <strong id="prMonthCosts">—</strong></span></div></div>' +
+                    '<div class="profit-report-card" id="profitReportYear"><h4>This year</h4>' +
                     '<div class="profit-report-row"><span>Revenue</span><strong id="prYearRevenue">—</strong></div>' +
-                    '<div class="profit-report-row"><span>Staff + materials + other</span><strong id="prYearCosts">—</strong></div>' +
+                    '<div class="profit-report-row"><span>Costs</span><strong id="prYearCosts">—</strong></div>' +
                     '<div class="profit-report-row total"><span>Profit</span><strong id="prYearProfit">—</strong></div>' +
-                    '<p class="profit-report-note" id="prYearNote"></p></div>';
+                    '<p class="profit-report-note" id="prYearNote"></p></div>' +
+                    '<div class="profit-report-card"><h4>This month snapshot</h4>' +
+                    '<div class="profit-report-row"><span>Jobs done</span><strong id="prMonthJobs">—</strong></div>' +
+                    '<div class="profit-report-row"><span>With costs logged</span><strong id="prMonthWithCosts">—</strong></div>' +
+                    '<p class="profit-report-note" id="prMonthNote"></p></div></div>' +
+                    '<div class="rev-chart-card"><h4>Last 7 days · revenue</h4>' +
+                    '<p class="rev-chart-sub" id="revChartSub">Completed jobs in current mode</p>' +
+                    '<div class="rev-bars" id="revBars"></div>' +
+                    '<div class="rev-chart-foot" id="revChartFoot"></div></div>' +
+                    '<div class="work-cal-card"><h4>Work calendar</h4>' +
+                    '<p class="work-cal-sub">Days you had jobs (excludes drafts &amp; cancelled)</p>' +
+                    '<div class="work-cal-nav"><button type="button" class="btn btn-outline btn-sm" onclick="shiftWorkCal(-1)">←</button>' +
+                    '<strong id="workCalTitle">—</strong>' +
+                    '<button type="button" class="btn btn-outline btn-sm" onclick="shiftWorkCal(1)">→</button></div>' +
+                    '<div class="work-cal-grid" id="workCalGrid"></div>' +
+                    '<div class="work-cal-detail" id="workCalDetail"><div class="wcd-empty">Tap a day to see jobs.</div></div></div>';
             }
 
             var now = new Date();
@@ -4189,7 +4565,10 @@
             var ms = summarizeProfitForJobs(monthJobs);
             var ys = summarizeProfitForJobs(yearJobs);
 
-            function naira(n) { return formatMoney(n || 0); }
+            function naira(n) {
+                if (typeof formatMoney === 'function') return formatMoney(n || 0);
+                return '₦' + Number(n || 0).toLocaleString();
+            }
 
             var set = function(id, val) {
                 var node = document.getElementById(id);
@@ -4201,18 +4580,25 @@
             set('prYearRevenue', naira(ys.revenue));
             set('prYearCosts', naira(ys.costs));
             set('prYearProfit', naira(ys.profit));
+            set('prMonthJobs', String(ms.done));
+            set('prMonthWithCosts', String(ms.withCosts));
 
             var modeLabel = currentServiceType === 'laundry' ? 'laundry' : 'cleaning';
             var monthNote = document.getElementById('prMonthNote');
             var yearNote = document.getElementById('prYearNote');
+            var chartSub = document.getElementById('revChartSub');
             if (monthNote) {
-                monthNote.textContent = ms.done + ' completed ' + modeLabel + ' jobs · ' +
-                    ms.withCosts + ' with costs filled. Missing costs count as ' + moneySymbol() + '0.';
+                monthNote.textContent = 'Direct profit = revenue − staff − materials − other. Mode: ' + modeLabel + '.';
             }
             if (yearNote) {
-                yearNote.textContent = ys.done + ' completed ' + modeLabel + ' jobs · ' +
-                    ys.withCosts + ' with costs filled. Missing costs count as ' + moneySymbol() + '0.';
+                yearNote.textContent = ys.done + ' completed ' + modeLabel + ' jobs this year.';
             }
+            if (chartSub) {
+                chartSub.textContent = 'Completed ' + modeLabel + ' jobs only';
+            }
+
+            renderWeekRevenueBars(modeJobs);
+            renderWorkCalendar(modeJobs);
         }
 
 
