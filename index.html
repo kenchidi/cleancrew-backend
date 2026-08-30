@@ -1,511 +1,646 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#1A6DDB" />
+    <meta name="theme-color" content="#2B6E8B" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="CleanCrew" />
-    <meta name="application-name" content="CleanCrew" />
-
-    <title>CleanCrew — Run cleaning & laundry jobs without the chaos</title>
-    <meta name="description" content="CleanCrew helps cleaning and laundry businesses track jobs, clients, inventory, invoices and staff. 25 free jobs for life. Local pricing in your dashboard. Free to start — no card required." />
-    <meta property="og:title" content="CleanCrew — Cleaning & laundry ops, simplified" />
-    <meta property="og:description" content="25 free jobs for life. Local currency in-app. Credits or unlimited when you grow." />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://www.cleancrewapp.com" />
+    <title>CleanCrew — For the people who make spaces clean and laundry come back fresh.</title>
+    <meta name="description" content="Log cleaning and laundry jobs in seconds. Track pickups, clients, and what you keep after staff and materials. 25 free jobs — no card required." />
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
     <link rel="manifest" href="site.webmanifest" />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <style>
+        /* ─── Warm Design Tokens ─────────────────────────────── */
         :root {
-            --blue: #1A6DDB; --blue-dark: #0F4FA8; --blue-light: #EBF3FE; --blue-mist: #F5F9FF;
-            --ink: #0B1526; --ink-soft: #33405C; --slate: #5B6B85; --border: #E7EBF3;
-            --surface: #F7F9FC; --white: #FFFFFF; --green: #16A34A; --whatsapp: #25D366;
-            --radius: 16px; --radius-lg: 24px; --radius-sm: 11px;
-            --shadow-sm: 0 1px 2px rgba(11,21,38,.05);
-            --shadow-md: 0 12px 32px rgba(11,21,38,.08);
-            --shadow-lg: 0 24px 64px rgba(11,21,38,.14);
-            --shadow-blue: 0 14px 34px rgba(15,79,168,.28);
-            --grad: linear-gradient(135deg, #2E7DE8 0%, #0F4FA8 100%);
+            --warm-blue: #2B6E8B;
+            --warm-blue-light: #D4E8F0;
+            --warm-blue-mist: #EDF5F8;
+            --cream: #FBF8F2;
+            --earth: #5B8C5A;
+            --earth-light: #E8F0E4;
+            --amber: #D4A373;
+            --amber-light: #F5E6D4;
+            --ink: #1A1A2E;
+            --soft: #4A4A5A;
+            --muted: #8A8A9A;
+            --line: #E8E4DE;
+            --white: #FFFFFF;
+            --radius: 24px;
+            --shadow: 0 24px 64px rgba(26, 26, 46, 0.08);
+            --shadow-sm: 0 4px 16px rgba(26, 26, 46, 0.05);
         }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
-        body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: var(--ink); background: var(--white); -webkit-font-smoothing: antialiased; line-height: 1.5; }
+        body {
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            color: var(--ink);
+            background: var(--cream);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
         a { color: inherit; text-decoration: none; }
-        .wrap { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
-        .site-header { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.86); backdrop-filter: blur(14px); border-bottom: 1px solid transparent; transition: .2s; }
-        .site-header.scrolled { border-color: var(--border); box-shadow: var(--shadow-sm); }
-        .nav { display: flex; align-items: center; justify-content: space-between; height: 68px; gap: 16px; }
-        .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; letter-spacing: -.4px; }
-        .logo .mark { width: 34px; height: 34px; border-radius: 9px; background: var(--grad); display: grid; place-items: center; color: #fff; box-shadow: 0 4px 12px rgba(15,79,168,.3); flex-shrink: 0; }
-        .logo .mark svg { width: 20px; height: 20px; }
-        .logo .word { font-weight: 800; letter-spacing: -0.4px; }
-        .logo .word span { color: var(--blue); }
-        .nav-links { display: flex; gap: 8px; align-items: center; }
-        .nav-links a { font-size: 13.5px; font-weight: 600; color: var(--slate); padding: 8px 12px; border-radius: 8px; }
-        .nav-links a:hover { color: var(--ink); background: var(--surface); }
-        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; font-weight: 700; font-size: 14px; border: none; border-radius: var(--radius-sm); cursor: pointer; padding: 12px 20px; transition: transform .15s, box-shadow .15s; }
+        .wrap { width: min(1120px, calc(100% - 48px)); margin: 0 auto; }
+
+        /* ─── Navigation ───────────────────────────────────────── */
+        .nav {
+            position: sticky; top: 0; z-index: 40;
+            backdrop-filter: blur(14px);
+            background: rgba(251, 248, 242, 0.85);
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .nav.scrolled { border-color: var(--line); background: rgba(255,255,255,0.92); }
+        .nav-inner {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 0; gap: 16px;
+        }
+        .brand {
+            display: flex; align-items: center; gap: 10px;
+            font-weight: 900; font-size: 1.15rem; letter-spacing: -0.03em;
+        }
+        .brand-mark {
+            width: 40px; height: 40px; border-radius: 11px;
+            overflow: hidden; display: block; flex-shrink: 0;
+            background: var(--warm-blue);
+            box-shadow: 0 8px 20px rgba(43, 110, 139, 0.25);
+        }
+        .brand-mark img {
+            width: 100%; height: 100%; object-fit: contain; display: block;
+        }
+        .nav-links { display: flex; align-items: center; gap: 6px; }
+        .nav-links a.quiet {
+            font-size: 14px; font-weight: 600; color: var(--soft);
+            padding: 8px 14px; border-radius: 999px; transition: background 0.15s;
+        }
+        .nav-links a.quiet:hover { background: var(--warm-blue-mist); color: var(--ink); }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            font-family: inherit; font-weight: 800; font-size: 14px;
+            border-radius: 999px; border: none; cursor: pointer;
+            padding: 12px 22px; transition: transform 0.15s, box-shadow 0.15s;
+        }
         .btn:hover { transform: translateY(-2px); }
-        .btn-primary { background: var(--grad); color: #fff; box-shadow: var(--shadow-blue); }
-        .btn-ghost { background: var(--white); color: var(--ink); border: 1.5px solid var(--border); }
-        .btn-ghost:hover { border-color: var(--blue); background: var(--blue-mist); }
-        .btn-sm { padding: 8px 14px; font-size: 13px; }
-        .mobile-toggle { display: none; width: 42px; height: 42px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--white); align-items: center; justify-content: center; cursor: pointer; }
-        .mobile-toggle span { display: block; width: 18px; height: 2px; background: var(--ink); position: relative; }
-        .mobile-toggle span::before, .mobile-toggle span::after { content: ''; position: absolute; left: 0; width: 18px; height: 2px; background: var(--ink); }
-        .mobile-toggle span::before { top: -6px; } .mobile-toggle span::after { top: 6px; }
-        .hero { padding: 56px 0 40px; background: radial-gradient(ellipse 80% 60% at 20% 0%, rgba(46,125,232,.14), transparent 55%), radial-gradient(ellipse 60% 50% at 90% 10%, rgba(37,211,102,.08), transparent 50%), var(--white); }
-        .hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 48px; align-items: center; }
-        .eyebrow { display: inline-flex; align-items: center; gap: 8px; background: var(--blue-light); color: var(--blue-dark); font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 100px; margin-bottom: 16px; }
-        .eyebrow .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px rgba(22,163,74,.18); animation: pulse 1.8s ease infinite; }
-        @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 3px rgba(22,163,74,.15); } 50% { box-shadow: 0 0 0 6px rgba(22,163,74,.08); } }
-        h1 { font-size: clamp(32px, 5vw, 48px); line-height: 1.08; letter-spacing: -1.2px; font-weight: 900; margin-bottom: 16px; }
-        h1 .hl { background: linear-gradient(135deg, #1A6DDB, #0F4FA8); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .hero-sub { font-size: 17px; color: var(--slate); max-width: 34em; margin-bottom: 28px; }
-        .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 22px; }
-        .trust-row { display: flex; flex-wrap: wrap; gap: 14px 22px; font-size: 13px; font-weight: 600; color: var(--ink-soft); }
-        .trust-row span { display: inline-flex; align-items: center; gap: 6px; }
-        .mock { background: var(--white); border: 1px solid var(--border); border-radius: 22px; box-shadow: var(--shadow-lg); overflow: hidden; transform: perspective(900px) rotateY(-4deg) rotateX(2deg); transition: transform .35s ease; }
-        .mock:hover { transform: perspective(900px) rotateY(-1deg) rotateX(0); }
-        .mock-bar { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--border); }
-        .mock-bar i { width: 9px; height: 9px; border-radius: 50%; background: #D1D5DB; }
-        .mock-bar i:nth-child(1) { background: #F87171; } .mock-bar i:nth-child(2) { background: #FBBF24; } .mock-bar i:nth-child(3) { background: #34D399; }
-        .mock-body { padding: 18px; }
-        .mock-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
-        .mock-stat { background: var(--blue-mist); border-radius: 12px; padding: 12px; }
-        .mock-stat b { display: block; font-size: 20px; font-weight: 800; color: var(--blue); }
-        .mock-stat span { font-size: 11px; color: var(--slate); font-weight: 600; }
-        .mock-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 13px; gap: 8px; }
-        .mock-row:last-child { border-bottom: 0; }
-        .pill { font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 100px; text-transform: uppercase; white-space: nowrap; }
-        .pill.done { background: #D1FAE5; color: #065F46; } .pill.prog { background: #DBEAFE; color: #1E40AF; } .pill.pend { background: #FEF3C7; color: #92400E; }
-        .mode-switch { display: inline-flex; background: var(--surface); border-radius: 10px; padding: 3px; border: 1px solid var(--border); margin-bottom: 12px; }
-        .mode-switch button { border: 0; background: transparent; padding: 6px 12px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 700; color: var(--slate); cursor: pointer; }
-        .mode-switch button.on { background: var(--white); color: var(--blue); box-shadow: var(--shadow-sm); }
-        section { padding: 72px 0; }
-        .section-head { text-align: center; max-width: 560px; margin: 0 auto 40px; }
-        .section-head h2 { font-size: clamp(26px, 3.5vw, 34px); letter-spacing: -.6px; font-weight: 900; margin-bottom: 10px; }
-        .section-head p { color: var(--slate); font-size: 16px; }
-        .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-        .feature { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 22px 20px; transition: .2s; }
-        .feature:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: #C9DBF7; }
-        .feature .ico { width: 42px; height: 42px; border-radius: 12px; background: var(--blue-light); display: grid; place-items: center; margin-bottom: 14px; font-size: 18px; }
-        .feature h3 { font-size: 16px; font-weight: 800; margin-bottom: 6px; }
-        .feature p { font-size: 13.5px; color: var(--slate); }
-        .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        .step { background: var(--surface); border-radius: var(--radius-lg); padding: 24px 22px; border: 1px solid var(--border); }
-        .step .n { width: 32px; height: 32px; border-radius: 50%; background: var(--grad); color: #fff; font-weight: 800; font-size: 14px; display: grid; place-items: center; margin-bottom: 12px; }
-        .step h3 { font-size: 16px; font-weight: 800; margin-bottom: 6px; }
-        .step p { font-size: 13.5px; color: var(--slate); }
-        .pricing-bg { background: var(--surface); }
-        .price-tabs { display: flex; justify-content: center; gap: 6px; margin-bottom: 28px; background: var(--white); padding: 5px; border-radius: 14px; border: 1px solid var(--border); width: fit-content; margin-left: auto; margin-right: auto; box-shadow: var(--shadow-sm); }
-        .price-tabs button { border: 0; background: transparent; padding: 10px 18px; border-radius: 10px; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--slate); cursor: pointer; }
-        .price-tabs button.on { background: var(--blue); color: #fff; box-shadow: var(--shadow-blue); }
-        .price-panels { max-width: 820px; margin: 0 auto; }
-        .price-panel { display: none; }
-        .price-panel.on { display: block; animation: fadeUp .35s ease; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-        .price-card { background: var(--white); border: 1.5px solid var(--border); border-radius: 22px; padding: 28px; box-shadow: var(--shadow-md); }
-        .price-card.highlight { border-color: var(--blue); background: linear-gradient(180deg, #F5F9FF 0%, #fff 40%); }
-        .price-card .tag { display: inline-block; font-size: 11px; font-weight: 800; color: var(--blue-dark); background: var(--blue-light); padding: 4px 10px; border-radius: 100px; margin-bottom: 10px; }
-        .price-card h3 { font-size: 22px; font-weight: 900; margin-bottom: 4px; }
-        .price-card .amount { font-size: 40px; font-weight: 900; letter-spacing: -1px; margin: 8px 0; }
-        .price-card .amount span { font-size: 15px; font-weight: 600; color: var(--slate); }
-        .price-card .desc { color: var(--slate); font-size: 14px; margin-bottom: 18px; }
-        .price-card ul { list-style: none; margin-bottom: 22px; }
-        .price-card li { font-size: 14px; padding: 8px 0; border-bottom: 1px solid var(--border); display: flex; gap: 10px; }
-        .price-card li:last-child { border-bottom: 0; }
-        .price-card li::before { content: "✓"; color: var(--green); font-weight: 800; }
-        .packs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 8px; }
-        @media (max-width: 900px) { .packs { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 480px) { .packs { grid-template-columns: 1fr; } }
-        .pack .buy-hint { margin-top: 10px; font-size: 11px; font-weight: 700; color: var(--blue); opacity: .85; }
-        .path-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 900px; margin: 0 auto 28px; }
-        .path-item { background: var(--white); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; text-align: center; }
-        .path-item strong { display: block; font-size: 14px; margin-bottom: 4px; }
-        .path-item span { font-size: 12px; color: var(--slate); }
-        .faq { max-width: 720px; margin: 36px auto 0; }
-        .faq details { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
-        .faq summary { font-weight: 800; font-size: 14px; cursor: pointer; list-style: none; }
-        .faq summary::-webkit-details-marker { display: none; }
-        .faq details p { margin-top: 8px; font-size: 13.5px; color: var(--slate); }
-        .compare-note { text-align: center; font-size: 13px; color: var(--slate); margin-top: 14px; }
-        .pack { border: 1.5px solid var(--border); border-radius: 14px; padding: 16px 14px; text-align: center; background: var(--white); transition: .15s; }
-        .pack:hover { border-color: var(--blue); transform: translateY(-2px); }
-        .pack.best { border-color: var(--blue); background: var(--blue-mist); }
-        .pack .name { font-weight: 800; font-size: 14px; }
-        .pack .jobs { font-size: 22px; font-weight: 900; color: var(--blue); margin: 6px 0 2px; }
-        .pack .naira { font-size: 13px; color: var(--slate); font-weight: 600; }
-        .pack .unit { font-size: 11px; color: var(--slate); margin-top: 4px; }
-        .quotes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-        .quote { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 22px; }
-        .quote p { font-size: 15px; font-weight: 600; margin-bottom: 14px; color: var(--ink-soft); }
-        .quote .who { font-size: 13px; font-weight: 700; }
-        .quote .role { font-size: 12px; color: var(--slate); }
-        .final-cta { background: var(--grad); color: #fff; border-radius: 28px; padding: 48px 36px; text-align: center; box-shadow: var(--shadow-blue); }
-        .final-cta h2 { font-size: clamp(24px, 3vw, 32px); font-weight: 900; margin-bottom: 10px; }
-        .final-cta p { opacity: .92; margin-bottom: 22px; font-size: 16px; }
-        .final-cta .btn-primary { background: #fff; color: var(--blue-dark); box-shadow: none; }
-        .final-cta .btn-ghost { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,.35); }
-        footer { padding: 40px 0 28px; border-top: 1px solid var(--border); color: var(--slate); font-size: 13px; }
-        .foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; align-items: center; }
-        .foot a { font-weight: 600; color: var(--ink-soft); }
-        .sticky-cta { display: none; position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 40; background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 10px; box-shadow: var(--shadow-lg); }
-        .sticky-cta .btn { width: 100%; }
+        .btn-primary {
+            background: var(--warm-blue);
+            color: #fff; box-shadow: 0 8px 24px rgba(43, 110, 139, 0.3);
+        }
+        .btn-primary:hover { box-shadow: 0 12px 32px rgba(43, 110, 139, 0.4); }
+        .btn-ghost {
+            background: var(--white); color: var(--ink);
+            border: 1.5px solid var(--line); box-shadow: var(--shadow-sm);
+        }
+        .btn-lg { padding: 15px 28px; font-size: 15px; }
+        .btn-green {
+            background: var(--earth);
+            color: #fff; box-shadow: 0 8px 24px rgba(91, 140, 90, 0.3);
+        }
+        .btn-green:hover { box-shadow: 0 12px 32px rgba(91, 140, 90, 0.4); }
+
+        /* ─── Hero ────────────────────────────────────────────── */
+        .hero {
+            position: relative;
+            padding: 56px 0 72px;
+            background: radial-gradient(ellipse 60% 50% at 10% 20%, rgba(212, 232, 240, 0.4), transparent 60%),
+                        radial-gradient(ellipse 50% 40% at 90% 80%, rgba(232, 240, 228, 0.3), transparent 50%);
+        }
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 56px;
+            align-items: center;
+        }
+        .eyebrow {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-size: 12px; font-weight: 800; letter-spacing: 0.06em;
+            text-transform: uppercase; color: var(--warm-blue);
+            background: var(--warm-blue-mist); border: 1px solid var(--warm-blue-light);
+            padding: 6px 14px; border-radius: 999px; margin-bottom: 20px;
+        }
+        .hero h1 {
+            font-size: clamp(2.4rem, 5vw, 3.6rem);
+            line-height: 1.05; letter-spacing: -0.04em; font-weight: 900;
+            margin-bottom: 18px;
+        }
+        .hero h1 .highlight {
+            background: linear-gradient(135deg, var(--warm-blue), var(--earth));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-lead {
+            font-size: 1.15rem; color: var(--soft); max-width: 34em;
+            margin-bottom: 28px; line-height: 1.7;
+        }
+        .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
+        .hero-note {
+            font-size: 13px; color: var(--muted);
+        }
+        .hero-note strong { color: var(--soft); }
+
+        /* ─── Phone Mockup (Warm Version) ────────────────────── */
+        .stage { position: relative; }
+        .phone {
+            background: var(--ink);
+            border-radius: 40px;
+            padding: 14px;
+            box-shadow: var(--shadow), 0 0 0 1px rgba(255,255,255,0.06);
+            max-width: 340px;
+            margin: 0 auto;
+            transform: rotate(-1deg) perspective(800px) rotateY(-4deg);
+        }
+        .phone-notch {
+            width: 110px; height: 26px; background: var(--ink);
+            border-radius: 0 0 16px 16px; margin: 0 auto 8px;
+        }
+        .phone-screen {
+            background: linear-gradient(180deg, #F7F4EF 0%, #FBF8F2 60%, #fff 100%);
+            border-radius: 28px;
+            padding: 18px 16px 20px;
+            min-height: 420px;
+        }
+        .ui-top {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 14px; font-size: 11px; font-weight: 800; color: var(--muted);
+        }
+        .ui-pills { display: flex; gap: 6px; margin-bottom: 12px; }
+        .ui-pill {
+            font-size: 11px; font-weight: 800; padding: 6px 12px; border-radius: 999px;
+            background: #fff; border: 1px solid var(--line); color: var(--soft);
+        }
+        .ui-pill.on {
+            background: var(--warm-blue); color: #fff; border-color: var(--warm-blue);
+        }
+        .ui-card {
+            background: #fff; border-radius: 16px; padding: 12px 14px;
+            border: 1px solid var(--line); margin-bottom: 10px;
+            box-shadow: var(--shadow-sm);
+        }
+        .ui-card .k {
+            font-size: 10px; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 0.05em; color: var(--muted);
+        }
+        .ui-card .v {
+            font-size: 22px; font-weight: 900; letter-spacing: -0.03em; margin-top: 2px;
+        }
+        .ui-card.warm {
+            background: linear-gradient(145deg, #1A2E3A, #2B6E8B);
+            color: #fff; border: none;
+        }
+        .ui-card.warm .k { color: rgba(255,255,255,0.6); }
+        .ui-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 12px;
+        }
+        .ui-row:last-child { border-bottom: none; }
+        .ui-badge {
+            font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 999px;
+            background: var(--earth-light); color: var(--earth);
+        }
+        .ui-badge.warn { background: var(--amber-light); color: #8B6B3D; }
+        .float-tag {
+            position: absolute;
+            font-size: 12px; font-weight: 800;
+            background: #fff; border: 1px solid var(--line);
+            padding: 10px 16px; border-radius: 14px;
+            box-shadow: var(--shadow-sm);
+            color: var(--ink);
+        }
+        .float-tag.a { left: -12px; top: 16%; transform: rotate(-4deg); }
+        .float-tag.b { right: -8px; bottom: 24%; transform: rotate(3deg); }
+
+        /* ─── Sections ────────────────────────────────────────── */
+        .section-label {
+            font-size: 12px; font-weight: 800; letter-spacing: 0.08em;
+            text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+        }
+        .section-title {
+            font-size: clamp(1.8rem, 3.2vw, 2.4rem);
+            font-weight: 900; letter-spacing: -0.03em; line-height: 1.15;
+            margin-bottom: 14px;
+        }
+        .section-lead {
+            color: var(--soft); max-width: 36em; font-size: 1.05rem;
+            margin-bottom: 32px; line-height: 1.7;
+        }
+
+        /* ─── Moments (Warm) ──────────────────────────────────── */
+        .moments { padding: 32px 0 72px; }
+        .moment-list { display: flex; flex-direction: column; gap: 16px; }
+        .moment {
+            display: grid; grid-template-columns: 72px 1fr;
+            gap: 20px; align-items: start;
+            background: var(--white);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 24px 28px;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .moment:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+        .moment-icon {
+            width: 56px; height: 56px; border-radius: 16px;
+            display: grid; place-items: center; font-size: 24px; font-weight: 900;
+            background: var(--warm-blue-mist); color: var(--warm-blue);
+        }
+        .moment:nth-child(2) .moment-icon { background: var(--earth-light); color: var(--earth); }
+        .moment:nth-child(3) .moment-icon { background: var(--amber-light); color: #8B6B3D; }
+        .moment h3 { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 6px; }
+        .moment p { color: var(--soft); font-size: 15px; max-width: 40em; line-height: 1.7; }
+
+        /* ─── Dual (Cleaning + Laundry) ───────────────────────── */
+        .dual {
+            padding: 56px 0;
+            background: var(--white);
+            border-top: 1px solid var(--line);
+            border-bottom: 1px solid var(--line);
+        }
+        .dual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .dual-card {
+            border-radius: var(--radius);
+            padding: 32px 28px;
+            min-height: 200px;
+        }
+        .dual-card.clean {
+            background: var(--warm-blue-mist);
+            border: 1px solid var(--warm-blue-light);
+        }
+        .dual-card.laundry {
+            background: var(--earth-light);
+            border: 1px solid #C8DFC4;
+        }
+        .dual-card .icon { font-size: 32px; margin-bottom: 8px; }
+        .dual-card h3 {
+            font-size: 1.4rem; font-weight: 900; letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+        .dual-card p { color: var(--soft); font-size: 14px; max-width: 28em; line-height: 1.7; }
+        .dual-card ul {
+            list-style: none; margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px;
+        }
+        .dual-card li {
+            font-size: 12px; font-weight: 700;
+            background: rgba(255,255,255,0.75);
+            padding: 6px 12px; border-radius: 999px; color: var(--ink);
+        }
+
+        /* ─── Timeline ────────────────────────────────────────── */
+        .day { padding: 72px 0; }
+        .timeline {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+            margin-top: 8px;
+        }
+        .t-step {
+            background: var(--white);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 20px 18px;
+            transition: transform 0.2s;
+        }
+        .t-step:hover { transform: translateY(-3px); }
+        .t-step .time {
+            font-size: 11px; font-weight: 800; color: var(--warm-blue);
+            text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px;
+        }
+        .t-step h4 { font-size: 15px; font-weight: 800; margin-bottom: 6px; }
+        .t-step p { font-size: 13px; color: var(--soft); line-height: 1.6; }
+
+        /* ─── Pricing ──────────────────────────────────────────── */
+        .pricing {
+            padding: 64px 0 72px;
+            background: var(--cream);
+        }
+        .price-box {
+            background: var(--white);
+            border-radius: calc(var(--radius) + 4px);
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow);
+            padding: 36px 40px;
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 40px;
+            align-items: center;
+        }
+        .price-box h2 {
+            font-size: 1.75rem; font-weight: 900; letter-spacing: -0.03em;
+            margin-bottom: 10px;
+        }
+        .price-box > div > p { color: var(--soft); margin-bottom: 18px; line-height: 1.7; }
+        .checks { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+        .checks li {
+            display: flex; gap: 12px; align-items: flex-start;
+            font-size: 14px; font-weight: 600; color: var(--soft);
+        }
+        .checks li span {
+            width: 22px; height: 22px; border-radius: 50%;
+            background: var(--earth-light); color: var(--earth);
+            display: grid; place-items: center; font-size: 12px; flex-shrink: 0;
+            font-weight: 800;
+        }
+        .price-side {
+            background: linear-gradient(145deg, #1A2E3A, #2B6E8B);
+            color: #fff; border-radius: 18px; padding: 28px 26px;
+        }
+        .price-side .big {
+            font-size: 2.6rem; font-weight: 900; letter-spacing: -0.04em;
+            margin: 6px 0 4px;
+        }
+        .price-side .sub { font-size: 13px; opacity: 0.8; margin-bottom: 16px; }
+        .price-side .btn { width: 100%; }
+        .price-side .alt {
+            text-align: center; font-size: 12px; opacity: 0.7; margin-top: 12px;
+        }
+
+        /* ─── CTA ──────────────────────────────────────────────── */
+        .cta-band { padding: 56px 0 72px; }
+        .cta-inner {
+            background: linear-gradient(145deg, #1A2E3A, #2B6E8B);
+            border-radius: 28px;
+            padding: 44px 40px;
+            color: #fff;
+            display: flex; flex-wrap: wrap; gap: 24px;
+            align-items: center; justify-content: space-between;
+            box-shadow: 0 24px 50px rgba(43, 110, 139, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+        .cta-inner::before {
+            content: '';
+            position: absolute;
+            top: -40%; right: -10%;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(255,255,255,0.06), transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .cta-inner::after {
+            content: '';
+            position: absolute;
+            bottom: -30%; left: -5%;
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(91, 140, 90, 0.15), transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .cta-inner h2 {
+            font-size: clamp(1.4rem, 3vw, 1.9rem);
+            font-weight: 900; letter-spacing: -0.03em; margin-bottom: 6px;
+            position: relative; z-index: 1;
+        }
+        .cta-inner p { opacity: 0.9; max-width: 32em; font-size: 15px; position: relative; z-index: 1; }
+        .cta-actions { display: flex; flex-wrap: wrap; gap: 10px; position: relative; z-index: 1; }
+        .cta-inner .btn-primary {
+            background: #fff; color: var(--warm-blue);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+        .cta-inner .btn-primary:hover { box-shadow: 0 12px 32px rgba(0,0,0,0.15); }
+        .cta-inner .btn-ghost {
+            background: transparent; color: #fff;
+            border-color: rgba(255,255,255,0.35);
+        }
+        .cta-inner .btn-ghost:hover { background: rgba(255,255,255,0.1); }
+
+        /* ─── Footer ───────────────────────────────────────────── */
+        footer {
+            padding: 28px 0 40px;
+            border-top: 1px solid var(--line);
+            font-size: 13px; color: var(--muted);
+        }
+        .foot-inner {
+            display: flex; flex-wrap: wrap; gap: 12px 20px;
+            justify-content: space-between; align-items: center;
+        }
+        .foot-links { display: flex; gap: 16px; flex-wrap: wrap; }
+        .foot-links a:hover { color: var(--ink); }
+
+        /* ─── Responsive ───────────────────────────────────────── */
         @media (max-width: 900px) {
-            .hero-grid, .features, .steps, .quotes, .path-strip { grid-template-columns: 1fr; }
-            .mock { transform: none; }
-            .nav-links { display: none; position: absolute; top: 68px; left: 0; right: 0; background: #fff; border-bottom: 1px solid var(--border); flex-direction: column; padding: 12px 20px 16px; }
-            .nav-links.open { display: flex; }
-            .mobile-toggle { display: flex; }
-            .sticky-cta { display: block; }
-            section { padding: 56px 0; }
-            body { padding-bottom: 84px; }
+            .hero-grid, .dual-grid, .price-box, .timeline { grid-template-columns: 1fr; }
+            .phone { transform: none; max-width: 320px; }
+            .float-tag { display: none; }
+            .moment { grid-template-columns: 1fr; gap: 12px; }
+            .price-box { padding: 28px 22px; gap: 24px; }
+            .cta-inner { padding: 32px 24px; }
+            .nav-links a.quiet { display: none; }
         }
-        @media (prefers-reduced-motion: reduce) {
-            * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+        @media (max-width: 560px) {
+            .wrap { width: min(100% - 28px, 1120px); }
+            .hero { padding: 32px 0 48px; }
+            .cta-inner { padding: 24px 20px; }
         }
-        .reveal { opacity: 0; transform: translateY(16px); transition: opacity .6s ease, transform .6s ease; }
-        .reveal.in { opacity: 1; transform: translateY(0); }
-        .feature:nth-child(1) .ico { background: #EBF3FE; }
-        .feature:nth-child(2) .ico { background: #E9F9EF; }
-        .feature:nth-child(3) .ico { background: #FCEFE3; }
-        .feature:nth-child(4) .ico { background: #EFEEFE; }
-        .feature:nth-child(5) .ico { background: #EBF3FE; }
-        .feature:nth-child(6) .ico { background: #FEF2F2; }
-        @keyframes statPop { 0% { transform: scale(1); } 35% { transform: scale(1.14); } 100% { transform: scale(1); } }
-        .mock-stat b.pop { animation: statPop .38s ease; }
-        .mock-row { transition: background-color .2s ease; }
-        .mock-row:hover { background-color: var(--blue-mist); border-radius: 8px; }
-        .nav-links { transition: opacity .2s ease; }
     </style>
 </head>
 <body>
-    <header class="site-header" id="header">
-        <div class="wrap nav">
-            <a class="logo" href="/"><span class="mark"><svg viewBox="0 0 100 100" fill="none"><path d="M80 34 C74 22 62 14 48 14 C28 14 12 30 12 50 C12 70 28 86 48 86 C62 86 74 78 80 66" stroke="white" stroke-width="13" stroke-linecap="round" fill="none"/><g transform="translate(68,46)"><path d="M0,-9 L1.6,-1.6 L9,0 L1.6,1.6 L0,9 L-1.6,1.6 L-9,0 L-1.6,-1.6 Z" fill="white"/></g></svg></span><span class="word">Clean<span>Crew</span>.</span></a>
-            <button class="mobile-toggle" id="mobileToggle" aria-label="Menu"><span></span></button>
-            <nav class="nav-links" id="nav">
-                <a href="#features">Features</a>
-                <a href="#how">How it works</a>
-                <a href="#pricing">Pricing</a>
-                <a href="login.html">Log in</a>
-                <a class="btn btn-primary btn-sm" href="signup.html">Start free</a>
-            </nav>
+
+    <!-- ─── Navigation ───────────────────────────────────────── -->
+    <header class="nav" id="nav">
+        <div class="wrap nav-inner">
+            <a class="brand" href="index.html">
+                <span class="brand-mark"><img src="logo.png" alt="CleanCrew logo" width="40" height="40" /></span>
+                CleanCrew
+            </a>
+            <div class="nav-links">
+                <a class="quiet" href="#how">How it works</a>
+                <a class="quiet" href="#pricing">Pricing</a>
+                <a class="quiet" href="login.html">Log in</a>
+                <a class="btn btn-primary" href="signup.html">Start free</a>
+            </div>
         </div>
     </header>
 
-    <main>
-        <section class="hero">
-            <div class="wrap hero-grid">
-                <div>
-                    <div class="eyebrow"><span class="dot"></span> Cleaning &amp; laundry businesses</div>
-                    <h1>Run the jobs. Track the money. <span class="hl">Skip the chaos.</span></h1>
-                    <p class="hero-sub">
-                        CleanCrew is the ops dashboard for cleaning and laundry shops —
-                        jobs, clients, inventory, invoices and staff in one place.
-                        <strong>25 free jobs for life.</strong> Built for cleaning and laundry shops across markets — your local currency in the dashboard.
-                    </p>
-                    <div class="hero-cta">
-                        <a class="btn btn-primary" href="signup.html">Create free account →</a>
-                        <a class="btn btn-ghost" href="#pricing">See how pricing works</a>
-                    </div>
-                    <div class="trust-row">
-                        <span>✓ 25 free jobs forever</span>
-                        <span>✓ Prices in your local currency</span>
-                        <span>✓ Pay only when you grow</span>
-                    </div>
+    <!-- ─── Hero ──────────────────────────────────────────────── -->
+    <section class="hero">
+        <div class="wrap hero-grid">
+            <div>
+                <div class="eyebrow">🧹 Cleaning · Laundry · One place</div>
+                <h1>
+                    For the people who make spaces clean<br />
+                    and laundry <span class="highlight">come back fresh.</span>
+                </h1>
+                <p class="hero-lead">
+                    CleanCrew is built for the counter, the shop, and the day's work.
+                    Log jobs in seconds, track them through pickup, and see what you
+                    actually keep after staff and materials.
+                </p>
+                <div class="hero-actions">
+                    <a class="btn btn-primary btn-lg" href="signup.html">Start free — 25 jobs</a>
+                    <a class="btn btn-ghost btn-lg" href="https://wa.me/2347057295546?text=Hi%20CleanCrew%2C%20I%20want%20to%20learn%20more" target="_blank" rel="noopener">Chat on WhatsApp</a>
                 </div>
-                <div>
-                    <div class="mock">
-                        <div class="mock-bar"><i></i><i></i><i></i></div>
-                        <div class="mock-body">
-                            <div class="mode-switch" id="mockMode">
-                                <button type="button" class="on" data-mode="cleaning">Cleaning</button>
-                                <button type="button" data-mode="laundry">Laundry</button>
+                <p class="hero-note"><strong>No card required.</strong> Works on your phone. Local currency in the app.</p>
+            </div>
+            <div class="stage">
+                <div class="float-tag a">⚡ Quick capture when they're in a hurry</div>
+                <div class="float-tag b">✅ Ready for pickup</div>
+                <div class="phone" aria-hidden="true">
+                    <div class="phone-notch"></div>
+                    <div class="phone-screen">
+                        <div class="ui-top"><span>Today</span><span>CleanCrew</span></div>
+                        <div class="ui-pills">
+                            <span class="ui-pill on">🧹 Cleaning</span>
+                            <span class="ui-pill">👕 Laundry</span>
+                        </div>
+                        <div class="ui-card warm">
+                            <div class="k">This month · direct profit</div>
+                            <div class="v">Your currency</div>
+                            <div style="font-size:11px;opacity:0.75;margin-top:6px;">Revenue − staff − materials</div>
+                        </div>
+                        <div class="ui-card">
+                            <div class="k">Live jobs</div>
+                            <div class="ui-row">
+                                <span><strong>Home clean</strong> · 3-bed</span>
+                                <span class="ui-badge warn">In progress</span>
                             </div>
-                            <div class="mock-stats">
-                                <div class="mock-stat"><b id="mJobs">12</b><span>Jobs this week</span></div>
-                                <div class="mock-stat"><b id="mRev">84k</b><span>Collected</span></div>
-                                <div class="mock-stat"><b id="mPend">3</b><span>In progress</span></div>
+                            <div class="ui-row">
+                                <span><strong>Wash &amp; fold</strong> · 12 items</span>
+                                <span class="ui-badge">Ready</span>
                             </div>
-                            <div id="mockRows">
-                                <div class="mock-row"><span><strong>Ada Okafor</strong> · 3-bed deep clean</span><span class="pill prog">In progress</span></div>
-                                <div class="mock-row"><span><strong>Chidi Bello</strong> · Office tidy</span><span class="pill pend">Pending</span></div>
-                                <div class="mock-row"><span><strong>Ngozi Homes</strong> · Post-construction</span><span class="pill done">Done</span></div>
+                            <div class="ui-row">
+                                <span><strong>Office</strong> · Deep clean</span>
+                                <span class="ui-badge warn">Pending</span>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
-
-        <section id="features">
-            <div class="wrap">
-                <div class="section-head">
-                    <h2>Everything you need on a busy day</h2>
-                    <p>Built for how cleaning and laundry businesses actually work.</p>
-                </div>
-                <div class="features">
-                    <article class="feature reveal"><div class="ico">📋</div><h3>Jobs that stay organised</h3><p>Switch between cleaning and laundry. Track status without scattered notebooks.</p></article>
-                    <article class="feature reveal"><div class="ico">👕</div><h3>Laundry items &amp; pricing</h3><p>Log item counts with your prices. Totals calculate as you go.</p></article>
-                    <article class="feature reveal"><div class="ico">👥</div><h3>Clients &amp; staff</h3><p>Customer contacts handy. Know who’s on each job.</p></article>
-                    <article class="feature reveal"><div class="ico">📦</div><h3>Inventory</h3><p>Supplies separated by cleaning or laundry so stock doesn’t mix.</p></article>
-                    <article class="feature reveal"><div class="ico">🧾</div><h3>Invoices that travel</h3><p>PDF, partial payments, share on WhatsApp when the customer is ready.</p></article>
-                    <article class="feature reveal"><div class="ico">🔒</div><h3>Revenue lock</h3><p>Owner PIN so revenue stays private when staff use the dashboard.</p></article>
-                </div>
-            </div>
-        </section>
-
-        <section id="how" style="background:var(--surface);">
-            <div class="wrap">
-                <div class="section-head">
-                    <h2>Up and running in minutes</h2>
-                    <p>No long setup. Create an account, add a job, and you’re in business.</p>
-                </div>
-                <div class="steps">
-                    <div class="step reveal"><div class="n">1</div><h3>Create your free account</h3><p>Confirm your email. You get <strong>25 free jobs for the life of the account</strong> — not a short trial.</p></div>
-                    <div class="step reveal"><div class="n">2</div><h3>Add jobs as work comes in</h3><p>Cleaning or laundry mode. Clients, amounts, and status on one phone-friendly dashboard.</p></div>
-                    <div class="step reveal"><div class="n">3</div><h3>Grow without pressure</h3><p>When free jobs are used, buy credits — or go unlimited for a flat monthly fee.</p></div>
-                </div>
-            </div>
-        </section>
-
-        <section id="pricing" class="pricing-bg">
-            <div class="wrap">
-                <div class="section-head">
-                    <h2>Simple pricing. Your pace.</h2>
-                    <p>Start free. Buy credits when you’re busy. Subscribe only when unlimited makes sense. <strong>All amounts show in your local currency</strong> after you choose your country in the app.</p>
-                </div>
-                <div class="path-strip reveal">
-                    <div class="path-item"><strong>1 · Try free</strong><span>25 jobs for life · no card</span></div>
-                    <div class="path-item"><strong>2 · Buy credits</strong><span>Only when free jobs run out</span></div>
-                    <div class="path-item"><strong>3 · Go unlimited</strong><span>Flat monthly fee if you outgrow packs</span></div>
-                </div>
-                <div class="price-tabs" role="tablist">
-                    <button type="button" class="on" data-panel="free">Free</button>
-                    <button type="button" data-panel="credits">Credits</button>
-                    <button type="button" data-panel="unlimited">Unlimited</button>
-                </div>
-                <div class="price-panels">
-                    <div class="price-panel on" id="panel-free">
-                        <div class="price-card highlight">
-                            <span class="tag">Best place to start</span>
-                            <h3>Free forever foundation</h3>
-                            <div class="amount">Free <span>to begin</span></div>
-                            <p class="desc">No card. No expiry clock on your free jobs. Prove CleanCrew fits your shop first.</p>
-                            <ul>
-                                <li><strong>25 jobs for the life of your account</strong></li>
-                                <li>Clients, staff, inventory &amp; invoices</li>
-                                <li>Cleaning and laundry modes</li>
-                                <li>Upgrade only when you outgrow free</li>
-                            </ul>
-                            <a class="btn btn-primary" href="signup.html" style="width:100%;">Create free account</a>
-                        </div>
-                    </div>
-                    <div class="price-panel" id="panel-credits">
-                        <div class="price-card">
-                            <span class="tag">Pay as you go</span>
-                            <h3>Job credits</h3>
-                            <div class="amount">Pay as you go</div>
-                            <p class="desc">After your 25 free jobs, top up only when you have work. Pack prices appear in <strong>your local currency</strong> inside the dashboard.</p>
-                            <div class="packs">
-                                <div class="pack">
-                                    <div class="name">Starter</div>
-                                    <div class="jobs">20 jobs</div>
-                                    <div class="naira">Credit pack</div>
-                                    <div class="unit">Priced in your currency in-app</div>
-                                </div>
-                                <div class="pack">
-                                    <div class="name">Business</div>
-                                    <div class="jobs">45 jobs</div>
-                                    <div class="naira">Credit pack</div>
-                                    <div class="unit">Priced in your currency in-app</div>
-                                </div>
-                                <div class="pack best">
-                                    <div class="name">Growth</div>
-                                    <div class="jobs">100 jobs</div>
-                                    <div class="naira">Best value pack</div>
-                                    <div class="unit">Priced in your currency in-app</div>
-                                </div>
-                                <div class="pack">
-                                    <div class="name">Enterprise</div>
-                                    <div class="jobs">275 jobs</div>
-                                    <div class="naira">Credit pack</div>
-                                    <div class="unit">Priced in your currency in-app</div>
-                                </div>
-                            </div>
-                            <p style="margin-top:16px;font-size:13px;color:var(--slate);text-align:center;">Choose your country in Settings after signup — then buy packs in local currency with local payment options.</p>
-                            <a class="btn btn-ghost" href="signup.html" style="width:100%;margin-top:12px;">Start free, buy later</a>
-                        </div>
-                    </div>
-                    <div class="price-panel" id="panel-unlimited">
-                        <div class="price-card highlight">
-                            <span class="tag">One clear plan</span>
-                            <h3>Unlimited</h3>
-                            <div class="amount">Unlimited <span>/ month</span></div>
-                            <p class="desc">For shops that run jobs every day and don’t want to think about credits. Flat monthly fee in <strong>your local currency</strong> — payment options shown in the dashboard for your country.</p>
-                            <ul>
-                                <li>Unlimited jobs</li>
-                                <li>Higher limits across the product</li>
-                                <li>Same tools — no job ceiling</li>
-                                <li>You can still use free + credits anytime</li>
-                            </ul>
-                            <a class="btn btn-primary" href="signup.html" style="width:100%;">Start free, upgrade when ready</a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="faq reveal">
-                    <details open>
-                        <summary>Do free jobs expire at the end of the month?</summary>
-                        <p>No. You get <strong>25 free jobs for the life of your account</strong> — not a monthly reset and not a short trial that disappears.</p>
-                    </details>
-                    <details>
-                        <summary>What happens after the 25 free jobs?</summary>
-                        <p>You can buy job credits (pay only for the work you take on) or subscribe to Unlimited (a flat monthly fee in your local currency) if you run jobs every day.</p>
-                    </details>
-                    <details>
-                        <summary>Is this only for cleaning?</summary>
-                        <p>No. CleanCrew supports <strong>cleaning and laundry</strong> in one dashboard — switch mode when you work.</p>
-                    </details>
-
-                    <details>
-                        <summary>What currency will I see?</summary>
-                        <p>After signup, choose your <strong>country</strong> in Settings. Job amounts, packs, and reports use that country’s currency. We’re live with multiple markets and expanding payment options per country.</p>
-                    </details>
-                    <details>
-                        <summary>How do I pay for credits or unlimited?</summary>
-                        <p>In the dashboard, open the credits section and follow the payment steps for your country (card, mobile money, or the options we show you). Support on WhatsApp if you need help activating a payment.</p>
-                    </details>
-                    <details>
-                        <summary>Can staff use it without seeing my revenue?</summary>
-                        <p>Yes. Use the optional <strong>owner PIN / revenue lock</strong> so money totals stay private while jobs still get logged.</p>
-                    </details>
-                </div>
-
-            </div>
-        </section>
-
-        <section>
-            <div class="wrap">
-                <div class="section-head">
-                    <h2>Built for how small businesses actually run</h2>
-                    <p>WhatsApp-first. Mobile-friendly. No forced commitment on day one.</p>
-                </div>
-                <div class="quotes">
-                    <div class="quote reveal">
-                        <p>“I don’t want software that asks for money before I’ve tried it with real customers. Free jobs first is the only way this makes sense.”</p>
-                        <div class="who">Laundry shop owner</div>
-                        <div class="role">What we hear on the ground</div>
-                    </div>
-                    <div class="quote reveal">
-                        <p>“Staff can log jobs at the counter. I still keep revenue behind a PIN. That alone is worth the setup.”</p>
-                        <div class="who">Cleaning business founder</div>
-                        <div class="role">Trust + control</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section>
-            <div class="wrap">
-                <div class="final-cta">
-                    <h2>Your next 25 jobs can run cleaner.</h2>
-                    <p>Open a free account in under two minutes. No card. Confirm email and start logging work today.</p>
-                    <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;">
-                        <a class="btn btn-primary" href="signup.html">Create free account</a>
-                        <a class="btn btn-ghost" href="https://wa.me/2347057295546?text=Hi%20CleanCrew%2C%20I%20have%20a%20question%20about%20the%20product." target="_blank" rel="noopener">Chat on WhatsApp</a>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <footer>
-        <div class="wrap foot">
-            <div>© 2026 CleanCrew · cleancrewapp.com</div>
-            <div style="display:flex;gap:16px;flex-wrap:wrap;">
-                <a href="login.html">Log in</a>
-                <a href="signup.html">Sign up</a>
-                <a href="https://wa.me/2347057295546" target="_blank" rel="noopener">Support</a>
             </div>
         </div>
-    </footer>
+    </section>
 
-    <div class="sticky-cta"><a class="btn btn-primary" href="signup.html">Create free account — no card</a></div>
+    <!-- ─── Moments ───────────────────────────────────────────── -->
+    <section class="moments" id="how">
+        <div class="wrap">
+            <div class="section-label">Built for the floor</div>
+            <h2 class="section-title">Not another rigid dashboard. A calm place for real shop work.</h2>
+            <p class="section-lead">Whether you clean homes, run a laundry counter, or both — the rhythm is the same: take the work in, finish it, get paid, know your numbers.</p>
+            <div class="moment-list">
+                <article class="moment">
+                    <div class="moment-icon">1</div>
+                    <div>
+                        <h3>Catch the job before they leave</h3>
+                        <p>Customers rarely wait for a long form. Quick capture name, phone, and a note — finish details when the line is gone. Laundry items, rooms, or scope when you are ready.</p>
+                    </div>
+                </article>
+                <article class="moment">
+                    <div class="moment-icon">2</div>
+                    <div>
+                        <h3>Cleaning and laundry in one rhythm</h3>
+                        <p>Switch modes, not tools. Track status through to collected for laundry, completion for cleaning, and keep clients and invoices in the same home.</p>
+                    </div>
+                </article>
+                <article class="moment">
+                    <div class="moment-icon">3</div>
+                    <div>
+                        <h3>Profit you can explain</h3>
+                        <p>Revenue is what you charged. Direct profit is what is left after staff and materials on each job — with a simple view of the month and the week.</p>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
 
-    <script>
-        (function () {
-            var header = document.getElementById('header');
-            var toggle = document.getElementById('mobileToggle');
-            var nav = document.getElementById('nav');
-            window.addEventListener('scroll', function () {
-                header.classList.toggle('scrolled', window.scrollY > 8);
-            });
-            toggle.addEventListener('click', function () { nav.classList.toggle('open'); });
-            nav.querySelectorAll('a').forEach(function (a) {
-                a.addEventListener('click', function () { nav.classList.remove('open'); });
-            });
-            document.querySelectorAll('.price-tabs button').forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    document.querySelectorAll('.price-tabs button').forEach(function (b) { b.classList.remove('on'); });
-                    document.querySelectorAll('.price-panel').forEach(function (p) { p.classList.remove('on'); });
-                    btn.classList.add('on');
-                    var panel = document.getElementById('panel-' + btn.getAttribute('data-panel'));
-                    if (panel) panel.classList.add('on');
-                });
-            });
-            var laundryRows = '<div class="mock-row"><span><strong>Amaka Okeke</strong> · 12 shirts, 4 trousers</span><span class="pill prog">Washing</span></div><div class="mock-row"><span><strong>Hotel Annex</strong> · 40 bedsheets</span><span class="pill pend">Collected</span></div><div class="mock-row"><span><strong>Tunde A.</strong> · Suit dry-clean</span><span class="pill done">Ready</span></div>';
-            var cleaningRows = '<div class="mock-row"><span><strong>Ada Okafor</strong> · 3-bed deep clean</span><span class="pill prog">In progress</span></div><div class="mock-row"><span><strong>Chidi Bello</strong> · Office tidy</span><span class="pill pend">Pending</span></div><div class="mock-row"><span><strong>Ngozi Homes</strong> · Post-construction</span><span class="pill done">Done</span></div>';
-            document.querySelectorAll('#mockMode button').forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    document.querySelectorAll('#mockMode button').forEach(function (b) { b.classList.remove('on'); });
-                    btn.classList.add('on');
-                    var mode = btn.getAttribute('data-mode');
-                    document.getElementById('mockRows').innerHTML = mode === 'laundry' ? laundryRows : cleaningRows;
-                    document.getElementById('mJobs').textContent = mode === 'laundry' ? '18' : '12';
-                    document.getElementById('mRev').textContent = mode === 'laundry' ? '126k' : '84k';
-                    document.getElementById('mPend').textContent = mode === 'laundry' ? '5' : '3';
-                    document.querySelectorAll('.mock-stat b').forEach(function (el) {
-                        el.classList.remove('pop');
-                        void el.offsetWidth;
-                        el.classList.add('pop');
-                    });
-                });
-            });
-            try {
-                fetch('https://cleancrew-backend.onrender.com/api/health').catch(function () {});
-                if (localStorage.getItem('cleancrew_token')) window.location.href = 'dashboard.html';
-            } catch (e) {}
-            var revealEls = document.querySelectorAll('.reveal');
-            if ('IntersectionObserver' in window && revealEls.length) {
-                var io = new IntersectionObserver(function (entries) {
-                    entries.forEach(function (entry) {
-                        if (entry.isIntersecting) {
-                            entry.target.classList.add('in');
-                            io.unobserve(entry.target);
-                        }
-                    });
-                }, { threshold: 0.12 });
-                revealEls.forEach(function (el) { io.observe(el); });
-            } else {
-                revealEls.forEach(function (el) { el.classList.add('in'); });
-            }
-        })();
-    </script>
+    <!-- ─── Dual: Cleaning + Laundry ─────────────────────────── -->
+    <section class="dual">
+        <div class="wrap">
+            <div class="section-label">One product · two crafts</div>
+            <h2 class="section-title" style="margin-bottom: 28px;">Feels right for detergent days and disinfectant days.</h2>
+            <div class="dual-grid">
+                <div class="dual-card clean">
+                    <div class="icon">🧹</div>
+                    <h3>Cleaning</h3>
+                    <p>Homes, offices, deep cleans, move-ins — plus fumigation when that is part of your offer.</p>
+                    <ul>
+                        <li>Rooms &amp; property</li>
+                        <li>Fumigation scope</li>
+                        <li>Staff &amp; materials cost</li>
+                        <li>Job notes</li>
+                    </ul>
+                </div>
+                <div class="dual-card laundry">
+                    <div class="icon">👕</div>
+                    <h3>Laundry</h3>
+                    <p>Counter drop-offs, item counts, prices that add up, and a clear "collected" when they pick up.</p>
+                    <ul>
+                        <li>Item · qty · price</li>
+                        <li>Status to collected</li>
+                        <li>WhatsApp updates</li>
+                        <li>Price list memory</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <script>
-    (function () {
-      if (!('serviceWorker' in navigator)) return;
-      window.addEventListener('load', function () {
-        navigator.serviceWorker.register('/sw.js').catch(function () {});
-      });
-    })();
-    </script>
-</body>
-</html>
+    <!-- ─── Timeline ──────────────────────────────────────────── -->
+    <section class="day">
+        <div class="wrap">
+            <div class="section-label">A day with CleanCrew</div>
+            <h2 class="section-title">From the first drop-off to the last number of the day.</h2>
+            <p class="section-lead">A simple story — the kind of day any market can recognise.</p>
+            <div class="timeline">
+                <div class="t-step">
+                    <div class="time">Morning</div>
+                    <h4>Work walks in</h4>
+                    <p>Log jobs fast. Cleaning, laundry, or both. No notebook scramble.</p>
+                </div>
+                <div class="t-step">
+                    <div class="time">Midday</div>
+                    <h4>Stay on top of status</h4>
+                    <p>See what is pending, in progress, ready, or waiting for pickup.</p>
+                </div>
+                <div class="t-step">
+                    <div class="time">Afternoon</div>
+                    <h4>Invoice &amp; follow up</h4>
+                    <p>Generate a PDF, record payment, nudge on WhatsApp when you need to.</p>
+                </div>
+                <div class="t-step">
+                    <div class="time">Evening</div>
+                    <h4>Know what you kept</h4>
+                    <p>Glance at the week revenue and direct profit before you close shop.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── Pricing ───────────────────────────────────────────── -->
+    <section class="pricing" id="pricing">
+        <div class="wrap">
+            <div class="price-box">
+                <div>
+                    <div class="section-label">Pricing</div>
+                    <h2>Start free. Grow when the work grows.</h2>
+                    <p>Twenty-five free jobs for the life of your account — not a short trial that vanishes. Buy credits when you are busy, or go unlimited when it makes sense. Amounts show in your local currency in the app.</p>
+                    <ul class="checks">
+                        <li><span>✓</span> Jobs, clients, invoices, inventory</li>
+                        <li><span>✓</span> Cleaning + laundry modes</li>
+                        <li><span>✓</span> Direct profit on jobs (owner view)</li>
+                        <li><span>✓</span> PDF invoices &amp; WhatsApp-friendly sharing</li>
+                    </ul>
+                </div>
+                <div class="price-side">
+                    <div style="font-size:12px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;opacity:0.8;">Free to start</div>
+                    <div class="big">25 jobs</div>
+                    <div class="sub">Lifetime · no card · prove it fits your shop</div>
+                    <a class="btn btn-primary" href="signup.html">Create your account</a>
+                    <div class="alt">Credits &amp; unlimited available inside the dashboard</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── CTA ────────────────────────────────────────────────── -->
+    <section class="cta-band">
+        <div class="wrap">
+            <div class="cta-inner">
+                <div>
+                    <h2>Give your jobs a proper home.</h2>
+                    <p>Cleaning and laundry businesses use CleanCrew to stay organised — from the first note at the counter to the profit at the end of the month.</p>
+                </div>
+                <div class="cta-actions">
+                    <a class="btn btn-primary btn-lg" href="signup.html">Start free</a>
+                    <a class="btn btn-ghost btn-lg" href="login.html">Log in</
