@@ -4227,7 +4227,7 @@
 }
         // Open an invoice in WhatsApp. The invoice currently stores the client name,
         // not the client's phone, so resolve the phone from the Clients table.
-        async async function shareInvoiceWhatsApp(id) {
+        async function shareInvoiceWhatsApp(id) {
             try {
                 var inv = invoicesData.find(function(x) { return x.id === id; });
                 if (!inv) { showToast('Invoice not found', 'error'); return; }
