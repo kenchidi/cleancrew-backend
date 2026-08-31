@@ -4792,43 +4792,32 @@
                 (typeof hasOwnerPin !== 'undefined' && !hasOwnerPin);
 
             if (!ownerOk) {
-                el.innerHTML = '<div class="profit-report-locked">🔒 Unlock revenue with your owner PIN to see profit, the 7-day chart, and work calendar money views.<br><span style="font-size:12px;opacity:0.85">Work activity calendar stays available after unlock.</span></div>';
+                el.innerHTML = '<div class="profit-report-locked">🔒 Unlock revenue to see profit. Tap the lock on the Revenue card.</div>';
                 return;
             }
 
-            // Restore full structure if we replaced with locked message
-            if (!document.getElementById('prMonthProfit') || !document.getElementById('revBars') || !document.getElementById('workCalCard')) {
+            if (!document.getElementById('prMonthProfit') || !document.getElementById('workCalCard')) {
                 el.innerHTML =
-                    '<div class="profit-report-top">' +
-                    '<div class="profit-hero" id="profitHero">' +
-                    '<div class="ph-label">This month · direct profit</div>' +
-                    '<div class="ph-value" id="prMonthProfit">—</div>' +
-                    '<div class="ph-meta"><span>Revenue <strong id="prMonthRevenue">—</strong></span>' +
-                    '<span>Costs <strong id="prMonthCosts">—</strong></span></div></div>' +
-                    '<div class="profit-report-card" id="profitReportYear"><h4>This year</h4>' +
-                    '<div class="profit-report-row"><span>Revenue</span><strong id="prYearRevenue">—</strong></div>' +
-                    '<div class="profit-report-row"><span>Costs</span><strong id="prYearCosts">—</strong></div>' +
-                    '<div class="profit-report-row total"><span>Profit</span><strong id="prYearProfit">—</strong></div>' +
-                    '<p class="profit-report-note" id="prYearNote"></p></div>' +
-                    '<div class="profit-report-card"><h4>This month snapshot</h4>' +
-                    '<div class="profit-report-row"><span>Jobs done</span><strong id="prMonthJobs">—</strong></div>' +
-                    '<div class="profit-report-row"><span>With costs logged</span><strong id="prMonthWithCosts">—</strong></div>' +
-                    '<p class="profit-report-note" id="prMonthNote"></p></div></div>' +
-                    '<div class="rev-cal-row"><div class="rev-chart-card"><h4>Last 7 days · revenue</h4>' +
-                    '<p class="rev-chart-sub" id="revChartSub">Completed jobs in current mode</p>' +
-                    '<div class="rev-bars" id="revBars"></div>' +
-                    '<div class="rev-chart-foot" id="revChartFoot"></div></div>' +
+                    '<div class="profit-simple" id="profitSimple">' +
+                    '<div class="ps-main"><span class="ps-label">This month profit</span>' +
+                    '<span class="ps-value" id="prMonthProfit">—</span>' +
+                    '<span class="ps-sub">Revenue <strong id="prMonthRevenue">—</strong> · Costs <strong id="prMonthCosts">—</strong></span></div>' +
+                    '<div class="ps-side"><span class="ps-label">This year</span>' +
+                    '<span class="ps-value sm" id="prYearProfit">—</span></div>' +
+                    '<span id="prYearRevenue" class="sr-only">—</span><span id="prYearCosts" class="sr-only">—</span>' +
+                    '<span id="prMonthJobs" class="sr-only">—</span><span id="prMonthWithCosts" class="sr-only">—</span>' +
+                    '<span id="prMonthNote" class="sr-only"></span><span id="prYearNote" class="sr-only"></span></div>' +
                     '<div class="work-cal-card is-collapsed" id="workCalCard">' +
                     '<button type="button" class="work-cal-toggle" onclick="toggleWorkCal()" aria-expanded="false" id="workCalToggleBtn">' +
                     '<span><div class="work-cal-toggle-title">Work calendar</div>' +
-                    '<div class="work-cal-toggle-meta" id="workCalSub">Jobs this month · tap to open</div></span>' +
+                    '<div class="work-cal-toggle-meta" id="workCalSub">Tap to open</div></span>' +
                     '<span class="work-cal-chevron" aria-hidden="true">▼</span></button>' +
                     '<div class="work-cal-body" id="workCalBody">' +
                     '<div class="work-cal-nav"><button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation();shiftWorkCal(-1)">←</button>' +
                     '<strong id="workCalTitle">—</strong>' +
                     '<button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation();shiftWorkCal(1)">→</button></div>' +
                     '<div class="work-cal-grid" id="workCalGrid"></div>' +
-                    '<div class="work-cal-detail is-empty" id="workCalDetail"></div></div></div></div>';
+                    '<div class="work-cal-detail is-empty" id="workCalDetail"></div></div></div>';
             }
 
             var now = new Date();
@@ -4883,7 +4872,7 @@
                 chartSub.textContent = 'Completed ' + modeLabel + ' jobs only';
             }
 
-            renderWeekRevenueBars(modeJobs);
+            if (document.getElementById("revBars") && typeof renderWeekRevenueBars === "function") renderWeekRevenueBars(modeJobs);
             renderWorkCalendar(modeJobs);
         }
 
