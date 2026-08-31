@@ -4384,26 +4384,47 @@ app.post(
                 settings?.email ||
                 '';
 
-            // HEADER
-            doc.setFontSize(24);
+            // Soft page background (not plain white)
+            doc.setFillColor(245, 249, 255);
+            doc.rect(0, 0, pageWidth, doc.internal.pageSize.getHeight(), 'F');
+
+            // Top brand bar
+            doc.setFillColor(15, 79, 168);
+            doc.rect(0, 0, pageWidth, 28, 'F');
+            doc.setFillColor(14, 116, 144);
+            doc.rect(pageWidth * 0.55, 0, pageWidth * 0.45, 28, 'F');
+
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(255, 255, 255);
+            doc.text(String(businessName).substring(0, 48), margin, 17);
+
+            y = 40;
+
+            // HEADER card
+            doc.setFillColor(255, 255, 255);
+            doc.setDrawColor(214, 230, 250);
+            doc.roundedRect(margin - 4, y - 8, pageWidth - margin * 2 + 8, 36, 3, 3, 'FD');
+
+            doc.setFontSize(18);
             doc.setFont(
                 'helvetica',
                 'bold'
             );
 
             doc.setTextColor(
-                26,
-                109,
-                219
+                15,
+                79,
+                168
             );
 
             doc.text(
                 businessName,
                 margin,
-                y
+                y + 4
             );
 
-            y += 10;
+            y += 14;
 
             doc.setFontSize(10);
 
@@ -4468,8 +4489,11 @@ app.post(
 
             y += 10;
 
-            // INVOICE TITLE
-            doc.setFontSize(20);
+            // INVOICE TITLE band
+            doc.setFillColor(235, 243, 254);
+            doc.roundedRect(margin - 4, y - 6, pageWidth - margin * 2 + 8, 16, 2, 2, 'F');
+
+            doc.setFontSize(16);
 
             doc.setFont(
                 'helvetica',
@@ -4477,16 +4501,17 @@ app.post(
             );
 
             doc.setTextColor(
-                26,
-                109,
-                219
+                15,
+                79,
+                168
             );
 
             doc.text(
                 'INVOICE',
                 margin,
-                y
+                y + 5
             );
+            y += 8;
 
             const invoiceNumber =
                 invoice.number ||

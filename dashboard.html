@@ -2349,6 +2349,81 @@
             display: none !important;
         }
 
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .sidebar-brand-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+            min-width: 0;
+        }
+        .sidebar-brand-text strong {
+            font-size: 14px;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            color: var(--ink);
+            line-height: 1.2;
+            word-break: break-word;
+        }
+        .sidebar-brand-text strong.is-placeholder {
+            color: var(--slate);
+            font-weight: 700;
+            font-size: 12px;
+        }
+        .sidebar-name-hint {
+            border: none;
+            background: none;
+            padding: 0;
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--blue);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        /* Landing-inspired soft surfaces */
+        body {
+            background:
+                radial-gradient(ellipse 60% 40% at 10% 0%, rgba(26, 109, 219, 0.07), transparent 55%),
+                radial-gradient(ellipse 50% 35% at 90% 10%, rgba(14, 116, 144, 0.06), transparent 50%),
+                var(--surface);
+        }
+        .stat-card.primary {
+            background: linear-gradient(160deg, #EFF6FF 0%, #FFFFFF 55%);
+        }
+        .stat-card.green {
+            background: linear-gradient(160deg, #ECFDF5 0%, #FFFFFF 55%);
+        }
+        .stat-card.orange {
+            background: linear-gradient(160deg, #FFFBEB 0%, #FFFFFF 55%);
+        }
+        .profit-hero {
+            background: linear-gradient(145deg, #0F172A 0%, #0C4A6E 50%, #0B3B2E 100%) !important;
+        }
+        .rev-chart-card {
+            background: linear-gradient(180deg, #F8FBFF 0%, #FFFFFF 40%);
+            border-color: #D6E6FA;
+        }
+        .work-cal-card {
+            background: linear-gradient(180deg, #F0FDFA 0%, #FFFFFF 45%);
+            border-color: #CFFAFE;
+        }
+        /* Mode-tinted panels */
+        body.mode-cleaning .card {
+            border-color: #E2EBF8;
+        }
+        body.mode-laundry .card {
+            border-color: #D5F5F6;
+        }
+        body.mode-laundry .stat-card.primary {
+            background: linear-gradient(160deg, #ECFEFF 0%, #FFFFFF 55%);
+        }
+
         /* Soften redesign sidebar if present — keep consistent */
         .sidebar {
             box-shadow: 4px 0 24px rgba(11,21,38,0.04);
@@ -2439,7 +2514,10 @@
                         <g transform="translate(68,46)"><path d="M0,-9 L1.6,-1.6 L9,0 L1.6,1.6 L0,9 L-1.6,1.6 L-9,0 L-1.6,-1.6 Z" fill="white"/></g>
                     </svg>
                 </span>
-                CleanCrew
+                <div class="sidebar-brand-text">
+                    <strong id="sidebarBusinessName">Set your business name</strong>
+                    <button type="button" class="sidebar-name-hint" id="sidebarNameHint" onclick="switchTab('settings')">in Settings</button>
+                </div>
             </div>
             <nav class="nav-links" id="sidebarNav">
                 <button type="button" class="active" data-tab="overview" onclick="switchTab('overview')">
@@ -2981,8 +3059,8 @@
                         <p style="font-size:12px;color:var(--slate);margin-top:6px;">Ghana accounts see prices in cedis and pay via MTN MoMo. Nigeria uses Paystack (₦).</p>
                     </div>
                     <hr style="border: none; border-top: 1px solid var(--border); margin: 18px 0;" />
-                    <h4 style="font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;color:var(--slate);margin:0 0 12px;">Business on invoices (PDF)</h4>
-                    <p style="font-size:12px;color:var(--slate);margin:0 0 12px;">These details appear on generated invoice PDFs so clients know who to pay.</p>
+                    <h4 style="font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;color:var(--slate);margin:0 0 12px;">Business profile</h4>
+                    <p style="font-size:12px;color:var(--slate);margin:0 0 12px;">Your business name appears on the dashboard, invoice PDFs, and WhatsApp messages. One profile everywhere.</p>
                     <div class="form-group">
                         <label>Business Name</label>
                         <input type="text" id="settingsBusinessName" placeholder="e.g. CleanCrew Laundry & Cleaning" />
@@ -3623,6 +3701,11 @@
         }
 
         function syncServiceTypeUI(type) {
+            try {
+                document.body.classList.remove('mode-cleaning', 'mode-laundry');
+                document.body.classList.add(type === 'laundry' ? 'mode-laundry' : 'mode-cleaning');
+            } catch (e) {}
+
             if (type !== 'cleaning' && type !== 'laundry') type = 'cleaning';
             document.querySelectorAll('.service-toggle button').forEach(function(btn) {
                 var isMatch = btn.classList.contains(type);
@@ -4142,12 +4225,31 @@
         // ─── INVOICE SETTINGS ─────────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
 
+
+        function applyBusinessProfile(name) {
+            name = (name || '').trim();
+            var el = document.getElementById('sidebarBusinessName');
+            var hint = document.getElementById('sidebarNameHint');
+            if (el) {
+                el.textContent = name || 'Set your business name';
+                el.classList.toggle('is-placeholder', !name);
+            }
+            if (hint) hint.style.display = name ? 'none' : '';
+            try {
+                if (name) localStorage.setItem('cleancrew_business_name', name);
+                else localStorage.removeItem('cleancrew_business_name');
+            } catch (e) {}
+        }
+
+        try { applyBusinessProfile(localStorage.getItem('cleancrew_business_name') || ''); } catch (e) {}
+
         async function loadInvoiceSettings() {
             try {
                 const res = await fetch(`${API_URL}/invoice-settings`, { headers: getHeaders() });
                 const data = await res.json();
                 if (data) {
                     document.getElementById('settingsBusinessName').value = data.business_name || '';
+                    applyBusinessProfile(data.business_name || '');
                     document.getElementById('settingsBusinessAddress').value = data.business_address || '';
                     document.getElementById('settingsPhone').value = data.phone || '';
                     document.getElementById('settingsEmail').value = data.email || '';
@@ -4181,7 +4283,8 @@
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    showToast('✅ Invoice settings saved successfully', 'success');
+                    applyBusinessProfile(payload.business_name);
+                    showToast('Business profile saved', 'success');
                 } else {
                     showToast(data.error || 'Failed to save settings', 'error');
                 }
