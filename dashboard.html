@@ -3896,6 +3896,9 @@
             });
             var target = document.getElementById('tab-' + tab);
             if (target) target.classList.add('active');
+            if (tab === 'settings') {
+                try { loadInvoiceSettings(); } catch (e) {}
+            }
 
             document.querySelectorAll('.nav-tabs button').forEach(function(el) {
                 el.classList.remove('active');
@@ -4360,13 +4363,26 @@
             var fb = document.getElementById('sidebarLogoFallback');
             if (img && wrap) {
                 if (logoUrl) {
+                    img.onload = function() {
+                        img.style.display = 'block';
+                        wrap.classList.add('has-logo');
+                        if (fb) fb.style.display = 'none';
+                    };
+                    img.onerror = function() {
+                        console.warn('Logo failed to load');
+                        img.style.display = 'none';
+                        wrap.classList.remove('has-logo');
+                        if (fb) fb.style.display = '';
+                    };
+                    img.removeAttribute('hidden');
                     img.src = logoUrl;
-                    img.hidden = false;
+                    img.style.display = 'block';
                     wrap.classList.add('has-logo');
                     if (fb) fb.style.display = 'none';
                 } else {
                     img.removeAttribute('src');
-                    img.hidden = true;
+                    img.setAttribute('hidden', '');
+                    img.style.display = 'none';
                     wrap.classList.remove('has-logo');
                     if (fb) fb.style.display = '';
                 }
@@ -4468,21 +4484,47 @@
 
         async function loadInvoiceSettings() {
             try {
+                var localName = '';
+                var localLogo = '';
+                try {
+                    localName = localStorage.getItem('cleancrew_business_name') || '';
+                    localLogo = localStorage.getItem('cleancrew_business_logo') || '';
+                } catch (e0) {}
+
                 const res = await fetch(`${API_URL}/invoice-settings`, { headers: getHeaders() });
-                const data = await res.json();
+                const data = await res.json().catch(function() { return {}; });
+                if (!res.ok) {
+                    console.warn('invoice-settings load failed', data);
+                    applyBusinessProfile(localName, localLogo);
+                    return;
+                }
                 if (data) {
-                    document.getElementById('settingsBusinessName').value = data.business_name || '';
-                    applyBusinessProfile(data.business_name || '', data.logo_url || '');
-                    document.getElementById('settingsBusinessAddress').value = data.business_address || '';
-                    document.getElementById('settingsPhone').value = data.phone || '';
-                    document.getElementById('settingsEmail').value = data.email || '';
-                    document.getElementById('settingsBankName').value = data.bank_name || '';
-                    document.getElementById('settingsAccountName').value = data.account_name || '';
-                    document.getElementById('settingsAccountNumber').value = data.account_number || '';
-                    document.getElementById('settingsPaymentWhatsapp').value = data.payment_whatsapp || '';
+                    var name = data.business_name || localName || '';
+                    var logo = data.logo_url || localLogo || '';
+                    var set = function(id, val) {
+                        var el = document.getElementById(id);
+                        if (el) el.value = val || '';
+                    };
+                    set('settingsBusinessName', name);
+                    set('settingsBusinessAddress', data.business_address);
+                    set('settingsPhone', data.phone);
+                    set('settingsEmail', data.email);
+                    set('settingsBankName', data.bank_name);
+                    set('settingsAccountName', data.account_name);
+                    set('settingsAccountNumber', data.account_number);
+                    set('settingsPaymentWhatsapp', data.payment_whatsapp);
+                    applyBusinessProfile(name, logo);
+                } else {
+                    applyBusinessProfile(localName, localLogo);
                 }
             } catch (e) {
                 console.error('Failed to load invoice settings:', e);
+                try {
+                    applyBusinessProfile(
+                        localStorage.getItem('cleancrew_business_name') || '',
+                        localStorage.getItem('cleancrew_business_logo') || ''
+                    );
+                } catch (e2) {}
             }
         }
 
@@ -4505,15 +4547,24 @@
                     headers: getHeaders(),
                     body: JSON.stringify(payload)
                 });
-                const data = await res.json();
+                const data = await res.json().catch(function() { return {}; });
                 if (res.ok) {
-                    applyBusinessProfile(payload.business_name, payload.logo_url);
+                    var savedLogo = (data && data.logo_url) || payload.logo_url || '';
+                    var savedName = (data && data.business_name) || payload.business_name || '';
+                    applyBusinessProfile(savedName, savedLogo);
                     showToast('Business profile saved', 'success');
                 } else {
-                    showToast(data.error || 'Failed to save settings', 'error');
+                    var err = (data && data.error) || 'Failed to save settings';
+                    if (/logo_url|column/i.test(err)) {
+                        err = 'Save failed: run SQL to add logo_url column on invoice_settings, then try again.';
+                    }
+                    // Keep logo locally even if server rejected
+                    applyBusinessProfile(payload.business_name, payload.logo_url);
+                    showToast(err, 'error');
                 }
             } catch (e) {
-                showToast('Failed to save settings', 'error');
+                applyBusinessProfile(payload.business_name, payload.logo_url);
+                showToast('Failed to save settings — check connection', 'error');
             }
         }
 
@@ -7381,6 +7432,7 @@
             checkPaystackReturn();
             refreshCredits();
             refreshFreeJobs();
+            loadInvoiceSettings();
             renderAll();
         }
 
