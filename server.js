@@ -4246,6 +4246,7 @@ app.post(
                 account_name: body.account_name != null ? String(body.account_name).trim() : '',
                 account_number: body.account_number != null ? String(body.account_number).trim() : '',
                 payment_whatsapp: body.payment_whatsapp != null ? String(body.payment_whatsapp).trim() : '',
+                logo_url: body.logo_url != null ? String(body.logo_url).trim() : '',
                 updated_at: new Date().toISOString()
             };
 

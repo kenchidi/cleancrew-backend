@@ -2418,6 +2418,59 @@
             align-items: center;
             gap: 12px;
         }
+        
+        .sidebar-logo-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            border-radius: 10px;
+        }
+        .sidebar-header .mark {
+            overflow: hidden;
+        }
+        .sidebar-header .mark.has-logo {
+            background: #fff;
+            box-shadow: 0 0 0 1px var(--border);
+        }
+        .sidebar-header .mark.has-logo svg { display: none; }
+        .logo-upload-row {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .logo-preview-wrap {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .logo-preview-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .logo-preview-wrap span {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--slate);
+        }
+        .logo-upload-actions {
+            flex: 1;
+            min-width: 180px;
+        }
+        .logo-upload-hint {
+            margin: 8px 0 0;
+            font-size: 12px;
+            color: var(--slate);
+        }
+
         .sidebar-brand-text {
             display: flex;
             flex-direction: column;
@@ -3112,7 +3165,23 @@
                     <p style="font-size:12px;color:var(--slate);margin:0 0 12px;">Your business name appears on the dashboard, invoice PDFs, and WhatsApp messages. One profile everywhere.</p>
                     <div class="form-group">
                         <label>Business Name</label>
-                        <input type="text" id="settingsBusinessName" placeholder="e.g. CleanCrew Laundry & Cleaning" />
+                        <input type="text" id="settingsBusinessName" placeholder="e.g. Sparkle Laundry" />
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Business logo</label>
+                        <div class="logo-upload-row">
+                            <div class="logo-preview-wrap">
+                                <img id="settingsLogoPreview" alt="Logo preview" hidden />
+                                <span id="settingsLogoPlaceholder">No logo</span>
+                            </div>
+                            <div class="logo-upload-actions">
+                                <input type="file" id="settingsLogoFile" accept="image/png,image/jpeg,image/webp" hidden />
+                                <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('settingsLogoFile').click()">Upload logo</button>
+                                <button type="button" class="btn btn-outline btn-sm" id="settingsLogoClearBtn" onclick="clearBusinessLogo()" style="display:none;">Remove</button>
+                                <input type="hidden" id="settingsLogoUrl" value="" />
+                                <p class="logo-upload-hint">Square PNG or JPG works best. Shown before your name on the dashboard.</p>
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Business Address</label>
@@ -4275,8 +4344,9 @@
         // ─── ──────────────────────────────────────────────────────
 
 
-        function applyBusinessProfile(name) {
+        function applyBusinessProfile(name, logoUrl) {
             name = (name || '').trim();
+            logoUrl = (logoUrl != null ? String(logoUrl) : '').trim();
             var el = document.getElementById('sidebarBusinessName');
             var hint = document.getElementById('sidebarNameHint');
             if (el) {
@@ -4284,13 +4354,117 @@
                 el.classList.toggle('is-placeholder', !name);
             }
             if (hint) hint.style.display = name ? 'none' : '';
+
+            var img = document.getElementById('sidebarLogo');
+            var wrap = document.getElementById('sidebarLogoWrap');
+            var fb = document.getElementById('sidebarLogoFallback');
+            if (img && wrap) {
+                if (logoUrl) {
+                    img.src = logoUrl;
+                    img.hidden = false;
+                    wrap.classList.add('has-logo');
+                    if (fb) fb.style.display = 'none';
+                } else {
+                    img.removeAttribute('src');
+                    img.hidden = true;
+                    wrap.classList.remove('has-logo');
+                    if (fb) fb.style.display = '';
+                }
+            }
+
+            var prev = document.getElementById('settingsLogoPreview');
+            var ph = document.getElementById('settingsLogoPlaceholder');
+            var hidden = document.getElementById('settingsLogoUrl');
+            var clearBtn = document.getElementById('settingsLogoClearBtn');
+            if (hidden) hidden.value = logoUrl || '';
+            if (prev && ph) {
+                if (logoUrl) {
+                    prev.src = logoUrl;
+                    prev.hidden = false;
+                    ph.hidden = true;
+                } else {
+                    prev.removeAttribute('src');
+                    prev.hidden = true;
+                    ph.hidden = false;
+                }
+            }
+            if (clearBtn) clearBtn.style.display = logoUrl ? '' : 'none';
+
             try {
                 if (name) localStorage.setItem('cleancrew_business_name', name);
                 else localStorage.removeItem('cleancrew_business_name');
+                if (logoUrl) localStorage.setItem('cleancrew_business_logo', logoUrl);
+                else localStorage.removeItem('cleancrew_business_logo');
             } catch (e) {}
         }
 
-        try { applyBusinessProfile(localStorage.getItem('cleancrew_business_name') || ''); } catch (e) {}
+        function clearBusinessLogo() {
+            applyBusinessProfile(
+                (document.getElementById('settingsBusinessName') || {}).value || '',
+                ''
+            );
+        }
+
+        function compressLogoFile(file) {
+            return new Promise(function(resolve, reject) {
+                if (!file || !file.type || file.type.indexOf('image/') !== 0) {
+                    reject(new Error('Choose an image file'));
+                    return;
+                }
+                if (file.size > 4 * 1024 * 1024) {
+                    reject(new Error('Image must be under 4MB'));
+                    return;
+                }
+                var reader = new FileReader();
+                reader.onerror = function() { reject(new Error('Could not read image')); };
+                reader.onload = function() {
+                    var image = new Image();
+                    image.onload = function() {
+                        var max = 256;
+                        var w = image.width;
+                        var h = image.height;
+                        var scale = Math.min(1, max / Math.max(w, h));
+                        var cw = Math.max(1, Math.round(w * scale));
+                        var ch = Math.max(1, Math.round(h * scale));
+                        var canvas = document.createElement('canvas');
+                        canvas.width = cw;
+                        canvas.height = ch;
+                        var ctx = canvas.getContext('2d');
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, cw, ch);
+                        ctx.drawImage(image, 0, 0, cw, ch);
+                        var dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                        if (dataUrl.length > 350000) {
+                            dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        }
+                        resolve(dataUrl);
+                    };
+                    image.onerror = function() { reject(new Error('Invalid image')); };
+                    image.src = reader.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        document.addEventListener('change', function(e) {
+            if (!e.target || e.target.id !== 'settingsLogoFile') return;
+            var file = e.target.files && e.target.files[0];
+            if (!file) return;
+            compressLogoFile(file)
+                .then(function(dataUrl) {
+                    var name = (document.getElementById('settingsBusinessName') || {}).value || '';
+                    applyBusinessProfile(name, dataUrl);
+                    showToast('Logo ready — tap Save to keep it', 'success');
+                })
+                .catch(function(err) {
+                    showToast((err && err.message) || 'Could not use image', 'error');
+                })
+                .finally(function() {
+                    e.target.value = '';
+                });
+        });
+
+        try { applyBusinessProfile(localStorage.getItem('cleancrew_business_name') || '', localStorage.getItem('cleancrew_business_logo') || ''); } catch (e) {}
 
         async function loadInvoiceSettings() {
             try {
@@ -4298,7 +4472,7 @@
                 const data = await res.json();
                 if (data) {
                     document.getElementById('settingsBusinessName').value = data.business_name || '';
-                    applyBusinessProfile(data.business_name || '');
+                    applyBusinessProfile(data.business_name || '', data.logo_url || '');
                     document.getElementById('settingsBusinessAddress').value = data.business_address || '';
                     document.getElementById('settingsPhone').value = data.phone || '';
                     document.getElementById('settingsEmail').value = data.email || '';
@@ -4322,7 +4496,8 @@
                 bank_name: document.getElementById('settingsBankName').value.trim(),
                 account_name: document.getElementById('settingsAccountName').value.trim(),
                 account_number: document.getElementById('settingsAccountNumber').value.trim(),
-                payment_whatsapp: document.getElementById('settingsPaymentWhatsapp').value.trim()
+                payment_whatsapp: document.getElementById('settingsPaymentWhatsapp').value.trim(),
+                logo_url: (document.getElementById('settingsLogoUrl') && document.getElementById('settingsLogoUrl').value) || ''
             };
             try {
                 const res = await fetch(`${API_URL}/invoice-settings`, {
@@ -4332,7 +4507,7 @@
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    applyBusinessProfile(payload.business_name);
+                    applyBusinessProfile(payload.business_name, payload.logo_url);
                     showToast('Business profile saved', 'success');
                 } else {
                     showToast(data.error || 'Failed to save settings', 'error');
