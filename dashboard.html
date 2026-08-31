@@ -1448,6 +1448,69 @@
         .job-cost-locked {
             font-size: 13px; color: var(--slate); padding: 10px 0 0;
         }
+        
+        .profit-simple {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: stretch;
+            margin-bottom: 10px;
+        }
+        .ps-main, .ps-side {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px 18px;
+            box-shadow: var(--shadow-sm);
+        }
+        .ps-main {
+            flex: 1.4;
+            min-width: 200px;
+            background: linear-gradient(145deg, #0F172A 0%, #0C4A6E 100%);
+            color: #fff;
+            border: none;
+        }
+        .ps-side {
+            flex: 0.8;
+            min-width: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .ps-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.75;
+            margin-bottom: 6px;
+        }
+        .ps-side .ps-label { color: var(--slate); opacity: 1; }
+        .ps-value {
+            display: block;
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+        }
+        .ps-value.sm { font-size: 22px; color: var(--green); }
+        .ps-sub {
+            display: block;
+            margin-top: 8px;
+            font-size: 12px;
+            opacity: 0.85;
+        }
+        .ps-sub strong { color: #fff; font-weight: 800; }
+        .sr-only {
+            position: absolute;
+            width: 1px; height: 1px;
+            padding: 0; margin: -1px;
+            overflow: hidden;
+            clip: rect(0,0,0,0);
+            border: 0;
+        }
+
         .profit-report {
             display: flex;
             flex-direction: column;
@@ -2714,53 +2777,39 @@
             </div>
 
             <div class="profit-report" id="profitReport">
-                <div class="profit-report-top">
-                    <div class="profit-hero" id="profitHero">
-                        <div class="ph-label">This month · direct profit</div>
-                        <div class="ph-value" id="prMonthProfit">—</div>
-                        <div class="ph-meta">
-                            <span>Revenue <strong id="prMonthRevenue">—</strong></span>
-                            <span>Costs <strong id="prMonthCosts">—</strong></span>
-                        </div>
+                <div class="profit-simple" id="profitSimple">
+                    <div class="ps-main">
+                        <span class="ps-label">This month profit</span>
+                        <span class="ps-value" id="prMonthProfit">—</span>
+                        <span class="ps-sub">Revenue <strong id="prMonthRevenue">—</strong> · Costs <strong id="prMonthCosts">—</strong></span>
                     </div>
-                    <div class="profit-report-card" id="profitReportYear">
-                        <h4>This year</h4>
-                        <div class="profit-report-row"><span>Revenue</span><strong id="prYearRevenue">—</strong></div>
-                        <div class="profit-report-row"><span>Costs</span><strong id="prYearCosts">—</strong></div>
-                        <div class="profit-report-row total"><span>Profit</span><strong id="prYearProfit">—</strong></div>
-                        <p class="profit-report-note" id="prYearNote">Completed jobs · this mode</p>
+                    <div class="ps-side">
+                        <span class="ps-label">This year</span>
+                        <span class="ps-value sm" id="prYearProfit">—</span>
                     </div>
-                    <div class="profit-report-card">
-                        <h4>This month snapshot</h4>
-                        <div class="profit-report-row"><span>Jobs done</span><strong id="prMonthJobs">—</strong></div>
-                        <div class="profit-report-row"><span>With costs logged</span><strong id="prMonthWithCosts">—</strong></div>
-                        <p class="profit-report-note" id="prMonthNote">Missing costs count as ₦0 on profit.</p>
-                    </div>
+                    <span id="prYearRevenue" class="sr-only">—</span>
+                    <span id="prYearCosts" class="sr-only">—</span>
+                    <span id="prMonthJobs" class="sr-only">—</span>
+                    <span id="prMonthWithCosts" class="sr-only">—</span>
+                    <span id="prMonthNote" class="sr-only"></span>
+                    <span id="prYearNote" class="sr-only"></span>
                 </div>
-                <div class="rev-cal-row">
-                    <div class="rev-chart-card">
-                        <h4>Last 7 days · revenue</h4>
-                        <p class="rev-chart-sub" id="revChartSub">Completed jobs in current mode</p>
-                        <div class="rev-bars" id="revBars"></div>
-                        <div class="rev-chart-foot" id="revChartFoot">Tap overview after completing jobs to refresh.</div>
-                    </div>
-                    <div class="work-cal-card is-collapsed" id="workCalCard">
-                        <button type="button" class="work-cal-toggle" onclick="toggleWorkCal()" aria-expanded="false" id="workCalToggleBtn">
-                            <span>
-                                <div class="work-cal-toggle-title">Work calendar</div>
-                                <div class="work-cal-toggle-meta" id="workCalSub">Jobs this month · tap to open</div>
-                            </span>
-                            <span class="work-cal-chevron" aria-hidden="true">▼</span>
-                        </button>
-                        <div class="work-cal-body" id="workCalBody">
-                            <div class="work-cal-nav">
-                                <button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation();shiftWorkCal(-1)">←</button>
-                                <strong id="workCalTitle">—</strong>
-                                <button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation();shiftWorkCal(1)">→</button>
-                            </div>
-                            <div class="work-cal-grid" id="workCalGrid"></div>
-                            <div class="work-cal-detail is-empty" id="workCalDetail"></div>
+                <div class="work-cal-card is-collapsed" id="workCalCard">
+                    <button type="button" class="work-cal-toggle" onclick="toggleWorkCal()" aria-expanded="false" id="workCalToggleBtn">
+                        <span>
+                            <div class="work-cal-toggle-title">Work calendar</div>
+                            <div class="work-cal-toggle-meta" id="workCalSub">Tap to open</div>
+                        </span>
+                        <span class="work-cal-chevron" aria-hidden="true">▼</span>
+                    </button>
+                    <div class="work-cal-body" id="workCalBody">
+                        <div class="work-cal-nav">
+                            <button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation();shiftWorkCal(-1)">←</button>
+                            <strong id="workCalTitle">—</strong>
+                            <button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation();shiftWorkCal(1)">→</button>
                         </div>
+                        <div class="work-cal-grid" id="workCalGrid"></div>
+                        <div class="work-cal-detail is-empty" id="workCalDetail"></div>
                     </div>
                 </div>
             </div>
