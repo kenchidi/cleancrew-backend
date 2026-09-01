@@ -1449,6 +1449,37 @@
             font-size: 13px; color: var(--slate); padding: 10px 0 0;
         }
         
+        
+        .dash-greeting {
+            margin: 0 0 16px;
+            padding: 4px 2px 8px;
+        }
+        .dash-greeting h2 {
+            margin: 0 0 4px;
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            color: var(--ink);
+            line-height: 1.25;
+        }
+        .dash-greeting p .linkish,
+        .dash-greeting .linkish {
+            border: none;
+            background: none;
+            padding: 0;
+            font: inherit;
+            font-weight: 800;
+            color: var(--blue);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .dash-greeting p {
+            margin: 0;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--slate);
+        }
+
         .profit-simple {
             display: flex;
             flex-wrap: wrap;
@@ -2797,6 +2828,11 @@
 
         <!-- ════ OVERVIEW TAB ════ -->
         <div class="tab-content active" id="tab-overview">
+
+        <div class="dash-greeting" id="dashGreeting">
+            <h2 id="dashGreetingTitle">Good day</h2>
+            <p id="dashGreetingSub">Your workspace is ready.</p>
+        </div>
 
         <div class="demo-strip" id="demoStrip">
             <div>
@@ -4378,6 +4414,33 @@
         // ─── ──────────────────────────────────────────────────────
 
 
+
+        function timeOfDayGreeting() {
+            var h = new Date().getHours();
+            if (h < 12) return 'Good morning';
+            if (h < 17) return 'Good afternoon';
+            return 'Good evening';
+        }
+
+        function updateDashGreeting(businessName) {
+            var title = document.getElementById('dashGreetingTitle');
+            var sub = document.getElementById('dashGreetingSub');
+            if (!title) return;
+            var name = (businessName || '').trim();
+            if (!name) {
+                try { name = localStorage.getItem('cleancrew_business_name') || ''; } catch (e) {}
+            }
+            name = (name || '').trim();
+            var hello = timeOfDayGreeting();
+            if (name) {
+                title.textContent = hello + ', ' + name;
+                sub.textContent = 'Here is how your business is doing today.';
+            } else {
+                title.textContent = hello;
+                sub.innerHTML = 'Set your business name in <button type="button" class="linkish" onclick="switchTab(\'settings\')">Settings</button> to personalise this.';
+            }
+        }
+
         function applyBusinessProfile(name, logoUrl) {
             name = (name || '').trim();
             logoUrl = (logoUrl != null ? String(logoUrl) : '').trim();
@@ -4388,6 +4451,7 @@
                 el.classList.toggle('is-placeholder', !name);
             }
             if (hint) hint.style.display = name ? 'none' : '';
+            updateDashGreeting(name);
 
             var img = document.getElementById('sidebarLogo');
             var wrap = document.getElementById('sidebarLogoWrap');
@@ -7457,6 +7521,7 @@
         // ─── INIT ────────────────────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
         function init() {
+            updateDashGreeting();
             loadUserInfo();
             initRevenueLock();
             checkSubscription();
