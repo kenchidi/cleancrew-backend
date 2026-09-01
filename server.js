@@ -4422,13 +4422,12 @@ app.post(
 
             y = 40;
 
-            // HEADER card — logo + business name
-            const headerH = logoUrl ? 42 : 36;
-            doc.setFillColor(255, 255, 255);
-            doc.setDrawColor(214, 230, 250);
-            doc.roundedRect(margin - 4, y - 8, pageWidth - margin * 2 + 8, headerH, 3, 3, 'FD');
-
+            // HEADER card — logo left, name + contact stacked to the right (no overlap)
+            const logoSize = 28;
+            const headerTop = y;
             let textX = margin;
+            let logoDrawn = false;
+
             if (logoUrl) {
                 try {
                     let fmt = 'JPEG';
@@ -4460,94 +4459,60 @@ app.post(
                     if (!b64 || b64.length < 50) throw new Error('Logo data empty');
 
                     doc.setFillColor(255, 255, 255);
-                    doc.roundedRect(margin - 1, y - 5, 26, 26, 2, 2, 'F');
-
-                    // Try primary format, then alternate
+                    doc.roundedRect(margin - 1, headerTop - 2, logoSize + 2, logoSize + 2, 3, 3, 'F');
                     try {
-                        doc.addImage(b64, fmt, margin, y - 4, 24, 24);
+                        doc.addImage(b64, fmt, margin, headerTop, logoSize, logoSize);
                     } catch (e1) {
                         const alt = fmt === 'PNG' ? 'JPEG' : 'PNG';
-                        doc.addImage(b64, alt, margin, y - 4, 24, 24);
-                        fmt = alt;
+                        doc.addImage(b64, alt, margin, headerTop, logoSize, logoSize);
                     }
-                    textX = margin + 30;
+                    logoDrawn = true;
+                    textX = margin + logoSize + 8;
                     console.log('Invoice logo embedded OK', fmt, b64.length);
                 } catch (logoErr) {
                     console.warn('Invoice logo draw failed:', logoErr && logoErr.message ? logoErr.message : logoErr);
                     textX = margin;
+                    logoDrawn = false;
                 }
-            } else {
-                console.log('Invoice PDF: no logo_url (settings or body) for user', userId);
             }
 
+            // Business name beside logo
             doc.setFontSize(18);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(15, 79, 168);
-            doc.text(String(businessName).substring(0, 42), textX, y + 6);
+            doc.text(String(businessName).substring(0, 40), textX, headerTop + 8);
 
-            y += logoUrl ? 20 : 14;
-
-            doc.setFontSize(10);
-
-            doc.setFont(
-                'helvetica',
-                'normal'
-            );
-
-            doc.setTextColor(
-                100,
-                100,
-                100
-            );
+            // Contact lines under the name (same column as name — never under the logo)
+            let infoY = headerTop + 16;
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(90, 100, 120);
 
             if (address) {
-                doc.text(
-                    address,
-                    margin,
-                    y
-                );
-
-                y += 6;
+                const addrLines = doc.splitTextToSize(String(address), pageWidth - textX - margin);
+                addrLines.forEach(function (line) {
+                    doc.text(line, textX, infoY);
+                    infoY += 5;
+                });
             }
-
             if (phone) {
-                doc.text(
-                    `Phone: ${phone}`,
-                    margin,
-                    y
-                );
-
-                y += 6;
+                doc.text('Phone: ' + phone, textX, infoY);
+                infoY += 5;
             }
-
             if (email) {
-                doc.text(
-                    `Email: ${email}`,
-                    margin,
-                    y
-                );
-
-                y += 6;
+                doc.text('Email: ' + email, textX, infoY);
+                infoY += 5;
             }
 
-            y += 4;
+            // Next content starts below whichever is taller: logo or text block
+            const blockBottom = logoDrawn
+                ? Math.max(headerTop + logoSize, infoY)
+                : infoY;
+            y = blockBottom + 10;
 
-            doc.setDrawColor(
-                26,
-                109,
-                219
-            );
-
+            doc.setDrawColor(26, 109, 219);
             doc.setLineWidth(0.5);
-
-            doc.line(
-                margin,
-                y,
-                pageWidth -
-                    margin,
-                y
-            );
-
+            doc.line(margin, y, pageWidth - margin, y);
             y += 10;
 
             // INVOICE TITLE band
