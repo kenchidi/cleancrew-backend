@@ -12,7 +12,8 @@ const app = express();
 
 // ─── CORS ────────────────────────────────────────────────────
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '3mb' }));
+app.use(express.urlencoded({ extended: true, limit: '3mb' }));
 app.use(express.static(__dirname));
 
 // ─── SUPABASE ────────────────────────────────────────────────
@@ -4246,6 +4247,7 @@ app.post(
                 account_name: body.account_name != null ? String(body.account_name).trim() : '',
                 account_number: body.account_number != null ? String(body.account_number).trim() : '',
                 payment_whatsapp: body.payment_whatsapp != null ? String(body.payment_whatsapp).trim() : '',
+                terms_and_conditions: body.terms_and_conditions != null ? String(body.terms_and_conditions).trim() : '',
                 logo_url: body.logo_url != null ? String(body.logo_url).trim() : '',
                 updated_at: new Date().toISOString()
             };
@@ -4279,6 +4281,18 @@ app.post(
                     .single();
                 data = inserted.data;
                 error = inserted.error;
+            }
+
+            if (error && /logo_url|terms_and_conditions|column/i.test(error.message || '')) {
+                if (/logo_url/i.test(error.message || '')) delete payload.logo_url;
+                if (/terms_and_conditions/i.test(error.message || '')) delete payload.terms_and_conditions;
+                const retry = existing.data && existing.data.id
+                    ? await supabase.from('invoice_settings').update(payload).eq('user_id', userId).select().single()
+                    : await supabase.from('invoice_settings').upsert(payload, { onConflict: 'user_id' }).select().single();
+                if (retry.error) throw retry.error;
+                return res.json(Object.assign({}, retry.data || payload, {
+                    warning: 'logo_url column missing — run ALTER TABLE invoice_settings ADD COLUMN logo_url TEXT'
+                }));
             }
 
             if (error) {
@@ -4385,6 +4399,12 @@ app.post(
                 settings?.email ||
                 '';
 
+            // Prefer logo saved on settings; also accept body (client localStorage fallback)
+            const logoUrl =
+                (req.body && req.body.logo_url) ||
+                settings?.logo_url ||
+                '';
+
             // Soft page background (not plain white)
             doc.setFillColor(245, 249, 255);
             doc.rect(0, 0, pageWidth, doc.internal.pageSize.getHeight(), 'F');
@@ -4402,30 +4422,70 @@ app.post(
 
             y = 40;
 
-            // HEADER card
+            // HEADER card — logo + business name
+            const headerH = logoUrl ? 42 : 36;
             doc.setFillColor(255, 255, 255);
             doc.setDrawColor(214, 230, 250);
-            doc.roundedRect(margin - 4, y - 8, pageWidth - margin * 2 + 8, 36, 3, 3, 'FD');
+            doc.roundedRect(margin - 4, y - 8, pageWidth - margin * 2 + 8, headerH, 3, 3, 'FD');
+
+            let textX = margin;
+            if (logoUrl) {
+                try {
+                    let fmt = 'JPEG';
+                    let b64 = null;
+                    const raw = String(logoUrl).trim();
+
+                    const dataMatch = raw.match(/^data:image\/([a-zA-Z0-9+.-]+);base64,([\s\S]+)$/i);
+                    if (dataMatch) {
+                        let kind = dataMatch[1].toLowerCase();
+                        if (kind === 'jpg' || kind === 'jpeg') fmt = 'JPEG';
+                        else if (kind === 'png') fmt = 'PNG';
+                        else if (kind.indexOf('jpeg') !== -1) fmt = 'JPEG';
+                        else if (kind === 'webp') throw new Error('WEBP not supported in PDF');
+                        else fmt = 'JPEG';
+                        b64 = dataMatch[2].replace(/\s/g, '');
+                    } else if (/^https?:\/\//i.test(raw)) {
+                        const imgRes = await fetch(raw);
+                        if (!imgRes.ok) throw new Error('Logo URL fetch failed: ' + imgRes.status);
+                        const buf = Buffer.from(await imgRes.arrayBuffer());
+                        b64 = buf.toString('base64');
+                        const ct = (imgRes.headers.get('content-type') || '').toLowerCase();
+                        if (ct.includes('png')) fmt = 'PNG';
+                        else fmt = 'JPEG';
+                    } else if (raw.length > 100) {
+                        b64 = raw.replace(/\s/g, '');
+                        fmt = 'JPEG';
+                    }
+
+                    if (!b64 || b64.length < 50) throw new Error('Logo data empty');
+
+                    doc.setFillColor(255, 255, 255);
+                    doc.roundedRect(margin - 1, y - 5, 26, 26, 2, 2, 'F');
+
+                    // Try primary format, then alternate
+                    try {
+                        doc.addImage(b64, fmt, margin, y - 4, 24, 24);
+                    } catch (e1) {
+                        const alt = fmt === 'PNG' ? 'JPEG' : 'PNG';
+                        doc.addImage(b64, alt, margin, y - 4, 24, 24);
+                        fmt = alt;
+                    }
+                    textX = margin + 30;
+                    console.log('Invoice logo embedded OK', fmt, b64.length);
+                } catch (logoErr) {
+                    console.warn('Invoice logo draw failed:', logoErr && logoErr.message ? logoErr.message : logoErr);
+                    textX = margin;
+                }
+            } else {
+                console.log('Invoice PDF: no logo_url (settings or body) for user', userId);
+            }
 
             doc.setFontSize(18);
-            doc.setFont(
-                'helvetica',
-                'bold'
-            );
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(15, 79, 168);
+            doc.text(String(businessName).substring(0, 42), textX, y + 6);
 
-            doc.setTextColor(
-                15,
-                79,
-                168
-            );
-
-            doc.text(
-                businessName,
-                margin,
-                y + 4
-            );
-
-            y += 14;
+            y += logoUrl ? 20 : 14;
 
             doc.setFontSize(10);
 
@@ -4979,6 +5039,41 @@ app.post(
                 );
 
                 y += 10;
+            }
+
+            // TERMS & CONDITIONS (custom per business)
+            const termsRaw = (settings?.terms_and_conditions || settings?.terms || '').trim();
+            if (termsRaw) {
+                y += 4;
+                if (y > 250) {
+                    doc.addPage();
+                    y = 20;
+                }
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(12);
+                doc.setTextColor(26, 109, 219);
+                doc.text('Payment & Service Terms', margin, y);
+                y += 8;
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(9);
+                doc.setTextColor(51, 51, 51);
+                const termsLines = termsRaw
+                    .split(/\r?\n/)
+                    .map(function (line) { return String(line || '').trim(); })
+                    .filter(Boolean);
+                termsLines.forEach(function (line) {
+                    const wrapped = doc.splitTextToSize(line, pageWidth - margin * 2);
+                    wrapped.forEach(function (wline) {
+                        if (y > 270) {
+                            doc.addPage();
+                            y = 20;
+                        }
+                        doc.text(wline, margin, y);
+                        y += 5;
+                    });
+                    y += 1;
+                });
+                y += 6;
             }
 
             // FOOTER
