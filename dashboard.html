@@ -4538,7 +4538,7 @@
                 reader.onload = function() {
                     var image = new Image();
                     image.onload = function() {
-                        var max = 256;
+                        var max = 180;
                         var w = image.width;
                         var h = image.height;
                         var scale = Math.min(1, max / Math.max(w, h));
@@ -4551,9 +4551,10 @@
                         ctx.fillStyle = '#ffffff';
                         ctx.fillRect(0, 0, cw, ch);
                         ctx.drawImage(image, 0, 0, cw, ch);
-                        var dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-                        if (dataUrl.length > 350000) {
-                            dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        // Always JPEG — jsPDF embeds this reliably on invoices
+                        var dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                        if (dataUrl.length > 220000) {
+                            dataUrl = canvas.toDataURL('image/jpeg', 0.65);
                         }
                         resolve(dataUrl);
                     };
