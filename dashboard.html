@@ -2810,6 +2810,69 @@
             }
         }
 
+
+        /* Money numbers stay inside cards (GH₵ / large amounts) */
+        .stat-card {
+            min-width: 0;
+            overflow: hidden;
+        }
+        .stat-card .stat-value,
+        .stat-value {
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: clamp(1.05rem, 4.2vw, 1.75rem) !important;
+            letter-spacing: -0.04em !important;
+            line-height: 1.15 !important;
+        }
+        .profit-simple {
+            min-width: 0;
+        }
+        .ps-main, .ps-side {
+            min-width: 0 !important;
+            overflow: hidden;
+            flex: 1 1 140px;
+        }
+        .ps-value,
+        .ps-value.sm {
+            display: block;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: clamp(1.05rem, 4.5vw, 1.65rem) !important;
+            letter-spacing: -0.045em !important;
+            line-height: 1.15 !important;
+        }
+        .ps-sub {
+            font-size: 11px !important;
+            line-height: 1.35;
+            word-break: break-word;
+        }
+        .ps-sub strong {
+            white-space: nowrap;
+        }
+        /* Recent job amounts */
+        .recent-job-row strong,
+        #recentJobsList strong {
+            font-size: clamp(12px, 3.5vw, 15px);
+            letter-spacing: -0.02em;
+        }
+        @media (max-width: 480px) {
+            .ps-main, .ps-side {
+                flex: 1 1 100%;
+            }
+            .stat-card .stat-value,
+            .stat-value {
+                font-size: clamp(1rem, 5.5vw, 1.35rem) !important;
+            }
+            .ps-value,
+            .ps-value.sm {
+                font-size: clamp(1.1rem, 6vw, 1.4rem) !important;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -3668,7 +3731,9 @@
         function formatMoney(n) {
             var num = Number(n);
             if (isNaN(num)) num = 0;
-            return moneySymbol() + num.toLocaleString(undefined, { maximumFractionDigits: 2 });
+            var abs = Math.abs(num);
+            var opts = { maximumFractionDigits: abs >= 1000 ? 0 : 2 };
+            return moneySymbol() + num.toLocaleString(undefined, opts);
         }
         function getPacks() {
             return PACKS_BY_COUNTRY[getUserCountry()] || PACKS_BY_COUNTRY.NG;
