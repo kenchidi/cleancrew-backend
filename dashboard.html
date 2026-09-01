@@ -3286,6 +3286,13 @@
                         <input type="text" id="settingsPaymentWhatsapp" placeholder="e.g. 080-123-4567" />
                         <span style="font-size:11px; color:var(--slate);">Clients will send payment proof to this number</span>
                     </div>
+                    <hr style="border: none; border-top: 1px solid var(--border); margin: 18px 0;" />
+                    <h4 style="font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;color:var(--slate);margin:0 0 12px;">Terms &amp; conditions</h4>
+                    <p style="font-size:12px;color:var(--slate);margin:0 0 12px;">Printed on every invoice PDF under payment details. Use one line per point (like your payment &amp; site-visit rules).</p>
+                    <div class="form-group full-width">
+                        <label>Your terms</label>
+                        <textarea id="settingsTerms" rows="6" placeholder="Example:&#10;• A minimum of 70% payment is required before any site visit.&#10;• Adequate light and water must be available on-site.&#10;• Work will not begin if other contractors are active in the property."></textarea>
+                    </div>
                     <button type="submit" class="btn btn-primary" style="width:100%; margin-top:12px;">
                         <svg class="icon"><use href="#ic-check"/></svg> Save Settings
                     </button>
@@ -4608,6 +4615,7 @@
                     set('settingsAccountName', data.account_name);
                     set('settingsAccountNumber', data.account_number);
                     set('settingsPaymentWhatsapp', data.payment_whatsapp);
+                    set('settingsTerms', data.terms_and_conditions || data.terms);
                     applyBusinessProfile(name, logo);
                 } else {
                     applyBusinessProfile(localName, localLogo);
@@ -4634,6 +4642,7 @@
                 account_name: document.getElementById('settingsAccountName').value.trim(),
                 account_number: document.getElementById('settingsAccountNumber').value.trim(),
                 payment_whatsapp: document.getElementById('settingsPaymentWhatsapp').value.trim(),
+                terms_and_conditions: (document.getElementById('settingsTerms') && document.getElementById('settingsTerms').value) || '',
                 logo_url: (document.getElementById('settingsLogoUrl') && document.getElementById('settingsLogoUrl').value) || ''
             };
             try {
