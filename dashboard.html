@@ -1450,6 +1450,14 @@
         }
         
         
+        
+        .loc-filter-row { display:flex; align-items:center; gap:8px; margin-top:10px; }
+        .loc-filter-row label { font-size:12px; font-weight:700; color:var(--slate); }
+        .loc-filter-row select { padding:6px 12px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-size:12px; font-family:inherit; background:var(--white); }
+        .location-form { border-top:1px solid var(--border); padding-top:8px; }
+        .loc-list-item { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); font-size:13px; }
+        .loc-list-item:last-child { border-bottom:none; }
+        .loc-badge { font-size:10px; font-weight:800; text-transform:uppercase; color:var(--blue); background:var(--blue-mist); padding:2px 8px; border-radius:100px; margin-left:6px; }
         .dash-greeting {
             margin: 0 0 16px;
             padding: 4px 2px 8px;
@@ -2832,6 +2840,12 @@
         <div class="dash-greeting" id="dashGreeting">
             <h2 id="dashGreetingTitle">Good day</h2>
             <p id="dashGreetingSub">Your workspace is ready.</p>
+            <div class="loc-filter-row" id="overviewLocRow" hidden>
+                <label for="overviewLocationFilter">Location</label>
+                <select id="overviewLocationFilter" onchange="onLocationFilterChange(this.value)">
+                    <option value="all">All locations</option>
+                </select>
+            </div>
         </div>
 
         <div class="demo-strip" id="demoStrip">
@@ -3001,6 +3015,9 @@
                         <button class="btn btn-primary btn-sm" onclick="openModal('job')">
                             <svg class="icon"><use href="#ic-plus"/></svg> Full job
                         </button>
+                        <select id="locationFilter" onchange="onLocationFilterChange()" title="Filter by location" style="padding:6px 12px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-size:12px; font-family:inherit; background:var(--white); color:var(--ink); min-width:120px;">
+                            <option value="all">All locations</option>
+                        </select>
                         <select id="jobFilter" onchange="renderJobs()" style="padding:6px 12px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-size:12px; font-family:inherit; background:var(--white); color:var(--ink);">
                             <option value="all">All Status</option>
                             <option value="draft">Draft (needs details)</option>
@@ -3297,6 +3314,30 @@
                         <svg class="icon"><use href="#ic-check"/></svg> Save Settings
                     </button>
                 </form>
+            </div>
+            <div class="card" id="locationsCard">
+                <div class="card-header">
+                    <h3>Locations</h3>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="openLocationForm()">+ Add location</button>
+                </div>
+                <p style="font-size:12px;color:var(--slate);margin:0 0 12px;">For shops with more than one branch. Jobs and inventory can be tagged by location.</p>
+                <div id="locationsList"><p style="color:var(--slate);font-size:13px;">Loading…</p></div>
+                <div id="locationForm" class="location-form" hidden>
+                    <div class="form-grid" style="margin-top:12px;">
+                        <div class="form-group"><label>Name *</label><input type="text" id="locName" placeholder="e.g. Katampe branch" /></div>
+                        <div class="form-group"><label>Phone</label><input type="tel" id="locPhone" placeholder="Branch phone" /></div>
+                        <div class="form-group full-width"><label>Address</label><input type="text" id="locAddress" placeholder="Street, area" /></div>
+                        <div class="form-group full-width">
+                            <label style="display:flex;align-items:center;gap:8px;font-weight:600;">
+                                <input type="checkbox" id="locDefault" /> Default location for new jobs
+                            </label>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+                        <button type="button" class="btn btn-primary btn-sm" onclick="saveLocationForm()">Save location</button>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="closeLocationForm()">Cancel</button>
+                    </div>
+                </div>
             </div>
             <div class="card">
                 <div class="card-header">
@@ -4446,6 +4487,195 @@
                 title.textContent = hello;
                 sub.innerHTML = 'Set your business name in <button type="button" class="linkish" onclick="switchTab(\'settings\')">Settings</button> to personalise this.';
             }
+        }
+
+
+        // ─── LOCATIONS ───────────────────────────────────────────
+        var locationsData = [];
+        var currentLocationFilter = 'all';
+        var editingLocationId = null;
+
+        function getLocations() {
+            return apiFetch('/locations').then(function(res) {
+                if (!res.ok) throw new Error('Failed to load locations');
+                return res.json();
+            });
+        }
+
+        function loadLocations() {
+            return getLocations()
+                .then(function(rows) {
+                    locationsData = rows || [];
+                    syncLocationSelects();
+                    renderLocationsList();
+                    return locationsData;
+                })
+                .catch(function(e) {
+                    console.warn('locations', e);
+                    locationsData = [];
+                    var list = document.getElementById('locationsList');
+                    if (list) list.innerHTML = '<p style="color:var(--slate);font-size:13px;">Add your branches here (optional).</p>';
+                    return [];
+                });
+        }
+
+        function syncLocationSelects() {
+            var opts = '<option value="all">All locations</option>';
+            locationsData.forEach(function(loc) {
+                opts += '<option value="' + loc.id + '">' + (loc.name || 'Location') +
+                    (loc.is_default ? ' (default)' : '') + '</option>';
+            });
+            ['locationFilter', 'overviewLocationFilter'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (!el) return;
+                var prev = el.value || currentLocationFilter || 'all';
+                el.innerHTML = opts;
+                if ([].some.call(el.options, function(o) { return o.value === prev; })) el.value = prev;
+                else el.value = 'all';
+            });
+            var row = document.getElementById('overviewLocRow');
+            if (row) row.hidden = !locationsData.length;
+        }
+
+        function locationOptionsHtml(selectedId) {
+            var html = '<option value="">No location</option>';
+            var def = null;
+            locationsData.forEach(function(loc) {
+                if (loc.is_default) def = loc.id;
+            });
+            var sel = selectedId || def || '';
+            locationsData.forEach(function(loc) {
+                html += '<option value="' + loc.id + '"' + (String(loc.id) === String(sel) ? ' selected' : '') + '>' +
+                    (loc.name || 'Location') + '</option>';
+            });
+            return html;
+        }
+
+        function locationNameById(id) {
+            if (!id) return '';
+            var loc = locationsData.find(function(l) { return String(l.id) === String(id); });
+            return loc ? (loc.name || '') : '';
+        }
+
+        function jobMatchesLocationFilter(job) {
+            if (!currentLocationFilter || currentLocationFilter === 'all') return true;
+            return String((job && job.location_id) || '') === String(currentLocationFilter);
+        }
+
+        function invMatchesLocationFilter(item) {
+            if (!currentLocationFilter || currentLocationFilter === 'all') return true;
+            return String((item && item.location_id) || '') === String(currentLocationFilter);
+        }
+
+        function matchesJobContext(job) {
+            var modeOk = typeof getJobMode === 'function' ? getJobMode(job) === currentServiceType : true;
+            return modeOk && jobMatchesLocationFilter(job);
+        }
+
+        function onLocationFilterChange(val) {
+            if (val == null) {
+                var el = document.getElementById('locationFilter') || document.getElementById('overviewLocationFilter');
+                val = el ? el.value : 'all';
+            }
+            currentLocationFilter = val || 'all';
+            ['locationFilter', 'overviewLocationFilter'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.value = currentLocationFilter;
+            });
+            try { localStorage.setItem('cleancrew_location_filter', currentLocationFilter); } catch (e) {}
+            if (typeof renderJobs === 'function') renderJobs();
+            if (typeof renderInventory === 'function') renderInventory();
+            if (typeof renderAll === 'function') renderAll();
+        }
+
+        function renderLocationsList() {
+            var list = document.getElementById('locationsList');
+            if (!list) return;
+            if (!locationsData.length) {
+                list.innerHTML = '<p style="color:var(--slate);font-size:13px;">No locations yet. Add a branch if you operate more than one place.</p>';
+                return;
+            }
+            list.innerHTML = locationsData.map(function(loc) {
+                return '<div class="loc-list-item" data-id="' + loc.id + '">' +
+                    '<div><strong>' + (loc.name || '') + '</strong>' +
+                    (loc.is_default ? '<span class="loc-badge">Default</span>' : '') +
+                    (loc.address ? '<div style="color:var(--slate);font-size:12px;margin-top:2px;">' + loc.address + '</div>' : '') +
+                    (loc.phone ? '<div style="color:var(--slate);font-size:12px;">' + loc.phone + '</div>' : '') +
+                    '</div>' +
+                    '<div style="display:flex;gap:6px;">' +
+                    '<button type="button" class="btn btn-outline btn-sm" onclick="editLocation(\'' + loc.id + '\')">Edit</button>' +
+                    '<button type="button" class="btn btn-danger btn-sm" onclick="deleteLocation(\'' + loc.id + '\')">Delete</button>' +
+                    '</div></div>';
+            }).join('');
+        }
+
+        function openLocationForm(id) {
+            editingLocationId = id || null;
+            var form = document.getElementById('locationForm');
+            if (form) form.hidden = false;
+            var loc = id ? locationsData.find(function(l) { return String(l.id) === String(id); }) : null;
+            var n = document.getElementById('locName');
+            var ph = document.getElementById('locPhone');
+            var ad = document.getElementById('locAddress');
+            var def = document.getElementById('locDefault');
+            if (n) n.value = loc ? (loc.name || '') : '';
+            if (ph) ph.value = loc ? (loc.phone || '') : '';
+            if (ad) ad.value = loc ? (loc.address || '') : '';
+            if (def) def.checked = loc ? !!loc.is_default : locationsData.length === 0;
+        }
+
+        function closeLocationForm() {
+            editingLocationId = null;
+            var form = document.getElementById('locationForm');
+            if (form) form.hidden = true;
+        }
+
+        function editLocation(id) { openLocationForm(id); }
+
+        function saveLocationForm() {
+            var nameEl = document.getElementById('locName');
+            var name = nameEl ? nameEl.value.trim() : '';
+            if (!name) { showToast('Location name is required', 'error'); return; }
+            var payload = {
+                name: name,
+                phone: (document.getElementById('locPhone') && document.getElementById('locPhone').value || '').trim(),
+                address: (document.getElementById('locAddress') && document.getElementById('locAddress').value || '').trim(),
+                is_default: !!(document.getElementById('locDefault') && document.getElementById('locDefault').checked)
+            };
+            var url = API_URL + '/locations';
+            var method = 'POST';
+            if (editingLocationId) {
+                url += '/' + editingLocationId;
+                method = 'PUT';
+            }
+            fetch(url, { method: method, headers: getHeaders(), body: JSON.stringify(payload) })
+                .then(function(res) {
+                    return res.json().then(function(body) {
+                        if (!res.ok) throw new Error((body && body.error) || 'Failed to save location');
+                        return body;
+                    });
+                })
+                .then(function() {
+                    showToast('Location saved', 'success');
+                    closeLocationForm();
+                    return loadLocations();
+                })
+                .catch(function(e) {
+                    showToast((e && e.message) || 'Failed to save location', 'error');
+                });
+        }
+
+        function deleteLocation(id) {
+            if (!confirm('Remove this location? Existing jobs stay; they will just have no branch tag.')) return;
+            fetch(API_URL + '/locations/' + id, { method: 'DELETE', headers: getHeaders() })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Failed to delete');
+                    showToast('Location removed', 'success');
+                    return loadLocations();
+                })
+                .catch(function(e) {
+                    showToast((e && e.message) || 'Failed to delete location', 'error');
+                });
         }
 
         function applyBusinessProfile(name, logoUrl) {
@@ -6809,7 +7039,8 @@
 
                 f.innerHTML = '<div class="form-group"><label>Client Name</label><input type="text" id="jClient" required /></div>' +
                     '<div class="form-group"><label>Phone</label><input type="tel" id="jPhone" /></div>' +
-                    '<div class="form-group"><label>Location</label><input type="text" id="jLocation" placeholder="Area, estate, or address" /></div>' +
+                    '<div class="form-group"><label>Branch</label><select id="jLocationId">' + locationOptionsHtml() + '</select></div>' +
+                    '<div class="form-group"><label>Job site / area</label><input type="text" id="jLocation" placeholder="Area, estate, or address" /></div>' +
                     '<div class="form-group"><label>Service</label><select id="jService">' + serviceOptions + '</select></div>' +
                     modeExtra +
                     '<div class="form-group"><label>Amount (' + moneySymbol() + ')</label><input type="number" id="jAmount" required /></div>' +
@@ -6895,6 +7126,8 @@
                 var phone = document.getElementById('jPhone').value.trim();
                 var locationEl = document.getElementById('jLocation');
                 var location = locationEl ? locationEl.value.trim() : '';
+                var branchEl = document.getElementById('jLocationId');
+                var locationId = branchEl && branchEl.value ? branchEl.value : null;
                 var service = document.getElementById('jService').value;
                 var amount = parseFloat(document.getElementById('jAmount').value);
                 var date = document.getElementById('jDate').value;
@@ -6925,7 +7158,8 @@
                     notes: notes || 'None',
                     items: [],
                     rooms: null,
-                    property_size: null
+                    property_size: null,
+                    location_id: (typeof locationId !== 'undefined' ? locationId : null)
                 };
 
                 if (currentServiceType === 'laundry') {
@@ -7546,7 +7780,12 @@
             refreshCredits();
             refreshFreeJobs();
             loadInvoiceSettings();
-            renderAll();
+            try { currentLocationFilter = localStorage.getItem('cleancrew_location_filter') || 'all'; } catch (e) {}
+            if (typeof loadLocations === 'function') {
+                loadLocations().then(function() { renderAll(); }).catch(function() { renderAll(); });
+            } else {
+                renderAll();
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
