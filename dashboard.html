@@ -3467,7 +3467,7 @@
                             <option value="NG">Nigeria (₦ Naira)</option>
                             <option value="GH">Ghana (GH₵ Cedis)</option>
                         </select>
-                        <p style="font-size:12px;color:var(--slate);margin-top:6px;">Ghana accounts see prices in cedis and pay via MTN MoMo. Nigeria uses Paystack (₦).</p>
+                        <p style="font-size:12px;color:var(--slate);margin-top:6px;">Ghana accounts see prices in cedis and pay via MoMo PSB. Nigeria uses Paystack (₦).</p>
                     </div>
                     <hr style="border: none; border-top: 1px solid var(--border); margin: 18px 0;" />
                     <h4 style="font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;color:var(--slate);margin:0 0 12px;">Business profile</h4>
@@ -3685,9 +3685,9 @@
         // ─── Country / currency (NG = Naira, GH = Cedis + manual MoMo) ───
         var USER_COUNTRY = localStorage.getItem('cleancrew_country') || 'NG';
         var MOMO_CONFIG = {
-            number: '08143010625',
+            number: '0398801453',
             name: 'Chidinma Ogbonnaya',
-            network: 'MTN MoMo',
+            network: 'MoMo PSB',
             whatsapp: '2347057295546'
         };
         var PACKS_BY_COUNTRY = {
@@ -3792,7 +3792,7 @@
                 '. MoMo to ' + MOMO_CONFIG.number + '. Reference/email: ' + email;
             body.innerHTML =
                 '<p style="font-size:14px;color:var(--slate);margin:0 0 12px;line-height:1.45;">' +
-                'Ghana payments use <strong>MTN MoMo</strong>. Pay the amount below, then send the screenshot to support on WhatsApp.</p>' +
+                'Ghana payments use <strong>MoMo PSB</strong>. Pay the amount below, then send the screenshot to support on WhatsApp.</p>' +
                 '<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px;font-size:14px;line-height:1.6;">' +
                 '<div><strong>Amount:</strong> ' + formatMoney(amount) + '</div>' +
                 '<div><strong>Network:</strong> ' + MOMO_CONFIG.network + '</div>' +
