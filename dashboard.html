@@ -2646,7 +2646,88 @@
         @media (min-width: 768px) {
             .pwa-install-banner { max-width: 420px; left: auto; right: 20px; bottom: 20px; }
         }
-</style>
+
+        /* ===== MODERN SMOOTH PASS ===== */
+        .status-badge {
+            display: inline-flex !important;
+            align-items: center;
+            padding: 3px 10px !important;
+            border-radius: 100px !important;
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            text-transform: capitalize !important;
+            border: none !important;
+        }
+        .dash-greeting h2 { font-size: 1.45rem !important; letter-spacing: -0.035em; }
+        .dash-greeting p { font-size: 13px !important; font-weight: 500 !important; }
+        .stats-grid { gap: 12px !important; margin-bottom: 16px !important; }
+        .stat-card {
+            border-radius: 18px !important;
+            padding: 18px !important;
+            box-shadow: 0 1px 2px rgba(11,21,38,.04) !important;
+            border: 1px solid rgba(231,235,243,.9) !important;
+        }
+        .stat-label { font-size: 11px !important; letter-spacing: 0.06em !important; font-weight: 700 !important; color: var(--slate) !important; }
+        .stat-value { font-size: 1.75rem !important; font-weight: 900 !important; letter-spacing: -0.03em; margin-top: 4px; }
+        .stat-icon { opacity: 0.5; }
+        .demo-strip {
+            border-radius: 16px !important;
+            border: 1px solid var(--border) !important;
+            background: linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 100%) !important;
+            padding: 14px 16px !important;
+            margin-bottom: 14px !important;
+        }
+        .card {
+            border-radius: 18px !important;
+            border: 1px solid rgba(231,235,243,.95) !important;
+            box-shadow: 0 1px 2px rgba(11,21,38,.04) !important;
+        }
+        .card-header h3 { font-size: 15px !important; font-weight: 800 !important; letter-spacing: -0.02em; }
+        .app-toolbar {
+            display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+            padding: 12px 16px; border-bottom: 1px solid var(--border);
+            background: linear-gradient(180deg, #FAFBFC 0%, #FFFFFF 100%);
+        }
+        .app-toolbar .toolbar-search {
+            flex: 1; min-width: 140px; max-width: 220px; padding: 8px 12px;
+            border: 1.5px solid var(--border); border-radius: 12px;
+            font-size: 13px; font-family: inherit; background: var(--white); color: var(--ink);
+        }
+        .app-toolbar select {
+            padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 12px;
+            font-size: 12px; font-family: inherit; background: var(--white); color: var(--ink);
+        }
+        .app-toolbar .toolbar-spacer { flex: 1; min-width: 8px; }
+        .card table { width: 100%; border-collapse: collapse; }
+        .card table thead th {
+            font-size: 11px !important; font-weight: 700 !important; text-transform: uppercase;
+            letter-spacing: 0.04em; color: var(--slate) !important; padding: 10px 14px !important;
+            background: #FAFBFC !important; border-bottom: 1px solid var(--border) !important;
+        }
+        .card table tbody td {
+            padding: 14px !important; font-size: 13px !important;
+            border-bottom: 1px solid #F0F3F8 !important; vertical-align: middle;
+        }
+        .card table tbody tr:hover { background: #F7FAFF !important; }
+        .card table tbody tr:last-child td { border-bottom: none !important; }
+        .status-pill {
+            display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 100px;
+            font-size: 11px; font-weight: 700; text-transform: capitalize; white-space: nowrap;
+        }
+        .status-pill.status-pending, .status-pill.status-draft { background: #FFF7ED; color: #C2410C; }
+        .status-pill.status-in-progress { background: #EFF6FF; color: #1D4ED8; }
+        .status-pill.status-completed, .status-pill.status-collected, .status-pill.status-paid { background: #ECFDF5; color: #047857; }
+        .status-pill.status-cancelled, .status-pill.status-unpaid { background: #FEF2F2; color: #B91C1C; }
+        .status-pill.status-partial { background: #FFFBEB; color: #B45309; }
+        .btn { border-radius: 12px !important; font-weight: 700 !important; }
+        .btn-primary { box-shadow: 0 1px 2px rgba(15,79,168,.15); }
+        .sidebar .nav-links button { border-radius: 12px !important; }
+        @media (max-width: 720px) {
+            .app-toolbar .toolbar-search { max-width: none; flex: 1 1 100%; }
+            .stat-value { font-size: 1.45rem !important; }
+        }
+
+    </style>
 </head>
 <body>
     <div class="pwa-install-banner" id="pwaInstallBanner" role="dialog" aria-label="Install app">
@@ -3004,32 +3085,30 @@
 
         <!-- ════ JOBS TAB ════ -->
         <div class="tab-content" id="tab-jobs">
-            <div class="card">
-                <div class="card-header">
-                    <h3 id="jobsTitle"><svg class="icon"><use href="#ic-clipboard"/></svg> All Jobs</h3>
-                    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                        <input type="search" id="jobsSearch" placeholder="Search jobs…" oninput="renderJobs()" autocomplete="off" style="padding:6px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-family:inherit;min-width:140px;max-width:200px;background:var(--white);color:var(--ink);" />
-                        <button type="button" class="btn btn-quick btn-sm" onclick="openQuickCapture()" title="Fast note while customer waits">
-                            ⚡ Quick capture
-                        </button>
-                        <button class="btn btn-primary btn-sm" onclick="openModal('job')">
-                            <svg class="icon"><use href="#ic-plus"/></svg> Full job
-                        </button>
-                        <select id="locationFilter" onchange="onLocationFilterChange()" title="Filter by location" style="padding:6px 12px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-size:12px; font-family:inherit; background:var(--white); color:var(--ink); min-width:120px;">
-                            <option value="all">All locations</option>
-                        </select>
-                        <select id="jobFilter" onchange="renderJobs()" style="padding:6px 12px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-size:12px; font-family:inherit; background:var(--white); color:var(--ink);">
-                            <option value="all">All Status</option>
-                            <option value="draft">Draft (needs details)</option>
-                            <option value="pending">Pending</option>
-                            <option value="in-progress">In Progress</option>
-                            <option value="completed">Completed (ready)</option>
-                            <option value="collected">Collected</option>
-                            <option value="cancelled">Cancelled</option>
-                        </select>
-                    </div>
+            <div class="card jobs-card">
+                <div class="card-header" style="border-bottom:none;padding-bottom:4px !important;">
+                    <h3 id="jobsTitle">Jobs</h3>
+                </div>
+                <div class="app-toolbar">
+                    <input type="search" id="jobsSearch" class="toolbar-search" placeholder="Search jobs…" oninput="renderJobs()" autocomplete="off" />
+                    <select id="locationFilter" onchange="onLocationFilterChange()" title="Filter by location">
+                        <option value="all">All locations</option>
+                    </select>
+                    <select id="jobFilter" onchange="renderJobs()">
+                        <option value="all">All status</option>
+                        <option value="draft">Draft</option>
+                        <option value="pending">Pending</option>
+                        <option value="in-progress">In progress</option>
+                        <option value="completed">Completed</option>
+                        <option value="collected">Collected</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                    <span class="toolbar-spacer"></span>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="openQuickCapture()">⚡ Quick</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="openModal('job')">+ Job</button>
                 </div>
                 <div class="table-wrap">
+
                     <table>
                         <thead>
                             <tr>
@@ -5871,7 +5950,9 @@
             jobs = jobs || jobsData;
             var filter = document.getElementById('jobFilter') ? document.getElementById('jobFilter').value : 'all';
             var filtered = jobs.filter(function(j) {
-                return getJobMode(j) === currentServiceType;
+                var modeOk = getJobMode(j) === currentServiceType;
+                var locOk = typeof jobMatchesLocationFilter === 'function' ? jobMatchesLocationFilter(j) : true;
+                return modeOk && locOk;
             });
             var modeLabel = currentServiceType === 'laundry' ? 'laundry' : 'cleaning';
             var modeIcon = currentServiceType === 'laundry' ? '👕' : '🧹';
@@ -5956,7 +6037,7 @@
                     '</td>' +
                     '<td>' + (j.date || 'N/A') + '</td>' +
                     '<td><strong>' + formatMoney(j.amount) + '</strong></td>' +
-                    '<td><span class="status-badge ' + j.status + '">' + j.status + '</span></td>' +
+                    '<td><span class="status-pill status-' + String(j.status || '').replace(/\\s+/g, '-') + '">' + String(j.status || '').replace(/-/g, ' ') + '</span></td>' +
                     '<td><div class="job-actions" onclick="event.stopPropagation()">' +
                     '<div class="job-actions-primary">' +
                     (primary || '') +
