@@ -2116,7 +2116,8 @@ app.post(
                 number: req.body.number || null,
                 staff_cost: req.body.staff_cost != null ? Number(req.body.staff_cost) : undefined,
                 materials_cost: req.body.materials_cost != null ? Number(req.body.materials_cost) : undefined,
-                other_cost: req.body.other_cost != null ? Number(req.body.other_cost) : undefined
+                other_cost: req.body.other_cost != null ? Number(req.body.other_cost) : undefined,
+                location_id: req.body.location_id || null
             };
 
             // Drop null optional keys that may not exist on older schemas
@@ -2927,6 +2928,7 @@ app.post(
                 min_stock: req.body.min_stock,
                 unit: req.body.unit,
                 notes: req.body.notes,
+                location_id: req.body.location_id || null,
                 user_id: req.user.id
             };
             // Drop undefined so we don't send unknown columns
@@ -4188,6 +4190,93 @@ app.post(
     }
 );
 
+
+// ─── LOCATIONS (multi-branch) ────────────────────────────────
+app.get('/api/locations', authenticate, async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('locations')
+            .select('*')
+            .eq('user_id', req.user.id)
+            .order('is_default', { ascending: false })
+            .order('name', { ascending: true });
+        if (error) throw error;
+        res.json(data || []);
+    } catch (error) {
+        console.error('List locations error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/locations', authenticate, async (req, res) => {
+    try {
+        const name = String(req.body.name || '').trim();
+        if (!name) return res.status(400).json({ error: 'Location name is required' });
+        const isDefault = !!req.body.is_default;
+        if (isDefault) {
+            await supabase.from('locations').update({ is_default: false }).eq('user_id', req.user.id);
+        }
+        const row = {
+            user_id: req.user.id,
+            name,
+            address: String(req.body.address || '').trim() || null,
+            phone: String(req.body.phone || '').trim() || null,
+            is_default: isDefault
+        };
+        const { data, error } = await supabase.from('locations').insert(row).select().single();
+        if (error) throw error;
+        res.json(data);
+    } catch (error) {
+        console.error('Create location error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.put('/api/locations/:id', authenticate, async (req, res) => {
+    try {
+        const updates = {};
+        if (req.body.name != null) updates.name = String(req.body.name).trim();
+        if (req.body.address != null) updates.address = String(req.body.address).trim();
+        if (req.body.phone != null) updates.phone = String(req.body.phone).trim();
+        if (req.body.is_default != null) {
+            updates.is_default = !!req.body.is_default;
+            if (updates.is_default) {
+                await supabase.from('locations').update({ is_default: false }).eq('user_id', req.user.id);
+            }
+        }
+        const { data, error } = await supabase
+            .from('locations')
+            .update(updates)
+            .eq('id', req.params.id)
+            .eq('user_id', req.user.id)
+            .select()
+            .single();
+        if (error) throw error;
+        res.json(data);
+    } catch (error) {
+        console.error('Update location error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.delete('/api/locations/:id', authenticate, async (req, res) => {
+    try {
+        // Clear references first (jobs/inventory keep working without location)
+        await supabase.from('jobs').update({ location_id: null }).eq('location_id', req.params.id).eq('user_id', req.user.id);
+        await supabase.from('inventory').update({ location_id: null }).eq('location_id', req.params.id).eq('user_id', req.user.id);
+        const { error } = await supabase
+            .from('locations')
+            .delete()
+            .eq('id', req.params.id)
+            .eq('user_id', req.user.id);
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Delete location error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // ─── INVOICE SETTINGS ───────────────────────────────────────
 
 app.get(
@@ -4369,6 +4458,30 @@ app.post(
                 throw settingsError;
             }
 
+            // Branch contact from job location when set
+            let branchLocation = null;
+            if (invoice.job_id) {
+                try {
+                    const jobRes = await supabase
+                        .from('jobs')
+                        .select('location_id')
+                        .eq('id', invoice.job_id)
+                        .eq('user_id', userId)
+                        .maybeSingle();
+                    if (jobRes.data && jobRes.data.location_id) {
+                        const locRes = await supabase
+                            .from('locations')
+                            .select('*')
+                            .eq('id', jobRes.data.location_id)
+                            .eq('user_id', userId)
+                            .maybeSingle();
+                        branchLocation = locRes.data || null;
+                    }
+                } catch (locErr) {
+                    console.warn('Location lookup for invoice failed', locErr.message || locErr);
+                }
+            }
+
             const {
                 jsPDF
             } = require('jspdf');
@@ -4388,10 +4501,12 @@ app.post(
                 'CleanCrew Laundry';
 
             const address =
+                (branchLocation && branchLocation.address) ||
                 settings?.business_address ||
                 '';
 
             const phone =
+                (branchLocation && branchLocation.phone) ||
                 settings?.phone ||
                 '';
 

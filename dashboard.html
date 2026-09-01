@@ -5211,7 +5211,8 @@
             var m = now.getMonth();
 
             var modeJobs = (jobs || []).filter(function(j) {
-                return typeof getJobMode === 'function' ? getJobMode(j) === currentServiceType : true;
+                var modeOk = typeof getJobMode === 'function' ? getJobMode(j) === currentServiceType : true;
+                return modeOk && jobMatchesLocationFilter(j);
             });
 
             var monthJobs = modeJobs.filter(function(j) {
