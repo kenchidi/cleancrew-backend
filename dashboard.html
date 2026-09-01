@@ -2419,6 +2419,36 @@
             gap: 12px;
         }
         
+
+        #sidebarLogoWrap {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: var(--blue);
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+            overflow: hidden;
+            position: relative;
+        }
+        #sidebarLogoWrap.has-logo {
+            background: #fff;
+            box-shadow: 0 0 0 1px var(--border);
+        }
+        #sidebarLogoWrap.has-logo #sidebarLogoFallback {
+            display: none !important;
+        }
+        #sidebarLogo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        #sidebarLogoFallback {
+            width: 20px;
+            height: 20px;
+        }
+
         .sidebar-logo-img {
             width: 100%;
             height: 100%;
@@ -2624,8 +2654,9 @@
     <div class="dashboard-layout">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <span class="mark">
-                    <svg viewBox="0 0 100 100" fill="none">
+                <span class="mark" id="sidebarLogoWrap">
+                    <img id="sidebarLogo" class="sidebar-logo-img" alt="Business logo" style="display:none" />
+                    <svg id="sidebarLogoFallback" viewBox="0 0 100 100" fill="none" aria-hidden="true">
                         <path d="M80 34 C74 22 62 14 48 14 C28 14 12 30 12 50 C12 70 28 86 48 86 C62 86 74 78 80 66" stroke="white" stroke-width="13" stroke-linecap="round"/>
                         <g transform="translate(68,46)"><path d="M0,-9 L1.6,-1.6 L9,0 L1.6,1.6 L0,9 L-1.6,1.6 L-9,0 L-1.6,-1.6 Z" fill="white"/></g>
                     </svg>
