@@ -2672,11 +2672,9 @@
         .stat-icon { opacity: 0.5; }
         .demo-strip {
             border-radius: 16px !important;
-            border: 1px solid var(--border) !important;
-            background: linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 100%) !important;
-            color: var(--ink) !important;
             padding: 14px 16px !important;
             margin-bottom: 14px !important;
+            color: var(--ink) !important;
         }
         .demo-strip strong {
             color: var(--ink) !important;
@@ -2872,6 +2870,25 @@
                 font-size: clamp(1.1rem, 6vw, 1.4rem) !important;
             }
         }
+
+
+        /* Mode-tinted demo strip — soft pastels matching landing cards */
+        body.mode-cleaning .demo-strip {
+            background: linear-gradient(160deg, #F4F6FD 0%, #EEF1FB 50%, #F7F8FC 100%) !important;
+            border: 1px solid #E4E9F6 !important;
+            color: var(--ink) !important;
+            box-shadow: none !important;
+        }
+        body.mode-cleaning .demo-strip strong { color: #0F172A !important; }
+        body.mode-cleaning .demo-strip p { color: #64748B !important; opacity: 1 !important; }
+        body.mode-laundry .demo-strip {
+            background: linear-gradient(160deg, #F2FCFC 0%, #E8FAFA 50%, #F5FDFB 100%) !important;
+            border: 1px solid #D5F0F0 !important;
+            color: var(--ink) !important;
+            box-shadow: none !important;
+        }
+        body.mode-laundry .demo-strip strong { color: #0F172A !important; }
+        body.mode-laundry .demo-strip p { color: #64748B !important; opacity: 1 !important; }
 
     </style>
 </head>
