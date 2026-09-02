@@ -6529,7 +6529,10 @@
 
                         var invId = escJsAttr(inv.id);
                         var actions = '<div class="inv-actions" onclick="event.stopPropagation()">';
-                        if (status !== 'paid') {
+                        if (isQuotation(inv)) {
+                            actions += '<button type="button" class="btn btn-primary btn-sm" onclick="convertQuotationToInvoice(\'' + invId + '\')">→ Invoice</button>';
+                            actions += '<button type="button" class="btn btn-outline btn-sm" onclick="editInvoice(\'' + invId + '\')">Edit</button>';
+                        } else if (status !== 'paid') {
                             actions += '<button type="button" class="btn btn-success btn-sm" onclick="openRecordPayment(\'' + invId + '\')">Record pay</button>';
                             actions += '<button type="button" class="btn btn-outline btn-sm" onclick="editInvoice(\'' + invId + '\')">Edit</button>';
                         }
@@ -7363,13 +7366,21 @@
                     '<div class="form-group"><label>Phone</label><input type="tel" id="sPhone" /></div>' +
                     '<div class="form-group"><label>Email</label><input type="email" id="sEmail" /></div>' +
                     '<div class="form-group"><label>Role</label><select id="sRole"><option>Cleaner</option><option>Supervisor</option><option>Manager</option><option>Admin</option></select></div>';
-            } else if (type === 'invoice') {
+            } else if (type === 'invoice' || type === 'quotation') {
+                var isQuote = type === 'quotation';
                 f.innerHTML = '<div class="form-group"><label>Client *</label><input type="text" id="invClient" required /></div>' +
                     '<div class="form-group"><label>WhatsApp / phone</label><input type="tel" id="invPhone" placeholder="e.g. 0803..." /></div>' +
                     '<div class="form-group"><label>Amount (' + moneySymbol() + ') *</label><input type="number" id="invAmount" required /></div>' +
                     '<div class="form-group"><label>Date</label><input type="date" id="invDate" required /></div>' +
-                    '<div class="form-group"><label>Status</label><select id="invStatus"><option value="pending">Pending</option><option value="paid">Paid</option><option value="overdue">Overdue</option></select></div>' +
-                    '<div class="form-group full-width"><label>Description</label><textarea id="invDescription" placeholder="What is this invoice for?"></textarea></div>';
+                    (isQuote
+                        ? ('<div class="form-group"><label>Valid until</label><input type="date" id="invValidUntil" /></div>' +
+                           '<input type="hidden" id="invStatus" value="quotation" />' +
+                           '<input type="hidden" id="invDocType" value="quotation" />')
+                        : ('<div class="form-group"><label>Status</label><select id="invStatus"><option value="pending">Pending</option><option value="paid">Paid</option><option value="overdue">Overdue</option></select></div>' +
+                           '<input type="hidden" id="invDocType" value="invoice" />')) +
+                    '<div class="form-group full-width"><label>Description / scope</label><textarea id="invDescription" placeholder="' +
+                    (isQuote ? 'Rooms, services, materials — what you are quoting for' : 'What is this invoice for?') +
+                    '"></textarea></div>';
             }
 
             document.getElementById('modalOverlay').classList.add('active');
