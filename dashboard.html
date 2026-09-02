@@ -3475,8 +3475,14 @@
             <div class="card">
                 <div class="card-header">
                     <h3><svg class="icon"><use href="#ic-file"/></svg> Invoices</h3>
+                    <select id="invoiceDocFilter" onchange="renderInvoices()" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:12px;font-size:12px;font-family:inherit;">
+                        <option value="all">All</option>
+                        <option value="invoice">Invoices</option>
+                        <option value="quotation">Quotations</option>
+                    </select>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="openModal('quotation')">+ Quotation</button>
                     <button class="btn btn-primary btn-sm" onclick="openModal('invoice')">
-                        <svg class="icon"><use href="#ic-plus"/></svg> Create Invoice
+                        <svg class="icon"><use href="#ic-plus"/></svg> Invoice
                     </button>
                 </div>
                 <div class="table-wrap">
@@ -6496,28 +6502,64 @@
 
         var invoicesData = [];
 
+
+        function isQuotation(inv) {
+            return !!(inv && (inv.doc_type === 'quotation' || inv.status === 'quotation'));
+        }
+
+        function convertQuotationToInvoice(id) {
+            if (!confirm('Convert this quotation into an invoice? You can then collect payment and share the invoice PDF.')) return;
+            fetch(API_URL + '/invoices/' + id + '/convert-to-invoice', {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({})
+            })
+                .then(function(res) {
+                    return res.json().then(function(body) {
+                        if (!res.ok) throw new Error((body && body.error) || 'Convert failed');
+                        return body;
+                    });
+                })
+                .then(function() {
+                    showToast('Converted to invoice', 'success');
+                    renderInvoices();
+                })
+                .catch(function(e) {
+                    showToast((e && e.message) || 'Could not convert', 'error');
+                });
+        }
+
         function renderInvoices() {
             getInvoices()
                 .then(function(invoices) {
                     invoicesData = invoices || [];
                     var tbody = document.getElementById('invoicesTable');
-                    if (!invoices || invoices.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--slate);">No invoices yet</td></tr>';
+                    if (!tbody) return;
+                    var docFilter = document.getElementById('invoiceDocFilter');
+                    var filterVal = docFilter ? docFilter.value : 'all';
+                    var list = (invoices || []).filter(function(inv) {
+                        if (filterVal === 'quotation') return isQuotation(inv);
+                        if (filterVal === 'invoice') return !isQuotation(inv);
+                        return true;
+                    });
+                    if (!list.length) {
+                        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--slate);">No documents yet</td></tr>';
                         return;
                     }
-                    tbody.innerHTML = invoices.map(function(inv, i) {
+                    tbody.innerHTML = list.map(function(inv, i) {
                         var date = inv.date ? new Date(inv.date).toLocaleDateString('en-NG') : 'N/A';
                         var amountDue = inv.amount_due != null ? inv.amount_due : (inv.amount || 0);
                         var amountPaid = inv.amount_paid != null ? inv.amount_paid : (inv.status === 'paid' ? amountDue : 0);
-                        var status = inv.status === 'overdue' ? 'overdue' : deriveInvoiceStatus(amountDue, amountPaid);
-                        if (status === 'unpaid' && inv.status === 'pending') status = 'unpaid';
+                        var status = isQuotation(inv) ? 'quotation' : (inv.status === 'overdue' ? 'overdue' : deriveInvoiceStatus(amountDue, amountPaid));
+                        if (status !== 'quotation' && status === 'unpaid' && inv.status === 'pending') status = 'unpaid';
 
                         var statusColors = {
                             unpaid: 'background:#FEF3C7;color:#92400E;',
                             pending: 'background:#FEF3C7;color:#92400E;',
                             partial: 'background:#DBEAFE;color:#1E40AF;',
                             paid: 'background:#D1FAE5;color:#065F46;',
-                            overdue: 'background:#FEE2E2;color:#991B1B;'
+                            overdue: 'background:#FEE2E2;color:#991B1B;',
+                            quotation: 'background:#EDE9FE;color:#5B21B6;'
                         };
                         var statusColor = statusColors[status] || statusColors.unpaid;
                         var paidLabel = amountPaid > 0 ?
@@ -6558,7 +6600,7 @@
                 })
                 .catch(function(e) {
                     console.error('Failed to render invoices:', e);
-                    document.getElementById('invoicesTable').innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--slate);">Failed to load invoices</td></tr>';
+                    var tb = document.getElementById('invoicesTable'); if (tb) tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--red);">' + ((err && err.message) || 'Failed to load invoices') + '</td></tr>';
                 });
         }
 
@@ -7250,7 +7292,8 @@
                 client: 'New Client',
                 inventory: 'New Inventory Item',
                 staff: 'New Staff Member',
-                invoice: 'New Invoice'
+                invoice: 'New Invoice',
+                quotation: 'New Quotation'
             };
             document.getElementById('modalTitle').innerHTML = '<svg class="icon"><use href="#ic-plus"/></svg> ' + titles[type];
             document.getElementById('modalForm').reset();
@@ -7632,7 +7675,7 @@
                         showToast((e && e.message) || 'Failed to add staff', 'error');
                     });
 
-            } else if (modalType === 'invoice') {
+            } else if (modalType === 'invoice' || modalType === 'quotation') {
                 var client = document.getElementById('invClient').value.trim();
                 var amount = parseFloat(document.getElementById('invAmount').value);
                 var date = document.getElementById('invDate').value;
@@ -7642,19 +7685,25 @@
                 if (!client || !amount || !date) { showToast('Fill all fields', 'error'); return; }
 
                 var initialPaid = status === 'paid' ? amount : 0;
+                var docTypeEl = document.getElementById('invDocType');
+                var docType = (docTypeEl && docTypeEl.value) || (modalType === 'quotation' ? 'quotation' : 'invoice');
+                var isQuote = docType === 'quotation' || modalType === 'quotation';
+                var validUntilEl = document.getElementById('invValidUntil');
                 createInvoice({
                     client: client,
                     phone: (document.getElementById('invPhone') && document.getElementById('invPhone').value || '').trim(),
                     amount: amount,
                     amount_due: amount,
-                    amount_paid: initialPaid,
+                    amount_paid: isQuote ? 0 : initialPaid,
                     date: date,
-                    status: status === 'paid' ? 'paid' : (status === 'overdue' ? 'overdue' : 'unpaid'),
-                    description: description || 'Service',
-                    paid_at: status === 'paid' ? new Date().toISOString() : null
+                    status: isQuote ? 'quotation' : (status === 'paid' ? 'paid' : (status === 'overdue' ? 'overdue' : 'unpaid')),
+                    doc_type: isQuote ? 'quotation' : 'invoice',
+                    valid_until: validUntilEl && validUntilEl.value ? validUntilEl.value : null,
+                    description: description || (isQuote ? 'Quotation' : 'Service'),
+                    paid_at: (!isQuote && status === 'paid') ? new Date().toISOString() : null
                 })
                     .then(function() {
-                        showToast('Invoice created!', 'success');
+                        showToast(isQuote ? 'Quotation created!' : 'Invoice created!', 'success');
                         closeModal();
                         renderInvoices();
                     })
