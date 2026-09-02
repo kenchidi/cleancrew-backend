@@ -6556,56 +6556,121 @@
         function quoteLineItemsHtml() {
             var html = '<div class="form-group full-width" id="quoteLinesWrap">' +
                 '<label>Line items</label>' +
+                '<div style="display:grid;grid-template-columns:1fr 72px 100px 36px;gap:6px;margin-bottom:4px;font-size:11px;font-weight:700;color:var(--slate);">' +
+                '<span>Service / room</span><span>Qty</span><span>Unit price</span><span></span></div>' +
                 '<div id="quoteLinesList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px;"></div>' +
                 '<button type="button" class="btn btn-outline btn-sm" onclick="addQuoteLine()">+ Add line</button>' +
-                '<p style="font-size:12px;color:var(--slate);margin:8px 0 0;">Total updates from line items. Example: Living room deep clean · 1 · 15000</p>' +
+                '<p style="font-size:12px;color:var(--slate);margin:8px 0 0;">Type the price on each line — the total amount fills in automatically.</p>' +
                 '</div>';
             return html;
         }
 
         function addQuoteLine(row) {
-            row = row || { name: '', qty: 1, unit_price: 0 };
+            row = row || { name: '', qty: 1, unit_price: '' };
             quoteLineItems.push(row);
             renderQuoteLines();
+            bindQuoteLineEvents();
+            // Focus the new name field
+            setTimeout(function() {
+                var list = document.getElementById('quoteLinesList');
+                if (!list) return;
+                var names = list.querySelectorAll('.quote-line-name');
+                if (names.length) names[names.length - 1].focus();
+            }, 0);
         }
 
         function removeQuoteLine(i) {
             quoteLineItems.splice(i, 1);
             renderQuoteLines();
+            bindQuoteLineEvents();
+        }
+
+        function calcQuoteTotal() {
+            var total = 0;
+            (quoteLineItems || []).forEach(function(row) {
+                var qty = Number(row.qty) || 0;
+                var price = Number(row.unit_price != null ? row.unit_price : row.price) || 0;
+                total += qty * price;
+            });
+            return total;
+        }
+
+        function syncQuoteAmountField() {
+            var amountEl = document.getElementById('invAmount');
+            if (!amountEl) return;
+            var total = calcQuoteTotal();
+            amountEl.value = total ? String(total) : '';
+            // Total is driven by lines; still allow manual override if they clear all lines
+            amountEl.readOnly = !!(quoteLineItems && quoteLineItems.length);
+            amountEl.placeholder = quoteLineItems && quoteLineItems.length ? 'Auto from line items' : '0';
         }
 
         function renderQuoteLines() {
             var list = document.getElementById('quoteLinesList');
-            var amountEl = document.getElementById('invAmount');
             if (!list) return;
             if (!quoteLineItems.length) {
-                list.innerHTML = '<p style="font-size:12px;color:var(--slate);">No lines yet — add rooms/services.</p>';
-                if (amountEl) amountEl.value = '';
+                list.innerHTML = '<p style="font-size:12px;color:var(--slate);">No lines yet — add rooms/services and set qty + price.</p>';
+                syncQuoteAmountField();
                 return;
             }
-            var total = 0;
             list.innerHTML = quoteLineItems.map(function(row, i) {
-                var qty = Number(row.qty) || 0;
-                var price = Number(row.unit_price != null ? row.unit_price : row.price) || 0;
-                total += qty * price;
-                return '<div style="display:grid;grid-template-columns:1fr 70px 90px 32px;gap:6px;align-items:center;">' +
-                    '<input type="text" data-qi="' + i + '" data-f="name" value="' + String(row.name || '').replace(/"/g, '&quot;') + '" placeholder="Service / room" oninput="updateQuoteLine(' + i + ',\'name\',this.value)" />' +
-                    '<input type="number" data-qi="' + i + '" min="0" step="1" value="' + qty + '" placeholder="Qty" oninput="updateQuoteLine(' + i + ',\'qty\',this.value)" />' +
-                    '<input type="number" data-qi="' + i + '" min="0" step="0.01" value="' + price + '" placeholder="Price" oninput="updateQuoteLine(' + i + ',\'unit_price\',this.value)" />' +
-                    '<button type="button" class="btn btn-outline btn-sm" style="padding:4px 8px;" onclick="removeQuoteLine(' + i + ')">×</button>' +
+                var qty = row.qty != null && row.qty !== '' ? row.qty : 1;
+                var price = row.unit_price != null ? row.unit_price : (row.price != null ? row.price : '');
+                var name = String(row.name || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+                return '<div class="quote-line-row" style="display:grid;grid-template-columns:1fr 72px 100px 36px;gap:6px;align-items:center;">' +
+                    '<input type="text" class="quote-line-name" data-qi="' + i + '" value="' + name + '" placeholder="e.g. Living room deep clean" autocomplete="off" />' +
+                    '<input type="number" class="quote-line-qty" data-qi="' + i + '" min="0" step="any" value="' + qty + '" placeholder="Qty" />' +
+                    '<input type="number" class="quote-line-price" data-qi="' + i + '" min="0" step="any" value="' + price + '" placeholder="Price" />' +
+                    '<button type="button" class="btn btn-outline btn-sm" style="padding:4px 8px;" data-remove-qi="' + i + '" title="Remove line">×</button>' +
                     '</div>';
             }).join('');
-            if (amountEl) {
-                amountEl.value = total ? String(total) : '';
-                amountEl.readOnly = quoteLineItems.length > 0;
-            }
+            syncQuoteAmountField();
+        }
+
+        function bindQuoteLineEvents() {
+            var list = document.getElementById('quoteLinesList');
+            if (!list || list._quoteBound) return;
+            list._quoteBound = true;
+            list.addEventListener('input', function(e) {
+                var t = e.target;
+                if (!t || t.getAttribute('data-qi') == null) return;
+                var i = parseInt(t.getAttribute('data-qi'), 10);
+                if (isNaN(i) || !quoteLineItems[i]) return;
+                if (t.classList.contains('quote-line-name')) {
+                    quoteLineItems[i].name = t.value;
+                    // Do NOT re-render — keeps focus while typing
+                    return;
+                }
+                if (t.classList.contains('quote-line-qty')) {
+                    quoteLineItems[i].qty = t.value === '' ? '' : (Number(t.value) || 0);
+                    syncQuoteAmountField();
+                    return;
+                }
+                if (t.classList.contains('quote-line-price')) {
+                    var n = t.value === '' ? '' : (Number(t.value) || 0);
+                    quoteLineItems[i].unit_price = n;
+                    quoteLineItems[i].price = n;
+                    syncQuoteAmountField();
+                }
+            });
+            list.addEventListener('click', function(e) {
+                var btn = e.target.closest('[data-remove-qi]');
+                if (!btn) return;
+                e.preventDefault();
+                var i = parseInt(btn.getAttribute('data-remove-qi'), 10);
+                if (!isNaN(i)) removeQuoteLine(i);
+            });
         }
 
         function updateQuoteLine(i, field, val) {
             if (!quoteLineItems[i]) return;
-            if (field === 'qty' || field === 'unit_price') quoteLineItems[i][field] = Number(val) || 0;
-            else quoteLineItems[i][field] = val;
-            renderQuoteLines();
+            if (field === 'qty' || field === 'unit_price') {
+                quoteLineItems[i][field] = val === '' ? '' : (Number(val) || 0);
+                if (field === 'unit_price') quoteLineItems[i].price = quoteLineItems[i].unit_price;
+                syncQuoteAmountField();
+            } else {
+                quoteLineItems[i][field] = val;
+            }
         }
 
         function setQuoteStatus(id, status) {
@@ -7558,7 +7623,10 @@
                     (isQuote ? 'Extra notes for the client (optional)' : 'What is this invoice for?') +
                     '"></textarea></div>';
                 if (isQuote) {
-                    setTimeout(function() { addQuoteLine(); }, 0);
+                    setTimeout(function() {
+                        addQuoteLine();
+                        bindQuoteLineEvents();
+                    }, 0);
                 }
             }
 
