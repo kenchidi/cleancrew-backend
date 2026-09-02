@@ -2220,12 +2220,13 @@
             justify-content: space-between;
             gap: 12px;
             flex-wrap: wrap;
-            background: linear-gradient(135deg, #0F4FA8 0%, #1A6DDB 55%, #2563EB 100%);
-            color: #fff;
-            border-radius: var(--radius);
-            padding: 14px 18px;
-            margin-bottom: 16px;
-            box-shadow: var(--shadow-blue);
+            /* Soft default = cleaning mist (no hard blue flash before mode JS) */
+            background: linear-gradient(160deg, #F4F6FD 0%, #EEF1FB 50%, #F7F8FC 100%);
+            color: var(--ink);
+            border: 1px solid #E4E9F6;
+            border-radius: 16px;
+            padding: 14px 16px;
+            margin-bottom: 14px;
         }
         .demo-strip strong { font-weight: 800; letter-spacing: -0.02em; }
         .demo-strip p { margin: 2px 0 0; font-size: 13px; opacity: 0.92; line-height: 1.4; }
@@ -2890,9 +2891,37 @@
         body.mode-laundry .demo-strip strong { color: #0F172A !important; }
         body.mode-laundry .demo-strip p { color: #64748B !important; opacity: 1 !important; }
 
+
+        html.mode-cleaning .demo-strip,
+        body.mode-cleaning .demo-strip {
+            background: linear-gradient(160deg, #F4F6FD 0%, #EEF1FB 50%, #F7F8FC 100%) !important;
+            border-color: #E4E9F6 !important;
+            color: var(--ink) !important;
+        }
+        html.mode-laundry .demo-strip,
+        body.mode-laundry .demo-strip {
+            background: linear-gradient(160deg, #F2FCFC 0%, #E8FAFA 50%, #F5FDFB 100%) !important;
+            border-color: #D5F0F0 !important;
+            color: var(--ink) !important;
+        }
+
     </style>
+
+    <script>
+    (function(){
+      try {
+        var m = localStorage.getItem('cleancrew_service_type') || localStorage.getItem('cleancrew_mode') || 'cleaning';
+        if (m !== 'laundry' && m !== 'cleaning') m = 'cleaning';
+        document.documentElement.classList.add('mode-' + m);
+        document.addEventListener('DOMContentLoaded', function(){
+          document.body.classList.remove('mode-cleaning','mode-laundry');
+          document.body.classList.add('mode-' + m);
+        });
+      } catch(e) {}
+    })();
+    </script>
 </head>
-<body>
+<body class="mode-cleaning">
     <div class="pwa-install-banner" id="pwaInstallBanner" role="dialog" aria-label="Install app">
         <div>
             <strong>Add CleanCrew to your phone</strong>
