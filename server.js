@@ -3119,13 +3119,18 @@ app.post(
                 req.body.amount_due ??
                 req.body.amount;
 
+            const docType = (req.body.doc_type === 'quotation' || req.body.doc_type === 'quote')
+                ? 'quotation'
+                : 'invoice';
+            const prefix = docType === 'quotation' ? 'QT' : 'CC';
+
             const invoice = {
                 user_id:
                     req.user.id,
 
                 number:
                     req.body.number ||
-                    `CC-${Date.now()
+                    `${prefix}-${Date.now()
                         .toString()
                         .slice(-6)}`,
 
@@ -3141,29 +3146,46 @@ app.post(
                     req.body.service ||
                     'Service',
 
+                description:
+                    req.body.description ||
+                    req.body.service ||
+                    null,
+
                 amount,
 
                 amount_due:
                     amount,
 
                 amount_paid:
-                    req.body.amount_paid ??
-                    0,
+                    docType === 'quotation' ? 0 : (req.body.amount_paid ?? 0),
 
                 date:
                     req.body.date,
 
                 status:
-                    req.body.status ||
-                    'unpaid',
+                    docType === 'quotation'
+                        ? (req.body.quote_status || req.body.status || 'draft')
+                        : (req.body.status || 'unpaid'),
+
+                doc_type: docType,
+
+                valid_until:
+                    req.body.valid_until || null,
+
+                line_items:
+                    Array.isArray(req.body.line_items) ? req.body.line_items : [],
+
+                quote_status:
+                    docType === 'quotation'
+                        ? (req.body.quote_status || 'draft')
+                        : null,
 
                 job_id:
                     req.body.job_id ||
                     null,
 
                 paid_at:
-                    req.body.paid_at ||
-                    null
+                    docType === 'quotation' ? null : (req.body.paid_at || null)
             };
 
             const {
@@ -3176,6 +3198,16 @@ app.post(
                 .single();
 
             if (error) {
+                if (/doc_type|valid_until|line_items|quote_status|column/i.test(error.message || '')) {
+                    delete invoice.doc_type;
+                    delete invoice.valid_until;
+                    delete invoice.description;
+                    delete invoice.line_items;
+                    delete invoice.quote_status;
+                    const retry = await supabase.from('invoices').insert(invoice).select().single();
+                    if (!retry.error) return res.json(retry.data);
+                    return res.status(400).json({ error: (retry.error.message || error.message) + ' — run migrations_quotations.sql' });
+                }
                 return res.status(400).json({
                     error:
                         error.message
@@ -3225,7 +3257,9 @@ app.put(
 
             // Guardrail: no content edits after fully paid (payment recording uses dedicated fields only via openRecordPayment)
             // Allow only status/payment-related updates if already paid? User said no edits after paid — block all field edits.
-            if (isPaid) {
+            const isQuoteRow = inv.doc_type === 'quotation' ||
+                ['draft', 'sent', 'approved', 'expired', 'quotation'].indexOf(statusNow) !== -1;
+            if (isPaid && !isQuoteRow) {
                 return res.status(400).json({
                     error: 'This invoice is paid and cannot be edited. Create a new invoice if you need a correction.'
                 });
@@ -3269,18 +3303,32 @@ app.put(
                     changes.push('date: ' + prev + ' → ' + v);
                 }
             }
-            if (body.status !== undefined) {
-                const v = String(body.status || '').toLowerCase();
-                const allowed = ['unpaid', 'partial', 'pending', 'paid', 'overdue', 'cancelled'];
+            if (body.status !== undefined || body.quote_status !== undefined) {
+                const v = String(body.quote_status || body.status || '').toLowerCase();
+                const allowed = ['unpaid', 'partial', 'pending', 'paid', 'overdue', 'cancelled', 'draft', 'sent', 'approved', 'expired', 'quotation'];
                 if (allowed.indexOf(v) !== -1 && v !== statusNow) {
-                    // Don't allow marking paid through generic edit — use Record payment
                     if (v === 'paid') {
                         return res.status(400).json({
                             error: 'Mark as paid using Record payment so amount paid is tracked correctly.'
                         });
                     }
                     updates.status = v;
+                    if (['draft', 'sent', 'approved', 'expired', 'converted'].indexOf(v) !== -1) {
+                        updates.quote_status = v;
+                    }
                     changes.push('status: ' + statusNow + ' → ' + v);
+                }
+            }
+            if (body.line_items !== undefined && Array.isArray(body.line_items)) {
+                updates.line_items = body.line_items;
+                changes.push('line items updated');
+            }
+            if (body.quote_status !== undefined && !updates.quote_status) {
+                const qs = String(body.quote_status).toLowerCase();
+                if (['draft', 'sent', 'approved', 'expired', 'converted'].indexOf(qs) !== -1) {
+                    updates.quote_status = qs;
+                    updates.status = qs;
+                    changes.push('quote_status: ' + qs);
                 }
             }
             if (body.description !== undefined || body.service !== undefined) {
@@ -4279,6 +4327,62 @@ app.delete('/api/locations/:id', authenticate, async (req, res) => {
 
 // ─── INVOICE SETTINGS ───────────────────────────────────────
 
+
+// Convert quotation → invoice
+app.post('/api/invoices/:id/convert-to-invoice', authenticate, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const id = req.params.id;
+        const { data: row, error: fetchErr } = await supabase
+            .from('invoices')
+            .select('*')
+            .eq('id', id)
+            .eq('user_id', userId)
+            .single();
+        if (fetchErr || !row) {
+            return res.status(404).json({ error: 'Quotation not found' });
+        }
+        const isQuote = row.doc_type === 'quotation' || row.status === 'quotation';
+        if (!isQuote) {
+            return res.status(400).json({ error: 'Only quotations can be converted to invoices' });
+        }
+        const updates = {
+            doc_type: 'invoice',
+            status: 'unpaid',
+            quote_status: 'converted',
+            amount_paid: 0,
+            paid_at: null
+        };
+        // Keep QT number or issue invoice number — keep same number for audit trail, tag in description
+        const { data, error } = await supabase
+            .from('invoices')
+            .update(updates)
+            .eq('id', id)
+            .eq('user_id', userId)
+            .select()
+            .single();
+        if (error) {
+            // Retry without doc_type if column missing
+            if (/doc_type|column/i.test(error.message || '')) {
+                const { data: d2, error: e2 } = await supabase
+                    .from('invoices')
+                    .update({ status: 'unpaid', amount_paid: 0, paid_at: null })
+                    .eq('id', id)
+                    .eq('user_id', userId)
+                    .select()
+                    .single();
+                if (e2) return res.status(400).json({ error: e2.message });
+                return res.json(d2);
+            }
+            return res.status(400).json({ error: error.message });
+        }
+        res.json(data);
+    } catch (error) {
+        console.error('Convert quotation error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 app.get(
     '/api/invoice-settings',
     authenticate,
@@ -4870,15 +4974,16 @@ app.post(
 
             let items = [];
 
-            if (invoice.items) {
+            const rawLines = invoice.line_items || invoice.items;
+            if (rawLines) {
                 try {
                     items =
-                        typeof invoice.items ===
+                        typeof rawLines ===
                         'string'
                             ? JSON.parse(
-                                  invoice.items
+                                  rawLines
                               )
-                            : invoice.items;
+                            : rawLines;
                 } catch (e) {
                     items = [];
                 }
@@ -4929,7 +5034,7 @@ app.post(
 
                     const price =
                         Number(
-                            item.price ??
+                            item.price ?? item.unit_price ??
                                 (
                                     amount /
                                     qty
