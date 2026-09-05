@@ -3248,7 +3248,22 @@
             </div>
         </div>
 
-            <div class="stats-grid">
+            
+            <div class="card" id="websiteCard" style="margin-bottom:16px;">
+                <div class="card-header" style="margin-bottom:8px;">
+                    <h3 style="margin:0;font-size:15px;">🌐 Your website</h3>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <a class="btn btn-outline btn-sm" id="websiteOpenBtn" href="b.html" target="_blank" rel="noopener">View</a>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="switchTab('settings'); setTimeout(function(){ var el=document.getElementById('bpSlug'); if(el) el.scrollIntoView({behavior:'smooth'}); }, 200);">Edit</button>
+                    </div>
+                </div>
+                <p id="websiteCardStatus" style="font-size:13px;color:var(--slate);margin:0 0 10px;">Set up your public page so customers can book you.</p>
+                <div id="websiteBookingsBox" style="display:none;">
+                    <p style="font-size:12px;font-weight:800;color:var(--slate);text-transform:uppercase;letter-spacing:0.04em;margin:0 0 8px;">Website bookings</p>
+                    <div id="websiteBookingsList" style="display:flex;flex-direction:column;gap:8px;"></div>
+                </div>
+            </div>
+<div class="stats-grid">
                 <div class="stat-card primary">
                     <span class="stat-icon"><svg class="icon"><use href="#ic-clipboard"/></svg></span>
                     <div class="stat-label">Total Jobs</div>
@@ -3665,7 +3680,61 @@
                         <span style="font-size:11px; color:var(--slate);">Clients will send payment proof to this number</span>
                     </div>
                     <hr style="border: none; border-top: 1px solid var(--border); margin: 18px 0;" />
-                    <h4 style="font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;color:var(--slate);margin:0 0 12px;">Terms &amp; conditions</h4>
+                    
+                    <h4 style="font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;color:var(--slate);margin:24px 0 12px;">Public business page</h4>
+                    <p style="font-size:12px;color:var(--slate);margin:0 0 12px;">Your mini landing page on CleanCrew — share with customers. Owners use <strong>Business login</strong> to reach the dashboard.</p>
+                    <div class="form-group">
+                        <label>Page link (slug)</label>
+                        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                            <span style="font-size:12px;color:var(--slate);">cleancrewapp.com/b.html?s=</span>
+                            <input type="text" id="bpSlug" placeholder="sparkle-laundry" style="flex:1;min-width:140px;" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Display name</label>
+                        <input type="text" id="bpName" placeholder="Business name on public page" />
+                    </div>
+                    <div class="form-group">
+                        <label>Tagline</label>
+                        <input type="text" id="bpTagline" placeholder="Professional cleaning & laundry" />
+                    </div>
+                    <div class="form-group">
+                        <label>WhatsApp / phone (customers)</label>
+                        <input type="tel" id="bpWhatsapp" placeholder="0803..." />
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Services (one per line; optional prices: Name | min | max)</label>
+                        <textarea id="bpServices" rows="3" placeholder="Home Cleaning | 5000 | 15000&#10;Office Cleaning | 8000 | 25000&#10;Laundry | 500"></textarea>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Areas served</label>
+                        <input type="text" id="bpAreas" placeholder="e.g. Lekki, VI, Abuja" />
+                    </div>
+                    <div class="form-group full-width">
+                        <label>About (optional)</label>
+                        <textarea id="bpAbout" rows="2" placeholder="Short intro for customers"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Brand colour</label>
+                        <input type="color" id="bpColor" value="#1A6DDB" style="height:40px;padding:4px;width:80px;" />
+                    </div>
+                    <div class="form-group">
+                        <label style="display:flex;align-items:center;gap:8px;font-weight:600;">
+                            <input type="checkbox" id="bpBooking" checked /> Accept bookings on page
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label style="display:flex;align-items:center;gap:8px;font-weight:600;">
+                            <input type="checkbox" id="bpPublished" checked /> Published (visible to public)
+                        </label>
+                    </div>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 8px;">
+                        <button type="button" class="btn btn-primary btn-sm" onclick="saveBusinessPage()">Save public page</button>
+                        <a class="btn btn-outline btn-sm" id="bpPreviewLink" href="b.html" target="_blank" rel="noopener">Open page</a>
+                    </div>
+                    <p id="bpStatus" style="font-size:12px;color:var(--slate);margin:0 0 16px;"></p>
+
+<h4 style="font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;color:var(--slate);margin:0 0 12px;">Terms &amp; conditions</h4>
                     <p style="font-size:12px;color:var(--slate);margin:0 0 12px;">Printed on every invoice PDF under payment details. Use one line per point (like your payment &amp; site-visit rules).</p>
                     <div class="form-group full-width">
                         <label>Your terms</label>
@@ -4376,6 +4445,11 @@
             if (target) target.classList.add('active');
             if (tab === 'settings') {
                 try { loadInvoiceSettings(); } catch (e) {}
+                try { loadBusinessPage(); } catch (e2) {}
+            }
+            if (tab === 'overview') {
+                try { loadBusinessPage(); } catch (e3) {}
+                try { loadWebsiteBookings(); } catch (e4) {}
             }
 
             document.querySelectorAll('.nav-tabs button').forEach(function(el) {
@@ -5178,7 +5252,183 @@
 
         try { applyBusinessProfile(localStorage.getItem('cleancrew_business_name') || '', localStorage.getItem('cleancrew_business_logo') || ''); } catch (e) {}
 
-        async function loadInvoiceSettings() {
+        async 
+        
+        function loadBusinessPage() {
+            return apiFetch('/business-page').then(function(res) {
+                return res.json().then(function(body) {
+                    if (!res.ok) throw new Error((body && body.error) || 'Could not load business page');
+                    return body;
+                });
+            }).then(function(pg) {
+                var set = function(id, v) {
+                    var el = document.getElementById(id);
+                    if (el) el.value = v != null ? v : '';
+                };
+                set('bpSlug', pg.slug);
+                set('bpName', pg.business_name);
+                set('bpTagline', pg.tagline);
+                set('bpWhatsapp', pg.whatsapp || pg.phone);
+                set('bpServices', pg.services);
+                set('bpAreas', pg.areas);
+                set('bpAbout', pg.about);
+                var pub = document.getElementById('bpPublished');
+                if (pub) pub.checked = pg.is_published !== false;
+                var book = document.getElementById('bpBooking');
+                if (book) book.checked = pg.booking_enabled !== false;
+                var col = document.getElementById('bpColor');
+                if (col && pg.primary_color) col.value = pg.primary_color;
+                var link = document.getElementById('bpPreviewLink');
+                if (link && pg.slug) link.href = 'b.html?s=' + encodeURIComponent(pg.slug);
+                var openBtn = document.getElementById('websiteOpenBtn');
+                if (openBtn && pg.slug) openBtn.href = 'b.html?s=' + encodeURIComponent(pg.slug);
+                var st = document.getElementById('bpStatus');
+                if (st && pg.slug) {
+                    var trial = '';
+                    if (pg.trial_ends_at) {
+                        try {
+                            var days = Math.ceil((new Date(pg.trial_ends_at) - new Date()) / 86400000);
+                            if (days > 0) trial = ' · Website free trial: ' + days + ' days left';
+                            else trial = ' · Website trial ended — page still works with CleanCrew branding';
+                        } catch (e) {}
+                    }
+                    st.innerHTML = 'Public URL: <strong>cleancrewapp.com/b.html?s=' + pg.slug + '</strong>' + trial;
+                }
+                var cardSt = document.getElementById('websiteCardStatus');
+                if (cardSt) {
+                    if (pg.is_published !== false && pg.slug) {
+                        cardSt.innerHTML = 'Live: <strong>b.html?s=' + pg.slug + '</strong> — customers can book; you manage jobs here.';
+                    } else {
+                        cardSt.textContent = 'Draft — publish in Settings to go live.';
+                    }
+                }
+                window._businessPage = pg;
+                return pg;
+            }).catch(function(e) {
+                var st = document.getElementById('bpStatus');
+                if (st) st.textContent = (e && e.message) || 'Business page not loaded';
+            });
+        }
+
+        function saveBusinessPage() {
+            var name = ((document.getElementById('bpName') || {}).value || '').trim();
+            if (!name) {
+                showToast('Enter a display name', 'error');
+                return;
+            }
+            var logo = '';
+            try { logo = (document.getElementById('settingsLogoUrl') || {}).value || ''; } catch (e) {}
+            var logoImg = document.getElementById('settingsLogoPreview') || document.getElementById('sidebarLogo');
+            if (!logo && logoImg && logoImg.src && (logoImg.src.indexOf('http') === 0 || logoImg.src.indexOf('data:') === 0)) {
+                logo = logoImg.src;
+            }
+            // Build services_json from lines: "Name | min | max" or plain name
+            var servicesText = ((document.getElementById('bpServices') || {}).value || '').trim();
+            var servicesJson = servicesText.split(/\n+/).map(function(line) {
+                line = line.trim();
+                if (!line) return null;
+                var parts = line.split('|').map(function(p) { return p.trim(); });
+                var item = { name: parts[0] };
+                if (parts[1] && !isNaN(Number(parts[1]))) item.price_min = Number(parts[1]);
+                if (parts[2] && !isNaN(Number(parts[2]))) item.price_max = Number(parts[2]);
+                return item;
+            }).filter(Boolean);
+
+            var payload = {
+                business_name: name,
+                slug: ((document.getElementById('bpSlug') || {}).value || '').trim(),
+                tagline: ((document.getElementById('bpTagline') || {}).value || '').trim(),
+                whatsapp: ((document.getElementById('bpWhatsapp') || {}).value || '').trim(),
+                phone: ((document.getElementById('bpWhatsapp') || {}).value || '').trim(),
+                services: servicesText,
+                services_json: servicesJson,
+                areas: ((document.getElementById('bpAreas') || {}).value || '').trim(),
+                about: ((document.getElementById('bpAbout') || {}).value || '').trim(),
+                logo_url: logo || null,
+                primary_color: ((document.getElementById('bpColor') || {}).value || '#1A6DDB'),
+                booking_enabled: !!(document.getElementById('bpBooking') && document.getElementById('bpBooking').checked),
+                is_published: !!(document.getElementById('bpPublished') && document.getElementById('bpPublished').checked)
+            };
+
+            fetch(API_URL + '/business-page', {
+                method: 'PUT',
+                headers: getHeaders(),
+                body: JSON.stringify(payload)
+            })
+                .then(function(res) {
+                    return res.json().then(function(body) {
+                        if (!res.ok) throw new Error((body && body.error) || 'Save failed');
+                        return body;
+                    });
+                })
+                .then(function(pg) {
+                    showToast('Public page saved', 'success');
+                    loadBusinessPage();
+                    loadWebsiteBookings();
+                })
+                .catch(function(e) {
+                    showToast((e && e.message) || 'Could not save page', 'error');
+                });
+        }
+
+        function loadWebsiteBookings() {
+            return apiFetch('/website/bookings').then(function(res) {
+                return res.json().then(function(body) {
+                    if (!res.ok) throw new Error((body && body.error) || 'Failed');
+                    return body;
+                });
+            }).then(function(list) {
+                var box = document.getElementById('websiteBookingsBox');
+                var el = document.getElementById('websiteBookingsList');
+                if (!el) return;
+                list = list || [];
+                if (!list.length) {
+                    if (box) box.style.display = 'none';
+                    el.innerHTML = '';
+                    return;
+                }
+                if (box) box.style.display = 'block';
+                el.innerHTML = list.slice(0, 8).map(function(b) {
+                    var when = b.booking_date || (b.created_at ? String(b.created_at).slice(0, 10) : '');
+                    var converted = b.converted_to_job_id
+                        ? '<span style="font-size:11px;color:#065F46;">→ Job created</span>'
+                        : '<button type="button" class="btn btn-primary btn-sm" onclick="convertWebsiteBooking(\'' + b.id + '\')">Convert to job</button>';
+                    return '<div style="border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:#fff;">' +
+                        '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;">' +
+                        '<div><strong>' + (b.client_name || '') + '</strong> · ' + (b.service_type || '') +
+                        '<br><span style="font-size:12px;color:var(--slate);">' + (b.client_phone || '') +
+                        (when ? ' · ' + when : '') + ' · ' + (b.status || 'pending') + '</span></div>' +
+                        '<div>' + converted + '</div></div></div>';
+                }).join('');
+            }).catch(function() {});
+        }
+
+        function convertWebsiteBooking(id) {
+            fetch(API_URL + '/website/bookings/' + id + '/convert', {
+                method: 'POST',
+                headers: getHeaders()
+            })
+                .then(function(res) {
+                    return res.json().then(function(body) {
+                        if (!res.ok) throw new Error((body && body.error) || 'Convert failed');
+                        return body;
+                    });
+                })
+                .then(function() {
+                    showToast('Booking converted to job', 'success');
+                    loadWebsiteBookings();
+                    if (typeof loadJobs === 'function') loadJobs();
+                    else if (typeof renderJobs === 'function') {
+                        getJobs().then(function(j) { jobsData = j; renderJobs(); }).catch(function() {});
+                    }
+                })
+                .catch(function(e) {
+                    showToast((e && e.message) || 'Could not convert booking', 'error');
+                });
+        }
+
+
+        function loadInvoiceSettings() {
             try {
                 var localName = '';
                 var localLogo = '';

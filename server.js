@@ -4362,6 +4362,352 @@ app.delete('/api/locations/:id', authenticate, async (req, res) => {
     }
 });
 
+
+// ─── BUSINESS PAGES (public mini landing on CleanCrew) ─────
+function slugifyBusiness(input) {
+    return String(input || '')
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
+        .slice(0, 48) || 'business';
+}
+
+async function uniqueSlug(base, userId) {
+    let slug = slugifyBusiness(base);
+    if (!slug) slug = 'business';
+    for (let i = 0; i < 20; i++) {
+        const trySlug = i === 0 ? slug : slug + '-' + (i + 1);
+        const { data } = await supabase
+            .from('business_pages')
+            .select('id, user_id')
+            .eq('slug', trySlug)
+            .maybeSingle();
+        if (!data || data.user_id === userId) return trySlug;
+    }
+    return slug + '-' + Date.now().toString(36).slice(-4);
+}
+
+// Public — no auth
+app.get('/api/public/business/:slug', async (req, res) => {
+    try {
+        const slug = String(req.params.slug || '').toLowerCase().trim();
+        if (!slug) return res.status(400).json({ error: 'Slug required' });
+        const { data, error } = await supabase
+            .from('business_pages')
+            .select('slug, business_name, tagline, phone, whatsapp, services, services_json, areas, about, logo_url, is_published, primary_color, booking_enabled')
+            .eq('slug', slug)
+            .eq('is_published', true)
+            .maybeSingle();
+        if (error) throw error;
+        if (!data) return res.status(404).json({ error: 'Business page not found' });
+        res.json(data);
+    } catch (error) {
+        console.error('Public business page error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Public booking from business page
+app.post('/api/public/business/:slug/book', async (req, res) => {
+    try {
+        const slug = String(req.params.slug || '').toLowerCase().trim();
+        const body = req.body || {};
+        const clientName = String(body.client_name || '').trim();
+        const clientPhone = String(body.client_phone || '').trim();
+        const serviceType = String(body.service_type || body.service || '').trim();
+        if (!clientName || !clientPhone || !serviceType) {
+            return res.status(400).json({ error: 'Name, phone, and service are required' });
+        }
+        const { data: page, error: pageErr } = await supabase
+            .from('business_pages')
+            .select('user_id, booking_enabled, is_published, business_name')
+            .eq('slug', slug)
+            .eq('is_published', true)
+            .maybeSingle();
+        if (pageErr) throw pageErr;
+        if (!page) return res.status(404).json({ error: 'Business page not found' });
+        if (page.booking_enabled === false) {
+            return res.status(400).json({ error: 'Booking is disabled for this business' });
+        }
+
+        const row = {
+            user_id: page.user_id,
+            client_name: clientName,
+            client_phone: clientPhone,
+            client_email: String(body.client_email || '').trim() || null,
+            client_address: String(body.client_address || '').trim() || null,
+            service_type: serviceType,
+            booking_date: body.booking_date || null,
+            booking_time: body.booking_time || null,
+            estimated_amount: body.estimated_amount != null ? Number(body.estimated_amount) : null,
+            notes: String(body.notes || '').trim() || null,
+            status: 'pending'
+        };
+
+        const { data, error } = await supabase
+            .from('website_bookings')
+            .insert(row)
+            .select()
+            .single();
+        if (error) {
+            if (/relation|does not exist|website_bookings/i.test(error.message || '')) {
+                return res.status(400).json({ error: 'Run migrations_website_phase_a.sql in Supabase first' });
+            }
+            throw error;
+        }
+        res.json({ success: true, booking_id: data.id, message: 'Booking received' });
+    } catch (error) {
+        console.error('Public book error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Owner: list website bookings
+app.get('/api/website/bookings', authenticate, async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('website_bookings')
+            .select('*')
+            .eq('user_id', req.user.id)
+            .order('created_at', { ascending: false })
+            .limit(100);
+        if (error) {
+            if (/relation|does not exist/i.test(error.message || '')) {
+                return res.json([]);
+            }
+            throw error;
+        }
+        res.json(data || []);
+    } catch (error) {
+        console.error('List website bookings error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Owner: update booking status
+app.put('/api/website/bookings/:id', authenticate, async (req, res) => {
+    try {
+        const status = String((req.body || {}).status || '').toLowerCase();
+        const allowed = ['pending', 'confirmed', 'completed', 'cancelled'];
+        if (allowed.indexOf(status) === -1) {
+            return res.status(400).json({ error: 'Invalid status' });
+        }
+        const { data, error } = await supabase
+            .from('website_bookings')
+            .update({ status, updated_at: new Date().toISOString() })
+            .eq('id', req.params.id)
+            .eq('user_id', req.user.id)
+            .select()
+            .single();
+        if (error) throw error;
+        res.json(data);
+    } catch (error) {
+        console.error('Update website booking error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Owner: convert booking → job
+app.post('/api/website/bookings/:id/convert', authenticate, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { data: booking, error: bErr } = await supabase
+            .from('website_bookings')
+            .select('*')
+            .eq('id', req.params.id)
+            .eq('user_id', userId)
+            .single();
+        if (bErr || !booking) return res.status(404).json({ error: 'Booking not found' });
+        if (booking.converted_to_job_id) {
+            return res.json({ success: true, job_id: booking.converted_to_job_id, already: true });
+        }
+
+        const job = {
+            user_id: userId,
+            client: booking.client_name,
+            service: booking.service_type,
+            amount: booking.estimated_amount != null ? Number(booking.estimated_amount) : 0,
+            date: booking.booking_date || new Date().toISOString().slice(0, 10),
+            status: 'pending',
+            mode: 'cleaning',
+            notes: [
+                booking.client_phone ? ('Phone: ' + booking.client_phone) : '',
+                booking.client_address ? ('Address: ' + booking.client_address) : '',
+                booking.booking_time ? ('Time: ' + booking.booking_time) : '',
+                booking.notes || '',
+                '[From website booking]'
+            ].filter(Boolean).join('\n')
+        };
+
+        const ins = await supabase.from('jobs').insert(job).select().single();
+        if (ins.error) {
+            // retry without mode/notes if columns missing
+            if (/column|notes|mode/i.test(ins.error.message || '')) {
+                delete job.mode;
+                delete job.notes;
+                const retry = await supabase.from('jobs').insert(job).select().single();
+                if (retry.error) throw retry.error;
+                ins.data = retry.data;
+            } else throw ins.error;
+        }
+
+        await supabase
+            .from('website_bookings')
+            .update({
+                converted_to_job_id: ins.data.id,
+                converted_at: new Date().toISOString(),
+                status: 'confirmed',
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', booking.id)
+            .eq('user_id', userId);
+
+        res.json({ success: true, job_id: ins.data.id, job: ins.data });
+    } catch (error) {
+        console.error('Convert booking error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Owner — get or seed from invoice_settings
+app.get('/api/business-page', authenticate, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        let { data, error } = await supabase
+            .from('business_pages')
+            .select('*')
+            .eq('user_id', userId)
+            .maybeSingle();
+        if (error) throw error;
+        if (!data) {
+            const settings = await supabase
+                .from('invoice_settings')
+                .select('business_name, logo_url, phone')
+                .eq('user_id', userId)
+                .maybeSingle();
+            const name = (settings.data && settings.data.business_name) || 'My Cleaning Business';
+            const slug = await uniqueSlug(name, userId);
+            const trialEnd = new Date();
+            trialEnd.setMonth(trialEnd.getMonth() + 3);
+            const row = {
+                user_id: userId,
+                slug,
+                business_name: name,
+                logo_url: (settings.data && settings.data.logo_url) || null,
+                phone: (settings.data && settings.data.phone) || null,
+                whatsapp: (settings.data && settings.data.phone) || null,
+                tagline: 'Professional cleaning & laundry services',
+                services: 'Home cleaning\nOffice cleaning\nLaundry',
+                services_json: [
+                    { name: 'Home Cleaning', price_min: 5000, price_max: 15000 },
+                    { name: 'Office Cleaning', price_min: 8000, price_max: 25000 },
+                    { name: 'Laundry', price_min: 500, price_max: null }
+                ],
+                primary_color: '#1A6DDB',
+                booking_enabled: true,
+                trial_started_at: new Date().toISOString(),
+                trial_ends_at: trialEnd.toISOString(),
+                areas: '',
+                about: '',
+                is_published: true
+            };
+            const ins = await supabase.from('business_pages').insert(row).select().single();
+            if (ins.error) {
+                // table missing
+                if (/relation|does not exist|business_pages/i.test(ins.error.message || '')) {
+                    return res.status(400).json({ error: 'Run migrations_business_pages.sql in Supabase first' });
+                }
+                throw ins.error;
+            }
+            data = ins.data;
+        }
+        res.json(data);
+    } catch (error) {
+        console.error('Get business page error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.put('/api/business-page', authenticate, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const body = req.body || {};
+        const businessName = String(body.business_name || '').trim();
+        if (!businessName) return res.status(400).json({ error: 'Business name is required' });
+
+        let slug = body.slug ? slugifyBusiness(body.slug) : slugifyBusiness(businessName);
+        slug = await uniqueSlug(slug, userId);
+
+        let servicesJson = body.services_json;
+        if (typeof servicesJson === 'string') {
+            try { servicesJson = JSON.parse(servicesJson); } catch (e) { servicesJson = []; }
+        }
+        if (!Array.isArray(servicesJson)) servicesJson = [];
+
+        const payload = {
+            user_id: userId,
+            slug,
+            business_name: businessName,
+            tagline: String(body.tagline || '').trim() || null,
+            phone: String(body.phone || '').trim() || null,
+            whatsapp: String(body.whatsapp || body.phone || '').trim() || null,
+            services: String(body.services || '').trim() || null,
+            services_json: servicesJson,
+            areas: String(body.areas || '').trim() || null,
+            about: String(body.about || '').trim() || null,
+            logo_url: body.logo_url || null,
+            primary_color: String(body.primary_color || '#1A6DDB').trim() || '#1A6DDB',
+            booking_enabled: body.booking_enabled !== false,
+            is_published: body.is_published !== false,
+            published_at: body.is_published !== false ? new Date().toISOString() : null,
+            updated_at: new Date().toISOString()
+        };
+
+        const existing = await supabase
+            .from('business_pages')
+            .select('id')
+            .eq('user_id', userId)
+            .maybeSingle();
+
+        let data, error;
+        if (existing.data && existing.data.id) {
+            const upd = await supabase
+                .from('business_pages')
+                .update(payload)
+                .eq('user_id', userId)
+                .select()
+                .single();
+            data = upd.data;
+            error = upd.error;
+        } else {
+            const ins = await supabase
+                .from('business_pages')
+                .insert(payload)
+                .select()
+                .single();
+            data = ins.data;
+            error = ins.error;
+        }
+        if (error) {
+            if (/duplicate|unique/i.test(error.message || '')) {
+                return res.status(400).json({ error: 'That page link is taken — try a different slug' });
+            }
+            if (/relation|does not exist/i.test(error.message || '')) {
+                return res.status(400).json({ error: 'Run migrations_business_pages.sql in Supabase first' });
+            }
+            throw error;
+        }
+        res.json(data);
+    } catch (error) {
+        console.error('Save business page error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
 // ─── INVOICE SETTINGS ───────────────────────────────────────
 
 

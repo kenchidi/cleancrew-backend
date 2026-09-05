@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#1A6DDB" />
+  <title>Business — CleanCrew</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+  <link rel="manifest" href="site.webmanifest" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --blue: #1A6DDB;
+      --blue-dark: #0F4FA8;
+      --ink: #0F172A;
+      --slate: #64748B;
+      --surface: #F8FAFC;
+      --border: #E2E8F0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background: linear-gradient(165deg, #EBF3FE 0%, #F8FAFC 40%, #fff 100%);
+      color: var(--ink);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+    .wrap {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 28px 20px 48px;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 28px 22px;
+      box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+    }
+    .logo {
+      width: 72px; height: 72px;
+      border-radius: 18px;
+      object-fit: cover;
+      background: #EBF3FE;
+      display: block;
+      margin: 0 auto 14px;
+      border: 1px solid var(--border);
+    }
+    .logo-fallback {
+      width: 72px; height: 72px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #2E7DE8, #0F4FA8);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 28px;
+      margin: 0 auto 14px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 1.45rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+    .tagline {
+      text-align: center;
+      color: var(--slate);
+      font-size: 0.95rem;
+      margin-bottom: 22px;
+    }
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+    .btn {
+      display: block;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-weight: 700;
+      font-size: 15px;
+      font-family: inherit;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-wa {
+      background: #25D366;
+      color: #fff;
+    }
+    .btn-login {
+      background: var(--blue);
+      color: #fff;
+    }
+    .btn-ghost {
+      background: var(--surface);
+      color: var(--ink);
+      border: 1px solid var(--border);
+    }
+    section {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    section h2 {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--slate);
+      margin-bottom: 8px;
+      font-weight: 800;
+    }
+    section p, section li {
+      font-size: 14px;
+      color: var(--ink);
+    }
+    section ul {
+      padding-left: 18px;
+    }
+    section li { margin-bottom: 4px; }
+    .foot {
+      text-align: center;
+      margin-top: 22px;
+      font-size: 12px;
+      color: var(--slate);
+    }
+    .foot a { color: var(--blue); font-weight: 700; text-decoration: none; }
+    .state {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--slate);
+    }
+    .state.error { color: #B91C1C; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div id="app" class="state">Loading…</div>
+  </div>
+  <script>
+    (function () {
+      var API = 'https://cleancrew-backend.onrender.com/api';
+      var params = new URLSearchParams(window.location.search);
+      var pathParts = window.location.pathname.split('/').filter(Boolean);
+      var slug = params.get('s') || params.get('slug') || '';
+      // Support /b/slug if hosted with rewrite later
+      if (!slug && pathParts.length >= 2 && pathParts[0] === 'b') slug = pathParts[1];
+      if (!slug && pathParts.length === 1 && pathParts[0] !== 'b.html') slug = pathParts[0];
+
+      var app = document.getElementById('app');
+      if (!slug) {
+        app.className = 'state error';
+        app.textContent = 'Missing business link. Use cleancrewapp.com/b.html?s=your-name';
+        return;
+      }
+
+      function esc(s) {
+        return String(s || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function waLink(num) {
+        var d = String(num || '').replace(/\D/g, '');
+        if (!d) return null;
+        if (d.length === 11 && d.charAt(0) === '0') d = '234' + d.slice(1);
+        if (d.length === 10) d = '234' + d;
+        return 'https://wa.me/' + d;
+      }
+
+      function listHtml(text) {
+        var lines = String(text || '').split(/\n+/).map(function (l) { return l.trim(); }).filter(Boolean);
+        if (!lines.length) return '';
+        return '<ul>' + lines.map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('') + '</ul>';
+      }
+
+      fetch(API + '/public/business/' + encodeURIComponent(slug))
+        .then(function (r) {
+          return r.json().then(function (body) {
+            if (!r.ok) throw new Error((body && body.error) || 'Not found');
+            return body;
+          });
+        })
+        .then(function (b) {
+          document.title = (b.business_name || 'Business') + ' — CleanCrew';
+          var wa = waLink(b.whatsapp || b.phone);
+          var initial = (b.business_name || 'B').charAt(0).toUpperCase();
+          var logo = b.logo_url
+            ? '<img class="logo" src="' + esc(b.logo_url) + '" alt="" />'
+            : '<div class="logo-fallback" aria-hidden="true">' + esc(initial) + '</div>';
+
+          var html = '<div class="card">' +
+            logo +
+            '<h1>' + esc(b.business_name) + '</h1>' +
+            (b.tagline ? '<p class="tagline">' + esc(b.tagline) + '</p>' : '') +
+            '<div class="actions">' +
+              (wa ? '<a class="btn btn-wa" href="' + wa + '" target="_blank" rel="noopener">WhatsApp us</a>' : '') +
+              '<a class="btn btn-login" href="login.html">Business login</a>' +
+              '<a class="btn btn-ghost" href="https://cleancrewapp.com">Get CleanCrew for your shop</a>' +
+            '</div>';
+
+          if (b.services) {
+            html += '<section><h2>Services</h2>' + listHtml(b.services) + '</section>';
+          }
+          if (b.areas) {
+            html += '<section><h2>Areas</h2><p>' + esc(b.areas).replace(/\n/g, '<br/>') + '</p></section>';
+          }
+          if (b.about) {
+            html += '<section><h2>About</h2><p>' + esc(b.about).replace(/\n/g, '<br/>') + '</p></section>';
+          }
+
+          html += '<p class="foot">Page powered by <a href="https://cleancrewapp.com">CleanCrew</a> — jobs, invoices & WhatsApp for cleaning and laundry businesses.</p>';
+          html += '</div>';
+          app.className = '';
+          app.innerHTML = html;
+        })
+        .catch(function (e) {
+          app.className = 'state error';
+          app.textContent = (e && e.message) || 'Business page not found';
+        });
+    })();
+  </script>
+</body>
+</html>
