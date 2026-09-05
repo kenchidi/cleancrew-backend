@@ -3719,13 +3719,13 @@
                         <label>Website template</label>
                         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
                             <label style="border:1.5px solid var(--border);border-radius:12px;padding:10px;cursor:pointer;text-align:center;font-size:12px;font-weight:700;">
-                                <input type="radio" name="bpTemplate" value="modern" checked style="margin-bottom:6px;" /> Modern
+                                <input type="radio" name="bpTemplate" value="modern" checked style="margin-bottom:6px;" /> Modern<br><span style="font-weight:500;color:var(--slate);font-size:10px;">Split layout + steps</span>
                             </label>
                             <label style="border:1.5px solid var(--border);border-radius:12px;padding:10px;cursor:pointer;text-align:center;font-size:12px;font-weight:700;">
-                                <input type="radio" name="bpTemplate" value="vibrant" style="margin-bottom:6px;" /> Vibrant
+                                <input type="radio" name="bpTemplate" value="vibrant" style="margin-bottom:6px;" /> Vibrant<br><span style="font-weight:500;color:var(--slate);font-size:10px;">Bold full hero</span>
                             </label>
                             <label style="border:1.5px solid var(--border);border-radius:12px;padding:10px;cursor:pointer;text-align:center;font-size:12px;font-weight:700;">
-                                <input type="radio" name="bpTemplate" value="elegant" style="margin-bottom:6px;" /> Elegant
+                                <input type="radio" name="bpTemplate" value="elegant" style="margin-bottom:6px;" /> Elegant<br><span style="font-weight:500;color:var(--slate);font-size:10px;">Editorial list</span>
                             </label>
                         </div>
                         <p style="font-size:11px;color:var(--slate);margin:6px 0 0;">Same easy editor — pick the look customers see.</p>
@@ -3734,6 +3734,16 @@
                     <div class="form-group">
                         <label>Brand colour</label>
                         <input type="color" id="bpColor" value="#1A6DDB" style="height:40px;padding:4px;width:80px;" />
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Hero photo URL (optional)</label>
+                        <input type="url" id="bpHero" placeholder="https://… or upload image hosting link" />
+                        <p style="font-size:11px;color:var(--slate);margin:4px 0 0;">Makes the page feel like a real company site. Use a wide photo of cleaning/laundry work.</p>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Testimonials (optional, one per line)</label>
+                        <textarea id="bpTestimonials" rows="3" placeholder="They always leave my flat sparkling — Ada&#10;On-time every week — Chinedu"></textarea>
+                        <p style="font-size:11px;color:var(--slate);margin:4px 0 0;">Format: quote — name</p>
                     </div>
                     <div class="form-group">
                         <label style="display:flex;align-items:center;gap:8px;font-weight:600;">
@@ -5297,6 +5307,10 @@
                 if (col && pg.primary_color) col.value = pg.primary_color;
                 var tpl = (pg.template_id || 'modern').toLowerCase();
                 document.querySelectorAll('input[name="bpTemplate"]').forEach(function(r){ r.checked = (r.value === tpl); });
+                var hero = document.getElementById('bpHero');
+                if (hero) hero.value = pg.hero_image_url || '';
+                var tm = document.getElementById('bpTestimonials');
+                if (tm) tm.value = pg.testimonials || '';
                 var link = document.getElementById('bpPreviewLink');
                 if (link && pg.slug) link.href = 'b.html?s=' + encodeURIComponent(pg.slug);
                 var openBtn = document.getElementById('websiteOpenBtn');

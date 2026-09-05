@@ -6,155 +6,39 @@
   <meta name="theme-color" content="#1A6DDB" />
   <title>Business — CleanCrew</title>
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
   <style>
     :root {
       --primary: #1A6DDB;
       --primary-dark: #0F4FA8;
-      --accent: #16A34A;
       --ink: #0F172A;
       --slate: #64748B;
       --surface: #F8FAFC;
       --border: #E2E8F0;
-      --radius: 16px;
       --font: 'Plus Jakarta Sans', system-ui, sans-serif;
-      --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+      --display: 'Plus Jakarta Sans', system-ui, sans-serif;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
-    body {
-      font-family: var(--font);
-      color: var(--ink);
-      background: #fff;
-      line-height: 1.55;
-      -webkit-tap-highlight-color: transparent;
-    }
-    a { color: inherit; }
+    body { font-family: var(--font); color: var(--ink); background: #fff; line-height: 1.55; }
     img { max-width: 100%; display: block; }
+    a { color: inherit; text-decoration: none; }
+    .state { text-align: center; padding: 80px 20px; color: var(--slate); }
+    .state.error { color: #B91C1C; }
 
-    /* Nav */
-    .nav {
-      position: sticky; top: 0; z-index: 50;
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-    }
-    .nav-inner {
-      max-width: 1040px; margin: 0 auto;
-      padding: 12px 18px;
-      display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    }
-    .brand {
-      display: flex; align-items: center; gap: 10px;
-      font-weight: 800; font-size: 15px; text-decoration: none;
-    }
-    .brand img, .brand .mark {
-      width: 36px; height: 36px; border-radius: 10px; object-fit: cover;
-    }
-    .brand .mark {
-      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-      color: #fff; display: grid; place-items: center; font-size: 16px;
-    }
-    .nav-links { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
-    .nav-links a {
-      text-decoration: none; font-size: 13px; font-weight: 600; color: var(--slate);
-      padding: 8px 10px; border-radius: 999px;
-    }
-    .nav-links a:hover { color: var(--ink); background: var(--surface); }
-    .nav-cta {
-      background: var(--primary) !important; color: #fff !important;
-      padding: 8px 14px !important;
-    }
-    .nav-cta:hover { filter: brightness(1.05); }
-
-    /* Hero */
-    .hero {
-      max-width: 1040px; margin: 0 auto;
-      padding: 48px 18px 40px;
-      display: grid; gap: 28px; align-items: center;
-    }
-    @media (min-width: 800px) {
-      .hero { grid-template-columns: 1.15fr 0.85fr; padding: 64px 18px 56px; }
-    }
-    .hero h1 {
-      font-family: var(--font-display);
-      font-size: clamp(1.85rem, 4vw, 2.75rem);
-      line-height: 1.12; letter-spacing: -0.03em; margin-bottom: 12px;
-    }
-    .hero p.lead { font-size: 1.05rem; color: var(--slate); margin-bottom: 22px; max-width: 36ch; }
-    .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; }
     .btn {
       display: inline-flex; align-items: center; justify-content: center; gap: 8px;
       border: none; border-radius: 14px; padding: 14px 20px;
-      font-family: inherit; font-weight: 700; font-size: 15px;
-      text-decoration: none; cursor: pointer;
+      font-family: inherit; font-weight: 700; font-size: 15px; cursor: pointer;
     }
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-wa { background: #25D366; color: #fff; }
     .btn-outline { background: #fff; color: var(--ink); border: 1.5px solid var(--border); }
-    .hero-card {
-      background: linear-gradient(160deg, color-mix(in srgb, var(--primary) 12%, #fff), #fff);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 24px;
-      box-shadow: 0 16px 40px rgba(15,23,42,0.06);
-    }
-    .hero-card h3 { font-size: 14px; margin-bottom: 12px; }
-    .hero-card ul { list-style: none; }
-    .hero-card li {
-      display: flex; gap: 10px; align-items: flex-start;
-      font-size: 14px; padding: 8px 0; border-bottom: 1px solid var(--border);
-    }
-    .hero-card li:last-child { border-bottom: 0; }
-    .check {
-      width: 22px; height: 22px; border-radius: 50%;
-      background: color-mix(in srgb, var(--primary) 15%, #fff);
-      color: var(--primary); display: grid; place-items: center;
-      font-size: 12px; font-weight: 800; flex-shrink: 0;
-    }
+    .btn-ghost { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.35); }
 
-    /* Sections */
-    .section { max-width: 1040px; margin: 0 auto; padding: 40px 18px; }
-    .section h2 {
-      font-size: 1.45rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px;
-    }
-    .section .sub { color: var(--slate); margin-bottom: 22px; max-width: 48ch; }
-    .grid-3 {
-      display: grid; gap: 14px;
-      grid-template-columns: 1fr;
-    }
-    @media (min-width: 700px) { .grid-3 { grid-template-columns: repeat(3, 1fr); } }
-    .svc-card {
-      border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 18px; background: var(--surface);
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-    .svc-card:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(15,23,42,0.06); }
-    .svc-card strong { display: block; font-size: 15px; margin-bottom: 6px; }
-    .svc-card .price { color: var(--primary); font-weight: 800; font-size: 14px; }
-    .svc-card p { font-size: 13px; color: var(--slate); margin-top: 6px; }
-
-    .about-box {
-      display: grid; gap: 18px;
-    }
-    @media (min-width: 700px) { .about-box { grid-template-columns: 1fr 1fr; align-items: start; } }
-    .about-box .panel {
-      border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; background: #fff;
-    }
-
-    /* Book form */
-    .book-wrap {
-      background: var(--surface);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-    }
-    .book-grid {
-      display: grid; gap: 20px;
-    }
-    @media (min-width: 800px) { .book-grid { grid-template-columns: 0.9fr 1.1fr; } }
     label { display: block; font-size: 12px; font-weight: 700; color: var(--slate); margin-bottom: 4px; }
     input, select, textarea {
-      width: 100%; padding: 12px 12px; border: 1.5px solid var(--border); border-radius: 12px;
+      width: 100%; padding: 12px; border: 1.5px solid var(--border); border-radius: 12px;
       font-family: inherit; font-size: 16px; margin-bottom: 10px; background: #fff;
     }
     input:focus, select:focus, textarea:focus {
@@ -164,49 +48,170 @@
     .ok { background: #ECFDF5; color: #065F46; border-radius: 12px; padding: 12px; font-size: 14px; margin-bottom: 12px; font-weight: 600; }
     .err { background: #FEF2F2; color: #991B1B; border-radius: 12px; padding: 12px; font-size: 14px; margin-bottom: 12px; }
 
-    footer {
-      max-width: 1040px; margin: 0 auto;
-      padding: 28px 18px 40px;
-      display: flex; flex-wrap: wrap; gap: 12px;
-      justify-content: space-between; align-items: center;
+    /* —— Shared nav —— */
+    .nav {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(255,255,255,0.94); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: 1080px; margin: 0 auto; padding: 12px 18px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 15px; }
+    .brand img, .brand .mark { width: 36px; height: 36px; border-radius: 10px; object-fit: cover; }
+    .brand .mark {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff; display: grid; place-items: center; font-size: 16px;
+    }
+    .nav-links { display: flex; flex-wrap: wrap; gap: 2px; justify-content: flex-end; align-items: center; }
+    .nav-links a { font-size: 13px; font-weight: 600; color: var(--slate); padding: 8px 10px; border-radius: 999px; }
+    .nav-links a:hover { background: var(--surface); color: var(--ink); }
+    .nav-links .nav-cta { background: var(--primary); color: #fff !important; padding: 8px 14px; }
+
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 0 18px; }
+    .section { padding: 48px 0; }
+    .section h2 { font-family: var(--display); font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
+    .section .sub { color: var(--slate); margin-bottom: 22px; max-width: 48ch; }
+
+    .grid-3 { display: grid; gap: 14px; grid-template-columns: 1fr; }
+    @media (min-width: 720px) { .grid-3 { grid-template-columns: repeat(3, 1fr); } }
+
+    .svc-card {
+      border: 1px solid var(--border); border-radius: 16px; padding: 18px; background: var(--surface);
+    }
+    .svc-card strong { display: block; font-size: 15px; margin-bottom: 6px; }
+    .svc-card .price { color: var(--primary); font-weight: 800; font-size: 14px; }
+    .svc-card p { font-size: 13px; color: var(--slate); margin-top: 6px; }
+
+    .t-grid { display: grid; gap: 12px; grid-template-columns: 1fr; }
+    @media (min-width: 720px) { .t-grid { grid-template-columns: repeat(3, 1fr); } }
+    .t-card {
+      background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 18px;
+      font-size: 14px;
+    }
+    .t-card q { display: block; font-style: normal; margin-bottom: 10px; color: var(--ink); }
+    .t-card span { font-size: 12px; font-weight: 700; color: var(--slate); }
+
+    footer.site-foot {
+      border-top: 1px solid var(--border); padding: 28px 18px 40px;
+    }
+    footer.site-foot .wrap {
+      display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center;
       font-size: 13px; color: var(--slate);
     }
-    footer a { color: var(--primary); font-weight: 700; text-decoration: none; }
+    footer.site-foot a { color: var(--primary); font-weight: 700; }
 
-    .state { text-align: center; padding: 80px 20px; color: var(--slate); }
-    .state.error { color: #B91C1C; }
+    /* ========== MODERN: split hero + airy ========== */
+    body.tpl-modern .hero {
+      display: grid; gap: 28px; align-items: center;
+      padding: 48px 0 40px;
+    }
+    @media (min-width: 800px) {
+      body.tpl-modern .hero { grid-template-columns: 1.1fr 0.9fr; padding: 56px 0; }
+    }
+    body.tpl-modern .hero h1 {
+      font-size: clamp(1.9rem, 4vw, 2.8rem); line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 12px;
+    }
+    body.tpl-modern .hero .lead { color: var(--slate); font-size: 1.05rem; margin-bottom: 20px; max-width: 36ch; }
+    body.tpl-modern .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    body.tpl-modern .hero-visual {
+      border-radius: 24px; overflow: hidden; min-height: 240px;
+      background: linear-gradient(145deg, color-mix(in srgb, var(--primary) 20%, #fff), var(--surface));
+      border: 1px solid var(--border);
+    }
+    body.tpl-modern .hero-visual img { width: 100%; height: 280px; object-fit: cover; }
+    body.tpl-modern .hero-visual .placeholder {
+      height: 280px; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--slate);
+    }
+    body.tpl-modern .how { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    body.tpl-modern .steps { display: grid; gap: 12px; }
+    @media (min-width: 700px) { body.tpl-modern .steps { grid-template-columns: repeat(3, 1fr); } }
+    body.tpl-modern .step {
+      background: #fff; border-radius: 16px; padding: 18px; border: 1px solid var(--border);
+    }
+    body.tpl-modern .step .n {
+      width: 28px; height: 28px; border-radius: 8px; background: var(--primary); color: #fff;
+      display: grid; place-items: center; font-weight: 800; font-size: 13px; margin-bottom: 10px;
+    }
 
-    /* Template: vibrant */
+    /* ========== VIBRANT: full-bleed hero + bold ========== */
     body.tpl-vibrant {
       --primary: #7C3AED;
       --primary-dark: #5B21B6;
-      --accent: #F59E0B;
       --surface: #FAF5FF;
+      --font: 'DM Sans', system-ui, sans-serif;
     }
-    body.tpl-vibrant .hero {
-      background: linear-gradient(135deg, #EDE9FE 0%, #fff 55%);
-      max-width: none; padding-left: max(18px, calc((100% - 1040px) / 2 + 18px));
-      padding-right: max(18px, calc((100% - 1040px) / 2 + 18px));
+    body.tpl-vibrant .nav { background: rgba(250,245,255,0.94); }
+    body.tpl-vibrant .hero-bleed {
+      position: relative; color: #fff;
+      min-height: 420px;
+      display: flex; align-items: flex-end;
+      background: linear-gradient(135deg, #5B21B6 0%, #7C3AED 45%, #A78BFA 100%);
     }
-    body.tpl-vibrant .svc-card { background: #fff; border-color: #DDD6FE; }
+    body.tpl-vibrant .hero-bleed.has-img {
+      background-size: cover; background-position: center;
+    }
+    body.tpl-vibrant .hero-bleed::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(15,23,42,0.75) 0%, rgba(15,23,42,0.25) 55%, rgba(91,33,182,0.35) 100%);
+    }
+    body.tpl-vibrant .hero-bleed .wrap { position: relative; z-index: 1; padding-top: 80px; padding-bottom: 40px; }
+    body.tpl-vibrant .hero-bleed h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.05; margin-bottom: 12px; max-width: 16ch;
+    }
+    body.tpl-vibrant .hero-bleed .lead { opacity: 0.92; margin-bottom: 20px; max-width: 40ch; font-size: 1.08rem; }
+    body.tpl-vibrant .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    body.tpl-vibrant .svc-card {
+      background: #fff; border-color: #DDD6FE;
+      box-shadow: 0 8px 24px rgba(124,58,237,0.08);
+    }
+    body.tpl-vibrant .band {
+      background: linear-gradient(90deg, #5B21B6, #7C3AED);
+      color: #fff; padding: 28px 18px; text-align: center;
+    }
+    body.tpl-vibrant .band p { font-weight: 700; font-size: 1.15rem; margin-bottom: 12px; }
 
-    /* Template: elegant */
+    /* ========== ELEGANT: centered editorial ========== */
     body.tpl-elegant {
       --primary: #0F766E;
       --primary-dark: #115E59;
-      --font-display: 'Playfair Display', Georgia, serif;
       --surface: #F0FDFA;
+      --display: 'Playfair Display', Georgia, serif;
     }
-    body.tpl-elegant .hero h1 { font-weight: 700; }
     body.tpl-elegant .nav { border-bottom-color: #CCFBF1; }
-    body.tpl-elegant .svc-card { background: #fff; border-radius: 4px; }
-
-    /* Template: modern (default) */
-    body.tpl-modern .hero {
-      background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 8%, #fff) 0%, #fff 100%);
-      max-width: none;
-      padding-left: max(18px, calc((100% - 1040px) / 2 + 18px));
-      padding-right: max(18px, calc((100% - 1040px) / 2 + 18px));
+    body.tpl-elegant .hero-center {
+      text-align: center; padding: 56px 0 40px;
+      border-bottom: 1px solid #CCFBF1;
+      background: linear-gradient(180deg, #F0FDFA 0%, #fff 100%);
+    }
+    body.tpl-elegant .hero-center .eyebrow {
+      font-size: 12px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--primary); margin-bottom: 12px;
+    }
+    body.tpl-elegant .hero-center h1 {
+      font-family: var(--display); font-size: clamp(2rem, 4.5vw, 3rem);
+      font-weight: 700; line-height: 1.15; margin-bottom: 14px; max-width: 18ch; margin-left: auto; margin-right: auto;
+    }
+    body.tpl-elegant .hero-center .lead {
+      color: var(--slate); max-width: 42ch; margin: 0 auto 22px; font-size: 1.05rem;
+    }
+    body.tpl-elegant .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    body.tpl-elegant .hero-photo {
+      max-width: 720px; margin: 28px auto 0; border-radius: 4px; overflow: hidden;
+      border: 1px solid #CCFBF1; min-height: 200px;
+      background: var(--surface);
+    }
+    body.tpl-elegant .hero-photo img { width: 100%; height: 300px; object-fit: cover; }
+    body.tpl-elegant .svc-card { border-radius: 4px; background: #fff; border-color: #CCFBF1; }
+    body.tpl-elegant .svc-list { display: grid; gap: 0; border: 1px solid #CCFBF1; border-radius: 4px; overflow: hidden; }
+    body.tpl-elegant .svc-list .row {
+      display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+      padding: 16px 18px; border-bottom: 1px solid #CCFBF1; background: #fff;
+    }
+    body.tpl-elegant .svc-list .row:last-child { border-bottom: 0; }
+    body.tpl-elegant .divider-line {
+      width: 48px; height: 2px; background: var(--primary); margin: 0 auto 16px;
     }
   </style>
 </head>
@@ -219,11 +224,10 @@
       var pathParts = window.location.pathname.split('/').filter(Boolean);
       var slug = params.get('s') || params.get('slug') || '';
       if (!slug && pathParts.length >= 2 && pathParts[0] === 'b') slug = pathParts[1];
-
       var app = document.getElementById('app');
       if (!slug) {
         app.className = 'state error';
-        app.textContent = 'Missing business link. Use cleancrewapp.com/b.html?s=your-name';
+        app.textContent = 'Missing link. Use cleancrewapp.com/b.html?s=your-business';
         return;
       }
 
@@ -235,7 +239,7 @@
         if (!d) return null;
         if (d.length === 11 && d[0] === '0') d = '234' + d.slice(1);
         if (d.length === 10) d = '234' + d;
-        return 'https://wa.me/' + d + '?text=' + encodeURIComponent('Hi, I found you online and I would like to book a service.');
+        return 'https://wa.me/' + d + '?text=' + encodeURIComponent('Hi, I found your page and I would like to book a service.');
       }
       function money(n) {
         if (n == null || n === '' || isNaN(Number(n))) return '';
@@ -243,36 +247,46 @@
       }
       function servicesList(b) {
         var list = [];
-        if (b.services_json && (b.services_json.length || typeof b.services_json === 'string')) {
-          try {
-            list = typeof b.services_json === 'string' ? JSON.parse(b.services_json) : b.services_json;
-          } catch (e) { list = []; }
-        }
-        if (!list.length && b.services) {
-          list = String(b.services).split(/\n+/).map(function (l) {
-            var parts = l.split('|').map(function (p) { return p.trim(); });
-            var item = { name: parts[0] };
-            if (parts[1] && !isNaN(Number(parts[1]))) item.price_min = Number(parts[1]);
-            if (parts[2] && !isNaN(Number(parts[2]))) item.price_max = Number(parts[2]);
+        try {
+          if (b.services_json) list = typeof b.services_json === 'string' ? JSON.parse(b.services_json) : b.services_json;
+        } catch (e) { list = []; }
+        if (!list || !list.length) {
+          list = String(b.services || '').split(/\n+/).map(function (l) {
+            var p = l.split('|').map(function (x) { return x.trim(); });
+            if (!p[0]) return null;
+            var item = { name: p[0] };
+            if (p[1] && !isNaN(Number(p[1]))) item.price_min = Number(p[1]);
+            if (p[2] && !isNaN(Number(p[2]))) item.price_max = Number(p[2]);
             return item;
-          }).filter(function (x) { return x.name; });
+          }).filter(Boolean);
         }
         return list || [];
+      }
+      function parseTestimonials(text) {
+        return String(text || '').split(/\n+/).map(function (l) {
+          l = l.trim();
+          if (!l) return null;
+          var parts = l.split('—');
+          if (parts.length < 2) parts = l.split(' - ');
+          if (parts.length >= 2) {
+            return { quote: parts[0].trim().replace(/^["“]|["”]$/g, ''), name: parts.slice(1).join('—').trim() };
+          }
+          return { quote: l.replace(/^["“]|["”]$/g, ''), name: 'Customer' };
+        }).filter(Boolean).slice(0, 6);
       }
 
       fetch(API + '/public/business/' + encodeURIComponent(slug))
         .then(function (r) {
           return r.json().then(function (body) {
-            if (!r.ok) throw new Error((body && body.error) || 'Not found');
+            if (!r.ok) throw new Error((body && body.error) || 'Page not found');
             return body;
           });
         })
         .then(function (b) {
           document.title = (b.business_name || 'Business') + ' — Cleaning & Laundry';
           var tpl = (b.template_id || 'modern').toLowerCase();
-          if (['modern', 'vibrant', 'elegant'].indexOf(tpl) === -1) tpl = 'modern';
+          if (['modern', 'vibrant', 'elegant'].indexOf(tpl) < 0) tpl = 'modern';
           document.body.className = 'tpl-' + tpl;
-
           if (b.primary_color) {
             document.documentElement.style.setProperty('--primary', b.primary_color);
             var meta = document.querySelector('meta[name="theme-color"]');
@@ -283,104 +297,155 @@
           var initial = (b.business_name || 'B').charAt(0).toUpperCase();
           var brandMark = b.logo_url
             ? '<img src="' + esc(b.logo_url) + '" alt="" />'
-            : '<span class="mark" aria-hidden="true">' + esc(initial) + '</span>';
-
+            : '<span class="mark">' + esc(initial) + '</span>';
           var svcs = servicesList(b);
-          var svcHtml = svcs.map(function (s) {
-            var price = '';
-            if (s.price_min != null && s.price_max != null) price = money(s.price_min) + ' – ' + money(s.price_max);
-            else if (s.price_min != null) price = 'From ' + money(s.price_min);
-            return '<div class="svc-card"><strong>' + esc(s.name || s.title) + '</strong>' +
-              (price ? '<div class="price">' + esc(price) + '</div>' : '') +
-              (s.description ? '<p>' + esc(s.description) + '</p>' : '') +
-              '</div>';
-          }).join('');
-          if (!svcHtml) {
-            svcHtml = '<div class="svc-card"><strong>Home cleaning</strong><p>Reliable residential cleaning</p></div>' +
-              '<div class="svc-card"><strong>Office cleaning</strong><p>Keep your workspace fresh</p></div>' +
-              '<div class="svc-card"><strong>Laundry</strong><p>Wash, fold & care</p></div>';
+          var testimonials = parseTestimonials(b.testimonials);
+          var heroImg = b.hero_image_url || '';
+
+          function svcCards() {
+            if (!svcs.length) {
+              return '<div class="svc-card"><strong>Home cleaning</strong><p>Fresh, reliable home service</p></div>' +
+                '<div class="svc-card"><strong>Office cleaning</strong><p>Workspaces that stay sharp</p></div>' +
+                '<div class="svc-card"><strong>Laundry</strong><p>Wash, fold & care</p></div>';
+            }
+            return svcs.map(function (s) {
+              var price = '';
+              if (s.price_min != null && s.price_max != null) price = money(s.price_min) + ' – ' + money(s.price_max);
+              else if (s.price_min != null) price = 'From ' + money(s.price_min);
+              return '<div class="svc-card"><strong>' + esc(s.name || s.title) + '</strong>' +
+                (price ? '<div class="price">' + esc(price) + '</div>' : '') +
+                (s.description ? '<p>' + esc(s.description) + '</p>' : '') + '</div>';
+            }).join('');
           }
-
-          var opts = svcs.map(function (s) {
-            return '<option value="' + esc(s.name || s.title) + '">' + esc(s.name || s.title) + '</option>';
-          }).join('');
-          if (!opts) {
-            opts = '<option value="Home cleaning">Home cleaning</option><option value="Office cleaning">Office cleaning</option><option value="Laundry">Laundry</option>';
+          function svcRowsElegant() {
+            var list = svcs.length ? svcs : [
+              { name: 'Home cleaning', price_min: 5000, price_max: 15000 },
+              { name: 'Office cleaning', price_min: 8000, price_max: 25000 },
+              { name: 'Laundry', price_min: 500 }
+            ];
+            return '<div class="svc-list">' + list.map(function (s) {
+              var price = '';
+              if (s.price_min != null && s.price_max != null) price = money(s.price_min) + ' – ' + money(s.price_max);
+              else if (s.price_min != null) price = 'From ' + money(s.price_min);
+              return '<div class="row"><strong>' + esc(s.name || s.title) + '</strong><span class="price" style="color:var(--primary);font-weight:800;">' + esc(price || 'Ask') + '</span></div>';
+            }).join('') + '</div>';
           }
-
-          var highlights = (svcs.slice(0, 4).map(function (s) {
-            return '<li><span class="check">✓</span><span>' + esc(s.name || s.title) + '</span></li>';
-          }).join('')) || '<li><span class="check">✓</span><span>Professional cleaning</span></li><li><span class="check">✓</span><span>On-time service</span></li><li><span class="check">✓</span><span>Easy WhatsApp booking</span></li>';
-
-          var bookSection = '';
-          if (b.booking_enabled !== false) {
-            bookSection =
-              '<div class="book-wrap" id="book">' +
-              '<div class="section">' +
-              '<div class="book-grid">' +
-              '<div><h2>Book a service</h2><p class="sub">Tell us what you need. The team will confirm on WhatsApp or phone.</p>' +
-              (wa ? '<p style="margin-top:12px;"><a class="btn btn-wa" href="' + wa + '" target="_blank" rel="noopener">Or chat on WhatsApp</a></p>' : '') +
-              '</div>' +
-              '<div>' +
-              '<div id="bookMsg"></div>' +
-              '<form id="bookForm">' +
+          function opts() {
+            var o = svcs.map(function (s) {
+              return '<option value="' + esc(s.name || s.title) + '">' + esc(s.name || s.title) + '</option>';
+            }).join('');
+            return o || '<option value="Home cleaning">Home cleaning</option><option value="Laundry">Laundry</option>';
+          }
+          function testimonialsHtml() {
+            if (!testimonials.length) return '';
+            return '<section class="section" id="reviews"><div class="wrap">' +
+              '<h2>What clients say</h2><p class="sub">Real feedback from people we serve.</p>' +
+              '<div class="t-grid">' + testimonials.map(function (t) {
+                return '<div class="t-card"><q>“' + esc(t.quote) + '”</q><span>— ' + esc(t.name) + '</span></div>';
+              }).join('') + '</div></div></section>';
+          }
+          function bookBlock() {
+            if (b.booking_enabled === false) return '';
+            return '<section class="section" id="book" style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">' +
+              '<div class="wrap" style="display:grid;gap:20px;' + (tpl === 'elegant' ? '' : '') + '">' +
+              '<div><h2>Book a service</h2><p class="sub">Send a request — we confirm by phone or WhatsApp.</p>' +
+              (wa ? '<p style="margin-top:8px;"><a class="btn btn-wa" href="' + wa + '" target="_blank" rel="noopener">Chat on WhatsApp</a></p>' : '') +
+              '</div><div><div id="bookMsg"></div><form id="bookForm">' +
               '<label>Your name *</label><input name="client_name" required autocomplete="name" />' +
-              '<label>Phone / WhatsApp *</label><input name="client_phone" type="tel" required autocomplete="tel" />' +
-              '<label>Service *</label><select name="service_type" required>' + opts + '</select>' +
+              '<label>Phone / WhatsApp *</label><input name="client_phone" type="tel" required />' +
+              '<label>Service *</label><select name="service_type" required>' + opts() + '</select>' +
               '<label>Preferred date</label><input name="booking_date" type="date" />' +
-              '<label>Address</label><input name="client_address" placeholder="Area or full address" />' +
-              '<label>Notes</label><textarea name="notes" rows="2" placeholder="Rooms, items, access notes…"></textarea>' +
+              '<label>Address</label><input name="client_address" />' +
+              '<label>Notes</label><textarea name="notes" rows="2"></textarea>' +
               '<button type="submit" class="btn btn-primary" style="width:100%;">Request booking</button>' +
-              '</form></div></div></div></div>';
+              '</form></div></div></section>';
+          }
+          function nav() {
+            return '<header class="nav"><div class="nav-inner">' +
+              '<a class="brand" href="#top">' + brandMark + '<span>' + esc(b.business_name) + '</span></a>' +
+              '<nav class="nav-links">' +
+              '<a href="#services">Services</a><a href="#about">About</a>' +
+              (testimonials.length ? '<a href="#reviews">Reviews</a>' : '') +
+              (b.booking_enabled !== false ? '<a href="#book">Book</a>' : '') +
+              (wa ? '<a href="' + wa + '" target="_blank" rel="noopener">WhatsApp</a>' : '') +
+              '<a class="nav-cta" href="#book">Book now</a></nav></div></header>';
+          }
+          function about() {
+            return '<section class="section" id="about"><div class="wrap">' +
+              '<h2>About us</h2>' +
+              (tpl === 'elegant' ? '<div class="divider-line"></div>' : '') +
+              '<p class="sub" style="max-width:60ch;font-size:15px;color:var(--ink);">' +
+              esc(b.about || (b.business_name + ' provides reliable cleaning and laundry services. Book online and we will follow up to confirm.')).replace(/\n/g, '<br/>') +
+              '</p>' +
+              (b.areas ? '<p style="font-size:14px;color:var(--slate);"><strong>Areas:</strong> ' + esc(b.areas) + '</p>' : '') +
+              '</div></section>';
+          }
+          function foot() {
+            return '<footer class="site-foot"><div class="wrap">' +
+              '<div><strong style="color:var(--ink)">' + esc(b.business_name) + '</strong><br/>Cleaning & laundry</div>' +
+              '<div>Powered by <a href="https://cleancrewapp.com">CleanCrew</a> · <a href="login.html">Business login</a></div>' +
+              '</div></footer>';
+          }
+
+          var heroActions =
+            (b.booking_enabled !== false ? '<a class="btn btn-primary" href="#book">Book a service</a>' : '') +
+            (wa ? '<a class="btn btn-wa" href="' + wa + '" target="_blank" rel="noopener">WhatsApp</a>' : '') +
+            '<a class="btn btn-outline" href="login.html">Business login</a>';
+
+          var main = '';
+
+          if (tpl === 'vibrant') {
+            var bgStyle = heroImg ? ' style="background-image:url(\'' + esc(heroImg) + '\')"' : '';
+            main = nav() +
+              '<section class="hero-bleed' + (heroImg ? ' has-img' : '') + '" id="top"' + bgStyle + '>' +
+              '<div class="wrap"><h1>' + esc(b.business_name) + '</h1>' +
+              '<p class="lead">' + esc(b.tagline || 'Fresh spaces. Happy customers. Book in minutes.') + '</p>' +
+              '<div class="hero-actions">' +
+              (b.booking_enabled !== false ? '<a class="btn btn-primary" href="#book" style="background:#fff;color:#5B21B6;">Book now</a>' : '') +
+              (wa ? '<a class="btn btn-ghost" href="' + wa + '" target="_blank" rel="noopener">WhatsApp</a>' : '') +
+              '</div></div></section>' +
+              '<section class="section" id="services"><div class="wrap"><h2>Services</h2><p class="sub">Pick what you need — clear and simple.</p><div class="grid-3">' + svcCards() + '</div></div></section>' +
+              '<div class="band"><p>Ready for a cleaner space?</p>' +
+              (b.booking_enabled !== false ? '<a class="btn" href="#book" style="background:#fff;color:#5B21B6;">Request a booking</a>' : '') +
+              '</div>' +
+              about() + testimonialsHtml() + bookBlock() + foot();
+          } else if (tpl === 'elegant') {
+            main = nav() +
+              '<section class="hero-center" id="top"><div class="wrap">' +
+              '<div class="eyebrow">Cleaning & laundry</div>' +
+              '<h1>' + esc(b.business_name) + '</h1>' +
+              '<p class="lead">' + esc(b.tagline || 'Thoughtful service. Professional finish. Every visit.') + '</p>' +
+              '<div class="hero-actions">' + heroActions + '</div>' +
+              '<div class="hero-photo">' +
+              (heroImg ? '<img src="' + esc(heroImg) + '" alt="" />' : '<div style="height:200px;display:grid;place-items:center;color:var(--slate);font-size:14px;">Add a hero photo in Settings</div>') +
+              '</div></div></section>' +
+              '<section class="section" id="services"><div class="wrap"><h2 style="text-align:center;">Services & rates</h2><div class="divider-line"></div>' +
+              svcRowsElegant() + '</div></section>' +
+              about() + testimonialsHtml() + bookBlock() + foot();
+          } else {
+            /* modern */
+            main = nav() +
+              '<div class="wrap"><section class="hero" id="top">' +
+              '<div><h1>' + esc(b.business_name) + '</h1>' +
+              '<p class="lead">' + esc(b.tagline || 'Professional cleaning & laundry — booked in minutes.') + '</p>' +
+              '<div class="hero-actions">' + heroActions + '</div></div>' +
+              '<div class="hero-visual">' +
+              (heroImg ? '<img src="' + esc(heroImg) + '" alt="" />' :
+                '<div class="placeholder"><strong style="color:var(--ink);display:block;margin-bottom:6px;">Your brand, online</strong>Add a hero photo in CleanCrew Settings for a stronger first impression.</div>') +
+              '</div></section></div>' +
+              '<section class="section" id="services"><div class="wrap"><h2>Our services</h2><p class="sub">Straightforward options and pricing.</p><div class="grid-3">' + svcCards() + '</div></div></section>' +
+              '<div class="how"><div class="wrap section" style="padding-top:40px;padding-bottom:40px;">' +
+              '<h2>How it works</h2><p class="sub">Simple from first message to finished job.</p>' +
+              '<div class="steps">' +
+              '<div class="step"><div class="n">1</div><strong>Book</strong><p style="font-size:13px;color:var(--slate);margin-top:6px;">Request a service online or on WhatsApp.</p></div>' +
+              '<div class="step"><div class="n">2</div><strong>We confirm</strong><p style="font-size:13px;color:var(--slate);margin-top:6px;">Date, scope, and price — clear before we start.</p></div>' +
+              '<div class="step"><div class="n">3</div><strong>We deliver</strong><p style="font-size:13px;color:var(--slate);margin-top:6px;">Professional cleaning or laundry, done right.</p></div>' +
+              '</div></div></div>' +
+              about() + testimonialsHtml() + bookBlock() + foot();
           }
 
           app.className = '';
-          app.innerHTML =
-            '<header class="nav"><div class="nav-inner">' +
-            '<a class="brand" href="#top">' + brandMark + '<span>' + esc(b.business_name) + '</span></a>' +
-            '<nav class="nav-links" aria-label="Site">' +
-            '<a href="#services">Services</a>' +
-            '<a href="#about">About</a>' +
-            (b.booking_enabled !== false ? '<a href="#book">Book</a>' : '') +
-            (wa ? '<a href="' + wa + '" target="_blank" rel="noopener">WhatsApp</a>' : '') +
-            '<a class="nav-cta" href="#book">Book now</a>' +
-            '</nav></div></header>' +
-
-            '<section class="hero" id="top">' +
-            '<div>' +
-            '<h1>' + esc(b.business_name) + '</h1>' +
-            '<p class="lead">' + esc(b.tagline || 'Professional cleaning & laundry — booked in minutes.') + '</p>' +
-            '<div class="hero-actions">' +
-            (b.booking_enabled !== false ? '<a class="btn btn-primary" href="#book">Book a service</a>' : '') +
-            (wa ? '<a class="btn btn-wa" href="' + wa + '" target="_blank" rel="noopener">WhatsApp us</a>' : '') +
-            '<a class="btn btn-outline" href="login.html">Business login</a>' +
-            '</div></div>' +
-            '<div class="hero-card"><h3>Why customers choose us</h3><ul>' + highlights + '</ul></div>' +
-            '</section>' +
-
-            '<section class="section" id="services">' +
-            '<h2>Our services</h2>' +
-            '<p class="sub">Clear options and pricing so you know what to expect.</p>' +
-            '<div class="grid-3">' + svcHtml + '</div>' +
-            '</section>' +
-
-            '<section class="section" id="about">' +
-            '<h2>About us</h2>' +
-            '<div class="about-box">' +
-            '<div class="panel"><p style="font-size:15px;">' +
-            esc(b.about || (b.business_name + ' provides reliable cleaning and laundry services. Book online and we will follow up to confirm.')).replace(/\n/g, '<br/>') +
-            '</p></div>' +
-            '<div class="panel">' +
-            (b.areas ? '<p style="font-size:14px;margin-bottom:10px;"><strong>Areas:</strong> ' + esc(b.areas) + '</p>' : '') +
-            (b.phone || b.whatsapp ? '<p style="font-size:14px;"><strong>Contact:</strong> ' + esc(b.whatsapp || b.phone) + '</p>' : '') +
-            '</div></div></section>' +
-
-            bookSection +
-
-            '<footer>' +
-            '<div><strong style="color:var(--ink)">' + esc(b.business_name) + '</strong><br/>Professional cleaning & laundry</div>' +
-            '<div>Page powered by <a href="https://cleancrewapp.com">CleanCrew</a> · <a href="login.html">Business login</a></div>' +
-            '</footer>';
+          app.innerHTML = main;
 
           var form = document.getElementById('bookForm');
           if (form) {
@@ -416,7 +481,7 @@
                   form.reset();
                 })
                 .catch(function (err) {
-                  msg.innerHTML = '<div class="err">' + esc(err.message || 'Could not send booking') + '</div>';
+                  msg.innerHTML = '<div class="err">' + esc(err.message || 'Could not send') + '</div>';
                 })
                 .finally(function () {
                   btn.disabled = false;
@@ -427,7 +492,7 @@
         })
         .catch(function (e) {
           app.className = 'state error';
-          app.textContent = (e && e.message) || 'Business page not found';
+          app.textContent = (e && e.message) || 'Page not found';
         });
     })();
   </script>

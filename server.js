@@ -4397,7 +4397,7 @@ app.get('/api/public/business/:slug', async (req, res) => {
         if (!slug) return res.status(400).json({ error: 'Slug required' });
         const { data, error } = await supabase
             .from('business_pages')
-            .select('slug, business_name, tagline, phone, whatsapp, services, services_json, areas, about, logo_url, is_published, primary_color, booking_enabled, template_id')
+            .select('slug, business_name, tagline, phone, whatsapp, services, services_json, areas, about, logo_url, is_published, primary_color, booking_enabled, template_id, hero_image_url, testimonials')
             .eq('slug', slug)
             .eq('is_published', true)
             .maybeSingle();
@@ -4662,6 +4662,8 @@ app.put('/api/business-page', authenticate, async (req, res) => {
             logo_url: body.logo_url || null,
             primary_color: String(body.primary_color || '#1A6DDB').trim() || '#1A6DDB',
             template_id: ['modern','vibrant','elegant'].indexOf(String(body.template_id||'').toLowerCase()) >= 0 ? String(body.template_id).toLowerCase() : 'modern',
+            hero_image_url: body.hero_image_url || null,
+            testimonials: String(body.testimonials || '').trim() || null,
             booking_enabled: body.booking_enabled !== false,
             is_published: body.is_published !== false,
             published_at: body.is_published !== false ? new Date().toISOString() : null,
