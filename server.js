@@ -3303,10 +3303,41 @@ app.put(
                     changes.push('date: ' + prev + ' → ' + v);
                 }
             }
+            // Payment recording: amount_paid + derived status
+            if (body.amount_paid !== undefined) {
+                const v = Number(body.amount_paid);
+                if (!isNaN(v) && v >= 0) {
+                    const prev = amountPaidNow;
+                    if (v !== prev) {
+                        updates.amount_paid = v;
+                        changes.push('amount_paid: ' + prev + ' → ' + v);
+                    }
+                    const due = body.amount_due !== undefined
+                        ? Number(body.amount_due)
+                        : amountDueNow;
+                    let derived = 'unpaid';
+                    if (v <= 0) derived = 'unpaid';
+                    else if (due > 0 && v >= due) derived = 'paid';
+                    else if (v > 0 && v < due) derived = 'partial';
+                    else if (v > 0) derived = 'paid';
+                    updates.status = derived;
+                    if (derived === 'paid') {
+                        updates.paid_at = body.paid_at || new Date().toISOString();
+                    } else if (body.paid_at === null) {
+                        updates.paid_at = null;
+                    }
+                    changes.push('status: ' + statusNow + ' → ' + derived);
+                }
+            }
+            if (body.paid_at !== undefined && updates.paid_at === undefined) {
+                updates.paid_at = body.paid_at || null;
+            }
             if (body.status !== undefined || body.quote_status !== undefined) {
                 const v = String(body.quote_status || body.status || '').toLowerCase();
                 const allowed = ['unpaid', 'partial', 'pending', 'paid', 'overdue', 'cancelled', 'draft', 'sent', 'approved', 'expired', 'quotation'];
-                if (allowed.indexOf(v) !== -1 && v !== statusNow) {
+                // If amount_paid was sent, status is already derived — don't override with blocked rules
+                if (body.amount_paid === undefined && allowed.indexOf(v) !== -1 && v !== statusNow) {
+                    // Bare status=paid without amount_paid is not allowed
                     if (v === 'paid') {
                         return res.status(400).json({
                             error: 'Mark as paid using Record payment so amount paid is tracked correctly.'
@@ -3366,8 +3397,9 @@ app.put(
             data = attempt.data;
             error = attempt.error;
 
-            if (error && /audit_log|column/i.test(error.message || '')) {
+            if (error && /audit_log|paid_at|amount_paid|column/i.test(error.message || '')) {
                 delete updates.audit_log;
+                if (/paid_at/i.test(error.message || '')) delete updates.paid_at;
                 const retry = await supabase
                     .from('invoices')
                     .update(updates)
@@ -3377,6 +3409,11 @@ app.put(
                     .single();
                 data = retry.data;
                 error = retry.error;
+                if (error && /amount_paid/i.test(error.message || '')) {
+                    return res.status(400).json({
+                        error: 'amount_paid column missing — run invoice payment migration in Supabase'
+                    });
+                }
             }
 
             if (error) throw error;

@@ -8031,7 +8031,7 @@
                     })
                     .catch(function(e) {
                         console.error('Payment update failed:', e);
-                        showToast('Failed to record payment', 'error');
+                        showToast((e && e.message) || 'Failed to record payment', 'error');
                     });
             }
         }
