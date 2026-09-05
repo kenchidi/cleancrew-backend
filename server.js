@@ -411,6 +411,11 @@ async function getCreditBalance(userId) {
         .maybeSingle();
 
     if (error) {
+        console.error('getCreditBalance:', error.message);
+        // Do not crash the whole dashboard for credits UI
+        if (/row-level security|RLS/i.test(error.message || '')) {
+            return 0;
+        }
         throw new Error(
             'Failed to fetch credit balance: ' +
             error.message
@@ -4617,9 +4622,13 @@ app.get('/api/business-page', authenticate, async (req, res) => {
             };
             const ins = await supabase.from('business_pages').insert(row).select().single();
             if (ins.error) {
-                // table missing
                 if (/relation|does not exist|business_pages/i.test(ins.error.message || '')) {
                     return res.status(400).json({ error: 'Run migrations_business_pages.sql in Supabase first' });
+                }
+                if (/row-level security|RLS|violates row-level/i.test(ins.error.message || '')) {
+                    return res.status(400).json({
+                        error: 'Database security blocked save. On Render set SUPABASE_SERVICE_ROLE_KEY to the service_role key (not anon), then run migrations_fix_rls_business_pages.sql in Supabase.'
+                    });
                 }
                 throw ins.error;
             }
