@@ -3714,6 +3714,23 @@
                         <label>About (optional)</label>
                         <textarea id="bpAbout" rows="2" placeholder="Short intro for customers"></textarea>
                     </div>
+                    
+                    <div class="form-group full-width">
+                        <label>Website template</label>
+                        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+                            <label style="border:1.5px solid var(--border);border-radius:12px;padding:10px;cursor:pointer;text-align:center;font-size:12px;font-weight:700;">
+                                <input type="radio" name="bpTemplate" value="modern" checked style="margin-bottom:6px;" /> Modern
+                            </label>
+                            <label style="border:1.5px solid var(--border);border-radius:12px;padding:10px;cursor:pointer;text-align:center;font-size:12px;font-weight:700;">
+                                <input type="radio" name="bpTemplate" value="vibrant" style="margin-bottom:6px;" /> Vibrant
+                            </label>
+                            <label style="border:1.5px solid var(--border);border-radius:12px;padding:10px;cursor:pointer;text-align:center;font-size:12px;font-weight:700;">
+                                <input type="radio" name="bpTemplate" value="elegant" style="margin-bottom:6px;" /> Elegant
+                            </label>
+                        </div>
+                        <p style="font-size:11px;color:var(--slate);margin:6px 0 0;">Same easy editor — pick the look customers see.</p>
+                    </div>
+
                     <div class="form-group">
                         <label>Brand colour</label>
                         <input type="color" id="bpColor" value="#1A6DDB" style="height:40px;padding:4px;width:80px;" />
@@ -5278,6 +5295,8 @@
                 if (book) book.checked = pg.booking_enabled !== false;
                 var col = document.getElementById('bpColor');
                 if (col && pg.primary_color) col.value = pg.primary_color;
+                var tpl = (pg.template_id || 'modern').toLowerCase();
+                document.querySelectorAll('input[name="bpTemplate"]').forEach(function(r){ r.checked = (r.value === tpl); });
                 var link = document.getElementById('bpPreviewLink');
                 if (link && pg.slug) link.href = 'b.html?s=' + encodeURIComponent(pg.slug);
                 var openBtn = document.getElementById('websiteOpenBtn');
@@ -5346,6 +5365,7 @@
                 about: ((document.getElementById('bpAbout') || {}).value || '').trim(),
                 logo_url: logo || null,
                 primary_color: ((document.getElementById('bpColor') || {}).value || '#1A6DDB'),
+                template_id: (document.querySelector('input[name="bpTemplate"]:checked') || {}).value || 'modern',
                 booking_enabled: !!(document.getElementById('bpBooking') && document.getElementById('bpBooking').checked),
                 is_published: !!(document.getElementById('bpPublished') && document.getElementById('bpPublished').checked)
             };
