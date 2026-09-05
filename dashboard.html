@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1" />
     <meta name="theme-color" content="#1A6DDB" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -2903,6 +2903,90 @@
             background: linear-gradient(160deg, #F2FCFC 0%, #E8FAFA 50%, #F5FDFB 100%) !important;
             border-color: #D5F0F0 !important;
             color: var(--ink) !important;
+        }
+
+
+        /* Mobile top bar: never clip mode toggle under notch/status bar */
+        .top-bar-redesign {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            padding-top: max(12px, env(safe-area-inset-top, 0px));
+            padding-left: max(12px, env(safe-area-inset-left, 0px));
+            padding-right: max(12px, env(safe-area-inset-right, 0px));
+            padding-bottom: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            min-height: auto;
+            overflow: visible;
+        }
+        .top-bar-redesign .mode-switch-wrap {
+            order: 2;
+            flex: 1 1 auto;
+            min-width: 0;
+            justify-content: center;
+        }
+        .top-bar-redesign .mobile-menu-btn {
+            order: 1;
+            flex-shrink: 0;
+            width: 44px;
+            height: 44px;
+            min-height: 44px;
+            padding: 0;
+            z-index: 2;
+        }
+        .top-bar-redesign .user-stats {
+            order: 3;
+            flex: 1 1 100%;
+            width: 100%;
+            justify-content: flex-start;
+            gap: 8px;
+        }
+        @media (max-width: 900px) {
+            .top-bar-redesign {
+                display: flex;
+                flex-wrap: wrap;
+                row-gap: 10px;
+            }
+            /* Row 1: menu + Cleaning/Laundry (always visible) */
+            .top-bar-redesign .mobile-menu-btn {
+                display: inline-flex !important;
+                align-items: center;
+                justify-content: center;
+            }
+            .top-bar-redesign .mode-switch-wrap {
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                max-width: calc(100% - 56px);
+            }
+            .top-bar-redesign .service-toggle {
+                width: 100%;
+                max-width: 280px;
+            }
+            .top-bar-redesign .service-toggle button {
+                flex: 1;
+                min-height: 40px;
+                padding: 8px 10px;
+                font-size: 12px;
+            }
+            .mode-switch-wrap .mode-label {
+                display: none !important;
+            }
+        }
+        @media (max-width: 480px) {
+            .top-bar-redesign .user-stats .credit-badge {
+                font-size: 11px;
+                padding: 4px 8px;
+            }
+            .top-bar-redesign #userEmail,
+            .top-bar-redesign .user-email {
+                font-size: 11px;
+                max-width: 100%;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
         }
 
     </style>
