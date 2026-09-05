@@ -2,7 +2,7 @@
   "id": "/",
   "name": "CleanCrew",
   "short_name": "CleanCrew",
-  "description": "Job tracking for cleaning and laundry businesses",
+  "description": "Jobs, invoices, quotations & WhatsApp for cleaning and laundry businesses",
   "start_url": "/dashboard.html",
   "scope": "/",
   "display": "standalone",
