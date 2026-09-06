@@ -4183,12 +4183,46 @@
             }
         }
 
+                function applyFreeJobsUI(left, credits) {
+            left = Number(left);
+            if (isNaN(left)) left = 0;
+            left = Math.max(0, left);
+            var el = document.getElementById('freeJobsLabel');
+            var badge = document.getElementById('freeJobsBadge');
+            var badgeOld = document.getElementById('freeJobsBadgeOld');
+            if (el) el.textContent = String(left);
+            if (badge) badge.textContent = 'Free jobs: ' + left;
+            if (badgeOld) badgeOld.textContent = 'Free jobs: ' + left;
+            if (typeof credits === 'number') {
+                creditBalance = credits;
+                var cb = document.getElementById('creditBadge');
+                var cl = document.getElementById('creditBalanceLabel');
+                if (cb) cb.textContent = 'Credits: ' + creditBalance;
+                if (cl) cl.textContent = String(creditBalance);
+            }
+            try { updateOutOfJobsBanner(left, typeof credits === 'number' ? credits : creditBalance); } catch (e) {}
+        }
+
         function refreshFreeJobs() {
-            return fetch(API_URL + '/jobs/quota', { headers: getHeaders() })
+            var headers = getHeaders();
+            if (!headers.Authorization || headers.Authorization === 'Bearer ') {
+                // Token not ready yet — retry shortly (common right after signup/login redirect)
+                setTimeout(function() { refreshFreeJobs(); }, 400);
+                return Promise.resolve();
+            }
+            return fetch(API_URL + '/jobs/quota', { headers: headers })
                 .then(function(res) {
                     return res.json().then(function(body) {
                         if (!res.ok) {
-                            console.warn('quota failed', body);
+                            console.warn('quota failed', res.status, body);
+                            if (res.status === 401) {
+                                // retry once after token refresh
+                                return refreshAccessToken().then(function(ok) {
+                                    if (!ok) return null;
+                                    return fetch(API_URL + '/jobs/quota', { headers: getHeaders() })
+                                        .then(function(r2) { return r2.ok ? r2.json() : null; });
+                                });
+                            }
                             return null;
                         }
                         return body;
@@ -4198,40 +4232,16 @@
                     if (q) {
                         var left = Number(q.free_jobs_remaining);
                         if (isNaN(left)) left = Math.max(0, 25 - Number(q.jobs_used || q.used || 0));
-                        var el = document.getElementById('freeJobsLabel');
-                        var badge = document.getElementById('freeJobsBadge');
-                        var badgeOld = document.getElementById('freeJobsBadgeOld');
-                        if (el) el.textContent = String(left);
-                        if (badge) badge.textContent = 'Free jobs: ' + left;
-                        if (badgeOld) badgeOld.textContent = 'Free jobs: ' + left;
-                        if (typeof q.credits === 'number') {
-                            creditBalance = q.credits;
-                            var cb = document.getElementById('creditBadge');
-                            var cl = document.getElementById('creditBalanceLabel');
-                            if (cb) cb.textContent = 'Credits: ' + creditBalance;
-                            if (cl) cl.textContent = String(creditBalance);
-                        }
-                        if (typeof updateOutOfJobsBanner === 'function') {
-                            updateOutOfJobsBanner(left, creditBalance);
-                        }
-                        return left;
+                        applyFreeJobsUI(left, typeof q.credits === 'number' ? q.credits : undefined);
+                        return q;
                     }
-                    return getJobs().then(function(jobs) {
-                        var used = (jobs || []).length;
-                        var left = Math.max(0, 25 - used);
-                        var el = document.getElementById('freeJobsLabel');
-                        var badge = document.getElementById('freeJobsBadge');
-                        if (el) el.textContent = String(left);
-                        if (badge) badge.textContent = 'Free jobs: ' + left;
-                        if (typeof updateOutOfJobsBanner === 'function') {
-                            var c = (q && typeof q.credits === 'number') ? q.credits : creditBalance;
-                            updateOutOfJobsBanner(left, c);
-                        }
-                        return left;
-                    });
+                    return null;
                 })
-                .catch(function() {});
+                .catch(function(err) {
+                    console.warn('refreshFreeJobs', err);
+                });
         }
+
 
         function refreshCredits() {
             return fetch(API_URL + '/credits/balance', { headers: getHeaders() })
@@ -4331,6 +4341,7 @@
                 if (res.ok && data.token) {
                     TOKEN = data.token;
                     localStorage.setItem('cleancrew_token', data.token);
+                    TOKEN = data.token;
                     if (data.refresh_token) {
                         localStorage.setItem('cleancrew_refresh_token', data.refresh_token);
                     }
@@ -4354,9 +4365,14 @@
         let currentUserPlan = 'free';
 
         function getHeaders() {
+            var token = TOKEN;
+            try {
+                token = localStorage.getItem('cleancrew_token') || TOKEN;
+                if (token) TOKEN = token;
+            } catch (e) {}
             return {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${TOKEN}`
+                'Authorization': 'Bearer ' + (token || '')
             };
         }
 
@@ -8145,6 +8161,7 @@
         }
 
         function openModal(type) {
+            try {
             modalType = type;
             laundryItems = [];
             var titles = {
@@ -8294,9 +8311,22 @@
                 }
             }
 
-            document.getElementById('modalOverlay').classList.add('active');
+            var overlay = document.getElementById('modalOverlay');
+            if (overlay) overlay.classList.add('active');
+            else {
+                showToast('Form UI missing — refresh the page', 'error');
+                return;
+            }
             if (type === 'job' || type === 'editJob') {
-                loadStaffAssignUI([], {});
+                try { loadStaffAssignUI([], {}); } catch (eStaff) { console.warn('staff assign UI', eStaff); }
+            }
+            } catch (err) {
+                console.error('openModal failed', err);
+                try {
+                    var o = document.getElementById('modalOverlay');
+                    if (o) o.classList.add('active');
+                } catch (e2) {}
+                showToast('Could not open form — try refresh', 'error');
             }
         }
 
@@ -8984,6 +9014,9 @@
             renderAll();
             refreshFreeJobs();
             refreshCredits();
+            // Quota often lags right after login — retry
+            setTimeout(function() { refreshFreeJobs(); }, 600);
+            setTimeout(function() { refreshFreeJobs(); }, 2000);
 
             // Secondary — do not block the first paint
             setTimeout(function() {
