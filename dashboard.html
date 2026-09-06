@@ -4185,15 +4185,25 @@
 
         function refreshFreeJobs() {
             return fetch(API_URL + '/jobs/quota', { headers: getHeaders() })
-                .then(function(res) { return res.ok ? res.json() : null; })
+                .then(function(res) {
+                    return res.json().then(function(body) {
+                        if (!res.ok) {
+                            console.warn('quota failed', body);
+                            return null;
+                        }
+                        return body;
+                    }).catch(function() { return null; });
+                })
                 .then(function(q) {
                     if (q) {
                         var left = Number(q.free_jobs_remaining);
-                        if (isNaN(left)) left = Math.max(0, 25 - Number(q.jobs_used || 0));
+                        if (isNaN(left)) left = Math.max(0, 25 - Number(q.jobs_used || q.used || 0));
                         var el = document.getElementById('freeJobsLabel');
                         var badge = document.getElementById('freeJobsBadge');
+                        var badgeOld = document.getElementById('freeJobsBadgeOld');
                         if (el) el.textContent = String(left);
                         if (badge) badge.textContent = 'Free jobs: ' + left;
+                        if (badgeOld) badgeOld.textContent = 'Free jobs: ' + left;
                         if (typeof q.credits === 'number') {
                             creditBalance = q.credits;
                             var cb = document.getElementById('creditBadge');
@@ -4536,6 +4546,7 @@
             if (tab === 'overview') {
                 try { loadBusinessPage(); } catch (e3) {}
                 try { loadWebsiteBookings(); } catch (e4) {}
+                try { refreshFreeJobs(); } catch (e5) {}
             }
 
             document.querySelectorAll('.nav-tabs button').forEach(function(el) {
@@ -5493,7 +5504,7 @@
                         if (editBtn) editBtn.textContent = 'Edit';
                         if (heading) heading.textContent = 'Your booking page';
                     } else {
-                        cardSt.textContent = 'Your page isn't fully ready yet. Add services and publish so customers can book you.';
+                        cardSt.textContent = "Your page isn't fully ready yet. Add services and publish so customers can book you.";
                         if (editBtn) editBtn.textContent = 'Complete setup';
                         if (heading) heading.textContent = 'Your booking page';
                     }
