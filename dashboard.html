@@ -4828,7 +4828,7 @@
         }
 
         function createJob(job) {
-            return fetch(API_URL + '/jobs', {
+            return apiFetch('/jobs', {
                     method: 'POST',
                     headers: getHeaders(),
                     body: JSON.stringify(job)

@@ -2126,14 +2126,27 @@ app.post(
             // Always keep user_id
             job.user_id = userId;
 
-            const {
-                data,
-                error
-            } = await supabase
-                .from('jobs')
-                .insert(job)
-                .select()
-                .single();
+            let data, error;
+            {
+                const attempt = await supabase
+                    .from('jobs')
+                    .insert(job)
+                    .select()
+                    .single();
+                data = attempt.data;
+                error = attempt.error;
+            }
+
+            // Retry without columns that may be missing on older schemas
+            if (error && /column|schema cache|location_id|items|service_type|property_size|rooms|staff_cost|materials_cost|other_cost/i.test(error.message || '')) {
+                const stripped = Object.assign({}, job);
+                ['location_id', 'items', 'service_type', 'property_size', 'rooms', 'staff_cost', 'materials_cost', 'other_cost'].forEach(function (k) {
+                    delete stripped[k];
+                });
+                const retry = await supabase.from('jobs').insert(stripped).select().single();
+                data = retry.data;
+                error = retry.error;
+            }
 
             if (error) {
                 if (creditConsumed) {
@@ -3044,6 +3057,78 @@ app.delete(
 
 // ─── INVOICES ────────────────────────────────────────────────
 
+
+async function ensureJobFromPaidInvoice(userId, inv) {
+    if (!inv || !userId) return null;
+    const amount = Number(inv.amount_due != null ? inv.amount_due : inv.amount) || 0;
+    const paid = Number(inv.amount_paid) || 0;
+    const st = String(inv.status || '').toLowerCase();
+    const fullyPaid = st === 'paid' || (amount > 0 && paid >= amount);
+    if (!fullyPaid) return null;
+
+    // Already linked — mark job completed so it counts in revenue
+    if (inv.job_id) {
+        try {
+            await supabase
+                .from('jobs')
+                .update({
+                    status: 'completed',
+                    amount: amount || undefined
+                })
+                .eq('id', inv.job_id)
+                .eq('user_id', userId);
+        } catch (e) {
+            console.warn('ensureJobFromPaidInvoice update', e.message || e);
+        }
+        return inv.job_id;
+    }
+
+    const job = {
+        user_id: userId,
+        client: inv.client || 'Customer',
+        phone: inv.phone || null,
+        service: inv.service || inv.description || 'Invoiced service',
+        amount: amount,
+        date: (inv.date && String(inv.date).slice(0, 10)) || new Date().toISOString().slice(0, 10),
+        status: 'completed',
+        notes: 'From paid invoice ' + (inv.invoice_numb || inv.number || inv.id || ''),
+        mode: inv.mode || 'cleaning',
+        service_type: inv.mode || 'cleaning'
+    };
+    Object.keys(job).forEach(function (k) {
+        if (job[k] === null || job[k] === undefined) delete job[k];
+    });
+    job.user_id = userId;
+
+    let data, error;
+    let attempt = await supabase.from('jobs').insert(job).select().single();
+    data = attempt.data;
+    error = attempt.error;
+    if (error && /column|schema cache|mode|service_type/i.test(error.message || '')) {
+        delete job.mode;
+        delete job.service_type;
+        attempt = await supabase.from('jobs').insert(job).select().single();
+        data = attempt.data;
+        error = attempt.error;
+    }
+    if (error) {
+        console.warn('ensureJobFromPaidInvoice create', error.message || error);
+        return null;
+    }
+
+    try {
+        await supabase
+            .from('invoices')
+            .update({ job_id: data.id })
+            .eq('id', inv.id)
+            .eq('user_id', userId);
+    } catch (e2) {
+        console.warn('link invoice job_id', e2.message || e2);
+    }
+    return data.id;
+}
+
+
 app.get(
     '/api/invoices',
     authenticate,
@@ -3414,10 +3499,35 @@ app.put(
             }
 
             if (error) throw error;
+
+            // When invoice becomes paid → ensure a completed job exists (revenue)
+            try {
+                const paidNow = data && (
+                    String(data.status || '').toLowerCase() === 'paid' ||
+                    (Number(data.amount_paid) > 0 &&
+                        Number(data.amount_due != null ? data.amount_due : data.amount) > 0 &&
+                        Number(data.amount_paid) >= Number(data.amount_due != null ? data.amount_due : data.amount))
+                );
+                if (paidNow) {
+                    await ensureJobFromPaidInvoice(userId, data);
+                    // re-fetch so client gets job_id
+                    const refreshed = await supabase
+                        .from('invoices')
+                        .select('*')
+                        .eq('id', invoiceId)
+                        .eq('user_id', userId)
+                        .maybeSingle();
+                    if (refreshed.data) data = refreshed.data;
+                }
+            } catch (ej) {
+                console.warn('paid invoice → job', ej.message || ej);
+            }
+
             res.json(data);
         } catch (error) {
             console.error('Error updating invoice:', error);
             res.status(500).json({ error: error.message });
+
         }
     }
 );
