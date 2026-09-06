@@ -177,6 +177,144 @@ if (!source.includes(oldSignupSetup)) {
 }
 source = source.replace(oldSignupSetup, newSignupSetup);
 
+// ─── Dashboard startup optimization ─────────────────────────
+// server.js serves static files itself. Replace that middleware with a small
+// wrapper that serves dashboard.html after removing the client-side request
+// storm. The actual dashboard file stays unchanged in GitHub.
+const oldStatic = `app.use(express.static(__dirname));`;
+const newStatic = `// Serve dashboard.html with a staged startup so a Render cold start is not
+// hit by 8-10 authenticated Supabase requests at the same time.
+app.use(function cleancrewDashboardFastStart(req, res, next) {
+    if (req.path !== '/dashboard.html' && req.path !== '/') return next();
+    try {
+        const dashboardPath = path.join(__dirname, 'dashboard.html');
+        let html = fs.readFileSync(dashboardPath, 'utf8');
+
+        const oldInit = \`        function init() {
+            updateDashGreeting();
+            try { currentLocationFilter = localStorage.getItem('cleancrew_location_filter') || 'all'; } catch (e) {}
+
+            // Critical path first — show jobs/overview ASAP (Render cold start is slow)
+            try {
+                var b = document.getElementById('freeJobsBadge');
+                if (b && /—|-/.test(b.textContent)) b.textContent = 'Free jobs: …';
+            } catch (eB) {}
+            renderAll();
+            refreshFreeJobs();
+            refreshCredits();
+            setTimeout(function() { refreshFreeJobs(); }, 800);
+
+            // Secondary — delay so jobs/quota get the network first
+            setTimeout(function() {
+                try { loadUserInfo(); } catch (e) {}
+                try { checkPaystackReturn(); } catch (e) {}
+            }, 50);
+            setTimeout(function() {
+                try { initRevenueLock(); } catch (e) {}
+                try { checkSubscription(); } catch (e) {}
+                try { loadInvoiceSettings(); } catch (e) {}
+                if (typeof loadLocations === 'function') {
+                    loadLocations().then(function() {
+                        try {
+                            if (jobsData && jobsData.length) renderOverview(jobsData, clientsData || []);
+                            if (typeof renderJobs === 'function') renderJobs(jobsData);
+                        } catch (e2) {}
+                    }).catch(function() {});
+                }
+                try { loadBusinessPage(); } catch (e) {}
+            }, 0);
+        }\`;
+
+        const newInit = \`        function init() {
+            updateDashGreeting();
+            try { currentLocationFilter = localStorage.getItem('cleancrew_location_filter') || 'all'; } catch (e) {}
+
+            // Critical path: only the jobs + clients request starts immediately.
+            // Everything else is deliberately staggered so Render/Supabase is not
+            // flooded by simultaneous authenticated requests during cold starts.
+            try {
+                var b = document.getElementById('freeJobsBadge');
+                if (b && /—|-/.test(b.textContent)) b.textContent = 'Free jobs: …';
+            } catch (eB) {}
+
+            renderAll();
+
+            // Quota/credits are useful, but not required to paint the dashboard.
+            setTimeout(function() { refreshFreeJobs(); }, 1200);
+            setTimeout(function() { refreshCredits(); }, 1700);
+
+            // Identity/payment state comes after the first data paint.
+            setTimeout(function() {
+                try { loadUserInfo(); } catch (e) {}
+                try { checkPaystackReturn(); } catch (e) {}
+            }, 2200);
+
+            setTimeout(function() {
+                try { initRevenueLock(); } catch (e) {}
+            }, 3200);
+
+            setTimeout(function() {
+                try { checkSubscription(); } catch (e) {}
+            }, 3800);
+
+            setTimeout(function() {
+                try { loadInvoiceSettings(); } catch (e) {}
+            }, 4500);
+
+            setTimeout(function() {
+                if (typeof loadLocations === 'function') {
+                    loadLocations().then(function() {
+                        try {
+                            if (jobsData && jobsData.length) renderOverview(jobsData, clientsData || []);
+                            if (typeof renderJobs === 'function') renderJobs(jobsData);
+                        } catch (e2) {}
+                    }).catch(function() {});
+                }
+            }, 5400);
+
+            setTimeout(function() {
+                try { loadBusinessPage(); } catch (e) {}
+            }, 6500);
+        }\`;
+
+        if (!html.includes(oldInit)) {
+            console.error('Dashboard fast-start transform could not find init block; serving original dashboard.');
+        } else {
+            html = html.replace(oldInit, newInit);
+        }
+
+        // Keep invoices out of the first render wave. They only feed the
+        // outstanding KPI and can update it after the main dashboard is painted.
+        const oldInvoiceStart = \`                    if (typeof getInvoices === 'function') {
+                        getInvoices().then(function(inv) {\`;
+        const newInvoiceStart = \`                    if (typeof getInvoices === 'function') {
+                        setTimeout(function() { getInvoices().then(function(inv) {\`;
+\`;
+        const oldInvoiceEnd = \`                        }).catch(function() {});
+                    }
+                })\n                .catch(function(e) {\`;
+        const newInvoiceEnd = \`                        }).catch(function() {}); }, 1500);
+                    }
+                })\n                .catch(function(e) {\`;
+        if (html.includes(oldInvoiceStart) && html.includes(oldInvoiceEnd)) {
+            html = html.replace(oldInvoiceStart, newInvoiceStart).replace(oldInvoiceEnd, newInvoiceEnd);
+        }
+
+        res.setHeader('Cache-Control', 'no-store');
+        res.type('html').send(html);
+    } catch (e) {
+        console.error('Dashboard fast-start middleware failed:', e);
+        next();
+    }
+});
+
+app.use(express.static(__dirname));`;
+
+if (!source.includes(oldStatic)) {
+    throw new Error('Hotfix could not find express static middleware');
+}
+source = source.replace(oldStatic, newStatic);
+
 const m = new Module(filename, module.parent);
 m.filename = filename;
 m.paths = Module._nodeModulePaths(path.dirname(filename));
