@@ -760,15 +760,18 @@ async function getStarterJobsRemainingThisMonth(userId) {
 // 5) Block
 
 async function canCreateJob(userId) {
-    const {
-        data: sub,
-        error: subError
-    } = await supabase
-        .from('subscriptions')
-        .select('plan, status')
-        .eq('user_id', userId)
-        .maybeSingle();
+    const [subResult, usedLifetime, creditBalance] = await Promise.all([
+        supabase
+            .from('subscriptions')
+            .select('plan, status')
+            .eq('user_id', userId)
+            .maybeSingle(),
+        getLifetimeJobsUsed(userId),
+        getCreditBalance(userId).catch(function () { return 0; })
+    ]);
 
+    const sub = subResult.data;
+    const subError = subResult.error;
     if (subError && subError.code !== 'PGRST116') {
         throw new Error('Error checking subscription');
     }
@@ -782,9 +785,7 @@ async function canCreateJob(userId) {
     const status = (sub && sub.status) ? String(sub.status).toLowerCase() : 'active';
     const active = status === 'active' || status === 'trial';
 
-    const usedLifetime = await getLifetimeJobsUsed(userId);
     const freeLeft = Math.max(0, LIFETIME_FREE_JOBS - usedLifetime);
-    const creditBalance = await getCreditBalance(userId);
 
     console.log('[canCreateJob]', {
         userId,
@@ -2126,24 +2127,31 @@ app.post(
             // Always keep user_id
             job.user_id = userId;
 
+            // Prefer full row; always fall back to minimal columns (older schemas / RLS edge cases)
+            const minimalJob = {
+                user_id: userId,
+                client: job.client || 'Customer',
+                phone: job.phone || null,
+                service: job.service || null,
+                amount: job.amount != null ? Number(job.amount) : 0,
+                date: job.date || null,
+                status: job.status || 'pending',
+                notes: job.notes || null
+            };
+            Object.keys(minimalJob).forEach(function (k) {
+                if (minimalJob[k] === null || minimalJob[k] === undefined) delete minimalJob[k];
+            });
+            minimalJob.user_id = userId;
+
             let data, error;
             {
-                const attempt = await supabase
-                    .from('jobs')
-                    .insert(job)
-                    .select()
-                    .single();
+                const attempt = await supabase.from('jobs').insert(job).select().single();
                 data = attempt.data;
                 error = attempt.error;
             }
-
-            // Retry without columns that may be missing on older schemas
-            if (error && /column|schema cache|location_id|items|service_type|property_size|rooms|staff_cost|materials_cost|other_cost/i.test(error.message || '')) {
-                const stripped = Object.assign({}, job);
-                ['location_id', 'items', 'service_type', 'property_size', 'rooms', 'staff_cost', 'materials_cost', 'other_cost'].forEach(function (k) {
-                    delete stripped[k];
-                });
-                const retry = await supabase.from('jobs').insert(stripped).select().single();
+            if (error) {
+                console.warn('Job insert full failed, retry minimal:', error.message || error);
+                const retry = await supabase.from('jobs').insert(minimalJob).select().single();
                 data = retry.data;
                 error = retry.error;
             }

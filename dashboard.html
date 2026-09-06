@@ -4520,15 +4520,21 @@
         // ─── ──────────────────────────────────────────────────────
         function showToast(msg, type) {
             type = type || '';
-            const toast = document.getElementById('toast');
-            const toastMessage = document.getElementById('toastMessage');
-            toastMessage.textContent = msg;
-            toast.className = 'toast ' + type;
-            toast.classList.add('show');
-            clearTimeout(toast._timer);
-            toast._timer = setTimeout(function() {
-                toast.classList.remove('show');
-            }, 4000);
+            try {
+                const toast = document.getElementById('toast');
+                const toastMessage = document.getElementById('toastMessage');
+                if (!toast || !toastMessage) {
+                    console.log('[toast]', type, msg);
+                    return;
+                }
+                toastMessage.textContent = msg;
+                toast.className = 'toast ' + type;
+                toast.classList.add('show');
+                clearTimeout(toast._timer);
+                toast._timer = setTimeout(function() {
+                    toast.classList.remove('show');
+                }, 4000);
+            } catch (e) { console.log('[toast]', msg); }
         }
 
         // ─── ──────────────────────────────────────────────────────
@@ -4828,10 +4834,26 @@
         }
 
         function createJob(job) {
+            // Keep payload lean — avoids schema errors and large requests
+            var payload = {
+                client: job.client,
+                phone: job.phone,
+                service: job.service,
+                amount: job.amount,
+                date: job.date,
+                status: job.status || 'pending',
+                notes: job.notes || null,
+                mode: job.mode || job.service_type || 'cleaning',
+                service_type: job.mode || job.service_type || 'cleaning',
+                items: job.items || [],
+                rooms: job.rooms,
+                property_size: job.property_size,
+                location_id: job.location_id || null,
+                staff_assignments: job.staff_assignments || []
+            };
             return apiFetch('/jobs', {
                     method: 'POST',
-                    headers: getHeaders(),
-                    body: JSON.stringify(job)
+                    body: JSON.stringify(payload)
                 })
                 .then(function(res) {
                     if (!res.ok) return parseApiError(res);
@@ -9116,12 +9138,14 @@
             refreshCredits();
             setTimeout(function() { refreshFreeJobs(); }, 800);
 
-            // Secondary — do not block the first paint
+            // Secondary — delay so jobs/quota get the network first
             setTimeout(function() {
                 try { loadUserInfo(); } catch (e) {}
+                try { checkPaystackReturn(); } catch (e) {}
+            }, 50);
+            setTimeout(function() {
                 try { initRevenueLock(); } catch (e) {}
                 try { checkSubscription(); } catch (e) {}
-                try { checkPaystackReturn(); } catch (e) {}
                 try { loadInvoiceSettings(); } catch (e) {}
                 if (typeof loadLocations === 'function') {
                     loadLocations().then(function() {
