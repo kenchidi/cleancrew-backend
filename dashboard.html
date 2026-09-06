@@ -3195,39 +3195,31 @@
         <div class="tab-content active" id="tab-overview">
 
         <div class="dash-greeting" id="dashGreeting">
-            <h2 id="dashGreetingTitle">Good day</h2>
-            <p id="dashGreetingSub">Your workspace is ready.</p>
-            <div class="loc-filter-row" id="overviewLocRow" hidden>
-                <label for="overviewLocationFilter">Location</label>
-                <select id="overviewLocationFilter" onchange="onLocationFilterChange(this.value)">
-                    <option value="all">All locations</option>
-                </select>
+            <div class="greet-text">
+                <h2 id="dashGreetingTitle">Good day</h2>
+                <p id="dashGreetingSub">Here's what's happening with your business today.</p>
+                <div class="loc-filter-row" id="overviewLocRow" hidden>
+                    <label for="overviewLocationFilter">Location</label>
+                    <select id="overviewLocationFilter" onchange="onLocationFilterChange(this.value)">
+                        <option value="all">All locations</option>
+                    </select>
+                </div>
             </div>
-        </div>
-
-        <div class="demo-strip" id="demoStrip">
-            <div>
-                <strong id="demoStripTitle">Track your jobs here</strong>
-                <p id="demoStripSub">When a customer books or drops clothes, add the job — then mark it done when you finish.</p>
-            </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                <button type="button" class="btn btn-sm" style="background:#0F172A;color:#fff;" onclick="openQuickCapture()">⚡ Quick capture</button>
-                <button type="button" class="btn btn-sm" onclick="openModal('job')">+ Full job</button>
-            </div>
+            <button type="button" class="btn btn-primary" id="overviewNewJobBtn" onclick="openModal('job')">+ New Job</button>
         </div>
 
         <div class="onboarding-card" id="onboardingCard" hidden>
-            <h3>Get started in 3 steps</h3>
-            <p>Most shops only need this to begin. You can explore the rest later.</p>
+            <h3>Let's get your business running</h3>
+            <p>Complete these steps to start tracking work and money.</p>
             <ul class="onboarding-steps">
                 <li id="obStepJob">
                     <span class="ob-check" aria-hidden="true"></span>
-                    <span>Add your first job</span>
-                    <span class="ob-action"><button type="button" class="btn btn-primary btn-sm" onclick="openQuickCapture()">Add job</button></span>
+                    <span>Create your first job</span>
+                    <span class="ob-action"><button type="button" class="btn btn-primary btn-sm" onclick="openModal('job')">New Job</button></span>
                 </li>
                 <li id="obStepStatus">
                     <span class="ob-check" aria-hidden="true"></span>
-                    <span>Update a job status (start or complete)</span>
+                    <span>Update a job status</span>
                     <span class="ob-action"><button type="button" class="btn btn-outline btn-sm" onclick="switchTab('jobs')">Open jobs</button></span>
                 </li>
                 <li id="obStepClient">
@@ -3236,51 +3228,110 @@
                     <span class="ob-action"><button type="button" class="btn btn-outline btn-sm" onclick="openModal('client')">Add client</button></span>
                 </li>
             </ul>
-            <button type="button" class="ob-dismiss" onclick="dismissOnboarding()">Hide this checklist</button>
         </div>
 
-        <div id="firstRunHero" class="first-run-hero" hidden>
-            <strong>No jobs yet — add your first one</strong>
-            <span>Customer waiting? Use Quick capture. Have full details? Use Full job.</span>
+        <div class="first-run-hero" id="firstRunHero" hidden>
+            <strong>Create your first job to run the business from here</strong>
+            <span>When a customer books or drops clothes, add the job — then mark it done when you finish.</span>
             <div class="btn-row">
-                <button type="button" class="btn btn-primary" onclick="openQuickCapture()">⚡ Quick capture</button>
-                <button type="button" class="btn btn-outline" onclick="openModal('job')">+ Full job</button>
+                <button type="button" class="btn btn-primary" onclick="openModal('job')">+ New Job</button>
+                <button type="button" class="btn btn-outline" onclick="openQuickCapture()">Quick capture</button>
             </div>
         </div>
 
-            
-            <div class="card" id="websiteCard" style="margin-bottom:16px;">
-                <div class="card-header" style="margin-bottom:8px;">
-                    <h3 style="margin:0;font-size:15px;">🌐 Your website</h3>
-                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                        <a class="btn btn-outline btn-sm" id="websiteOpenBtn" href="b.html" target="_blank" rel="noopener">View</a>
-                        <button type="button" class="btn btn-primary btn-sm" onclick="switchTab('settings'); setTimeout(function(){ var el=document.getElementById('bpSlug'); if(el) el.scrollIntoView({behavior:'smooth'}); }, 200);">Edit</button>
-                    </div>
+        <div class="ops-kpi" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;">
+            <div class="stat-card primary">
+                <div class="stat-label">Jobs today</div>
+                <div class="stat-value" id="ovJobsToday">0</div>
+                <div id="ovJobsSub" style="font-size:11px;color:var(--slate);margin-top:4px;">Scheduled for today</div>
+            </div>
+            <div class="stat-card orange">
+                <div class="stat-label">Pending</div>
+                <div class="stat-value" id="ovPending">0</div>
+                <div style="font-size:11px;color:var(--slate);margin-top:4px;">Needs attention</div>
+            </div>
+            <div class="stat-card green revenue-locked" id="revenueStatCard">
+                <div class="stat-label">Revenue</div>
+                <div class="stat-value" id="ovRevenue">₦••••</div>
+                <button type="button" class="btn btn-outline btn-sm unlock-revenue-btn" id="unlockRevenueBtn" onclick="promptUnlockRevenue()" style="display:inline-flex;margin-top:6px;">Tap to unlock</button>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Outstanding</div>
+                <div class="stat-value" id="ovOutstanding">₦0</div>
+                <div style="font-size:11px;color:var(--slate);margin-top:4px;">Unpaid invoices</div>
+            </div>
+            <span id="ovJobs" class="sr-only">0</span>
+        </div>
+        <style>
+          @media (min-width: 720px) {
+            .ops-kpi { grid-template-columns: repeat(4, 1fr) !important; }
+          }
+          .ops-main { display: grid; gap: 14px; margin-bottom: 16px; }
+          @media (min-width: 900px) {
+            .ops-main { grid-template-columns: 1.35fr 0.95fr; align-items: start; }
+          }
+          .today-job-row {
+            display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+            padding: 12px 0; border-bottom: 1px solid var(--border); cursor: pointer;
+          }
+          .today-job-row:last-child { border-bottom: none; }
+          .today-job-row .tj-meta { font-size: 12px; color: var(--slate); }
+          .quick-actions { display: flex; flex-direction: column; gap: 8px; }
+          .quick-actions .qa-btn {
+            display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+            text-align: left; width: 100%; padding: 12px 14px; border-radius: 12px;
+            border: 1.5px solid var(--border); background: var(--white);
+            font-family: inherit; cursor: pointer;
+          }
+          .quick-actions .qa-btn strong { font-size: 13px; color: var(--ink); }
+          .quick-actions .qa-btn span { font-size: 11px; color: var(--slate); font-weight: 500; }
+          .quick-actions .qa-btn:hover { border-color: var(--blue); background: var(--blue-mist); }
+          .setup-progress { height: 6px; border-radius: 99px; background: #E2E8F0; overflow: hidden; margin: 10px 0 8px; }
+          .setup-progress > i { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, var(--blue), #2E7DE8); border-radius: 99px; }
+          #creditsSection .credits-quiet-bar { display: none !important; }
+          .demo-strip { display: none !important; }
+          .dash-greeting { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+          .dash-greeting .greet-text { flex: 1; min-width: 180px; }
+        </style>
+
+        <div class="ops-main">
+            <div class="card">
+                <div class="card-header">
+                    <h3 style="margin:0;font-size:15px;">Today's jobs</h3>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="switchTab('jobs')">View all</button>
                 </div>
-                <p id="websiteCardStatus" style="font-size:13px;color:var(--slate);margin:0 0 10px;">Set up your public page so customers can book you.</p>
-                <div id="websiteBookingsBox" style="display:none;">
-                    <p style="font-size:12px;font-weight:800;color:var(--slate);text-transform:uppercase;letter-spacing:0.04em;margin:0 0 8px;">Website bookings</p>
-                    <div id="websiteBookingsList" style="display:flex;flex-direction:column;gap:8px;"></div>
+                <div id="todayJobsList"><p style="color:var(--slate);font-size:13px;">Loading…</p></div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h3 style="margin:0;font-size:15px;">Quick actions</h3>
+                </div>
+                <div class="quick-actions">
+                    <button type="button" class="qa-btn" onclick="openModal('job')"><strong>+ New Job</strong><span>Create a cleaning or laundry job</span></button>
+                    <button type="button" class="qa-btn" onclick="openQuickCapture()"><strong>⚡ Quick capture</strong><span>Customer waiting at the counter</span></button>
+                    <button type="button" class="qa-btn" onclick="openModal('client')"><strong>+ Add client</strong><span>Save a new customer</span></button>
+                    <button type="button" class="qa-btn" onclick="openModal('invoice')"><strong>Create invoice</strong><span>Send an invoice and get paid</span></button>
+                    <button type="button" class="qa-btn" onclick="switchTab('jobs')"><strong>View all jobs</strong><span>Statuses, calendar, full list</span></button>
                 </div>
             </div>
-<div class="stats-grid">
-                <div class="stat-card primary">
-                    <span class="stat-icon"><svg class="icon"><use href="#ic-clipboard"/></svg></span>
-                    <div class="stat-label">Total Jobs</div>
-                    <div class="stat-value" id="ovJobs">0</div>
-                </div>
-                <div class="stat-card green revenue-locked" id="revenueStatCard">
-                    <span class="stat-icon"><svg class="icon"><use href="#ic-wallet"/></svg></span>
-                    <div class="stat-label">Revenue</div>
-                    <div class="stat-value" id="ovRevenue">₦••••</div>
-                    <button type="button" class="btn btn-outline btn-sm unlock-revenue-btn" id="unlockRevenueBtn" onclick="promptUnlockRevenue()" style="display:inline-flex;">Unlock with PIN</button>
-                </div>
-                <div class="stat-card orange">
-                    <span class="stat-icon"><svg class="icon"><use href="#ic-bell"/></svg></span>
-                    <div class="stat-label">Pending</div>
-                    <div class="stat-value" id="ovPending">0</div>
+        </div>
+
+        <div class="card" id="websiteCard" style="margin-bottom:16px;">
+            <div class="card-header" style="margin-bottom:4px;">
+                <h3 style="margin:0;font-size:15px;" id="websiteCardHeading">Your booking page</h3>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <a class="btn btn-outline btn-sm" id="websiteOpenBtn" href="b.html" target="_blank" rel="noopener">View</a>
+                    <button type="button" class="btn btn-primary btn-sm" id="websiteEditBtn" onclick="switchTab('settings'); setTimeout(function(){ var el=document.getElementById('bpSlug'); if(el) el.scrollIntoView({behavior:'smooth'}); }, 200);">Complete setup</button>
                 </div>
             </div>
+            <p id="websiteCardStatus" style="font-size:13px;color:var(--slate);margin:0 0 6px;">Get online so customers can view services and book you.</p>
+            <div class="setup-progress" id="websiteProgressWrap"><i id="websiteProgressBar"></i></div>
+            <p id="websiteProgressLabel" style="font-size:11px;color:var(--slate);margin:0 0 8px;"></p>
+            <div id="websiteBookingsBox" style="display:none;">
+                <p style="font-size:12px;font-weight:800;color:var(--slate);text-transform:uppercase;letter-spacing:0.04em;margin:8px 0;">Website bookings</p>
+                <div id="websiteBookingsList" style="display:flex;flex-direction:column;gap:8px;"></div>
+            </div>
+        </div>
 
             <div class="profit-report" id="profitReport">
                 <div class="profit-simple" id="profitSimple">
@@ -3304,7 +3355,7 @@
                     <button type="button" class="work-cal-toggle" onclick="toggleWorkCal()" aria-expanded="false" id="workCalToggleBtn">
                         <span>
                             <div class="work-cal-toggle-title">Work calendar</div>
-                            <div class="work-cal-toggle-meta" id="workCalSub">Tap to open</div>
+                            <div class="work-cal-toggle-meta" id="workCalSub">Optional — tap to open</div>
                         </span>
                         <span class="work-cal-chevron" aria-hidden="true">▼</span>
                     </button>
@@ -3320,17 +3371,14 @@
                 </div>
             </div>
 
-            <div class="card">
+            <div class="card" id="recentJobsCard">
                 <div class="card-header">
-                    <h3 id="recentJobsTitle"><svg class="icon"><use href="#ic-clipboard"/></svg> Recent Jobs</h3>
-                    <button class="btn btn-primary btn-sm" onclick="openModal('job')">
-                        <svg class="icon"><use href="#ic-plus"/></svg> New Job
-                    </button>
+                    <h3 id="recentJobsTitle" style="margin:0;font-size:15px;">Recent activity</h3>
+                    <button class="btn btn-outline btn-sm" onclick="switchTab('jobs')">All jobs</button>
                 </div>
                 <div id="recentJobs"><p style="color:var(--slate);">No jobs yet</p></div>
             </div>
 
-            
             <!-- Subscription status (no rate cards) -->
             <div id="plansSection" style="display:none;" aria-hidden="true">
                 <div id="subscriptionStatus"></div>
@@ -4957,7 +5005,7 @@
             var hello = timeOfDayGreeting();
             if (name) {
                 title.textContent = hello + ', ' + name;
-                sub.textContent = 'Here is how your business is doing today.';
+                sub.textContent = "Here's what's happening with your business today.";
             } else {
                 title.textContent = hello;
                 sub.innerHTML = 'Set your business name in <button type="button" class="linkish" onclick="switchTab(\'settings\')">Settings</button> to personalise this.';
@@ -5427,11 +5475,27 @@
                     st.innerHTML = 'Public URL: <strong>cleancrewapp.com/b.html?s=' + pg.slug + '</strong>' + trial;
                 }
                 var cardSt = document.getElementById('websiteCardStatus');
+                var bar = document.getElementById('websiteProgressBar');
+                var lab = document.getElementById('websiteProgressLabel');
+                var editBtn = document.getElementById('websiteEditBtn');
+                var heading = document.getElementById('websiteCardHeading');
+                var score = 0;
+                if (pg.business_name) score += 25;
+                if (pg.slug) score += 15;
+                if (pg.whatsapp || pg.phone) score += 20;
+                if (pg.services || (pg.services_json && pg.services_json.length)) score += 20;
+                if (pg.is_published !== false) score += 20;
+                if (bar) bar.style.width = score + '%';
+                if (lab) lab.textContent = score >= 100 ? 'Setup complete' : (score + '% complete');
                 if (cardSt) {
-                    if (pg.is_published !== false && pg.slug) {
-                        cardSt.innerHTML = 'Live: <strong>b.html?s=' + pg.slug + '</strong> — customers can book; you manage jobs here.';
+                    if (pg.is_published !== false && pg.slug && score >= 80) {
+                        cardSt.innerHTML = 'Live at <strong>b.html?s=' + pg.slug + '</strong> — share with customers.';
+                        if (editBtn) editBtn.textContent = 'Edit';
+                        if (heading) heading.textContent = 'Your booking page';
                     } else {
-                        cardSt.textContent = 'Draft — publish in Settings to go live.';
+                        cardSt.textContent = 'Your page isn't fully ready yet. Add services and publish so customers can book you.';
+                        if (editBtn) editBtn.textContent = 'Complete setup';
+                        if (heading) heading.textContent = 'Your booking page';
                     }
                 }
                 window._businessPage = pg;
@@ -6326,63 +6390,133 @@
         }
 
         function renderOverview(jobs, clients) {
+            jobs = jobs || [];
+            clients = clients || [];
             var filteredJobs = jobs.filter(function(j) {
-                return getJobMode(j) === currentServiceType;
+                return typeof getJobMode === 'function' ? getJobMode(j) === currentServiceType : true;
             });
+            // location filter if active
+            if (typeof jobMatchesLocationFilter === 'function') {
+                filteredJobs = filteredJobs.filter(jobMatchesLocationFilter);
+            }
             var modeLabel = currentServiceType === 'laundry' ? 'laundry' : 'cleaning';
-            var modeIcon = currentServiceType === 'laundry' ? '👕' : '🧹';
 
-            var total = filteredJobs.length;
-            var completed = filteredJobs.filter(function(j) {
-                return j.status === 'completed' || j.status === 'delivered' || j.status === 'collected';
-            }).length;
+            var todayStr = new Date().toISOString().slice(0, 10);
+            function jobDate(j) {
+                var d = j.date || j.scheduled_at || j.created_at || '';
+                return String(d).slice(0, 10);
+            }
+            var todayJobs = filteredJobs.filter(function(j) {
+                return jobDate(j) === todayStr;
+            }).filter(function(j) {
+                return j.status !== 'cancelled';
+            });
+            // sort by time-ish: pending first then name
+            todayJobs.sort(function(a, b) {
+                var as = (a.status === 'completed' || a.status === 'collected') ? 1 : 0;
+                var bs = (b.status === 'completed' || b.status === 'collected') ? 1 : 0;
+                return as - bs;
+            });
+
             var pending = filteredJobs.filter(function(j) {
-                return j.status === 'pending' || j.status === 'in-progress';
+                return j.status === 'pending' || j.status === 'in-progress' || j.status === 'draft';
             }).length;
             var revenue = filteredJobs.filter(function(j) {
                 return j.status === 'completed' || j.status === 'delivered' || j.status === 'collected';
             }).reduce(function(sum, j) {
-                return sum + (j.amount || 0);
+                return sum + (Number(j.amount) || 0);
             }, 0);
 
-            document.getElementById('ovJobs').textContent = total;
+            var ovToday = document.getElementById('ovJobsToday');
+            if (ovToday) ovToday.textContent = String(todayJobs.length);
+            var ovJobs = document.getElementById('ovJobs');
+            if (ovJobs) ovJobs.textContent = String(filteredJobs.length);
+            var ovSub = document.getElementById('ovJobsSub');
+            if (ovSub) ovSub.textContent = filteredJobs.length ? (filteredJobs.length + ' total ' + modeLabel + ' jobs') : 'No jobs yet';
             realRevenueValue = revenue;
-            applyRevenueDisplay();
-            document.getElementById('ovPending').textContent = pending;
+            if (typeof applyRevenueDisplay === 'function') applyRevenueDisplay();
+            var ovP = document.getElementById('ovPending');
+            if (ovP) ovP.textContent = String(pending);
 
-            renderProfitReport(filteredJobs);
+            // Outstanding invoices
+            var outstanding = 0;
+            try {
+                var invs = (typeof invoicesData !== 'undefined' && invoicesData) ? invoicesData : [];
+                invs.forEach(function(inv) {
+                    if (typeof isQuotation === 'function' && isQuotation(inv)) return;
+                    var due = Number(inv.amount_due != null ? inv.amount_due : inv.amount) || 0;
+                    var paid = Number(inv.amount_paid) || 0;
+                    var left = Math.max(0, due - paid);
+                    var st = String(inv.status || '').toLowerCase();
+                    if (st !== 'paid' && left > 0) outstanding += left;
+                });
+            } catch (eOut) {}
+            var ovOut = document.getElementById('ovOutstanding');
+            if (ovOut) ovOut.textContent = typeof formatMoney === 'function' ? formatMoney(outstanding) : ('₦' + outstanding);
 
-            var recent = filteredJobs.slice(0, 5);
-            var container = document.getElementById('recentJobs');
-            if (recent.length === 0) {
-                container.innerHTML = '<div class="empty-state" style="padding:24px 12px;">' +
-                    '<strong>No ' + modeLabel + ' jobs yet</strong>' +
-                    '<span>When a customer books or drops clothes, add them here.</span>' +
-                    '<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px;">' +
-                    '<button type="button" class="btn btn-primary btn-sm" onclick="openQuickCapture()">⚡ Quick capture</button>' +
-                    '<button type="button" class="btn btn-outline btn-sm" onclick="openModal(\'job\')">+ Full job</button>' +
-                    '</div></div>';
-            } else {
-                container.innerHTML = recent.map(function(j) {
-                    return '<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); cursor:pointer;" onclick="openJobDetail(\'' + j.id + '\')">' +
-                        '<div>' +
-                        '<strong>' + j.client + '</strong>' +
-                        '<br>' +
-                        '<span style="font-size:12px;color:var(--slate);">' +
-                        modeIcon + ' ' + (j.service || 'N/A') +
-                        '</span>' +
-                        '</div>' +
-                        '<div style="text-align:right;">' +
-                        '<span style="font-weight:700;">' + formatMoney(j.amount) + '</span>' +
-                        '<br>' +
-                        '<span class="status-badge ' + j.status + '">' + j.status + '</span>' +
-                        '</div>' +
-                        '</div>';
-                }).join('');
+            if (typeof renderProfitReport === 'function') renderProfitReport(filteredJobs);
+
+            // Today's jobs list
+            var todayEl = document.getElementById('todayJobsList');
+            if (todayEl) {
+                if (!todayJobs.length) {
+                    if (!filteredJobs.length) {
+                        todayEl.innerHTML = '<div class="empty-state" style="padding:20px 8px;text-align:center;">' +
+                            '<strong style="display:block;margin-bottom:6px;">You\'re all caught up</strong>' +
+                            '<span style="font-size:13px;color:var(--slate);">No jobs scheduled for today. Create a job or share your booking page.</span>' +
+                            '<div style="margin-top:12px;"><button type="button" class="btn btn-primary btn-sm" onclick="openModal(\'job\')">+ New Job</button></div></div>';
+                    } else {
+                        todayEl.innerHTML = '<p style="color:var(--slate);font-size:13px;margin:0;">No jobs scheduled for today.</p>' +
+                            '<button type="button" class="btn btn-outline btn-sm" style="margin-top:10px;" onclick="switchTab(\'jobs\')">View upcoming jobs</button>';
+                    }
+                } else {
+                    todayEl.innerHTML = todayJobs.map(function(j) {
+                        var st = j.status || 'pending';
+                        var svc = j.service || j.mode || modeLabel;
+                        var amt = (j.amount != null && Number(j.amount) > 0 && typeof formatMoney === 'function') ? formatMoney(j.amount) : '';
+                        return '<div class="today-job-row" onclick="openJobDetail(\'' + j.id + '\')">' +
+                            '<div><strong>' + (j.client || 'Customer') + '</strong>' +
+                            '<div class="tj-meta">' + svc + (amt ? ' · ' + amt : '') + '</div></div>' +
+                            '<span class="status-pill" style="align-self:center;font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;background:#F1F5F9;">' + st + '</span></div>';
+                    }).join('');
+                }
             }
 
-            // First-login checklist (uses all jobs/clients, not only current mode)
-            updateOnboardingUI(jobs, clients);
+            // Recent activity (secondary)
+            var recent = filteredJobs.slice().sort(function(a, b) {
+                return String(b.created_at || b.date || '').localeCompare(String(a.created_at || a.date || ''));
+            }).slice(0, 5);
+            var container = document.getElementById('recentJobs');
+            if (container) {
+                if (recent.length === 0) {
+                    container.innerHTML = '<p style="color:var(--slate);font-size:13px;margin:0;">Activity will show here after your first jobs.</p>';
+                } else {
+                    container.innerHTML = recent.map(function(j) {
+                        return '<div class="today-job-row" onclick="openJobDetail(\'' + j.id + '\')">' +
+                            '<div><strong>' + (j.client || 'Customer') + '</strong>' +
+                            '<div class="tj-meta">' + (j.service || '') + ' · ' + (j.status || '') + '</div></div>' +
+                            '<span class="tj-meta">' + String(j.date || '').slice(0, 10) + '</span></div>';
+                    }).join('');
+                }
+            }
+
+            // Hide heavy analytics with no data
+            var profit = document.getElementById('profitReport');
+            if (profit) {
+                profit.style.display = filteredJobs.length ? '' : 'none';
+            }
+            var recentCard = document.getElementById('recentJobsCard');
+            if (recentCard && !filteredJobs.length) {
+                recentCard.style.display = 'none';
+            } else if (recentCard) {
+                recentCard.style.display = '';
+            }
+
+            if (typeof updateOnboarding === 'function') {
+                try { updateOnboarding(filteredJobs, clients); } catch (e1) {}
+            } else if (typeof refreshOnboarding === 'function') {
+                try { refreshOnboarding(filteredJobs, clients); } catch (e2) {}
+            }
         }
 
 
