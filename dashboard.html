@@ -8161,174 +8161,157 @@
         }
 
         function openModal(type) {
-            try {
+            type = type || 'job';
             modalType = type;
-            laundryItems = [];
+            try { laundryItems = []; } catch (e0) { laundryItems = []; }
+
             var titles = {
                 job: 'New Job',
                 client: 'New Client',
                 inventory: 'New Inventory Item',
                 staff: 'New Staff Member',
                 invoice: 'New Invoice',
-                quotation: 'New Quotation'
+                quotation: 'New Quotation',
+                editJob: 'Edit Job'
             };
-            document.getElementById('modalTitle').innerHTML = '<svg class="icon"><use href="#ic-plus"/></svg> ' + titles[type];
-            document.getElementById('modalForm').reset();
 
+            var titleEl = document.getElementById('modalTitle');
+            var formEl = document.getElementById('modalForm');
             var f = document.getElementById('modalFormFields');
+            var overlay = document.getElementById('modalOverlay');
 
-            if (type === 'job') {
-                // Always resolve mode at open-time (fixes stale laundry form on cleaning)
-                currentServiceType = getActiveServiceType();
-                syncServiceTypeUI(currentServiceType);
-                var modeLabel = currentServiceType === 'laundry' ? 'Laundry' : 'Cleaning';
-                var serviceOptions = currentServiceType === 'laundry'
+            if (!overlay || !f) {
+                showToast('Form UI missing — hard refresh the page', 'error');
+                console.error('modal DOM missing', { overlay: !!overlay, f: !!f });
+                return;
+            }
+
+            if (titleEl) {
+                titleEl.innerHTML = '<svg class="icon"><use href="#ic-plus"/></svg> ' + (titles[type] || 'New');
+            }
+            try { if (formEl) formEl.reset(); } catch (eReset) {}
+
+            var cur = 'cleaning';
+            try { cur = getActiveServiceType(); } catch (e1) { cur = currentServiceType || 'cleaning'; }
+            currentServiceType = cur;
+            try { syncServiceTypeUI(cur); } catch (e2) {}
+
+            var sym = '₦';
+            try { sym = moneySymbol(); } catch (e3) { sym = '₦'; }
+
+            try {
+            if (type === 'job' || type === 'editJob') {
+                var modeLabel = cur === 'laundry' ? 'Laundry' : 'Cleaning';
+                if (titleEl) titleEl.innerHTML = '<svg class="icon"><use href="#ic-plus"/></svg> New ' + modeLabel + ' Job';
+
+                var serviceOptions = cur === 'laundry'
                     ? '<option>Wash & Fold</option><option>Wash & Iron</option><option>Dry Cleaning</option><option>Iron Only</option><option>Commercial Laundry</option>'
-                    : '<optgroup label="Cleaning">' +
-                      '<option>Home Cleaning</option><option>Office Cleaning</option><option>Deep Cleaning</option><option>Post-Construction</option><option>Move In/Out</option>' +
-                      '</optgroup>' +
-                      '<optgroup label="Fumigation">' +
-                      '<option>Residential fumigation</option>' +
-                      '<option>Office / commercial fumigation</option>' +
-                      '<option>Bed bug treatment</option>' +
-                      '<option>Termite treatment</option>' +
-                      '<option>General pest control</option>' +
-                      '<option>Fogging</option>' +
-                      '</optgroup>';
-                titles.job = 'New ' + modeLabel + ' Job';
-                document.getElementById('modalTitle').innerHTML = '<svg class="icon"><use href="#ic-plus"/></svg> ' + titles.job;
+                    : '<optgroup label="Cleaning"><option>Home Cleaning</option><option>Office Cleaning</option><option>Deep Cleaning</option><option>Post-Construction</option><option>Move In/Out</option></optgroup>' +
+                      '<optgroup label="Fumigation"><option>Residential fumigation</option><option>Office / commercial fumigation</option><option>Bed bug treatment</option><option>Termite treatment</option><option>General pest control</option><option>Fogging</option></optgroup>';
 
                 var modeExtra = '';
-                if (currentServiceType === 'cleaning') {
+                if (cur === 'cleaning') {
                     modeExtra =
                         '<div id="cleaningSizeFields">' +
                         '<div class="form-group"><label>Rooms</label><input type="number" id="jRooms" min="1" placeholder="e.g. 3" /></div>' +
                         '<div class="form-group"><label>Property size</label><select id="jPropertySize">' +
-                        '<option value="">— Optional —</option>' +
-                        '<option>Studio</option><option>1-bed</option><option>2-bed</option><option>3-bed</option><option>4+</option>' +
-                        '<option>Office (small)</option><option>Office (large)</option>' +
-                        '</select></div></div>' +
+                        '<option value="">Optional</option><option>Studio</option><option>1-bed</option><option>2-bed</option><option>3-bed</option><option>4+</option>' +
+                        '<option>Office (small)</option><option>Office (large)</option></select></div></div>' +
                         '<div id="fumigationFields" class="full-width" style="display:none;">' +
-                        '<div class="form-group"><label>Property type</label><select id="jFumProperty">' +
-                        '<option value="Home">Home</option><option value="Office">Office</option><option value="Other">Other</option>' +
-                        '</select></div>' +
-                        '<div class="form-group"><label>Rooms</label><input type="number" id="jFumRooms" min="1" placeholder="e.g. 3" /></div>' +
-                        '<div class="form-group"><label>Pest focus</label><select id="jFumPest">' +
-                        '<option value="General">General</option>' +
-                        '<option value="Bed bugs">Bed bugs</option>' +
-                        '<option value="Termites">Termites</option>' +
-                        '<option value="Rodents">Rodents</option>' +
-                        '<option value="Other">Other (see notes)</option>' +
-                        '</select></div>' +
-                        '<div class="form-group full-width"><label>Areas to treat</label>' +
-                        '<input type="text" id="jFumAreas" placeholder="e.g. all rooms + kitchen + compound" /></div>' +
-                        '</div>';
+                        '<div class="form-group"><label>Property type</label><select id="jFumProperty"><option>Home</option><option>Office</option><option>Other</option></select></div>' +
+                        '<div class="form-group"><label>Rooms</label><input type="number" id="jFumRooms" min="1" /></div>' +
+                        '<div class="form-group"><label>Pest focus</label><select id="jFumPest"><option>General</option><option>Bed bugs</option><option>Termites</option><option>Rodents</option><option>Other</option></select></div>' +
+                        '<div class="form-group full-width"><label>Areas to treat</label><input type="text" id="jFumAreas" /></div></div>';
                 } else {
                     modeExtra =
-                        '<div class="form-group full-width">' +
-                        '<label>Items (name · qty · unit price)</label>' +
+                        '<div class="form-group full-width"><label>Items (name · qty · unit price)</label>' +
                         '<div id="laundryItemsList" class="laundry-items"></div>' +
-                        '<button type="button" class="btn btn-outline btn-sm" onclick="addLaundryItemRow()" style="margin-top:6px;">' +
-                        '<svg class="icon"><use href="#ic-plus"/></svg> Add item</button>' +
-                        '<p style="margin:10px 0 0;font-size:14px;font-weight:700;">Total: <span id="laundryJobTotal">' + moneySymbol() + '0</span></p>' +
-                        '<p style="margin:4px 0 0;font-size:11px;color:var(--slate);">Unit price auto-fills from your laundry price list when the name matches.</p>' +
-                        '</div>';
+                        '<button type="button" class="btn btn-outline btn-sm" onclick="addLaundryItemRow()" style="margin-top:6px;">+ Add item</button>' +
+                        '<p style="margin:10px 0 0;font-size:14px;font-weight:700;">Total: <span id="laundryJobTotal">' + sym + '0</span></p></div>';
                 }
 
-                f.innerHTML = '<div class="form-group"><label>Client Name</label><input type="text" id="jClient" required /></div>' +
+                var locHtml = '<option value="">No location</option>';
+                try { locHtml = locationOptionsHtml(); } catch (eLoc) {}
+
+                f.innerHTML =
+                    '<div class="form-group"><label>Client Name</label><input type="text" id="jClient" required /></div>' +
                     '<div class="form-group"><label>Phone</label><input type="tel" id="jPhone" /></div>' +
-                    '<div class="form-group"><label>Branch</label><select id="jLocationId">' + locationOptionsHtml() + '</select></div>' +
-                    '<div class="form-group"><label>Job site / area</label><input type="text" id="jLocation" placeholder="Area, estate, or address" /></div>' +
+                    '<div class="form-group"><label>Branch</label><select id="jLocationId">' + locHtml + '</select></div>' +
+                    '<div class="form-group"><label>Job site / area</label><input type="text" id="jLocation" placeholder="Area or address" /></div>' +
                     '<div class="form-group"><label>Service</label><select id="jService">' + serviceOptions + '</select></div>' +
                     modeExtra +
-                    '<div class="form-group"><label>Amount (' + moneySymbol() + ')</label><input type="number" id="jAmount" required /></div>' +
+                    '<div class="form-group"><label>Amount (' + sym + ')</label><input type="number" id="jAmount" required min="0" step="0.01" /></div>' +
                     '<div class="form-group"><label>Date</label><input type="date" id="jDate" required /></div>' +
                     '<div class="form-group"><label>Status</label><select id="jStatus"><option value="pending">Pending</option><option value="in-progress">In Progress</option><option value="completed">Completed</option></select></div>' +
-                    '<div class="form-group full-width"><label>Assign staff</label><div id="jobStaffAssign" class="staff-assign-box"><p style="font-size:12px;color:var(--slate);margin:0;">Loading staff…</p></div><p style="font-size:11px;color:var(--slate);margin:6px 0 0;">Optional. Pick who works this job — one Lead if several.</p></div><div class="form-group full-width"><label>Notes</label><textarea id="jNotes" placeholder="Access codes, special requests…"></textarea></div>';
+                    '<div class="form-group full-width"><label>Assign staff</label><div id="jobStaffAssign" class="staff-assign-box"><p style="font-size:12px;color:var(--slate);margin:0;">Optional</p></div></div>' +
+                    '<div class="form-group full-width"><label>Notes</label><textarea id="jNotes" placeholder="Access codes, special requests…"></textarea></div>';
 
-                
+                try {
+                    var jd = document.getElementById('jDate');
+                    if (jd && !jd.value) jd.value = new Date().toISOString().slice(0, 10);
+                } catch (eD) {}
+
                 var jSvc = document.getElementById('jService');
-                if (jSvc) {
+                if (jSvc && typeof toggleFumigationFields === 'function') {
                     jSvc.addEventListener('change', toggleFumigationFields);
-                    toggleFumigationFields();
+                    try { toggleFumigationFields(); } catch (eF) {}
                 }
-
-                if (currentServiceType === 'laundry') {
-                    laundryItems = [];
+                if (cur === 'laundry' && typeof loadLaundryPricing === 'function') {
                     loadLaundryPricing().then(function() {
-                        addLaundryItemRow();
-                    });
+                        try { if (typeof addLaundryItemRow === 'function') addLaundryItemRow(); } catch (eL) {}
+                    }).catch(function() {});
                 }
             } else if (type === 'client') {
-                f.innerHTML = '<div class="form-group"><label>Name *</label><input type="text" id="cName" required /></div>' +
+                f.innerHTML =
+                    '<div class="form-group"><label>Name *</label><input type="text" id="cName" required /></div>' +
                     '<div class="form-group"><label>Phone</label><input type="tel" id="cPhone" /></div>' +
                     '<div class="form-group"><label>Email</label><input type="email" id="cEmail" /></div>' +
                     '<div class="form-group"><label>Location</label><input type="text" id="cLocation" /></div>' +
                     '<div class="form-group full-width"><label>Notes</label><textarea id="cNotes"></textarea></div>';
             } else if (type === 'inventory') {
-                var catOptions;
-                if (currentServiceType === 'laundry') {
-                    catOptions = '<option value="laundry" selected>Laundry</option>';
-                    titles.inventory = 'New Laundry Item';
-                } else {
-                    catOptions =
-                        '<option value="cleaning" selected>Cleaning</option>' +
-                        '<option value="fumigation">Fumigation</option>';
-                    titles.inventory = 'New Inventory Item';
-                }
-                document.getElementById('modalTitle').innerHTML = '<svg class="icon"><use href="#ic-plus"/></svg> ' + titles.inventory;
-                f.innerHTML = '<div class="form-group"><label>Item Name *</label><input type="text" id="invName" required /></div>' +
+                var catOptions = cur === 'laundry'
+                    ? '<option value="laundry" selected>Laundry</option>'
+                    : '<option value="cleaning" selected>Cleaning</option><option value="fumigation">Fumigation</option>';
+                f.innerHTML =
+                    '<div class="form-group"><label>Item Name *</label><input type="text" id="invName" required /></div>' +
                     '<div class="form-group"><label>Category</label><select id="invCategory">' + catOptions + '</select></div>' +
                     '<div class="form-group"><label>Quantity</label><input type="number" id="invQty" required min="0" /></div>' +
-                    '<div class="form-group"><label>Min Stock Level</label><input type="number" id="invMin" value="3" min="0" /></div>';
+                    '<div class="form-group"><label>Min Stock</label><input type="number" id="invMin" value="3" min="0" /></div>' +
+                    '<div class="form-group full-width"><label>Notes</label><textarea id="invNotes"></textarea></div>';
             } else if (type === 'staff') {
-                f.innerHTML = '<div class="form-group"><label>Full Name *</label><input type="text" id="sName" required /></div>' +
+                f.innerHTML =
+                    '<div class="form-group"><label>Name *</label><input type="text" id="sName" required /></div>' +
                     '<div class="form-group"><label>Phone</label><input type="tel" id="sPhone" /></div>' +
-                    '<div class="form-group"><label>Email</label><input type="email" id="sEmail" /></div>' +
-                    '<div class="form-group"><label>Role</label><select id="sRole"><option>Cleaner</option><option>Supervisor</option><option>Manager</option><option>Admin</option></select></div>';
+                    '<div class="form-group"><label>Role</label><input type="text" id="sRole" placeholder="Cleaner, Driver…" /></div>';
             } else if (type === 'invoice' || type === 'quotation') {
                 var isQuote = type === 'quotation';
-                quoteLineItems = [];
-                f.innerHTML = '<div class="form-group"><label>Client *</label><input type="text" id="invClient" required /></div>' +
-                    '<div class="form-group"><label>WhatsApp / phone</label><input type="tel" id="invPhone" placeholder="e.g. 0803..." /></div>' +
-                    (isQuote ? quoteLineItemsHtml() : '') +
-                    '<div class="form-group"><label>Amount (' + moneySymbol() + ') *</label><input type="number" id="invAmount" required /></div>' +
-                    '<div class="form-group"><label>Date</label><input type="date" id="invDate" required /></div>' +
-                    (isQuote
-                        ? ('<div class="form-group"><label>Valid until</label><input type="date" id="invValidUntil" /></div>' +
-                           '<input type="hidden" id="invStatus" value="draft" />' +
-                           '<input type="hidden" id="invDocType" value="quotation" />')
-                        : ('<div class="form-group"><label>Status</label><select id="invStatus"><option value="pending">Pending</option><option value="paid">Paid</option><option value="overdue">Overdue</option></select></div>' +
-                           '<input type="hidden" id="invDocType" value="invoice" />')) +
-                    '<div class="form-group full-width"><label>Notes / scope</label><textarea id="invDescription" placeholder="' +
-                    (isQuote ? 'Extra notes for the client (optional)' : 'What is this invoice for?') +
-                    '"></textarea></div>';
-                if (isQuote) {
-                    setTimeout(function() {
-                        addQuoteLine();
-                        bindQuoteLineEvents();
-                    }, 0);
-                }
+                if (titleEl) titleEl.innerHTML = '<svg class="icon"><use href="#ic-plus"/></svg> ' + (isQuote ? 'New Quotation' : 'New Invoice');
+                f.innerHTML =
+                    '<div class="form-group"><label>Client *</label><input type="text" id="invClient" required /></div>' +
+                    '<div class="form-group"><label>Phone / WhatsApp</label><input type="tel" id="invPhone" /></div>' +
+                    '<div class="form-group"><label>Amount (' + sym + ') *</label><input type="number" id="invAmount" required min="0" step="0.01" /></div>' +
+                    '<div class="form-group"><label>Date</label><input type="date" id="invDate" /></div>' +
+                    '<div class="form-group full-width"><label>Description</label><textarea id="invDescription"></textarea></div>' +
+                    '<input type="hidden" id="invDocType" value="' + (isQuote ? 'quotation' : 'invoice') + '" />';
+                try {
+                    var idate = document.getElementById('invDate');
+                    if (idate) idate.value = new Date().toISOString().slice(0, 10);
+                } catch (eId) {}
+            } else {
+                f.innerHTML = '<p style="color:var(--slate);">Unknown form type.</p>';
+            }
+            } catch (buildErr) {
+                console.error('openModal build', buildErr);
+                f.innerHTML = '<p style="color:#B91C1C;">Could not build form: ' + String(buildErr.message || buildErr) + '</p>' +
+                    '<p style="font-size:12px;color:var(--slate);">Try a hard refresh. If it keeps happening, contact support.</p>';
             }
 
-            var overlay = document.getElementById('modalOverlay');
-            if (overlay) overlay.classList.add('active');
-            else {
-                showToast('Form UI missing — refresh the page', 'error');
-                return;
-            }
+            overlay.classList.add('active');
             if (type === 'job' || type === 'editJob') {
-                try { loadStaffAssignUI([], {}); } catch (eStaff) { console.warn('staff assign UI', eStaff); }
-            }
-            } catch (err) {
-                console.error('openModal failed', err);
-                try {
-                    var o = document.getElementById('modalOverlay');
-                    if (o) o.classList.add('active');
-                } catch (e2) {}
-                showToast('Could not open form — try refresh', 'error');
+                try { loadStaffAssignUI([], {}); } catch (eStaff) { console.warn(eStaff); }
             }
         }
+
 
         function closeModal() {
             jobEditId = null;
@@ -9011,12 +8994,16 @@
             try { currentLocationFilter = localStorage.getItem('cleancrew_location_filter') || 'all'; } catch (e) {}
 
             // Critical path first — show jobs/overview ASAP (Render cold start is slow)
+            try {
+                var b = document.getElementById('freeJobsBadge');
+                if (b && /—|-/.test(b.textContent)) b.textContent = 'Free jobs: …';
+            } catch (eB) {}
             renderAll();
             refreshFreeJobs();
             refreshCredits();
-            // Quota often lags right after login — retry
-            setTimeout(function() { refreshFreeJobs(); }, 600);
-            setTimeout(function() { refreshFreeJobs(); }, 2000);
+            setTimeout(function() { refreshFreeJobs(); }, 500);
+            setTimeout(function() { refreshFreeJobs(); }, 1500);
+            setTimeout(function() { refreshFreeJobs(); }, 4000);
 
             // Secondary — do not block the first paint
             setTimeout(function() {
@@ -9038,6 +9025,9 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            try {
+                TOKEN = localStorage.getItem('cleancrew_token') || TOKEN;
+            } catch (e) {}
             init();
         });
 
