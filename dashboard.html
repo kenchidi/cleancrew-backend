@@ -2989,6 +2989,82 @@
             }
         }
 
+
+        /* Settings sections */
+        .settings-shell {
+            display: grid;
+            gap: 16px;
+            align-items: start;
+        }
+        @media (min-width: 900px) {
+            .settings-shell {
+                grid-template-columns: 200px 1fr;
+            }
+        }
+        .settings-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 10px;
+        }
+        @media (min-width: 900px) {
+            .settings-nav {
+                flex-direction: column;
+                position: sticky;
+                top: 72px;
+            }
+        }
+        .settings-nav button {
+            border: none;
+            background: transparent;
+            text-align: left;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--slate);
+            padding: 10px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .settings-nav button:hover { background: var(--blue-mist); color: var(--blue); }
+        .settings-nav button.active {
+            background: var(--blue-mist);
+            color: var(--blue);
+            font-weight: 800;
+        }
+        .settings-panel { display: none; }
+        .settings-panel.active { display: block; }
+        .settings-panel .card { margin-bottom: 0; }
+        .settings-sticky-save {
+            position: sticky;
+            bottom: 12px;
+            z-index: 20;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 16px;
+            padding: 12px 14px;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: var(--shadow-md);
+        }
+        .settings-section-title {
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin: 0 0 4px;
+        }
+        .settings-section-desc {
+            font-size: 13px;
+            color: var(--slate);
+            margin: 0 0 16px;
+        }
+
     </style>
 
     <script>
@@ -3321,7 +3397,7 @@
                 <h3 style="margin:0;font-size:15px;" id="websiteCardHeading">Your booking page</h3>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;">
                     <a class="btn btn-outline btn-sm" id="websiteOpenBtn" href="b.html" target="_blank" rel="noopener">View</a>
-                    <button type="button" class="btn btn-primary btn-sm" id="websiteEditBtn" onclick="switchTab('settings'); setTimeout(function(){ var el=document.getElementById('bpSlug'); if(el) el.scrollIntoView({behavior:'smooth'}); }, 200);">Complete setup</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="websiteEditBtn" onclick="switchTab('settings'); setTimeout(function(){ switchSettingsPanel('public'); }, 100);">Complete setup</button>
                 </div>
             </div>
             <p id="websiteCardStatus" style="font-size:13px;color:var(--slate);margin:0 0 6px;">Get online so customers can view services and book you.</p>
@@ -3653,222 +3729,237 @@
 
         <!-- ════ SETTINGS TAB ════ -->
         <div class="tab-content" id="tab-settings">
-            <div class="card" style="margin-bottom:16px;">
-                <div class="card-header">
-                    <h3><svg class="icon"><use href="#ic-settings"/></svg> Settings</h3>
-                    <span style="font-size:12px; color:var(--slate);">Business profile, invoices &amp; payments</span>
-                </div>
-                <form id="invoiceSettingsForm" class="settings-form" onsubmit="saveInvoiceSettings(event)">
-                    <h4 style="font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;color:var(--slate);margin:0 0 12px;">Country &amp; currency</h4>
-                    <div class="form-group">
-                        <label>Operating country</label>
-                        <select id="settingsCountry" onchange="setUserCountry(this.value)">
-                            <option value="NG">Nigeria (₦ Naira)</option>
-                            <option value="GH">Ghana (GH₵ Cedis)</option>
-                        </select>
-                        <p style="font-size:12px;color:var(--slate);margin-top:6px;">Ghana accounts see prices in cedis and pay via MoMo PSB. Nigeria uses Paystack (₦).</p>
-                    </div>
-                    <hr style="border: none; border-top: 1px solid var(--border); margin: 18px 0;" />
-                    <h4 style="font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;color:var(--slate);margin:0 0 12px;">Business profile</h4>
-                    <p style="font-size:12px;color:var(--slate);margin:0 0 12px;">Your business name appears on the dashboard, invoice PDFs, and WhatsApp messages. One profile everywhere.</p>
-                    <div class="form-group">
-                        <label>Business Name</label>
-                        <input type="text" id="settingsBusinessName" placeholder="e.g. Sparkle Laundry" />
-                    </div>
-                    <div class="form-group full-width">
-                        <label>Business logo</label>
-                        <div class="logo-upload-row">
-                            <div class="logo-preview-wrap">
-                                <img id="settingsLogoPreview" alt="Logo preview" hidden />
-                                <span id="settingsLogoPlaceholder">No logo</span>
-                            </div>
-                            <div class="logo-upload-actions">
-                                <input type="file" id="settingsLogoFile" accept="image/png,image/jpeg,image/webp" hidden />
-                                <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('settingsLogoFile').click()">Upload logo</button>
-                                <button type="button" class="btn btn-outline btn-sm" id="settingsLogoClearBtn" onclick="clearBusinessLogo()" style="display:none;">Remove</button>
-                                <input type="hidden" id="settingsLogoUrl" value="" />
-                                <p class="logo-upload-hint">Square PNG or JPG works best. Shown before your name on the dashboard.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Business Address</label>
-                        <input type="text" id="settingsBusinessAddress" placeholder="e.g. 123 Main Street, Abuja, Nigeria" />
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Phone Number</label>
-                            <input type="tel" id="settingsPhone" placeholder="e.g. 080-123-4567" />
-                        </div>
-                        <div class="form-group">
-                            <label>Email Address</label>
-                            <input type="email" id="settingsEmail" placeholder="e.g. hello@cleancrewlaundry.com" />
-                        </div>
-                    </div>
-                    <hr style="border: none; border-top: 1px solid var(--border); margin: 18px 0;" />
-                    <h4 style="font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;color:var(--slate);margin:0 0 12px;">Bank / payment details</h4>
-                    <p style="font-size:12px;color:var(--slate);margin:0 0 12px;">Printed on the PDF so customers can transfer payment to you.</p>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Bank Name</label>
-                            <input type="text" id="settingsBankName" placeholder="e.g. GTBank" />
-                        </div>
-                        <div class="form-group">
-                            <label>Account Name</label>
-                            <input type="text" id="settingsAccountName" placeholder="e.g. CleanCrew Laundry" />
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Account Number</label>
-                        <input type="text" id="settingsAccountNumber" placeholder="e.g. 0123456789" />
-                    </div>
-                    <div class="form-group">
-                        <label>📞 Payment Confirmation WhatsApp</label>
-                        <input type="text" id="settingsPaymentWhatsapp" placeholder="e.g. 080-123-4567" />
-                        <span style="font-size:11px; color:var(--slate);">Clients will send payment proof to this number</span>
-                    </div>
-                    <hr style="border: none; border-top: 1px solid var(--border); margin: 18px 0;" />
-                    
-                    <h4 style="font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;color:var(--slate);margin:24px 0 12px;">Public business page</h4>
-                    <p style="font-size:12px;color:var(--slate);margin:0 0 12px;">Your mini landing page on CleanCrew — share with customers. Owners use <strong>Business login</strong> to reach the dashboard.</p>
-                    <div class="form-group">
-                        <label>Page link (slug)</label>
-                        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-                            <span style="font-size:12px;color:var(--slate);">cleancrewapp.com/b.html?s=</span>
-                            <input type="text" id="bpSlug" placeholder="sparkle-laundry" style="flex:1;min-width:140px;" />
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Display name</label>
-                        <input type="text" id="bpName" placeholder="Business name on public page" />
-                    </div>
-                    <div class="form-group">
-                        <label>Tagline</label>
-                        <input type="text" id="bpTagline" placeholder="Professional cleaning & laundry" />
-                    </div>
-                    <div class="form-group">
-                        <label>WhatsApp / phone (customers)</label>
-                        <input type="tel" id="bpWhatsapp" placeholder="0803..." />
-                    </div>
-                    <div class="form-group full-width">
-                        <label>Services (one per line; optional prices: Name | min | max)</label>
-                        <textarea id="bpServices" rows="3" placeholder="Home Cleaning | 5000 | 15000&#10;Office Cleaning | 8000 | 25000&#10;Laundry | 500"></textarea>
-                    </div>
-                    <div class="form-group full-width">
-                        <label>Areas served</label>
-                        <input type="text" id="bpAreas" placeholder="e.g. Lekki, VI, Abuja" />
-                    </div>
-                    <div class="form-group full-width">
-                        <label>About (optional)</label>
-                        <textarea id="bpAbout" rows="2" placeholder="Short intro for customers"></textarea>
-                    </div>
-                    
-                    <div class="form-group full-width">
-                        <label>Website template</label>
-                        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
-                            <label style="border:1.5px solid var(--border);border-radius:12px;padding:10px;cursor:pointer;text-align:center;font-size:12px;font-weight:700;">
-                                <input type="radio" name="bpTemplate" value="modern" checked style="margin-bottom:6px;" /> Modern<br><span style="font-weight:500;color:var(--slate);font-size:10px;">Split layout + steps</span>
-                            </label>
-                            <label style="border:1.5px solid var(--border);border-radius:12px;padding:10px;cursor:pointer;text-align:center;font-size:12px;font-weight:700;">
-                                <input type="radio" name="bpTemplate" value="vibrant" style="margin-bottom:6px;" /> Vibrant<br><span style="font-weight:500;color:var(--slate);font-size:10px;">Bold full hero</span>
-                            </label>
-                            <label style="border:1.5px solid var(--border);border-radius:12px;padding:10px;cursor:pointer;text-align:center;font-size:12px;font-weight:700;">
-                                <input type="radio" name="bpTemplate" value="elegant" style="margin-bottom:6px;" /> Elegant<br><span style="font-weight:500;color:var(--slate);font-size:10px;">Editorial list</span>
-                            </label>
-                        </div>
-                        <p style="font-size:11px;color:var(--slate);margin:6px 0 0;">Same easy editor — pick the look customers see.</p>
-                    </div>
+            <div class="settings-shell">
+                <nav class="settings-nav" id="settingsNav" aria-label="Settings sections">
+                    <button type="button" class="active" data-settings-panel="business" onclick="switchSettingsPanel('business')">Business</button>
+                    <button type="button" data-settings-panel="public" onclick="switchSettingsPanel('public')">Public page</button>
+                    <button type="button" data-settings-panel="payments" onclick="switchSettingsPanel('payments')">Payments &amp; invoices</button>
+                    <button type="button" data-settings-panel="locations" onclick="switchSettingsPanel('locations')">Locations</button>
+                    <button type="button" data-settings-panel="preferences" onclick="switchSettingsPanel('preferences')">Preferences</button>
+                </nav>
+                <div class="settings-main">
+                    <form id="invoiceSettingsForm" class="settings-form" onsubmit="saveInvoiceSettings(event)">
 
-                    <div class="form-group">
-                        <label>Brand colour</label>
-                        <input type="color" id="bpColor" value="#1A6DDB" style="height:40px;padding:4px;width:80px;" />
-                    </div>
-                    <div class="form-group full-width">
-                        <label>Hero photo (optional)</label>
-                        <div class="logo-upload-row">
-                            <div class="logo-preview-wrap" style="width:120px;height:72px;border-radius:10px;">
-                                <img id="bpHeroPreview" alt="Hero preview" hidden style="width:100%;height:100%;object-fit:cover;" />
-                                <span id="bpHeroPlaceholder">No photo</span>
-                            </div>
-                            <div class="logo-upload-actions">
-                                <input type="file" id="bpHeroFile" accept="image/png,image/jpeg,image/webp" hidden />
-                                <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('bpHeroFile').click()">Upload photo</button>
-                                <button type="button" class="btn btn-outline btn-sm" id="bpHeroClearBtn" onclick="clearHeroPhoto()" style="display:none;">Remove</button>
-                                <input type="hidden" id="bpHero" value="" />
-                                <p class="logo-upload-hint">Pick a photo from your phone — wide cleaning/laundry shots look best. No link needed.</p>
+                        <div class="settings-panel active" id="settingsPanel-business">
+                            <div class="card">
+                                <p class="settings-section-title">Business profile</p>
+                                <p class="settings-section-desc">This name and logo appear on your dashboard, invoices, and customer messages.</p>
+                                <div class="form-group">
+                                    <label>Business name</label>
+                                    <input type="text" id="settingsBusinessName" placeholder="e.g. Sparkle Laundry" />
+                                </div>
+                                <div class="form-group full-width">
+                                    <label>Logo</label>
+                                    <div class="logo-upload-row">
+                                        <div class="logo-preview-wrap">
+                                            <img id="settingsLogoPreview" alt="Logo preview" hidden />
+                                            <span id="settingsLogoPlaceholder">No logo</span>
+                                        </div>
+                                        <div class="logo-upload-actions">
+                                            <input type="file" id="settingsLogoFile" accept="image/png,image/jpeg,image/webp" hidden />
+                                            <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('settingsLogoFile').click()">Upload logo</button>
+                                            <button type="button" class="btn btn-outline btn-sm" id="settingsLogoClearBtn" onclick="clearBusinessLogo()" style="display:none;">Remove</button>
+                                            <input type="hidden" id="settingsLogoUrl" value="" />
+                                            <p class="logo-upload-hint">Square PNG or JPG works best.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Business address</label>
+                                    <input type="text" id="settingsBusinessAddress" placeholder="Street, area, city" />
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Phone</label>
+                                        <input type="tel" id="settingsPhone" placeholder="e.g. 080-123-4567" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Email</label>
+                                        <input type="email" id="settingsEmail" placeholder="e.g. hello@yourbusiness.com" />
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="form-group full-width">
-                        <label>Testimonials (optional, one per line)</label>
-                        <textarea id="bpTestimonials" rows="3" placeholder="They always leave my flat sparkling — Ada&#10;On-time every week — Chinedu"></textarea>
-                        <p style="font-size:11px;color:var(--slate);margin:4px 0 0;">Format: quote — name</p>
-                    </div>
-                    <div class="form-group">
-                        <label style="display:flex;align-items:center;gap:8px;font-weight:600;">
-                            <input type="checkbox" id="bpBooking" checked /> Accept bookings on page
-                        </label>
-                    </div>
-                    <div class="form-group">
-                        <label style="display:flex;align-items:center;gap:8px;font-weight:600;">
-                            <input type="checkbox" id="bpPublished" checked /> Published (visible to public)
-                        </label>
-                    </div>
-                    <div style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 8px;">
-                        <button type="button" class="btn btn-primary btn-sm" onclick="saveBusinessPage()">Save public page</button>
-                        <a class="btn btn-outline btn-sm" id="bpPreviewLink" href="b.html" target="_blank" rel="noopener">Open page</a>
-                    </div>
-                    <p id="bpStatus" style="font-size:12px;color:var(--slate);margin:0 0 16px;"></p>
 
-<h4 style="font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;color:var(--slate);margin:0 0 12px;">Terms &amp; conditions</h4>
-                    <p style="font-size:12px;color:var(--slate);margin:0 0 12px;">Printed on every invoice PDF under payment details. Use one line per point (like your payment &amp; site-visit rules).</p>
-                    <div class="form-group full-width">
-                        <label>Your terms</label>
-                        <textarea id="settingsTerms" rows="6" placeholder="Example:&#10;• A minimum of 70% payment is required before any site visit.&#10;• Adequate light and water must be available on-site.&#10;• Work will not begin if other contractors are active in the property."></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:12px;">
-                        <svg class="icon"><use href="#ic-check"/></svg> Save Settings
-                    </button>
-                </form>
-            </div>
-            <div class="card" id="locationsCard">
-                <div class="card-header">
-                    <h3>Locations</h3>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="openLocationForm()">+ Add location</button>
-                </div>
-                <p style="font-size:12px;color:var(--slate);margin:0 0 12px;">For shops with more than one branch. Jobs and inventory can be tagged by location.</p>
-                <div id="locationsList"><p style="color:var(--slate);font-size:13px;">Loading…</p></div>
-                <div id="locationForm" class="location-form" hidden>
-                    <div class="form-grid" style="margin-top:12px;">
-                        <div class="form-group"><label>Name *</label><input type="text" id="locName" placeholder="e.g. Katampe branch" /></div>
-                        <div class="form-group"><label>Phone</label><input type="tel" id="locPhone" placeholder="Branch phone" /></div>
-                        <div class="form-group full-width"><label>Address</label><input type="text" id="locAddress" placeholder="Street, area" /></div>
-                        <div class="form-group full-width">
-                            <label style="display:flex;align-items:center;gap:8px;font-weight:600;">
-                                <input type="checkbox" id="locDefault" /> Default location for new jobs
-                            </label>
+                        <div class="settings-panel" id="settingsPanel-public">
+                            <div class="card">
+                                <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+                                    <div>
+                                        <p class="settings-section-title">Your public page</p>
+                                        <p class="settings-section-desc" style="margin:0;">Customers can view services and book you. Jobs land in your dashboard.</p>
+                                    </div>
+                                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                                        <a class="btn btn-outline btn-sm" id="bpPreviewLink" href="b.html" target="_blank" rel="noopener">Preview page ↗</a>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Page link</label>
+                                    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                                        <span style="font-size:12px;color:var(--slate);">b.html?s=</span>
+                                        <input type="text" id="bpSlug" placeholder="your-business" style="flex:1;min-width:140px;" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Display name</label>
+                                    <input type="text" id="bpName" placeholder="Shown on your public page" />
+                                </div>
+                                <div class="form-group">
+                                    <label>Tagline</label>
+                                    <input type="text" id="bpTagline" placeholder="e.g. Reliable home &amp; office cleaning" />
+                                </div>
+                                <div class="form-group">
+                                    <label>WhatsApp / phone</label>
+                                    <input type="tel" id="bpWhatsapp" placeholder="Number customers can reach" />
+                                </div>
+                                <div class="form-group full-width">
+                                    <label>Services</label>
+                                    <textarea id="bpServices" rows="4" placeholder="One service per line. Optional price: Home cleaning | 25000 | 45000"></textarea>
+                                    <p class="logo-upload-hint">Tip: one service per line. You can add a from-price after a | if you want.</p>
+                                </div>
+                                <div class="form-group">
+                                    <label>Areas served</label>
+                                    <input type="text" id="bpAreas" placeholder="e.g. Gwarimpa, Maitama, Wuse" />
+                                </div>
+                                <div class="form-group full-width">
+                                    <label>About</label>
+                                    <textarea id="bpAbout" rows="3" placeholder="Short intro for customers"></textarea>
+                                </div>
+                                <p class="settings-section-title" style="margin-top:18px;">Appearance</p>
+                                <p class="settings-section-desc">Choose how your page looks.</p>
+                                <div class="form-group full-width">
+                                    <label>Template</label>
+                                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+                                        <label style="border:1.5px solid var(--border);border-radius:12px;padding:12px 10px;cursor:pointer;text-align:center;font-size:12px;font-weight:700;">
+                                            <input type="radio" name="bpTemplate" value="modern" checked style="margin-bottom:6px;" /> Modern<br><span style="font-weight:500;color:var(--slate);font-size:10px;">Clean &amp; professional</span>
+                                        </label>
+                                        <label style="border:1.5px solid var(--border);border-radius:12px;padding:12px 10px;cursor:pointer;text-align:center;font-size:12px;font-weight:700;">
+                                            <input type="radio" name="bpTemplate" value="vibrant" style="margin-bottom:6px;" /> Vibrant<br><span style="font-weight:500;color:var(--slate);font-size:10px;">Bold &amp; energetic</span>
+                                        </label>
+                                        <label style="border:1.5px solid var(--border);border-radius:12px;padding:12px 10px;cursor:pointer;text-align:center;font-size:12px;font-weight:700;">
+                                            <input type="radio" name="bpTemplate" value="elegant" style="margin-bottom:6px;" /> Elegant<br><span style="font-weight:500;color:var(--slate);font-size:10px;">Premium &amp; editorial</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Brand colour</label>
+                                    <input type="color" id="bpColor" value="#1A6DDB" style="height:40px;padding:4px;width:80px;" />
+                                </div>
+                                <div class="form-group full-width">
+                                    <label>Hero photo</label>
+                                    <div class="logo-upload-row">
+                                        <div class="logo-preview-wrap" style="width:120px;height:72px;border-radius:10px;">
+                                            <img id="bpHeroPreview" alt="Hero preview" hidden style="width:100%;height:100%;object-fit:cover;" />
+                                            <span id="bpHeroPlaceholder">No photo</span>
+                                        </div>
+                                        <div class="logo-upload-actions">
+                                            <input type="file" id="bpHeroFile" accept="image/png,image/jpeg,image/webp" hidden />
+                                            <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('bpHeroFile').click()">Upload photo</button>
+                                            <button type="button" class="btn btn-outline btn-sm" id="bpHeroClearBtn" onclick="clearHeroPhoto()" style="display:none;">Remove</button>
+                                            <input type="hidden" id="bpHero" value="" />
+                                            <p class="logo-upload-hint">Wide photo works best. No link needed.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group full-width">
+                                    <label>Testimonials</label>
+                                    <textarea id="bpTestimonials" rows="3" placeholder="They always leave my flat sparkling — Ada"></textarea>
+                                    <p class="logo-upload-hint">One per line: quote — name</p>
+                                </div>
+                                <div class="form-group full-width" style="display:flex;flex-direction:column;gap:8px;">
+                                    <label style="display:flex;align-items:center;gap:8px;font-weight:600;"><input type="checkbox" id="bpBooking" checked /> Accept bookings on page</label>
+                                    <label style="display:flex;align-items:center;gap:8px;font-weight:600;"><input type="checkbox" id="bpPublished" checked /> Published (visible to public)</label>
+                                </div>
+                                <p id="bpStatus" style="font-size:12px;color:var(--slate);margin:0 0 12px;"></p>
+                                <button type="button" class="btn btn-primary btn-sm" onclick="saveBusinessPage()">Save public page</button>
+                            </div>
+                        </div>
+
+                        <div class="settings-panel" id="settingsPanel-payments">
+                            <div class="card">
+                                <p class="settings-section-title">Payment account</p>
+                                <p class="settings-section-desc">Shown on invoices so customers know where to pay.</p>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Bank name</label>
+                                        <input type="text" id="settingsBankName" placeholder="e.g. GTBank" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Account name</label>
+                                        <input type="text" id="settingsAccountName" placeholder="Account name" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Account number</label>
+                                    <input type="text" id="settingsAccountNumber" placeholder="e.g. 0123456789" />
+                                </div>
+                                <p class="settings-section-title" style="margin-top:18px;">Payment confirmation</p>
+                                <p class="settings-section-desc">WhatsApp number for payment alerts (optional).</p>
+                                <div class="form-group">
+                                    <label>WhatsApp number</label>
+                                    <input type="text" id="settingsPaymentWhatsapp" placeholder="e.g. 080-123-4567" />
+                                </div>
+                                <p class="settings-section-title" style="margin-top:18px;">Customer terms</p>
+                                <p class="settings-section-desc">Policies customers should know (cancellation, deposits, etc.).</p>
+                                <div class="form-group full-width">
+                                    <textarea id="settingsTerms" rows="5" placeholder="Example:&#10;• Deposit may be required to confirm booking&#10;• Balance due on completion&#10;• 24-hour cancellation notice preferred"></textarea>
+                                </div>
+                                <p class="settings-section-title" style="margin-top:18px;">Invoices</p>
+                                <p class="settings-section-desc">Your business profile and payment details appear automatically on PDF invoices.</p>
+                                <button type="button" class="btn btn-outline btn-sm" onclick="switchTab('invoices')">Go to invoices</button>
+                            </div>
+                        </div>
+
+                        <div class="settings-panel" id="settingsPanel-preferences">
+                            <div class="card">
+                                <p class="settings-section-title">Country &amp; currency</p>
+                                <p class="settings-section-desc">Your currency determines how prices and invoices are displayed.</p>
+                                <div class="form-group">
+                                    <label>Country</label>
+                                    <select id="settingsCountry" onchange="setUserCountry(this.value)">
+                                        <option value="NG">Nigeria · Nigerian Naira (₦)</option>
+                                        <option value="GH">Ghana · Ghana Cedi (GH₵)</option>
+                                    </select>
+                                    <p class="logo-upload-hint">Nigeria uses Paystack. Ghana can pay via MoMo PSB.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-sticky-save" id="settingsSaveBar">
+                            <button type="submit" class="btn btn-primary">
+                                <svg class="icon"><use href="#ic-check"/></svg> Save changes
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="settings-panel" id="settingsPanel-locations">
+                        <div class="card" id="locationsCard">
+                            <div class="card-header">
+                                <div>
+                                    <p class="settings-section-title" style="margin:0;">Locations</p>
+                                    <p class="settings-section-desc" style="margin:4px 0 0;">For shops with more than one branch. Jobs can be tagged by location.</p>
+                                </div>
+                                <button type="button" class="btn btn-primary btn-sm" onclick="openLocationForm()">+ Add location</button>
+                            </div>
+                            <div id="locationsList"><p style="color:var(--slate);font-size:13px;">Loading…</p></div>
+                            <div id="locationForm" class="location-form" hidden>
+                                <div class="form-grid" style="margin-top:12px;">
+                                    <div class="form-group"><label>Name</label><input type="text" id="locName" placeholder="e.g. Katampe branch" /></div>
+                                    <div class="form-group"><label>Phone</label><input type="tel" id="locPhone" placeholder="Branch phone" /></div>
+                                    <div class="form-group full-width"><label>Address</label><input type="text" id="locAddress" placeholder="Street, area" /></div>
+                                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;"><input type="checkbox" id="locDefault" /> Default location for new jobs</label>
+                                </div>
+                                <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="saveLocation()">Save location</button>
+                                    <button type="button" class="btn btn-outline btn-sm" onclick="closeLocationForm()">Cancel</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
-                        <button type="button" class="btn btn-primary btn-sm" onclick="saveLocationForm()">Save location</button>
-                        <button type="button" class="btn btn-outline btn-sm" onclick="closeLocationForm()">Cancel</button>
-                    </div>
                 </div>
-            </div>
-            <div class="card">
-                <div class="card-header">
-                    <h3><svg class="icon"><use href="#ic-file"/></svg> Invoice PDFs</h3>
-                </div>
-                <p style="font-size:13px;color:var(--slate);line-height:1.5;margin:0 0 10px;">
-                    Open the <strong>Invoices</strong> tab and tap <strong>PDF</strong> on any invoice to generate a professional PDF using the business name and bank details above.
-                </p>
-                <button type="button" class="btn btn-outline btn-sm" onclick="switchTab('invoices')">Go to Invoices</button>
             </div>
         </div>
 
-    </div>
-
-    <!-- ─── MODAL ─── -->
+<!-- ─── MODAL ─── -->
     <!-- Out of jobs upgrade prompt -->
     <div class="modal-overlay" id="outOfJobsOverlay" onclick="if(event.target===this)closeOutOfJobsModal()">
         <div class="modal-box">
@@ -4549,6 +4640,25 @@
         // ─── ──────────────────────────────────────────────────────
         // ─── NAVIGATION ──────────────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
+
+        function switchSettingsPanel(id) {
+            id = id || 'business';
+            document.querySelectorAll('.settings-panel').forEach(function(p) {
+                p.classList.toggle('active', p.id === 'settingsPanel-' + id);
+            });
+            document.querySelectorAll('#settingsNav button').forEach(function(b) {
+                b.classList.toggle('active', b.getAttribute('data-settings-panel') === id);
+            });
+            // Public page: load data when opened
+            if (id === 'public') {
+                try { loadBusinessPage(); } catch (e) {}
+            }
+            if (id === 'locations' && typeof loadLocations === 'function') {
+                try { loadLocations(); } catch (e2) {}
+            }
+            try { window.scrollTo(0, 0); } catch (e3) {}
+        }
+
         function switchTab(tab) {
             try {
                 document.querySelectorAll('.tab-content').forEach(function(el) {
