@@ -4,7 +4,7 @@
   "description": "CleanCrew Backend API",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server-hotfix.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.1",
