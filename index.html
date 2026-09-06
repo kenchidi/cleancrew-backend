@@ -7,8 +7,8 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="CleanCrew" />
-    <title>CleanCrew — Jobs, pickups &amp; profit for cleaning and laundry</title>
-    <meta name="description" content="Log cleaning and laundry jobs in seconds. Track pickups, clients, and what you keep after staff and materials. 25 free jobs — no card required." />
+    <title>CleanCrew — Run your cleaning business from one place</title>
+    <meta name="description" content="Capture jobs, manage customers and staff, send invoices, and see what you actually keep after costs. Start free — 25 jobs included. No card required." />
     <meta property="og:title" content="CleanCrew — For cleaning &amp; laundry businesses" />
     <meta property="og:description" content="From the counter to end-of-day profit. Free to start." />
     <meta property="og:type" content="website" />
@@ -245,6 +245,7 @@
             background: linear-gradient(160deg, #ECFEFF 0%, #CFFAFE 100%);
             border: 1px solid #A5F3FC;
         }
+        .icon-bubble { font-size: 28px; margin-bottom: 10px; }
         .dual-card h3 {
             font-size: 1.35rem; font-weight: 900; letter-spacing: -0.02em;
             margin: 10px 0 8px;
@@ -365,6 +366,78 @@
             .hero { padding: 32px 0 48px; }
             .cta-inner { padding: 28px 22px; }
         }
+
+        .hero-proof {
+            display: flex; flex-wrap: wrap; gap: 10px 18px;
+            margin-top: 18px; font-size: 13px; font-weight: 600; color: var(--soft);
+        }
+        .hero-proof span::before { content: "· "; color: var(--blue); font-weight: 800; }
+        .hero-proof span:first-child::before { content: ""; }
+        .problem-grid {
+            display: grid; gap: 12px;
+            grid-template-columns: repeat(2, 1fr);
+        }
+        @media (min-width: 720px) {
+            .problem-grid { grid-template-columns: repeat(5, 1fr); }
+        }
+        .problem-card {
+            background: var(--white);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 16px 14px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+        }
+        .problem-card strong { display: block; font-size: 13px; margin-bottom: 4px; }
+        .problem-card span { font-size: 12px; color: var(--muted); }
+        .workflow {
+            display: grid; gap: 16px;
+        }
+        @media (min-width: 800px) {
+            .workflow { grid-template-columns: repeat(4, 1fr); }
+        }
+        .wf-step {
+            background: var(--white);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 20px 18px;
+            position: relative;
+        }
+        .wf-step .n {
+            width: 28px; height: 28px; border-radius: 8px;
+            background: var(--mist); color: var(--blue-deep);
+            display: grid; place-items: center;
+            font-size: 12px; font-weight: 800; margin-bottom: 12px;
+        }
+        .wf-step h3 { font-size: 16px; margin-bottom: 8px; letter-spacing: -0.02em; }
+        .wf-step p { font-size: 13px; color: var(--soft); }
+        .profit-split {
+            display: grid; gap: 20px; align-items: center;
+        }
+        @media (min-width: 800px) {
+            .profit-split { grid-template-columns: 1.1fr 0.9fr; }
+        }
+        .profit-math {
+            background: linear-gradient(145deg, #0C3D82, #1A6DDB);
+            color: #fff; border-radius: 22px; padding: 28px 24px;
+            box-shadow: var(--shadow);
+        }
+        .profit-math .line {
+            display: flex; justify-content: space-between; gap: 12px;
+            padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.15);
+            font-size: 15px;
+        }
+        .profit-math .line:last-child { border-bottom: 0; font-weight: 800; font-size: 18px; padding-top: 14px; }
+        .profit-math .dim { opacity: 0.85; }
+        .mid-cta {
+            text-align: center; padding: 8px 0 8px;
+        }
+        .mid-cta p { color: var(--soft); margin: 8px 0 16px; font-size: 15px; }
+        .wa-secondary {
+            text-align: center; margin-top: 12px; font-size: 13px; color: var(--muted);
+        }
+        .wa-secondary a { color: var(--blue); font-weight: 700; }
+
     </style>
 </head>
 <body>
@@ -386,20 +459,30 @@
         <div class="wrap hero-grid">
             <div>
                 <div class="eyebrow">Cleaning · Laundry · One place</div>
-                <h1>The day runs better when every job has a home.</h1>
+                <h1>Run your cleaning business from one place.</h1>
                 <p class="hero-lead">
-                    CleanCrew is built for cleaning and laundry businesses — capture work at the counter,
-                    track it through pickup, and see what you actually keep after staff and materials.
+                    CleanCrew helps cleaning and laundry businesses capture jobs, manage customers and staff,
+                    send invoices, and see what you actually keep after costs.
+                </p>
+                <p class="hero-lead" style="margin-top:-6px;font-weight:600;color:var(--soft);">
+                    Every job has a home.
                 </p>
                 <div class="hero-actions">
-                    <a class="btn btn-primary btn-lg" href="signup.html">Start free — 25 jobs</a>
-                    <a class="btn btn-ghost btn-lg" href="https://wa.me/2347057295546?text=Hi%20CleanCrew%2C%20I%20want%20to%20learn%20more" target="_blank" rel="noopener">Chat on WhatsApp</a>
+                    <a class="btn btn-primary btn-lg" href="signup.html">Start free — 25 jobs included</a>
+                    <a class="btn btn-ghost btn-lg" href="#how">See how it works</a>
                 </div>
-                <p class="hero-note"><strong>No card required.</strong> Works on your phone. Local currency in the app.</p>
+                <p class="hero-note"><strong>No card required</strong> · Set up in minutes · Works on your phone</p>
+                <div class="hero-proof">
+                    <span>Jobs</span>
+                    <span>Customers</span>
+                    <span>Staff</span>
+                    <span>Invoices</span>
+                    <span>Profit</span>
+                </div>
             </div>
             <div class="stage">
-                <div class="float-tag a">Quick capture when they are in a hurry</div>
-                <div class="float-tag b">Ready for pickup</div>
+                <div class="float-tag a">Jobs · what's happening</div>
+                <div class="float-tag b">Profit · what you keep</div>
                 <div class="phone" aria-hidden="true">
                     <div class="phone-notch"></div>
                     <div class="phone-screen">
@@ -409,8 +492,8 @@
                             <span class="ui-pill">Laundry</span>
                         </div>
                         <div class="ui-card dark">
-                            <div class="k">This month · direct profit</div>
-                            <div class="v">Your currency</div>
+                            <div class="k">This month · profit</div>
+                            <div class="v">₦485,000</div>
                             <div style="font-size:11px;opacity:0.75;margin-top:6px;">Revenue − staff − materials</div>
                         </div>
                         <div class="ui-card">
@@ -424,104 +507,137 @@
                                 <span class="ui-badge">Ready</span>
                             </div>
                             <div class="ui-row">
-                                <span><strong>Office</strong> · Fumigation</span>
+                                <span><strong>Office clean</strong> · ABC Ltd</span>
                                 <span class="ui-badge warn">Pending</span>
+                            </div>
+                        </div>
+                        <div class="ui-card">
+                            <div class="k">Outstanding</div>
+                            <div class="ui-row">
+                                <span>2 invoices unpaid</span>
+                                <span><strong>₦85,000</strong></span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+        <div class="wrap" style="padding-bottom:8px;">
+            <p class="wa-secondary">Have questions? <a href="https://wa.me/2347057295546?text=Hi%20CleanCrew%2C%20I%20want%20to%20learn%20more" target="_blank" rel="noopener">Chat with us on WhatsApp</a></p>
+        </div>
+    </section>
+
+    <section class="moments" id="problem">
+        <div class="wrap">
+            <div class="section-label">The mess</div>
+            <h2 class="section-title">Your business shouldn't live across five different places.</h2>
+            <p class="section-lead">Most shops juggle requests, job notes, customers, payments and profit in separate apps and notebooks. That costs time — and money you can't see.</p>
+            <div class="problem-grid">
+                <div class="problem-card"><strong>WhatsApp</strong><span>Customer requests</span></div>
+                <div class="problem-card"><strong>Notebook</strong><span>Job details</span></div>
+                <div class="problem-card"><strong>Spreadsheet</strong><span>Customers</span></div>
+                <div class="problem-card"><strong>Calculator</strong><span>“Profit?”</span></div>
+                <div class="problem-card"><strong>Bank app</strong><span>Payments</span></div>
+            </div>
+            <p style="text-align:center;margin-top:22px;font-weight:700;font-size:16px;">CleanCrew brings it together.</p>
+        </div>
     </section>
 
     <section class="moments" id="how">
         <div class="wrap">
-            <div class="section-label">Built for the floor</div>
-            <h2 class="section-title">Not another rigid dashboard. A calm place for real shop work.</h2>
-            <p class="section-lead">Whether you clean homes, run a laundry counter, or both — the rhythm is the same: take the work in, finish it, get paid, know your numbers.</p>
-            <div class="moment-list">
-                <article class="moment">
-                    <div class="moment-icon">1</div>
-                    <div>
-                        <h3>Catch the job before they leave</h3>
-                        <p>Customers rarely wait for a long form. Quick capture name, phone, and a note — finish details when the line is gone. Laundry items, rooms, or fumigation scope when you are ready.</p>
-                    </div>
-                </article>
-                <article class="moment">
-                    <div class="moment-icon">2</div>
-                    <div>
-                        <h3>Cleaning and laundry in one rhythm</h3>
-                        <p>Switch modes, not tools. Track status through to collected for laundry, completion for cleaning, and keep clients and invoices in the same home.</p>
-                    </div>
-                </article>
-                <article class="moment">
-                    <div class="moment-icon">3</div>
-                    <div>
-                        <h3>Profit you can explain</h3>
-                        <p>Revenue is what you charged. Direct profit is what is left after staff and materials on each job — with a simple view of the month and the week.</p>
-                    </div>
-                </article>
+            <div class="section-label">How it works</div>
+            <h2 class="section-title">From booking to payment — without the mess.</h2>
+            <p class="section-lead">A clear path your team can follow every day.</p>
+            <div class="workflow">
+                <div class="wf-step">
+                    <div class="n">01</div>
+                    <h3>Capture the job</h3>
+                    <p>Customer books online or you add the job in seconds at the counter.</p>
+                </div>
+                <div class="wf-step">
+                    <div class="n">02</div>
+                    <h3>Get the work done</h3>
+                    <p>Assign staff, track progress, and keep notes where the job lives.</p>
+                </div>
+                <div class="wf-step">
+                    <div class="n">03</div>
+                    <h3>Get paid</h3>
+                    <p>Create invoices, record payments, and see what's still outstanding.</p>
+                </div>
+                <div class="wf-step">
+                    <div class="n">04</div>
+                    <h3>Know your profit</h3>
+                    <p>See what you actually kept after staff and materials — per job and this month.</p>
+                </div>
+            </div>
+            <div class="mid-cta" style="margin-top:28px;">
+                <a class="btn btn-primary" href="signup.html">Start free — 25 jobs included</a>
+                <p style="margin-top:10px;font-size:13px;color:var(--muted);">No card required</p>
             </div>
         </div>
     </section>
 
-    <section class="dual">
+    <section class="day" id="profit">
         <div class="wrap">
-            <div class="section-label">One product · two crafts</div>
-            <h2 class="section-title" style="margin-bottom: 28px;">Feels right for detergent days and disinfectant days.</h2>
+            <div class="section-label">The differentiator</div>
+            <h2 class="section-title">Revenue is not profit.</h2>
+            <p class="section-lead">You collected the money. Staff and materials still need to come out. CleanCrew shows what you actually kept.</p>
+            <div class="profit-split">
+                <div class="profit-math">
+                    <div class="line"><span class="dim">You collected</span><span>₦500,000</span></div>
+                    <div class="line"><span class="dim">Staff cost</span><span>− ₦180,000</span></div>
+                    <div class="line"><span class="dim">Materials</span><span>− ₦40,000</span></div>
+                    <div class="line"><span>What you kept</span><span>₦280,000</span></div>
+                </div>
+                <div>
+                    <h3 style="font-size:22px;letter-spacing:-0.02em;margin-bottom:10px;">Know what you actually keep.</h3>
+                    <p style="color:var(--soft);font-size:15px;margin-bottom:16px;">
+                        Track revenue, staff costs and materials so you can see the real profit behind every job —
+                        not just what hit the account.
+                    </p>
+                    <ul class="checks">
+                        <li><span>✓</span> Job-level cost tracking</li>
+                        <li><span>✓</span> Monthly profit view (owner-only)</li>
+                        <li><span>✓</span> Outstanding invoices at a glance</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="dual" id="use-cases">
+        <div class="wrap">
+            <div class="section-label">Built for service businesses</div>
+            <h2 class="section-title" style="margin-bottom: 28px;">Cleaning and laundry — the way the work actually runs.</h2>
             <div class="dual-grid">
-                <div class="dual-card clean">
-                    <div style="font-size:28px;">*</div>
+                <div class="dual-card">
+                    <div class="icon-bubble">🧹</div>
                     <h3>Cleaning</h3>
-                    <p>Homes, offices, deep cleans, move-ins — plus fumigation when that is part of your offer.</p>
                     <ul>
-                        <li>Rooms &amp; property</li>
-                        <li>Fumigation scope</li>
-                        <li>Staff &amp; materials cost</li>
-                        <li>Job notes</li>
+                        <li>Capture cleaning jobs</li>
+                        <li>Schedule &amp; assign staff</li>
+                        <li>Track job status</li>
+                        <li>Manage customers</li>
+                        <li>Invoice &amp; payments</li>
+                        <li>Track job profitability</li>
                     </ul>
                 </div>
-                <div class="dual-card laundry">
-                    <div style="font-size:28px;">+</div>
+                <div class="dual-card">
+                    <div class="icon-bubble">🧺</div>
                     <h3>Laundry</h3>
-                    <p>Counter drop-offs, item counts, prices that add up, and a clear collected when they pick up.</p>
                     <ul>
-                        <li>Item · qty · price</li>
-                        <li>Status to collected</li>
-                        <li>WhatsApp updates</li>
-                        <li>Price list memory</li>
+                        <li>Receive orders at the counter</li>
+                        <li>Track items &amp; counts</li>
+                        <li>Manage pickup / ready status</li>
+                        <li>Customer records</li>
+                        <li>Payments &amp; invoices</li>
+                        <li>Keep the day organised</li>
                     </ul>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <section class="day">
-        <div class="wrap">
-            <div class="section-label">A day with CleanCrew</div>
-            <h2 class="section-title">From the first drop-off to the last number of the day.</h2>
-            <p class="section-lead">A simple story — the kind of day any market can recognise.</p>
-            <div class="timeline">
-                <div class="t-step">
-                    <div class="time">Morning</div>
-                    <h4>Work walks in</h4>
-                    <p>Log jobs fast. Cleaning, laundry, or both. No notebook scramble.</p>
-                </div>
-                <div class="t-step">
-                    <div class="time">Midday</div>
-                    <h4>Stay on top of status</h4>
-                    <p>See what is pending, in progress, ready, or waiting for pickup.</p>
-                </div>
-                <div class="t-step">
-                    <div class="time">Afternoon</div>
-                    <h4>Invoice &amp; follow up</h4>
-                    <p>Generate a PDF, record payment, nudge on WhatsApp when you need to.</p>
-                </div>
-                <div class="t-step">
-                    <div class="time">Evening</div>
-                    <h4>Know what you kept</h4>
-                    <p>Glance at the week revenue and direct profit before you close shop.</p>
-                </div>
+            <div class="mid-cta" style="margin-top:28px;">
+                <p style="margin-bottom:12px;">Ready to get your work in one place?</p>
+                <a class="btn btn-primary btn-lg" href="signup.html">Start free — 25 jobs included</a>
             </div>
         </div>
     </section>
@@ -544,7 +660,7 @@
                     <div style="font-size:12px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;opacity:0.8;">Free to start</div>
                     <div class="big">25 jobs</div>
                     <div class="sub">Lifetime · no card · prove it fits your shop</div>
-                    <a class="btn btn-primary" href="signup.html">Create your account</a>
+                    <a class="btn btn-primary" href="signup.html">Start free — 25 jobs included</a>
                     <div class="alt">Credits &amp; unlimited available inside the dashboard</div>
                 </div>
             </div>
@@ -555,11 +671,11 @@
         <div class="wrap">
             <div class="cta-inner">
                 <div>
-                    <h2>Give your jobs a proper home.</h2>
-                    <p>Cleaning and laundry businesses use CleanCrew to stay organised — from the first note at the counter to the profit at the end of the month.</p>
+                    <h2>Stop managing jobs everywhere.</h2>
+                    <p>Run your cleaning or laundry business from one place — jobs, customers, invoices, and the profit you actually keep.</p>
                 </div>
                 <div class="cta-actions">
-                    <a class="btn btn-primary btn-lg" href="signup.html">Start free</a>
+                    <a class="btn btn-primary btn-lg" href="signup.html">Start free — 25 jobs included</a>
                     <a class="btn btn-ghost btn-lg" href="login.html">Log in</a>
                 </div>
             </div>
