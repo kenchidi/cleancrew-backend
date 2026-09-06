@@ -6020,7 +6020,6 @@
         function renderAll() {
             try { renderCreditPacksUI(); } catch (e) {}
 
-            // Show loading hints immediately
             try {
                 var tj = document.getElementById('todayJobsList');
                 if (tj && (!jobsData || !jobsData.length)) {
@@ -6028,22 +6027,26 @@
                 }
             } catch (eL) {}
 
+            // Jobs first — paint overview as soon as jobs return (don't wait on invoices)
             var jobsP = getJobs().catch(function(e) { console.error(e); return []; });
             var clientsP = getClients().catch(function(e) { console.error(e); return []; });
-            var invP = (typeof getInvoices === 'function')
-                ? getInvoices().catch(function() { return []; })
-                : Promise.resolve([]);
 
-            Promise.all([jobsP, clientsP, invP])
+            Promise.all([jobsP, clientsP])
                 .then(function(results) {
                     var jobs = results[0] || [];
                     var clients = results[1] || [];
                     jobsData = jobs;
                     clientsData = clients;
-                    try { invoicesData = results[2] || invoicesData || []; } catch (eI) {}
                     try { renderOverview(jobs, clients); } catch (e1) { console.error(e1); }
                     try { renderJobs(jobs); } catch (e2) { console.error(e2); }
                     try { renderClients(clients); } catch (e3) { console.error(e3); }
+                    // Invoices in background (outstanding KPI only)
+                    if (typeof getInvoices === 'function') {
+                        getInvoices().then(function(inv) {
+                            try { invoicesData = inv || []; } catch (eI) {}
+                            try { renderOverview(jobsData || [], clientsData || []); } catch (eO) {}
+                        }).catch(function() {});
+                    }
                 })
                 .catch(function(e) {
                     console.error('Render error:', e);
@@ -9001,9 +9004,7 @@
             renderAll();
             refreshFreeJobs();
             refreshCredits();
-            setTimeout(function() { refreshFreeJobs(); }, 500);
-            setTimeout(function() { refreshFreeJobs(); }, 1500);
-            setTimeout(function() { refreshFreeJobs(); }, 4000);
+            setTimeout(function() { refreshFreeJobs(); }, 800);
 
             // Secondary — do not block the first paint
             setTimeout(function() {

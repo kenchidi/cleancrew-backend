@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
     <meta name="theme-color" content="#1A6DDB" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -330,5 +330,15 @@
       });
     })();
     </script>
+
+<script>
+(function(){
+  try {
+    var u = (typeof SERVER_URL !== 'undefined' ? SERVER_URL : 'https://cleancrew-backend.onrender.com');
+    fetch(u + '/api/health', { method: 'GET', mode: 'cors', cache: 'no-store' }).catch(function(){});
+  } catch(e) {}
+})();
+</script>
+
 </body>
 </html>

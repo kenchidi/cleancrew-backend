@@ -1474,26 +1474,18 @@ app.get(
     async (req, res) => {
         try {
             const userId = req.user.id;
-            const used = await getLifetimeJobsUsed(userId);
+            // Keep this endpoint light — badge should not wait on canCreateJob + extra queries
+            const [used, credits] = await Promise.all([
+                getLifetimeJobsUsed(userId),
+                getCreditBalance(userId).catch(() => 0)
+            ]);
             const freeLeft = Math.max(0, LIFETIME_FREE_JOBS - used);
-            const credits = await getCreditBalance(userId);
-            const decision = await canCreateJob(userId);
-
-            const { data: sub } = await supabase
-                .from('subscriptions')
-                .select('plan, status')
-                .eq('user_id', userId)
-                .maybeSingle();
 
             res.json({
                 lifetime_free_limit: LIFETIME_FREE_JOBS,
                 jobs_used: used,
                 free_jobs_remaining: freeLeft,
-                credits,
-                subscription: sub || { plan: 'free', status: 'active' },
-                can_create: decision.allowed,
-                source: decision.source,
-                message: decision.message || null
+                credits: Number(credits) || 0
             });
         } catch (error) {
             console.error('quota error:', error);
