@@ -5643,8 +5643,6 @@
 
         try { applyBusinessProfile(localStorage.getItem('cleancrew_business_name') || '', localStorage.getItem('cleancrew_business_logo') || ''); } catch (e) {}
 
-        async 
-        
         function loadBusinessPage() {
             return apiFetch('/business-page').then(function(res) {
                 return res.json().then(function(body) {
@@ -8316,7 +8314,15 @@
 
         function isFumigationService(name) {
             name = String(name || '').trim();
-            return FUMIGATION_SERVICES.indexOf(name) !== -1;
+            var list = (typeof FUMIGATION_SERVICES !== 'undefined' && FUMIGATION_SERVICES) ? FUMIGATION_SERVICES : [
+                'Residential fumigation',
+                'Office / commercial fumigation',
+                'Bed bug treatment',
+                'Termite treatment',
+                'General pest control',
+                'Fogging'
+            ];
+            return list.indexOf(name) !== -1;
         }
 
         function toggleFumigationFields() {
