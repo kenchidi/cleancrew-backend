@@ -177,6 +177,86 @@ if (!source.includes(oldSignupSetup)) {
 }
 source = source.replace(oldSignupSetup, newSignupSetup);
 
+// Dashboard diagnosis: every authenticated dashboard request currently calls
+// supabase.auth.getUser(token). On a cold Render/Supabase path, /jobs, /clients,
+// /invoices, etc. can all pay that auth latency independently. Deduplicate
+// concurrent token validation and briefly cache the verified user. This keeps
+// the security check server-side while preventing a request storm during the
+// initial dashboard render.
+const authFnPattern = /const authenticate = async \(req, res, next\) => \{[\s\S]*?\n\};/;
+const authFnMatch = source.match(authFnPattern);
+if (!authFnMatch) {
+    throw new Error('Hotfix could not find authenticate function');
+}
+
+const newAuthFn = `const AUTH_CACHE_TTL_MS = 60000;
+const AUTH_CACHE_MAX = 500;
+const authCache = new Map();
+const authInFlight = new Map();
+
+async function getAuthenticatedUser(token) {
+    const now = Date.now();
+    const cached = authCache.get(token);
+    if (cached && cached.expiresAt > now && cached.user) {
+        return cached.user;
+    }
+    if (cached) authCache.delete(token);
+
+    const pending = authInFlight.get(token);
+    if (pending) return pending;
+
+    const request = supabase.auth.getUser(token)
+        .then(function(result) {
+            const user = result && result.data && result.data.user;
+            const error = result && result.error;
+            if (error || !user) {
+                throw error || new Error('Invalid token');
+            }
+
+            if (authCache.size >= AUTH_CACHE_MAX) {
+                const firstKey = authCache.keys().next().value;
+                if (firstKey) authCache.delete(firstKey);
+            }
+            authCache.set(token, {
+                user: user,
+                expiresAt: Date.now() + AUTH_CACHE_TTL_MS
+            });
+            return user;
+        })
+        .finally(function() {
+            authInFlight.delete(token);
+        });
+
+    authInFlight.set(token, request);
+    return request;
+}
+
+const authenticate = async (req, res, next) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+
+        if (!token) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        const user = await getAuthenticatedUser(token);
+
+        if (!user.email_confirmed_at) {
+            return res.status(403).json({
+                error: 'Please confirm your email address before accessing the dashboard.',
+                requires_confirmation: true
+            });
+        }
+
+        req.user = user;
+        next();
+    } catch (error) {
+        console.error('Authentication error:', error);
+        return res.status(401).json({ error: 'Authentication failed' });
+    }
+};`;
+source = source.replace(authFnPattern, newAuthFn);
+
 const m = new Module(filename, module.parent);
 m.filename = filename;
 m.paths = Module._nodeModulePaths(path.dirname(filename));
