@@ -4640,7 +4640,20 @@
                 }
             }
             if (opts.skipRender) return;
-            if (typeof renderAll === 'function') renderAll();
+            // Instant UI from cache (mode filter) — do NOT block on network
+            try {
+                if (typeof renderOverview === 'function') renderOverview(jobsData || [], clientsData || []);
+            } catch (e1) {}
+            try {
+                if (typeof renderJobs === 'function') renderJobs(jobsData || []);
+            } catch (e2) {}
+            try {
+                if (typeof renderInventory === 'function') renderInventory();
+            } catch (e3) {}
+            // If we never loaded data, fetch now
+            if (!jobsData || !jobsData.length) {
+                if (typeof renderAll === 'function') renderAll();
+            }
         }
 
         // ─── ──────────────────────────────────────────────────────
@@ -4764,24 +4777,35 @@
         // ─── ──────────────────────────────────────────────────────
         // ─── API FUNCTIONS ────────────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
-                function getJobs() {
-            return apiFetch('/jobs').then(function(res) {
-                if (!res.ok) {
-                    if (res.status === 401) return parseApiError(res);
-                    throw new Error('Failed to fetch jobs');
-                }
-                return res.json();
-            });
+        function fetchJsonWithTimeout(path, ms) {
+            ms = ms || 20000;
+            var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+            var timer = setTimeout(function() {
+                try { if (ctrl) ctrl.abort(); } catch (e) {}
+            }, ms);
+            var opts = { method: 'GET' };
+            if (ctrl) opts.signal = ctrl.signal;
+            return apiFetch(path, opts)
+                .then(function(res) {
+                    clearTimeout(timer);
+                    if (!res.ok) {
+                        if (res.status === 401) return parseApiError(res);
+                        throw new Error('Request failed (' + res.status + ') ' + path);
+                    }
+                    return res.json();
+                })
+                .catch(function(err) {
+                    clearTimeout(timer);
+                    throw err;
+                });
+        }
+
+        function getJobs() {
+            return fetchJsonWithTimeout('/jobs', 20000);
         }
 
         function getClients() {
-            return apiFetch('/clients').then(function(res) {
-                if (!res.ok) {
-                    if (res.status === 401) return parseApiError(res);
-                    throw new Error('Failed to fetch clients');
-                }
-                return res.json();
-            });
+            return fetchJsonWithTimeout('/clients', 20000);
         }
 
         function getStaff() {
@@ -4834,29 +4858,35 @@
         }
 
         function createJob(job) {
-            // Keep payload lean — avoids schema errors and large requests
             var payload = {
                 client: job.client,
-                phone: job.phone,
-                service: job.service,
-                amount: job.amount,
+                phone: job.phone || 'N/A',
+                service: job.service || 'Service',
+                amount: Number(job.amount) || 0,
                 date: job.date,
                 status: job.status || 'pending',
                 notes: job.notes || null,
-                mode: job.mode || job.service_type || 'cleaning',
-                service_type: job.mode || job.service_type || 'cleaning',
-                items: job.items || [],
-                rooms: job.rooms,
-                property_size: job.property_size,
-                location_id: job.location_id || null,
+                mode: job.mode || currentServiceType || 'cleaning',
+                items: Array.isArray(job.items) ? job.items : [],
                 staff_assignments: job.staff_assignments || []
             };
+            if (job.rooms) payload.rooms = job.rooms;
+            if (job.property_size) payload.property_size = job.property_size;
+            if (job.location_id) payload.location_id = job.location_id;
+
             return apiFetch('/jobs', {
                     method: 'POST',
                     body: JSON.stringify(payload)
                 })
                 .then(function(res) {
-                    if (!res.ok) return parseApiError(res);
+                    if (!res.ok) {
+                        return res.json().catch(function() { return {}; }).then(function(body) {
+                            var err = new Error((body && body.error) || ('Failed to save job (' + res.status + ')'));
+                            err.code = body && body.code;
+                            err.status = res.status;
+                            throw err;
+                        });
+                    }
                     return res.json();
                 });
         }
@@ -6154,25 +6184,39 @@
 
             try {
                 var tj = document.getElementById('todayJobsList');
-                if (tj && (!jobsData || !jobsData.length)) {
-                    tj.innerHTML = '<p style="color:var(--slate);font-size:13px;">Loading jobs…</p>';
-                }
+                if (tj) tj.innerHTML = '<p style="color:var(--slate);font-size:13px;">Loading jobs…</p>';
             } catch (eL) {}
 
-            // Jobs first — paint overview as soon as jobs return (don't wait on invoices)
-            var jobsP = getJobs().catch(function(e) { console.error(e); return []; });
-            var clientsP = getClients().catch(function(e) { console.error(e); return []; });
+            // Ensure token is current before first request
+            try {
+                var tok = localStorage.getItem('cleancrew_token');
+                if (tok) TOKEN = tok;
+            } catch (eT) {}
 
-            Promise.all([jobsP, clientsP])
-                .then(function(results) {
-                    var jobs = results[0] || [];
-                    var clients = results[1] || [];
-                    jobsData = jobs;
-                    clientsData = clients;
-                    try { renderOverview(jobs, clients); } catch (e1) { console.error(e1); }
-                    try { renderJobs(jobs); } catch (e2) { console.error(e2); }
-                    try { renderClients(clients); } catch (e3) { console.error(e3); }
-                    // Invoices in background (outstanding KPI only)
+            // Jobs first (paint immediately), then clients — avoids one hung request blocking everything
+            getJobs()
+                .catch(function(e) {
+                    console.error('getJobs', e);
+                    // one retry after short delay (token / wake)
+                    return new Promise(function(resolve) {
+                        setTimeout(function() {
+                            getJobs().then(resolve).catch(function(e2) {
+                                console.error('getJobs retry', e2);
+                                resolve([]);
+                            });
+                        }, 600);
+                    });
+                })
+                .then(function(jobs) {
+                    jobsData = jobs || [];
+                    try { renderOverview(jobsData, clientsData || []); } catch (e1) { console.error(e1); }
+                    try { renderJobs(jobsData); } catch (e2) { console.error(e2); }
+                    return getClients().catch(function(e) { console.error(e); return clientsData || []; });
+                })
+                .then(function(clients) {
+                    clientsData = clients || [];
+                    try { renderClients(clientsData); } catch (e3) { console.error(e3); }
+                    try { renderOverview(jobsData || [], clientsData); } catch (e4) {}
                     if (typeof getInvoices === 'function') {
                         getInvoices().then(function(inv) {
                             try { invoicesData = inv || []; } catch (eI) {}
@@ -9125,18 +9169,29 @@
         // ─── INIT ────────────────────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
         function init() {
+            try {
+                TOKEN = localStorage.getItem('cleancrew_token') || TOKEN;
+            } catch (e0) {}
+            if (!TOKEN) {
+                forceReLogin('Please log in to continue.');
+                return;
+            }
+
             updateDashGreeting();
             try { currentLocationFilter = localStorage.getItem('cleancrew_location_filter') || 'all'; } catch (e) {}
+            try { syncServiceTypeUI(currentServiceType); } catch (eS) {}
 
-            // Critical path first — show jobs/overview ASAP (Render cold start is slow)
             try {
                 var b = document.getElementById('freeJobsBadge');
-                if (b && /—|-/.test(b.textContent)) b.textContent = 'Free jobs: …';
+                if (b) b.textContent = 'Free jobs: …';
             } catch (eB) {}
+
+            // Core data immediately
             renderAll();
             refreshFreeJobs();
-            refreshCredits();
-            setTimeout(function() { refreshFreeJobs(); }, 800);
+            // Credits slightly later so jobs win
+            setTimeout(function() { refreshCredits(); }, 300);
+            setTimeout(function() { refreshFreeJobs(); }, 1200);
 
             // Secondary — delay so jobs/quota get the network first
             setTimeout(function() {

@@ -2150,10 +2150,13 @@ app.post(
                 error = attempt.error;
             }
             if (error) {
-                console.warn('Job insert full failed, retry minimal:', error.message || error);
+                console.warn('Job insert full failed, retry minimal:', error.message || error, error.code || '');
                 const retry = await supabase.from('jobs').insert(minimalJob).select().single();
                 data = retry.data;
                 error = retry.error;
+                if (error) {
+                    console.error('Job insert failed (minimal):', error.message || error, error.code || '', error.details || '');
+                }
             }
 
             if (error) {
