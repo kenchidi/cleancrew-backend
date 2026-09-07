@@ -5535,9 +5535,9 @@
                 reader.onload = function() {
                     var image = new Image();
                     image.onload = function() {
-                        var maxW = 1400;
-                        var w = image.width;
-                        var h = image.height;
+                        var maxW = 1200;
+                        var w = image.width || 1;
+                        var h = image.height || 1;
                         var scale = w > maxW ? maxW / w : 1;
                         var cw = Math.max(1, Math.round(w * scale));
                         var ch = Math.max(1, Math.round(h * scale));
@@ -5545,10 +5545,24 @@
                         canvas.width = cw;
                         canvas.height = ch;
                         var ctx = canvas.getContext('2d');
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, cw, ch);
                         ctx.drawImage(image, 0, 0, cw, ch);
-                        var dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+                        var quals = [0.78, 0.65, 0.52, 0.4];
+                        var dataUrl = '';
+                        for (var i = 0; i < quals.length; i++) {
+                            dataUrl = canvas.toDataURL('image/jpeg', quals[i]);
+                            if (dataUrl.length <= 700000) break;
+                        }
                         if (dataUrl.length > 900000) {
-                            dataUrl = canvas.toDataURL('image/jpeg', 0.65);
+                            // shrink further
+                            canvas.width = Math.round(cw * 0.7);
+                            canvas.height = Math.round(ch * 0.7);
+                            ctx = canvas.getContext('2d');
+                            ctx.fillStyle = '#ffffff';
+                            ctx.fillRect(0, 0, canvas.width, canvas.height);
+                            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                            dataUrl = canvas.toDataURL('image/jpeg', 0.55);
                         }
                         if (dataUrl.length > 1200000) {
                             reject(new Error('Photo is still too large — try a smaller image'));
@@ -5762,9 +5776,17 @@
                 logo_url: logo || null,
                 primary_color: ((document.getElementById('bpColor') || {}).value || '#1A6DDB'),
                 template_id: (document.querySelector('input[name="bpTemplate"]:checked') || {}).value || 'modern',
+                hero_image_url: ((document.getElementById('bpHero') || {}).value || '').trim() || null,
+                testimonials: ((document.getElementById('bpTestimonials') || {}).value || '').trim() || null,
                 booking_enabled: !!(document.getElementById('bpBooking') && document.getElementById('bpBooking').checked),
                 is_published: !!(document.getElementById('bpPublished') && document.getElementById('bpPublished').checked)
             };
+
+            // Guard: huge base64 can fail the request
+            if (payload.hero_image_url && payload.hero_image_url.length > 1500000) {
+                showToast('Hero photo is too large — choose a smaller image', 'error');
+                return;
+            }
 
             fetch(API_URL + '/business-page', {
                 method: 'PUT',
@@ -5779,6 +5801,9 @@
                 })
                 .then(function(pg) {
                     showToast('Public page saved', 'success');
+                    if (pg && pg.hero_image_url && typeof setHeroPreview === 'function') {
+                        setHeroPreview(pg.hero_image_url);
+                    }
                     loadBusinessPage();
                     loadWebsiteBookings();
                 })
