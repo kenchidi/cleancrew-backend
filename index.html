@@ -50,6 +50,7 @@
             backdrop-filter: blur(14px);
             background: rgba(244, 248, 253, 0.85);
             border-bottom: 1px solid transparent;
+            padding-top: env(safe-area-inset-top, 0px);
             transition: border-color 0.2s, background 0.2s;
         }
         .nav.scrolled { border-color: var(--line); background: rgba(255,255,255,0.92); }
@@ -344,7 +345,7 @@
             border-color: rgba(255,255,255,0.35);
         }
         footer {
-            padding: 28px 0 40px;
+            padding: 28px 0 calc(40px + env(safe-area-inset-bottom, 0px));
             border-top: 1px solid var(--line);
             font-size: 13px; color: var(--muted);
         }
@@ -363,7 +364,10 @@
         }
         @media (max-width: 560px) {
             .wrap { width: min(100% - 28px, 1120px); }
-            .hero { padding: 32px 0 48px; }
+            .hero { padding: 28px 0 48px; }
+            .nav-inner { padding-left: 16px; padding-right: 16px; }
+            .hero h1 { font-size: clamp(1.7rem, 8vw, 2.4rem); overflow-wrap: anywhere; }
+            .wrap { width: min(1120px, calc(100% - 28px)); }
             .cta-inner { padding: 28px 22px; }
         }
 
