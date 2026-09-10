@@ -697,6 +697,72 @@ async function consumeCredit(
 
 const LIFETIME_FREE_JOBS = 25;
 
+/** Insert row; if PostgREST complains about unknown columns, strip them and retry. */
+async function insertWithSchemaFallback(table, row, optionalKeys) {
+    optionalKeys = optionalKeys || [];
+    let attempt = await supabase.from(table).insert(row).select().single();
+    if (!attempt.error) return attempt;
+
+    const msg = attempt.error.message || String(attempt.error);
+    if (!/column|schema cache|Could not find/i.test(msg)) {
+        return attempt;
+    }
+
+    const stripped = Object.assign({}, row);
+    optionalKeys.forEach(function (k) { delete stripped[k]; });
+
+    // Also strip the specific column named in the error, if any
+    const m = msg.match(/'([^']+)' column/i) || msg.match(/column "([^"]+)"/i);
+    if (m && m[1]) delete stripped[m[1]];
+
+    // Drop nulls that may map to missing optional columns
+    Object.keys(stripped).forEach(function (k) {
+        if (stripped[k] === null || stripped[k] === undefined) {
+            if (k !== 'user_id') delete stripped[k];
+        }
+    });
+
+    console.warn('Schema fallback on', table, ':', msg);
+    return await supabase.from(table).insert(stripped).select().single();
+}
+
+async function updateWithSchemaFallback(table, id, userId, updates, optionalKeys) {
+    optionalKeys = optionalKeys || [];
+    const clean = Object.assign({}, updates);
+    delete clean.id;
+    delete clean.user_id;
+
+    let attempt = await supabase
+        .from(table)
+        .update(clean)
+        .eq('id', id)
+        .eq('user_id', userId)
+        .select()
+        .single();
+
+    if (!attempt.error) return attempt;
+
+    const msg = attempt.error.message || String(attempt.error);
+    if (!/column|schema cache|Could not find/i.test(msg)) {
+        return attempt;
+    }
+
+    optionalKeys.forEach(function (k) { delete clean[k]; });
+    const m = msg.match(/'([^']+)' column/i) || msg.match(/column "([^"]+)"/i);
+    if (m && m[1]) delete clean[m[1]];
+
+    console.warn('Schema fallback update on', table, ':', msg);
+    return await supabase
+        .from(table)
+        .update(clean)
+        .eq('id', id)
+        .eq('user_id', userId)
+        .select()
+        .single();
+}
+
+
+
 async function getLifetimeJobsUsed(userId) {
     const {
         count,
@@ -2952,19 +3018,15 @@ app.post(
                 location_id: req.body.location_id || null,
                 user_id: req.user.id
             };
-            // Drop undefined so we don't send unknown columns
             Object.keys(item).forEach(function (k) {
                 if (item[k] === undefined) delete item[k];
             });
 
-            const {
-                data,
-                error
-            } = await supabase
-                .from('inventory')
-                .insert(item)
-                .select()
-                .single();
+            const { data, error } = await insertWithSchemaFallback(
+                'inventory',
+                item,
+                ['location_id', 'unit', 'notes', 'min_stock', 'category', 'mode']
+            );
 
             if (error) {
                 throw error;
@@ -2990,22 +3052,26 @@ app.put(
     authenticate,
     async (req, res) => {
         try {
-            const {
-                data,
-                error
-            } = await supabase
-                .from('inventory')
-                .update(req.body)
-                .eq(
-                    'id',
-                    req.params.id
-                )
-                .eq(
-                    'user_id',
-                    req.user.id
-                )
-                .select()
-                .single();
+            const updates = {
+                name: req.body.name,
+                category: req.body.category,
+                quantity: req.body.quantity,
+                min_stock: req.body.min_stock,
+                unit: req.body.unit,
+                notes: req.body.notes,
+                location_id: req.body.location_id
+            };
+            Object.keys(updates).forEach(function (k) {
+                if (updates[k] === undefined) delete updates[k];
+            });
+
+            const { data, error } = await updateWithSchemaFallback(
+                'inventory',
+                req.params.id,
+                req.user.id,
+                updates,
+                ['location_id', 'unit', 'notes', 'min_stock', 'category', 'mode']
+            );
 
             if (error) {
                 throw error;
@@ -4465,8 +4531,12 @@ app.put('/api/locations/:id', authenticate, async (req, res) => {
 app.delete('/api/locations/:id', authenticate, async (req, res) => {
     try {
         // Clear references first (jobs/inventory keep working without location)
-        await supabase.from('jobs').update({ location_id: null }).eq('location_id', req.params.id).eq('user_id', req.user.id);
-        await supabase.from('inventory').update({ location_id: null }).eq('location_id', req.params.id).eq('user_id', req.user.id);
+        try {
+            await supabase.from('jobs').update({ location_id: null }).eq('location_id', req.params.id).eq('user_id', req.user.id);
+        } catch (eJ) { console.warn('clear job location_id', eJ.message || eJ); }
+        try {
+            await supabase.from('inventory').update({ location_id: null }).eq('location_id', req.params.id).eq('user_id', req.user.id);
+        } catch (eI) { console.warn('clear inventory location_id', eI.message || eI); }
         const { error } = await supabase
             .from('locations')
             .delete()

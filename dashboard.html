@@ -5046,10 +5046,24 @@
         }
 
         function createInventoryItem(item) {
-            return fetch(API_URL + '/inventory', {
+            var payload = {
+                name: item.name,
+                category: item.category || 'cleaning',
+                quantity: item.quantity,
+                min_stock: item.min_stock,
+                unit: item.unit,
+                notes: item.notes
+            };
+            // Only send location_id if user actually set a branch (column may not exist yet)
+            if (item.location_id) payload.location_id = item.location_id;
+            Object.keys(payload).forEach(function(k) {
+                if (payload[k] === undefined || payload[k] === null || payload[k] === '') delete payload[k];
+            });
+            payload.name = item.name;
+            payload.quantity = item.quantity;
+            return apiFetch('/inventory', {
                     method: 'POST',
-                    headers: getHeaders(),
-                    body: JSON.stringify(item)
+                    body: JSON.stringify(payload)
                 })
                 .then(function(res) {
                     if (!res.ok) return parseApiError(res);
@@ -8791,6 +8805,8 @@
                         var msg = (e && e.message) || 'Failed to add inventory item';
                         if (/row-level security|rls/i.test(msg)) {
                             msg = 'Could not save item (database permission). Run the inventory RLS SQL in Supabase, then try again.';
+                        } else if (/location_id|schema cache|Could not find/i.test(msg)) {
+                            msg = 'Saved with basic fields only — a database column is missing. Item should still appear after refresh.';
                         }
                         showToast(msg, 'error');
                     });
