@@ -3622,161 +3622,88 @@
         </div>
 
         <!-- ════ MESSAGES TAB ════ -->
-        <div class="tab-content" id="tab-messages">
-            <div class="card">
+                <div class="tab-content" id="tab-messages">
+            <div class="card" style="margin-bottom:14px;">
                 <div class="card-header">
-                    <h3><svg class="icon"><use href="#ic-chat"/></svg> Bulk WhatsApp Messaging</h3>
-                    <button class="btn btn-whatsapp btn-sm" onclick="sendBulkWhatsApp()">
-                        <svg class="icon"><use href="#ic-chat"/></svg> Send Now
-                    </button>
-                </div>
-
-                <div class="template-row">
-                    <button type="button" class="btn btn-outline btn-sm" onclick="setTemplate('newmonth')">🎉 New Month</button>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="setTemplate('festival')">🎄 Festival</button>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="setTemplate('birthday')">🎂 Birthday</button>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="setTemplate('promo')">📢 Promo</button>
-                </div>
-
-                <div class="form-group">
-                    <label>Select recipients</label>
-                    <div id="msgRecipients" class="recipient-list">
-                        <p style="color:var(--slate);font-size:13px;margin:0;">Loading clients…</p>
+                    <div>
+                        <h3 style="margin:0;"><svg class="icon"><use href="#ic-chat"/></svg> WhatsApp Outreach</h3>
+                        <p style="margin:4px 0 0;font-size:13px;color:var(--slate);">Keep clients updated and send offers. CleanCrew opens WhatsApp on your phone — you tap Send.</p>
                     </div>
-                    <span style="font-size:11px; color:var(--slate);">Tap names to select. Use “All clients” for everyone.</span>
                 </div>
-
-                <div class="form-group" style="margin-top:12px;">
-                    <label>💬 Message</label>
-                    <textarea id="msgBody" rows="5" placeholder="Type your message here..." style="width:100%; padding:10px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:13px; resize:vertical;"></textarea>
+                <div class="template-row" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="setTemplate('birthday')">🎂 Birthday</button>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="setTemplate('followup')">📅 Follow-up</button>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="setTemplate('promo')">📣 Promo</button>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="setTemplate('review')">⭐ Review</button>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="setTemplate('newmonth')">🎉 New month</button>
                 </div>
+                <p style="font-size:12px;color:var(--slate);margin:10px 0 0;">Templates use <code>{{client_name}}</code> and <code>{{business_name}}</code> — filled in when you send.</p>
+            </div>
 
-                <div class="form-group" style="margin-top:12px;">
-                    <label>📋 Message Type</label>
-                    <select id="messageType" style="width:100%; padding:10px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:13px;">
-                        <option value="custom">✏️ Custom</option>
-                        <option value="newmonth">🎉 Happy New Month</option>
-                        <option value="festival">🎄 Festival Greeting</option>
-                        <option value="birthday">🎂 Birthday</option>
-                        <option value="promo">📢 Promotional Offer</option>
+            <div class="card" style="margin-bottom:14px;">
+                <p style="font-size:15px;font-weight:800;margin:0 0 4px;">Recipients</p>
+                <p style="font-size:13px;color:var(--slate);margin:0 0 12px;">Choose who should get this message. Prefer small batches.</p>
+                <div id="msgRecipients" class="recipient-list">
+                    <p style="color:var(--slate);font-size:13px;margin:0;">Loading clients…</p>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom:14px;">
+                <p style="font-size:15px;font-weight:800;margin:0 0 8px;">Message</p>
+                <textarea id="msgBody" rows="6" placeholder="Hi {{client_name}}, …" style="width:100%; padding:12px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:14px; resize:vertical;"></textarea>
+                <div style="display:none;">
+                    <select id="messageType">
+                        <option value="custom">Custom</option>
+                        <option value="birthday">Birthday</option>
+                        <option value="followup">Follow-up</option>
+                        <option value="promo">Promo</option>
+                        <option value="review">Review</option>
+                        <option value="newmonth">New month</option>
                     </select>
                 </div>
-
                 <div id="messagePreview" style="margin-top:12px; display:none;">
                     <div class="message-preview">
-                        <div style="font-size:13px; white-space:pre-wrap; color:var(--ink);" id="previewText"></div>
+                        <strong style="font-size:12px;color:var(--slate);">Preview (example)</strong>
+                        <p id="previewText" style="margin:6px 0 0;white-space:pre-wrap;"></p>
                     </div>
                 </div>
-
-                <button class="btn btn-whatsapp" onclick="sendBulkWhatsApp()" style="margin-top:16px; width:100%; justify-content:center;">
-                    <svg class="icon"><use href="#ic-chat"/></svg> Send via WhatsApp
+                <button type="button" class="btn btn-whatsapp" onclick="sendBulkWhatsApp()" style="margin-top:14px; width:100%; justify-content:center;">
+                    <svg class="icon"><use href="#ic-chat"/></svg> Open WhatsApp for selected
                 </button>
-
-                <div style="margin-top:16px;">
-                    <p style="font-size:12px; color:var(--slate);">📌 Messages are sent individually to each selected client. WhatsApp will open for each client.</p>
-                </div>
+                <p style="font-size:12px; color:var(--slate); margin:10px 0 0; line-height:1.45;">
+                    CleanCrew does not send messages automatically. WhatsApp opens with the text ready — you confirm Send.
+                    With many clients, use small groups so your phone stays manageable.
+                </p>
             </div>
 
             <div class="card">
                 <div class="card-header">
-                    <h3><svg class="icon"><use href="#ic-clipboard"/></svg> Message History</h3>
+                    <h3 style="margin:0;"><svg class="icon"><use href="#ic-clipboard"/></svg> Recent outreach</h3>
                 </div>
                 <div class="table-wrap">
                     <table>
                         <thead>
                             <tr>
-                                <th>#</th>
-                                <th>Date</th>
-                                <th>To</th>
-                                <th>Message</th>
-                                <th>Status</th>
-                                <th>Action</th>
+                                <th>When</th>
+                                <th>Recipients</th>
+                                <th>Type</th>
+                                <th>Note</th>
                             </tr>
                         </thead>
                         <tbody id="messagesTable">
-                            <tr><td colspan="6" style="text-align:center;color:var(--slate);">No messages sent yet</td></tr>
+                            <tr><td colspan="4">
+                                <div class="empty-state" style="padding:20px;">
+                                    <strong>No outreach logged yet</strong>
+                                    <span>When you open WhatsApp from here, a note is saved on this device.</span>
+                                </div>
+                            </td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <!-- ════ INVENTORY TAB ════ -->
-        <div class="tab-content" id="tab-inventory">
-            <div class="card">
-                <div class="card-header">
-                    <h3 id="inventoryTitle"><svg class="icon"><use href="#ic-box"/></svg> Inventory</h3>
-                    <button class="btn btn-primary btn-sm" onclick="openModal('inventory')">
-                        <svg class="icon"><use href="#ic-plus"/></svg> Add Item
-                    </button>
-                </div>
-                <div id="inventoryList"></div>
-            </div>
-        </div>
-
-        <!-- ════ STAFF TAB ════ -->
-        <div class="tab-content" id="tab-staff">
-            <div class="card">
-                <div class="card-header">
-                    <h3><svg class="icon"><use href="#ic-users"/></svg> Staff Management</h3>
-                    <button class="btn btn-primary btn-sm" onclick="openModal('staff')">
-                        <svg class="icon"><use href="#ic-plus"/></svg> Add Staff
-                    </button>
-                </div>
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Name</th>
-                                <th>Phone</th>
-                                <th>Role</th>
-                                <th>Jobs Assigned</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="staffTable"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- ════ INVOICES TAB ════ -->
-        <div class="tab-content" id="tab-invoices">
-            <div class="card">
-                <div class="card-header">
-                    <h3><svg class="icon"><use href="#ic-file"/></svg> Invoices</h3>
-                    <select id="invoiceDocFilter" onchange="renderInvoices()" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:12px;font-size:12px;font-family:inherit;">
-                        <option value="all">All</option>
-                        <option value="invoice">Invoices</option>
-                        <option value="quotation">Quotations</option>
-                    </select>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="openModal('quotation')">+ Quotation</button>
-                    <button class="btn btn-primary btn-sm" onclick="openModal('invoice')">
-                        <svg class="icon"><use href="#ic-plus"/></svg> Invoice
-                    </button>
-                </div>
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Invoice #</th>
-                                <th>Client</th>
-                                <th>Amount</th>
-                                <th>Status</th>
-                                <th>Date</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="invoicesTable"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- ════ SETTINGS TAB ════ -->
-        <div class="tab-content" id="tab-settings">
+<div class="tab-content" id="tab-settings">
             <div class="settings-shell">
                 <nav class="settings-nav" id="settingsNav" aria-label="Settings sections">
                     <button type="button" class="active" data-settings-panel="business" onclick="switchSettingsPanel('business')">Business</button>
@@ -4791,6 +4718,8 @@
                     try { if (typeof renderInvoices === 'function') renderInvoices(); } catch (eV) { console.error(eV); }
                 }
                 if (tab === 'messages') {
+                    try { populateMessageRecipients(); } catch (eM) {}
+                    try { renderMessageHistory(); } catch (eH) {}
                     try { if (typeof renderMessages === 'function') renderMessages(); } catch (eM) { console.error(eM); }
                 }
             } catch (err) {
@@ -8961,14 +8890,22 @@
         }
 
         function sendBulkWhatsApp() {
-            var body = document.getElementById('msgBody').value.trim();
-            var type = document.getElementById('messageType').value;
+            var bodyEl = document.getElementById('msgBody');
+            var body = bodyEl ? bodyEl.value.trim() : '';
+            var typeEl = document.getElementById('messageType');
+            var type = typeEl ? typeEl.value : 'custom';
             var recipientNames = getSelectedRecipientNames();
 
             if (!body) { showToast('Please enter a message', 'error'); return; }
             if (!recipientNames.length) {
                 showToast('Please select at least one recipient', 'error');
                 return;
+            }
+            if (recipientNames.length > 8) {
+                if (!confirm('You selected ' + recipientNames.length + ' clients. WhatsApp will open one chat at a time. Continue with the first 8?')) {
+                    return;
+                }
+                recipientNames = recipientNames.slice(0, 8);
             }
             processBulkSend(recipientNames, body, type);
         }
@@ -8978,44 +8915,67 @@
 
             getClients()
                 .then(function(clients) {
-                    var phones = recipientNames.map(function(name) {
-                        var client = clients.find(function(c) { return c.name === name; });
-                        return client ? client.phone : null;
-                    }).filter(function(p) { return p && p !== 'N/A' && p !== ''; });
+                    var byName = {};
+                    (clients || []).forEach(function(c) {
+                        if (c && c.name) byName[String(c.name).toLowerCase()] = c;
+                    });
+                    // Prefer phone from checkbox data-phone
+                    var targets = [];
+                    document.querySelectorAll('.msg-recipient:checked').forEach(function(cb) {
+                        var name = cb.value;
+                        var phone = cb.getAttribute('data-phone') || '';
+                        if (!phone && byName[String(name).toLowerCase()]) {
+                            phone = byName[String(name).toLowerCase()].phone || '';
+                        }
+                        if (phone && phone !== 'N/A') {
+                            targets.push({ name: name, phone: phone });
+                        }
+                    });
+                    // If "all" selected via names list
+                    if (!targets.length) {
+                        recipientNames.forEach(function(name) {
+                            var c = byName[String(name).toLowerCase()];
+                            if (c && c.phone && c.phone !== 'N/A') {
+                                targets.push({ name: c.name || name, phone: c.phone });
+                            }
+                        });
+                    }
+                    if (!targets.length) {
+                        showToast('No valid phone numbers on selected clients', 'error');
+                        return;
+                    }
 
-                    if (phones.length === 0) { showToast('No phone numbers found for selected clients', 'error'); return; }
-
-                    var message = {
-                        id: Date.now(),
-                        type: type || 'custom',
-                        recipients: recipientNames,
-                        body: body,
-                        sentAt: new Date().toISOString(),
-                        status: 'sent'
-                    };
-
-                    messageData = JSON.parse(localStorage.getItem('cleancrew_message_history') || '[]');
-                    messageData.unshift(message);
-                    localStorage.setItem('cleancrew_message_history', JSON.stringify(messageData));
-
-                    renderMessages();
-                    showToast('Sending to ' + recipientNames.length + ' client(s)', 'whatsapp');
-
-                    if (phones.length > 0) {
-                        var digits = normalizeWaPhone(phones[0]);
-                        if (!digits) {
-                            showToast('Invalid WhatsApp number for the selected client', 'error');
+                    var opened = 0;
+                    function openNext(i) {
+                        if (i >= targets.length) {
+                            showToast('Opened WhatsApp for ' + opened + ' client(s)', 'whatsapp');
+                            logOutreach({
+                                when: new Date().toLocaleString(),
+                                recipients: opened + ' client(s)',
+                                type: type || 'custom',
+                                note: 'Opened WhatsApp on this device'
+                            });
                             return;
                         }
-                        var url = 'https://wa.me/' + digits + '?text=' + encodeURIComponent(body);
-                        window.open(url, '_blank');
-                        showToast('Opening WhatsApp for ' + phones.length + ' client(s)', 'whatsapp');
+                        var t = targets[i];
+                        var digits = normalizeWaPhone(t.phone);
+                        if (!digits) {
+                            openNext(i + 1);
+                            return;
+                        }
+                        var text = fillMsgVars(body, t.name);
+                        window.open('https://wa.me/' + digits + '?text=' + encodeURIComponent(text), '_blank');
+                        opened++;
+                        // Small delay so mobile browsers allow multiple opens more reliably
+                        setTimeout(function() { openNext(i + 1); }, 700);
                     }
+                    openNext(0);
                 })
                 .catch(function() {
                     showToast('Failed to get client phone numbers', 'error');
                 });
         }
+
 
         function populateMessageRecipients() {
             var box = document.getElementById('msgRecipients');
@@ -9328,6 +9288,21 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            try {
+                var mb = document.getElementById('msgBody');
+                if (mb && !mb._previewBound) {
+                    mb._previewBound = true;
+                    mb.addEventListener('input', function() {
+                        var prev = document.getElementById('previewText');
+                        var box = document.getElementById('messagePreview');
+                        if (prev && box) {
+                            prev.textContent = fillMsgVars(mb.value, 'Ada');
+                            box.style.display = mb.value.trim() ? 'block' : 'none';
+                        }
+                    });
+                }
+            } catch (ePrev) {}
+
             try {
                 TOKEN = localStorage.getItem('cleancrew_token') || TOKEN;
             } catch (e) {}
