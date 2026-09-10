@@ -8554,6 +8554,7 @@
                 f.innerHTML =
                     '<div class="form-group"><label>Name *</label><input type="text" id="sName" required /></div>' +
                     '<div class="form-group"><label>Phone</label><input type="tel" id="sPhone" /></div>' +
+                    '<div class="form-group"><label>Email</label><input type="email" id="sEmail" placeholder="Optional" /></div>' +
                     '<div class="form-group"><label>Role</label><input type="text" id="sRole" placeholder="Cleaner, Driver…" /></div>';
             } else if (type === 'invoice' || type === 'quotation') {
                 var isQuote = type === 'quotation';
@@ -8745,11 +8746,15 @@
                     });
 
             } else if (modalType === 'client' || modalType === 'editClient') {
-                var name = document.getElementById('cName').value.trim();
-                var phone = document.getElementById('cPhone').value.trim();
-                var email = document.getElementById('cEmail').value.trim();
-                var location = document.getElementById('cLocation').value.trim();
-                var notes = document.getElementById('cNotes').value.trim();
+                var cVal = function(id) {
+                    var el = document.getElementById(id);
+                    return el && el.value != null ? String(el.value).trim() : '';
+                };
+                var name = cVal('cName');
+                var phone = cVal('cPhone');
+                var email = cVal('cEmail');
+                var location = cVal('cLocation');
+                var notes = cVal('cNotes');
 
                 if (!name) { showToast('Enter name', 'error'); return; }
 
@@ -8782,12 +8787,16 @@
                     });
 
             } else if (modalType === 'inventory') {
-                var name = document.getElementById('invName').value.trim();
-                var category = document.getElementById('invCategory').value;
-                var quantity = parseInt(document.getElementById('invQty').value);
-                var minStock = parseInt(document.getElementById('invMin').value);
+                var invVal = function(id) {
+                    var el = document.getElementById(id);
+                    return el && el.value != null ? String(el.value).trim() : '';
+                };
+                var name = invVal('invName');
+                var category = invVal('invCategory');
+                var quantity = parseInt(invVal('invQty'), 10);
+                var minStock = parseInt(invVal('invMin'), 10);
 
-                if (!name || !quantity) { showToast('Fill all fields', 'error'); return; }
+                if (!name || isNaN(quantity)) { showToast('Fill name and quantity', 'error'); return; }
 
                 createInventoryItem({
                         name: name,
@@ -8812,10 +8821,14 @@
                     });
 
             } else if (modalType === 'staff') {
-                var name = document.getElementById('sName').value.trim();
-                var phone = document.getElementById('sPhone').value.trim();
-                var email = document.getElementById('sEmail').value.trim();
-                var role = document.getElementById('sRole').value;
+                var val = function(id) {
+                    var el = document.getElementById(id);
+                    return el && el.value != null ? String(el.value).trim() : '';
+                };
+                var name = val('sName');
+                var phone = val('sPhone');
+                var email = val('sEmail');
+                var role = val('sRole') || 'Staff';
 
                 if (!name) { showToast('Enter name', 'error'); return; }
 
@@ -8823,7 +8836,8 @@
                     .then(function() {
                         showToast('Staff added!', 'success');
                         closeModal();
-                        renderStaff();
+                        if (typeof renderStaff === 'function') renderStaff();
+                        else if (typeof renderAll === 'function') renderAll();
                     })
                     .catch(function(e) {
                         console.error('Staff create failed:', e);
@@ -8831,11 +8845,15 @@
                     });
 
             } else if (modalType === 'invoice' || modalType === 'quotation') {
-                var client = document.getElementById('invClient').value.trim();
-                var amount = parseFloat(document.getElementById('invAmount').value);
-                var date = document.getElementById('invDate').value;
-                var status = document.getElementById('invStatus').value;
-                var description = document.getElementById('invDescription').value.trim();
+                var invF = function(id) {
+                    var el = document.getElementById(id);
+                    return el && el.value != null ? String(el.value).trim() : '';
+                };
+                var client = invF('invClient');
+                var amount = parseFloat(invF('invAmount'));
+                var date = invF('invDate');
+                var status = invF('invStatus') || 'unpaid';
+                var description = invF('invDescription');
 
                 if (!client || !amount || !date) { showToast('Fill all fields', 'error'); return; }
 
