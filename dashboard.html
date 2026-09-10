@@ -1311,6 +1311,10 @@
 
         /* Mobile messages + support float */
         .template-row {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 8px !important;
+            grid-template-columns: none !important;
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 8px;
@@ -1319,7 +1323,18 @@
         @media (min-width: 640px) {
             .template-row { grid-template-columns: repeat(4, 1fr); }
         }
-        .template-row .btn { width: 100%; justify-content: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .template-row .btn {
+            width: auto !important;
+            flex: 0 0 auto;
+            justify-content: center;
+            white-space: nowrap;
+        }
+        .template-row .btn.template-active {
+            border-color: var(--blue);
+            background: var(--blue-mist, #E8F1FC);
+            color: var(--blue);
+            font-weight: 800;
+        }
         .recipient-list {
             max-height: 220px;
             overflow-y: auto;
@@ -3650,6 +3665,7 @@
 
             <div class="card" style="margin-bottom:14px;">
                 <p style="font-size:15px;font-weight:800;margin:0 0 8px;">Message</p>
+                <p id="msgTemplateLabel" style="display:none;font-size:12px;font-weight:700;color:var(--blue);margin:0 0 8px;"></p>
                 <textarea id="msgBody" rows="6" placeholder="Hi {{client_name}}, …" style="width:100%; padding:12px; border:1.5px solid var(--border); border-radius:var(--radius-sm); font-family:inherit; font-size:14px; resize:vertical;"></textarea>
                 <div style="display:none;">
                     <select id="messageType">
@@ -8854,46 +8870,114 @@
         // ─── WHATSAPP MESSAGING ──────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
         var TEMPLATES = {
-            newmonth: 'Happy New Month! 🎉\n\nWe hope this new month brings you joy, success, and a spotless home.\n\nThank you for choosing CleanCrew! 🧹',
-            festival: '🎄 Happy Holidays! 🎄\n\nFrom our family to yours, we wish you a wonderful celebration.\n\nThank you for being a valued client. ✨',
-            birthday: '🎂 Happy Birthday! 🎉\n\nWishing you a day filled with joy and a year full of blessings.\n\nFrom the CleanCrew team 🧹',
-            promo: '✨ Special Offer Just For You! ✨\n\nBook a deep cleaning this month and get 10% off!\n\nMention this message when you book.\n\nValid for new bookings only. 🧹'
+            newmonth: 'Happy New Month, {{client_name}}! 🎉\n\nWe hope this month is smooth and successful.\n\nThank you for choosing {{business_name}}.',
+            festival: 'Happy holidays, {{client_name}}! 🎄\n\nWarm wishes from everyone at {{business_name}}. Thank you for your support.',
+            birthday: 'Happy birthday, {{client_name}}! 🎉\n\nWe hope you have a wonderful day — from all of us at {{business_name}}.',
+            promo: 'Hi {{client_name}}! ✨\n\nWe have a special offer available this week at {{business_name}}. Reply to this message if you would like details.',
+            followup: 'Hi {{client_name}}, just checking in after your recent service with {{business_name}}. We hope everything was satisfactory — reply anytime if you need us.',
+            review: 'Hi {{client_name}}, thank you for choosing {{business_name}}. If you were happy with the service, a short review would mean a lot to us. Thank you!'
+        };
+
+        var TEMPLATE_LABELS = {
+            newmonth: 'New month',
+            festival: 'Festival',
+            birthday: 'Birthday',
+            promo: 'Promo',
+            followup: 'Follow-up',
+            review: 'Review',
+            custom: 'Custom'
         };
 
         var messageData = [];
+        try {
+            messageData = JSON.parse(localStorage.getItem('cleancrew_msg_history') || '[]') || [];
+        } catch (eH) { messageData = []; }
+
+        var activeMsgTemplate = 'custom';
+
+        function getBusinessNameForMsg() {
+            try {
+                var el = document.getElementById('settingsBusinessName');
+                if (el && el.value && el.value.trim()) return el.value.trim();
+            } catch (e) {}
+            try {
+                var n = localStorage.getItem('cleancrew_business_name');
+                if (n && n.trim()) return n.trim();
+            } catch (e2) {}
+            return 'our team';
+        }
+
+        function fillMsgVars(text, clientName) {
+            text = String(text || '');
+            var biz = getBusinessNameForMsg();
+            var client = (clientName || 'there').trim() || 'there';
+            return text
+                .replace(/\{\{\s*client_name\s*\}\}/gi, client)
+                .replace(/\{\{\s*business_name\s*\}\}/gi, biz)
+                .replace(/\{\{\s*name\s*\}\}/gi, client);
+        }
 
         function setTemplate(type) {
             var body = document.getElementById('msgBody');
             var typeSelect = document.getElementById('messageType');
-            if (body && TEMPLATES[type]) {
-                body.value = TEMPLATES[type];
-                typeSelect.value = type;
-                document.getElementById('previewText').textContent = TEMPLATES[type];
-                document.getElementById('messagePreview').style.display = 'block';
+            if (!body) {
+                showToast('Message box not found — refresh the page', 'error');
+                return;
             }
+            if (!TEMPLATES[type]) {
+                showToast('Template not available', 'error');
+                return;
+            }
+            activeMsgTemplate = type;
+            body.value = TEMPLATES[type];
+            if (typeSelect) typeSelect.value = type;
+
+            // Highlight selected template button
+            document.querySelectorAll('.template-row .btn').forEach(function(btn) {
+                var on = (btn.getAttribute('onclick') || '').indexOf("'" + type + "'") !== -1;
+                btn.classList.toggle('template-active', on);
+            });
+
+            var labelEl = document.getElementById('msgTemplateLabel');
+            if (labelEl) {
+                labelEl.textContent = 'Selected template: ' + (TEMPLATE_LABELS[type] || type);
+                labelEl.style.display = 'block';
+            }
+
+            var prev = document.getElementById('previewText');
+            var box = document.getElementById('messagePreview');
+            if (prev) prev.textContent = fillMsgVars(TEMPLATES[type], 'Ada');
+            if (box) box.style.display = 'block';
+            showToast((TEMPLATE_LABELS[type] || type) + ' template loaded', 'success');
         }
 
-        function sendSingleWhatsApp(name, phone) {
-            if (!phone || phone === 'N/A' || String(phone).trim() === '') {
-                showToast('No phone number for ' + (name || 'this contact'), 'error');
+        function logOutreach(entry) {
+            try {
+                messageData = messageData || [];
+                messageData.unshift(entry);
+                messageData = messageData.slice(0, 30);
+                localStorage.setItem('cleancrew_msg_history', JSON.stringify(messageData));
+            } catch (e) {}
+            if (typeof renderMessageHistory === 'function') renderMessageHistory();
+        }
+
+        function renderMessageHistory() {
+            var tbody = document.getElementById('messagesTable');
+            if (!tbody) return;
+            if (!messageData || !messageData.length) {
+                tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state" style="padding:20px;"><strong>No outreach logged yet</strong><span>When you open WhatsApp from here, a note is saved on this device.</span></div></td></tr>';
                 return;
             }
-            var formatted = normalizeWaPhone(phone);
-            if (!formatted) {
-                showToast('Invalid phone number format', 'error');
-                return;
-            }
-            var message = 'Hello ' + (name || 'there') + '!\n\nThis is a message from CleanCrew regarding your service.\n\nThank you!';
-            var url = 'https://wa.me/' + formatted + '?text=' + encodeURIComponent(message);
-            window.open(url, '_blank');
-            showToast('Opening WhatsApp…', 'whatsapp');
+            tbody.innerHTML = messageData.map(function(m) {
+                return '<tr><td>' + (m.when || '') + '</td><td>' + (m.recipients || '') + '</td><td>' + (m.type || '') + '</td><td style="font-size:12px;color:var(--slate);">' + (m.note || 'Opened WhatsApp') + '</td></tr>';
+            }).join('');
         }
 
         function sendBulkWhatsApp() {
             var bodyEl = document.getElementById('msgBody');
             var body = bodyEl ? bodyEl.value.trim() : '';
             var typeEl = document.getElementById('messageType');
-            var type = typeEl ? typeEl.value : 'custom';
+            var type = (typeEl && typeEl.value) || activeMsgTemplate || 'custom';
             var recipientNames = getSelectedRecipientNames();
 
             if (!body) { showToast('Please enter a message', 'error'); return; }
@@ -8952,7 +9036,7 @@
                             logOutreach({
                                 when: new Date().toLocaleString(),
                                 recipients: opened + ' client(s)',
-                                type: type || 'custom',
+                                type: (TEMPLATE_LABELS[activeMsgTemplate] || TEMPLATE_LABELS[type] || type || 'Custom'),
                                 note: 'Opened WhatsApp on this device'
                             });
                             return;
