@@ -3637,7 +3637,84 @@
         </div>
 
         <!-- ════ MESSAGES TAB ════ -->
-                <div class="tab-content" id="tab-messages">
+                
+        <!-- ════ INVENTORY TAB ════ -->
+        <div class="tab-content" id="tab-inventory">
+            <div class="card">
+                <div class="card-header">
+                    <h3 id="inventoryTitle"><svg class="icon"><use href="#ic-box"/></svg> Inventory</h3>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="openModal('inventory')">
+                        <svg class="icon"><use href="#ic-plus"/></svg> Add item
+                    </button>
+                </div>
+                <div id="inventoryList">
+                    <p style="color:var(--slate);font-size:13px;">Open this tab to load inventory…</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════ STAFF TAB ════ -->
+        <div class="tab-content" id="tab-staff">
+            <div class="card">
+                <div class="card-header">
+                    <h3><svg class="icon"><use href="#ic-users"/></svg> Staff</h3>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="openModal('staff')">
+                        <svg class="icon"><use href="#ic-plus"/></svg> Add Staff
+                    </button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Role</th>
+                                <th>Jobs Assigned</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="staffTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════ INVOICES TAB ════ -->
+        <div class="tab-content" id="tab-invoices">
+            <div class="card">
+                <div class="card-header">
+                    <h3><svg class="icon"><use href="#ic-file"/></svg> Invoices</h3>
+                    <select id="invoiceDocFilter" onchange="renderInvoices()" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:12px;font-size:12px;font-family:inherit;">
+                        <option value="all">All</option>
+                        <option value="invoice">Invoices</option>
+                        <option value="quotation">Quotations</option>
+                    </select>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="openModal('quotation')">+ Quotation</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="openModal('invoice')">
+                        <svg class="icon"><use href="#ic-plus"/></svg> Invoice
+                    </button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Number</th>
+                                <th>Client</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoicesTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+<div class="tab-content" id="tab-messages">
             <div class="card" style="margin-bottom:14px;">
                 <div class="card-header">
                     <div>
