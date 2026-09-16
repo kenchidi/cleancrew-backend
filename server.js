@@ -267,6 +267,28 @@ async function checkPlanLimit(userId, type) {
         };
     }
 
+    // Inventory unlock: free tier = 10 items.
+    // Anyone with job credits (> 0) can add more — same as Unlimited sub.
+    // Existing items are never removed when credits run out; only new adds are blocked.
+    if (type === 'inventory') {
+        let credits = 0;
+        try {
+            credits = await getCreditBalance(userId);
+        } catch (eCred) {
+            console.warn('inventory limit credit check:', eCred.message || eCred);
+            credits = 0;
+        }
+        if (Number(credits) > 0) {
+            return {
+                allowed: true,
+                limit: Infinity,
+                plan: planName,
+                count: 0,
+                unlock: 'credits'
+            };
+        }
+    }
+
     const isMonthly =
         (PLANS[planName].monthly || []).includes(type);
 
@@ -347,7 +369,9 @@ async function checkPlanLimit(userId, type) {
             plan: planName,
             code: 'LIMIT_REACHED',
             message:
-                `You've reached your ${PLANS[planName].name} plan limit of ${limit} ${type.replace(/_/g, ' ')}${period}. Upgrade or buy credits to continue.`
+                type === 'inventory'
+                    ? `Free accounts can track up to ${limit} inventory items. Buy job credits or go Unlimited to add more.`
+                    : `You've reached your ${PLANS[planName].name} plan limit of ${limit} ${type.replace(/_/g, ' ')}${period}. Upgrade or buy credits to continue.`
         };
     }
 

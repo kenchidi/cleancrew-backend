@@ -8847,6 +8847,8 @@
                             msg = 'Could not save item (database permission). Run the inventory RLS SQL in Supabase, then try again.';
                         } else if (/location_id|schema cache|Could not find/i.test(msg)) {
                             msg = 'Saved with basic fields only — a database column is missing. Item should still appear after refresh.';
+                        } else if (/inventory items|Buy job credits|LIMIT_REACHED|plan limit/i.test(msg)) {
+                            msg = 'Free accounts can track up to 10 inventory items. Buy credits or go Unlimited to add more.';
                         }
                         showToast(msg, 'error');
                     });
