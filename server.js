@@ -107,22 +107,18 @@ const PLANS = {
 
     starter: {
         amount: 1250000,
-        name: 'Starter',
+        name: 'Unlimited',
         features:
-            '50 jobs, 50 clients, 5 staff, 20 invoices/month, 100 WhatsApp messages, 10 inventory items',
+            'Unlimited jobs, clients, staff, invoices, WhatsApp & inventory',
         limits: {
-            jobs: 50,
-            clients: 50,
-            staff: 5,
-            invoices: 20,
-            whatsapp_messages: 100,
-            inventory: 10
+            jobs: Infinity,
+            clients: Infinity,
+            staff: Infinity,
+            invoices: Infinity,
+            whatsapp_messages: Infinity,
+            inventory: Infinity
         },
-        monthly: [
-            'jobs',
-            'invoices',
-            'whatsapp_messages'
-        ]
+        monthly: []
     },
 
     professional: {
@@ -166,10 +162,14 @@ const PLANS = {
  * After the 25 lifetime free jobs, users buy these packs.
  */
 const CREDIT_PACKS = {
-    starter: { name: 'Starter Pack', amount: 500000, jobs: 20 },      // ₦5,000
-    business: { name: 'Business Pack', amount: 1000000, jobs: 45 },   // ₦10,000
-    professional: { name: 'Pro Pack', amount: 2000000, jobs: 100 },   // ₦20,000
-    enterprise: { name: 'Enterprise Pack', amount: 5000000, jobs: 275 } // ₦50,000
+    // Primary packs (simplified pricing)
+    starter: { name: 'Starter Pack', amount: 500000, jobs: 25 },       // ₦5,000  · ₦200/job
+    growth:  { name: 'Growth Pack',  amount: 1200000, jobs: 80 },      // ₦12,000 · ₦150/job
+    scale:   { name: 'Scale Pack',   amount: 2500000, jobs: 200 },     // ₦25,000 · ₦125/job
+    // Aliases so older clients / bookmarks still work
+    business:     { name: 'Growth Pack',  amount: 1200000, jobs: 80 },
+    professional: { name: 'Growth Pack',  amount: 1200000, jobs: 80 },
+    enterprise:   { name: 'Scale Pack',   amount: 2500000, jobs: 200 }
 };
 
 const FRONTEND_URL =
@@ -1444,7 +1444,7 @@ app.post(
             const pack = req.body.pack || 'starter';
             if (!CREDIT_PACKS[pack]) {
                 return res.status(400).json({
-                    error: 'Invalid credit pack. Use starter, business, professional, or enterprise.'
+                    error: 'Invalid credit pack. Use starter, growth, or scale.'
                 });
             }
 

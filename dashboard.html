@@ -3528,7 +3528,7 @@
             <div class="card" id="creditsSection">
                 <div class="out-of-jobs-banner" id="outOfJobsBanner">
                     <strong>You've used your free jobs.</strong>
-                    Add credits or go unlimited to keep creating jobs.
+                    Buy a credit pack to keep creating jobs, or go unlimited at ₦12,500/month.
                     <div class="banner-actions">
                         <button type="button" class="btn btn-primary btn-sm" onclick="openCreditsManager()">View credit options</button>
                         <button type="button" class="btn btn-secondary btn-sm" onclick="subscribeToPlan('starter')">Go Unlimited</button>
@@ -3544,9 +3544,9 @@
                 </div>
                 <div id="creditsManagerPanel" class="credits-manager-panel" hidden>
                     <p id="creditsValueProp" style="font-size:13px;color:var(--ink-soft);margin:0 0 12px;line-height:1.45;">
-                        Pay only for what you use. Credits are spent when you add a job — they don’t expire.
+                        Start free (25 jobs). Buy credits when you need more — spent only when you create a job. Credits don’t expire. Or go unlimited for a flat monthly fee.
                     </p>
-                    <p class="credit-packs-scroll-hint">Swipe for more packs →</p>
+                    <p class="credit-packs-scroll-hint">Swipe for packs →</p>
                     <div class="credit-packs-grid" id="creditPacksGrid">
                         <!-- filled by renderCreditPacksUI() -->
                     </div>
@@ -3554,7 +3554,7 @@
                         <p id="creditsUnlimitedHint" style="margin:0;font-size:13px;color:var(--ink-soft);">
                             Or subscribe for unlimited jobs
                         </p>
-                        <button type="button" class="btn btn-secondary btn-sm" onclick="subscribeToPlan('starter')">Go Unlimited · ₦12,500/mo</button>
+                        <button type="button" class="btn btn-secondary btn-sm" id="goUnlimitedBtn" onclick="subscribeToPlan('starter')">Go Unlimited · ₦12,500/mo</button>
                     </div>
                 </div>
             </div>
@@ -4142,16 +4142,14 @@
         };
         var PACKS_BY_COUNTRY = {
             NG: {
-                starter:      { jobs: 20,  price: 5000,  per: 250,  label: 'Starter' },
-                business:     { jobs: 45,  price: 10000, per: 222,  label: 'Business' },
-                professional: { jobs: 100, price: 20000, per: 200,  label: 'Growth' },
-                enterprise:   { jobs: 275, price: 50000, per: 182,  label: 'Enterprise' }
+                starter: { jobs: 25,  price: 5000,  per: 200, label: 'Starter' },
+                growth:  { jobs: 80,  price: 12000, per: 150, label: 'Growth' },
+                scale:   { jobs: 200, price: 25000, per: 125, label: 'Scale' }
             },
             GH: {
-                starter:      { jobs: 20,  price: 60,  per: 3,   label: 'Starter' },
-                business:     { jobs: 45,  price: 120, per: 2.67, label: 'Business' },
-                professional: { jobs: 100, price: 240, per: 2.4, label: 'Growth' },
-                enterprise:   { jobs: 275, price: 550, per: 2,   label: 'Enterprise' }
+                starter: { jobs: 25,  price: 60,  per: 2.4, label: 'Starter' },
+                growth:  { jobs: 80,  price: 145, per: 1.81, label: 'Growth' },
+                scale:   { jobs: 200, price: 300, per: 1.5,  label: 'Scale' }
             }
         };
         var UNLIMITED_PRICE = { NG: 12500, GH: 150 };
@@ -4195,12 +4193,12 @@
             var grid = document.getElementById('creditPacksGrid');
             if (!grid) return;
             var packs = getPacks();
-            var order = ['starter', 'business', 'professional', 'enterprise'];
+            var order = ['starter', 'growth', 'scale'];
             var html = '';
             order.forEach(function(key) {
                 var pk = packs[key];
                 if (!pk) return;
-                var best = key === 'professional';
+                var best = key === 'growth';
                 html += '<div class="credit-pack' + (best ? ' is-best' : '') + '">' +
                     (best ? '<span class="pack-badge">Popular</span>' : '') +
                     '<div class="pack-name">' + pk.label + '</div>' +
@@ -4212,7 +4210,7 @@
             grid.innerHTML = html;
             var hint = document.getElementById('creditsUnlimitedHint');
             if (hint) {
-                hint.innerHTML = '📌 Or subscribe for unlimited: <strong id="unlimitedPriceLabel">' + formatMoney(getUnlimitedPrice()) + '/month</strong>';
+                hint.innerHTML = 'Or go unlimited — <strong id="unlimitedPriceLabel">' + formatMoney(getUnlimitedPrice()) + '/month</strong>';
             }
             var unlBtn = document.getElementById('goUnlimitedBtn');
             if (unlBtn) {
@@ -4324,7 +4322,7 @@
                 banner.classList.add('show');
                 if (cred <= 0) {
                     banner.innerHTML = '<strong>No free jobs left and no credits.</strong> ' +
-                        'Buy a pack below to add jobs, or go unlimited for ' + formatMoney(getUnlimitedPrice()) + '/month.' +
+                        'Buy a credit pack to add jobs, or go unlimited for ' + formatMoney(getUnlimitedPrice()) + '/month.' +
                         '<div class="banner-actions">' +
                         '<button type="button" class="btn btn-primary btn-sm" onclick="buyCredits(\'professional\')">Buy Growth (100 jobs)</button>' +
                         '<button type="button" class="btn btn-secondary btn-sm" onclick="subscribeToPlan(\'starter\')">Go Unlimited</button>' +
