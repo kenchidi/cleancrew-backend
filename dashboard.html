@@ -3427,7 +3427,6 @@
           .quick-actions .qa-btn:hover { border-color: var(--blue); background: var(--blue-mist); }
           .setup-progress { height: 6px; border-radius: 99px; background: #E2E8F0; overflow: hidden; margin: 10px 0 8px; }
           .setup-progress > i { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, var(--blue), #2E7DE8); border-radius: 99px; }
-          #creditsSection .credits-quiet-bar { display: none !important; }
           .demo-strip { display: none !important; }
           .dash-greeting { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
           .dash-greeting .greet-text { flex: 1; min-width: 180px; }
@@ -4259,11 +4258,22 @@
         }
 
 
+        function collapseCreditsManager() {
+            var panel = document.getElementById('creditsManagerPanel');
+            var btn = document.getElementById('manageCreditsBtn');
+            if (panel) {
+                panel.hidden = true;
+                panel.classList.add('is-collapsed');
+            }
+            if (btn) btn.textContent = 'Manage credits';
+        }
+
         function openCreditsManager() {
             var panel = document.getElementById('creditsManagerPanel');
             var btn = document.getElementById('manageCreditsBtn');
             if (!panel) return;
             panel.hidden = false;
+            panel.classList.remove('is-collapsed');
             if (btn) btn.textContent = 'Hide options';
             if (typeof renderCreditPacksUI === 'function') renderCreditPacksUI();
             try {
@@ -4275,11 +4285,10 @@
             var panel = document.getElementById('creditsManagerPanel');
             var btn = document.getElementById('manageCreditsBtn');
             if (!panel) return;
-            if (panel.hidden) {
+            if (panel.hidden || panel.classList.contains('is-collapsed')) {
                 openCreditsManager();
             } else {
-                panel.hidden = true;
-                if (btn) btn.textContent = 'Manage credits';
+                collapseCreditsManager();
             }
         }
 
@@ -4324,7 +4333,7 @@
                     banner.innerHTML = '<strong>No free jobs left and no credits.</strong> ' +
                         'Buy a credit pack to add jobs, or go unlimited for ' + formatMoney(getUnlimitedPrice()) + '/month.' +
                         '<div class="banner-actions">' +
-                        '<button type="button" class="btn btn-primary btn-sm" onclick="buyCredits(\'professional\')">Buy Growth (100 jobs)</button>' +
+                        '<button type="button" class="btn btn-primary btn-sm" onclick="buyCredits(\'professional\')">Buy Growth pack</button>' +
                         '<button type="button" class="btn btn-secondary btn-sm" onclick="subscribeToPlan(\'starter\')">Go Unlimited</button>' +
                         '</div>';
                 } else {
@@ -4469,6 +4478,8 @@
             var qcLab = document.getElementById('qcAmountLabel');
             if (qcLab) qcLab.innerHTML = 'Amount (' + moneySymbol() + ') optional';
             renderCreditPacksUI();
+            // Overview should not look like a pricing page — packs stay collapsed
+            if (typeof collapseCreditsManager === 'function') collapseCreditsManager();
         } catch (e) {}
 
         if (!TOKEN) {
@@ -9401,6 +9412,9 @@
         // ─── INIT ────────────────────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
         function init() {
+            try {
+                if (typeof collapseCreditsManager === 'function') collapseCreditsManager();
+            } catch (eCol) {}
             try {
                 TOKEN = localStorage.getItem('cleancrew_token') || TOKEN;
             } catch (e0) {}
