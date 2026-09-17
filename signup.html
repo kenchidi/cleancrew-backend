@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <link rel="canonical" href="https://www.cleancrewapp.com/signup.html" />
+    <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#1A6DDB" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -233,6 +235,7 @@
             .logo-mark svg { width: 18px; height: 18px; }
         }
     </style>
+    <link rel="manifest" href="site.webmanifest" />
 </head>
 <body>
     <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -345,7 +348,8 @@
                         'Open that email and click the link to activate your account. ' +
                         'Check spam/junk if you do not see it within a few minutes.<br><br>' +
                         '<button type="button" class="btn btn-primary btn-sm" id="resendConfirmBtn" style="margin-top:8px;">Resend confirmation email</button><br><br>' +
-                        '<a href="login.html?email=' + encodeURIComponent(email) + '">Already confirmed? Go to login →</a>';
+                        '<a href="login.html?email=' + encodeURIComponent(email) + '">Already confirmed? Go to login →</a>' +
+                        '<p style="margin:16px 0 0;font-size:13px;opacity:0.9;line-height:1.45;">Optional: after you log in, you can join the <strong>CleanCrew owners WhatsApp Community</strong> from your dashboard — tips and other business owners. Never required to use the app.</p>';
                     successMsg.classList.add('show');
                     successMsg.style.display = 'block';
                     document.getElementById('resendConfirmBtn').onclick = async function() {

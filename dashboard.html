@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
     <meta name="theme-color" content="#1A6DDB" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -2351,6 +2352,60 @@
         .stats-grid.is-soft-hidden {
             /* keep layout simple for brand-new users — still show stats */
         }
+
+        .community-card {
+            background: linear-gradient(135deg, #ECFDF5 0%, #F0FDF4 50%, #fff 100%);
+            border: 1px solid #BBF7D0;
+            border-radius: var(--radius, 16px);
+            padding: 16px 18px;
+            margin-bottom: 16px;
+            position: relative;
+        }
+        .community-card h3 {
+            margin: 0 0 6px;
+            font-size: 15px;
+            font-weight: 800;
+            color: #065F46;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .community-card > p {
+            margin: 0 0 12px;
+            font-size: 13px;
+            color: #3F6212;
+            line-height: 1.45;
+            max-width: 52ch;
+        }
+        .community-card .btn-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+        .community-card .btn-wa-community {
+            background: #25D366;
+            color: #fff;
+            border: none;
+            font-weight: 800;
+        }
+        .community-card .btn-wa-community:hover {
+            filter: brightness(0.96);
+        }
+        .community-card .community-dismiss {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            border: none;
+            background: transparent;
+            color: #64748B;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 4px 6px;
+        }
+        .community-card .community-dismiss:hover { color: #0F172A; }
+
         .first-run-hero {
             text-align: center;
             padding: 28px 16px;
@@ -3367,6 +3422,23 @@
                     <span class="ob-action"><button type="button" class="btn btn-outline btn-sm" onclick="openModal('client')">Add client</button></span>
                 </li>
             </ul>
+        </div>
+
+
+        <div class="community-card" id="communityCard" hidden>
+            <button type="button" class="community-dismiss" onclick="dismissCommunityCard()" aria-label="Dismiss">Maybe later</button>
+            <h3>
+                <svg class="icon" style="width:18px;height:18px;stroke:#059669;"><use href="#ic-chat"/></svg>
+                Join the CleanCrew owners community
+            </h3>
+            <p>
+                Optional WhatsApp Community for cleaning &amp; laundry business owners — tips, product updates, and peers who run shops like yours.
+                Support for your account still goes through official CleanCrew support.
+            </p>
+            <div class="btn-row">
+                <a class="btn btn-wa-community btn-sm" id="communityJoinBtn" href="#" target="_blank" rel="noopener" onclick="return joinCommunityWa(event)">Join on WhatsApp</a>
+                <button type="button" class="btn btn-outline btn-sm" onclick="dismissCommunityCard()">Not now</button>
+            </div>
         </div>
 
         <div class="first-run-hero" id="firstRunHero" hidden>
@@ -6696,6 +6768,50 @@
         }
 
 
+
+        // WhatsApp Community invite (replace with your real Community invite link)
+        // Create a Community in WhatsApp → Invite via link → paste here
+        var CLEANCREW_WA_COMMUNITY = 'https://chat.whatsapp.com/DZf3NbQL5DiCoajlQWmxQ6';
+
+        function isCommunityDismissed() {
+            try { return localStorage.getItem('cleancrew_community_dismissed') === '1'; } catch (e) { return false; }
+        }
+        function dismissCommunityCard() {
+            try { localStorage.setItem('cleancrew_community_dismissed', '1'); } catch (e) {}
+            var card = document.getElementById('communityCard');
+            if (card) card.hidden = true;
+        }
+        function updateCommunityCard() {
+            var card = document.getElementById('communityCard');
+            if (!card) return;
+            if (isCommunityDismissed()) {
+                card.hidden = true;
+                return;
+            }
+            // Show on overview for users who have not dismissed
+            card.hidden = false;
+            var btn = document.getElementById('communityJoinBtn');
+            if (btn && CLEANCREW_WA_COMMUNITY && CLEANCREW_WA_COMMUNITY.indexOf('REPLACE_WITH') === -1) {
+                btn.href = CLEANCREW_WA_COMMUNITY;
+            }
+        }
+        function joinCommunityWa(e) {
+            var link = CLEANCREW_WA_COMMUNITY;
+            if (!link || link.indexOf('REPLACE_WITH') !== -1) {
+                if (e && e.preventDefault) e.preventDefault();
+                showToast('Community link not set yet — ask CleanCrew for the invite link', 'error');
+                return false;
+            }
+            try { localStorage.setItem('cleancrew_community_clicked', '1'); } catch (err) {}
+            // Soft dismiss after join so card does not nag every visit
+            try { localStorage.setItem('cleancrew_community_dismissed', '1'); } catch (err2) {}
+            var card = document.getElementById('communityCard');
+            if (card) card.hidden = true;
+            var btn = document.getElementById('communityJoinBtn');
+            if (btn) btn.href = link;
+            return true;
+        }
+
         function isOnboardingDismissed() {
             try { return localStorage.getItem('cleancrew_onboarding_done') === '1'; } catch (e) { return false; }
         }
@@ -9434,6 +9550,7 @@
                 if (b) b.textContent = 'Free jobs: …';
             } catch (eB) {}
 
+            try { updateCommunityCard(); } catch (eCom0) {}
             // Core data immediately
             renderAll();
             refreshFreeJobs();
