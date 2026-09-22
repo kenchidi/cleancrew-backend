@@ -550,10 +550,10 @@
            TAB CONTENT
         ============================================ */
         .tab-content {
-            display: none;
+            display: none !important;
         }
         .tab-content.active {
-            display: block;
+            display: block !important;
         }
 
         /* ============================================
@@ -4890,14 +4890,26 @@
 
         function switchTab(tab) {
             try {
-                document.querySelectorAll('.tab-content').forEach(function(el) {
+                var panels = document.querySelectorAll('.tab-content');
+                panels.forEach(function(el) {
                     el.classList.remove('active');
-                    try { el.style.display = ''; } catch (e0) {}
+                    try { el.style.setProperty('display', 'none', 'important'); } catch (e1) { el.style.display = 'none'; }
+                    try { el.setAttribute('hidden', 'hidden'); } catch (eH) {}
+                    try { el.setAttribute('aria-hidden', 'true'); } catch (eA) {}
                 });
                 var target = document.getElementById('tab-' + tab);
                 if (target) {
                     target.classList.add('active');
-                    target.style.display = 'block';
+                    try { target.style.setProperty('display', 'block', 'important'); } catch (e2) { target.style.display = 'block'; }
+                    try { target.removeAttribute('hidden'); } catch (eH2) {}
+                    try { target.setAttribute('aria-hidden', 'false'); } catch (eA2) {}
+                    try { window.scrollTo(0, 0); } catch (eS) {}
+                    try {
+                        var shell = document.querySelector('.main-shell');
+                        if (shell) shell.scrollTop = 0;
+                        var container = document.querySelector('.container');
+                        if (container) container.scrollTop = 0;
+                    } catch (eS2) {}
                 } else {
                     console.warn('Missing tab panel:', tab);
                     showToast('Could not open ' + tab, 'error');
@@ -9595,6 +9607,20 @@
         // ─── INIT ────────────────────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
         function init() {
+            try {
+                // Normalize tabs: only Overview visible at start
+                document.querySelectorAll('.tab-content').forEach(function(el) {
+                    if (el.id === 'tab-overview') {
+                        el.classList.add('active');
+                        try { el.style.setProperty('display', 'block', 'important'); } catch (e) { el.style.display = 'block'; }
+                        el.removeAttribute('hidden');
+                    } else {
+                        el.classList.remove('active');
+                        try { el.style.setProperty('display', 'none', 'important'); } catch (e) { el.style.display = 'none'; }
+                        el.setAttribute('hidden', 'hidden');
+                    }
+                });
+            } catch (eTabs) {}
             try {
                 if (typeof collapseCreditsManager === 'function') collapseCreditsManager();
             } catch (eCol) {}
