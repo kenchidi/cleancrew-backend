@@ -549,6 +549,329 @@
         /* ============================================
            TAB CONTENT
         ============================================ */
+
+        /* ── Pricing Coach (distinct from main blue chrome) ── */
+        .pc-card {
+            background: linear-gradient(135deg, #1a1c2e 0%, #2d1f3d 45%, #1e3a4c 100%);
+            border: 1px solid rgba(251, 191, 36, 0.25);
+            border-radius: 20px;
+            padding: 18px 20px;
+            margin-bottom: 16px;
+            color: #f8fafc;
+            position: relative;
+            overflow: hidden;
+        }
+        .pc-card::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            right: -10%;
+            width: 180px;
+            height: 180px;
+            background: radial-gradient(circle, rgba(251,191,36,0.18), transparent 70%);
+            pointer-events: none;
+        }
+        .pc-card h3 {
+            margin: 0 0 6px;
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .pc-card h3 span.pc-badge {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            background: rgba(251,191,36,0.2);
+            color: #fbbf24;
+            padding: 3px 8px;
+            border-radius: 999px;
+        }
+        .pc-card > p {
+            margin: 0 0 14px;
+            font-size: 13px;
+            color: rgba(248,250,252,0.72);
+            line-height: 1.45;
+            max-width: 42ch;
+        }
+        .pc-card .pc-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; position: relative; z-index: 1; }
+        .pc-card .btn-pc {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1a1c2e;
+            border: none;
+            font-weight: 800;
+            box-shadow: 0 8px 24px rgba(251, 191, 36, 0.25);
+        }
+        .pc-card .btn-pc:hover { filter: brightness(1.05); }
+        .pc-card .pc-last {
+            font-size: 12px;
+            color: rgba(248,250,252,0.55);
+            margin-left: 4px;
+        }
+        .pc-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 12000;
+            background: rgba(15, 12, 25, 0.72);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .pc-overlay.open { display: flex; }
+        .pc-shell {
+            width: min(520px, 100%);
+            max-height: min(92vh, 820px);
+            overflow: auto;
+            background: #0f0e17;
+            border-radius: 24px;
+            border: 1px solid rgba(251,191,36,0.2);
+            box-shadow: 0 32px 80px rgba(0,0,0,0.45);
+            color: #e8e6f0;
+        }
+        .pc-head {
+            padding: 20px 22px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            position: sticky;
+            top: 0;
+            background: #0f0e17;
+            z-index: 2;
+        }
+        .pc-head-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .pc-head h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: #fff;
+        }
+        .pc-head p { margin: 4px 0 0; font-size: 12px; color: rgba(255,255,255,0.5); }
+        .pc-close {
+            border: none;
+            background: rgba(255,255,255,0.06);
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 18px;
+            line-height: 1;
+        }
+        .pc-steps {
+            display: flex;
+            gap: 6px;
+            margin-top: 14px;
+        }
+        .pc-step-dot {
+            flex: 1;
+            height: 4px;
+            border-radius: 99px;
+            background: rgba(255,255,255,0.08);
+            transition: background 0.2s;
+        }
+        .pc-step-dot.on { background: linear-gradient(90deg, #fbbf24, #34d399); }
+        .pc-step-dot.done { background: #34d399; }
+        .pc-body { padding: 18px 22px 8px; }
+        .pc-step-label {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #fbbf24;
+            margin: 0 0 8px;
+        }
+        .pc-title {
+            margin: 0 0 14px;
+            font-size: 17px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.02em;
+        }
+        .pc-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .pc-chip {
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.04);
+            color: #e8e6f0;
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.15s ease;
+        }
+        .pc-chip:hover { border-color: rgba(251,191,36,0.4); }
+        .pc-chip.selected {
+            background: rgba(251,191,36,0.15);
+            border-color: #fbbf24;
+            color: #fde68a;
+        }
+        .pc-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .pc-field label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: rgba(255,255,255,0.45);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .pc-field input, .pc-field select {
+            width: 100%;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 11px 12px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+        }
+        .pc-field input:focus, .pc-field select:focus {
+            outline: none;
+            border-color: rgba(251,191,36,0.55);
+        }
+        .pc-cond {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .pc-cond button {
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.04);
+            color: #cbd5e1;
+            border-radius: 14px;
+            padding: 12px 8px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .pc-cond button strong { display: block; font-size: 13px; color: #fff; margin-bottom: 2px; }
+        .pc-cond button span { font-size: 11px; opacity: 0.55; }
+        .pc-cond button.selected {
+            border-color: #34d399;
+            background: rgba(52, 211, 153, 0.12);
+        }
+        .pc-result-hero {
+            text-align: center;
+            padding: 8px 0 16px;
+        }
+        .pc-result-hero .pc-rec-label {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.45);
+        }
+        .pc-result-hero .pc-rec-price {
+            font-size: 40px;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            background: linear-gradient(135deg, #fbbf24, #34d399);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 6px 0;
+            line-height: 1.1;
+        }
+        .pc-result-hero .pc-rec-sub {
+            font-size: 13px;
+            color: rgba(255,255,255,0.55);
+        }
+        .pc-range {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin: 12px 0 16px;
+        }
+        .pc-range div {
+            background: rgba(255,255,255,0.04);
+            border-radius: 14px;
+            padding: 12px 8px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .pc-range div strong { display: block; font-size: 14px; color: #fff; margin-top: 4px; }
+        .pc-range div span { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
+        .pc-range .min span { color: #34d399; }
+        .pc-range .rec span { color: #fbbf24; }
+        .pc-range .prem span { color: #a78bfa; }
+        .pc-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+        .pc-table th, .pc-table td {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            text-align: left;
+        }
+        .pc-table th { color: rgba(255,255,255,0.4); font-weight: 600; font-size: 11px; text-transform: uppercase; }
+        .pc-table td:last-child, .pc-table th:last-child { text-align: right; }
+        .pc-table tr.total td { font-weight: 800; color: #fbbf24; border-bottom: none; padding-top: 10px; }
+        .pc-why {
+            background: rgba(52, 211, 153, 0.08);
+            border: 1px solid rgba(52, 211, 153, 0.15);
+            border-radius: 14px;
+            padding: 12px 14px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+            line-height: 1.45;
+            margin-bottom: 8px;
+        }
+        .pc-foot {
+            padding: 12px 22px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            position: sticky;
+            bottom: 0;
+            background: #0f0e17;
+        }
+        .pc-foot .btn-ghost {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.12);
+            color: #fff;
+        }
+        .pc-foot .btn-next {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1a1c2e;
+            border: none;
+            font-weight: 800;
+            margin-left: auto;
+        }
+        .pc-foot .btn-use {
+            background: linear-gradient(135deg, #34d399, #10b981);
+            color: #06281c;
+            border: none;
+            font-weight: 800;
+            flex: 1;
+        }
+        @media (max-width: 540px) {
+            .pc-grid { grid-template-columns: 1fr; }
+            .pc-result-hero .pc-rec-price { font-size: 34px; }
+        }
+
         .tab-content {
             display: none !important;
         }
@@ -3517,7 +3840,17 @@
           .dash-greeting .greet-text { flex: 1; min-width: 180px; }
         </style>
 
-<div class="ops-main">
+
+        <div class="pc-card" id="pricingCoachCard">
+            <h3>Pricing Coach <span class="pc-badge">New</span></h3>
+            <p>Build a profitable price from labour, supplies, transport and your target margin — not a guess.</p>
+            <div class="pc-actions">
+                <button type="button" class="btn btn-sm btn-pc" onclick="openPricingCoach()">Calculate a price →</button>
+                <span class="pc-last" id="pcLastLabel"></span>
+            </div>
+        </div>
+
+        <div class="ops-main">
             <div class="card">
                 <div class="card-header">
                     <h3 style="margin:0;font-size:15px;">Today's jobs</h3>
@@ -3530,6 +3863,7 @@
                     <h3 style="margin:0;font-size:15px;">Quick actions</h3>
                 </div>
                 <div class="quick-actions">
+                    <button type="button" class="qa-btn" onclick="openPricingCoach()"><strong>Pricing Coach</strong><span>Price a job from your real costs</span></button>
                     <button type="button" class="qa-btn" onclick="openModal('job')"><strong>+ New Job</strong><span>Create a cleaning or laundry job</span></button>
                     <button type="button" class="qa-btn" onclick="openQuickCapture()"><strong>⚡ Quick capture</strong><span>Customer waiting at the counter</span></button>
                     <button type="button" class="qa-btn" onclick="openModal('client')"><strong>+ Add client</strong><span>Save a new customer</span></button>
@@ -4108,6 +4442,20 @@
                         </div>
 
                         <div class="settings-panel" id="settingsPanel-preferences">
+
+                            <div class="card" style="margin-top:14px;">
+                                <p class="settings-section-title">Pricing profile</p>
+                                <p class="settings-section-desc">Defaults for Pricing Coach. Edit once — used on every quote.</p>
+                                <div class="form-grid">
+                                    <div class="form-group"><label>Cleaner cost / hour (₦)</label><input type="number" id="pcProfLabour" min="0" step="50" placeholder="e.g. 1500" /></div>
+                                    <div class="form-group"><label>Supplies / job (₦)</label><input type="number" id="pcProfSupplies" min="0" step="50" placeholder="e.g. 2000" /></div>
+                                    <div class="form-group"><label>Transport / job (₦)</label><input type="number" id="pcProfTransport" min="0" step="50" placeholder="e.g. 1500" /></div>
+                                    <div class="form-group"><label>Overhead / job (₦)</label><input type="number" id="pcProfOverhead" min="0" step="50" placeholder="e.g. 1000" /></div>
+                                    <div class="form-group"><label>Target profit margin %</label><input type="number" id="pcProfMargin" min="5" max="60" step="1" placeholder="30" /></div>
+                                </div>
+                                <button type="button" class="btn btn-outline btn-sm" onclick="savePricingProfileFromSettings()">Save pricing defaults</button>
+                            </div>
+
                             <div class="card">
                                 <p class="settings-section-title">Country &amp; currency</p>
                                 <p class="settings-section-desc">Your currency determines how prices and invoices are displayed.</p>
@@ -4156,6 +4504,30 @@
                 </div>
             </div>
         </div>
+
+
+    <!-- Pricing Coach -->
+    <div class="pc-overlay" id="pcOverlay" onclick="if(event.target===this)closePricingCoach()" aria-hidden="true">
+        <div class="pc-shell" role="dialog" aria-labelledby="pcTitle">
+            <div class="pc-head">
+                <div class="pc-head-row">
+                    <div>
+                        <h2 id="pcTitle">Pricing Coach</h2>
+                        <p>Cost-first price — so the job still pays you</p>
+                    </div>
+                    <button type="button" class="pc-close" onclick="closePricingCoach()" aria-label="Close">&times;</button>
+                </div>
+                <div class="pc-steps" id="pcStepDots" aria-hidden="true">
+                    <div class="pc-step-dot on"></div>
+                    <div class="pc-step-dot"></div>
+                    <div class="pc-step-dot"></div>
+                    <div class="pc-step-dot"></div>
+                </div>
+            </div>
+            <div class="pc-body" id="pcBody"></div>
+            <div class="pc-foot" id="pcFoot"></div>
+        </div>
+    </div>
 
 <!-- ─── MODAL ─── -->
     <!-- Out of jobs upgrade prompt -->
@@ -4886,6 +5258,378 @@
             try { window.scrollTo(0, 0); } catch (e3) {}
         }
 
+        
+        // ─── PRICING COACH ───────────────────────────────────────
+        var PC_STORAGE = 'cleancrew_pricing_profile';
+        var pcState = {
+            step: 0,
+            service: 'Standard Cleaning',
+            bedrooms: 3,
+            bathrooms: 2,
+            condition: 'normal',
+            cleaners: 2,
+            hours: 3,
+            travelMin: 30,
+            labourRate: 1500,
+            supplies: 2000,
+            transport: 1500,
+            overhead: 1000,
+            margin: 30,
+            result: null
+        };
+
+        function defaultPricingProfile() {
+            return {
+                labourRate: 1500,
+                supplies: 2000,
+                transport: 1500,
+                overhead: 1000,
+                margin: 30
+            };
+        }
+
+        function loadPricingProfile() {
+            var d = defaultPricingProfile();
+            try {
+                var raw = localStorage.getItem(PC_STORAGE);
+                if (raw) {
+                    var o = JSON.parse(raw);
+                    Object.keys(d).forEach(function(k) {
+                        if (o[k] != null && !isNaN(Number(o[k]))) d[k] = Number(o[k]);
+                    });
+                }
+            } catch (e) {}
+            return d;
+        }
+
+        function savePricingProfile(p) {
+            try { localStorage.setItem(PC_STORAGE, JSON.stringify(p)); } catch (e) {}
+            try {
+                var el;
+                el = document.getElementById('pcProfLabour'); if (el) el.value = p.labourRate;
+                el = document.getElementById('pcProfSupplies'); if (el) el.value = p.supplies;
+                el = document.getElementById('pcProfTransport'); if (el) el.value = p.transport;
+                el = document.getElementById('pcProfOverhead'); if (el) el.value = p.overhead;
+                el = document.getElementById('pcProfMargin'); if (el) el.value = p.margin;
+            } catch (e2) {}
+        }
+
+        function savePricingProfileFromSettings() {
+            var p = {
+                labourRate: Number(document.getElementById('pcProfLabour').value) || 1500,
+                supplies: Number(document.getElementById('pcProfSupplies').value) || 0,
+                transport: Number(document.getElementById('pcProfTransport').value) || 0,
+                overhead: Number(document.getElementById('pcProfOverhead').value) || 0,
+                margin: Math.min(60, Math.max(5, Number(document.getElementById('pcProfMargin').value) || 30))
+            };
+            savePricingProfile(p);
+            showToast('Pricing defaults saved', 'success');
+        }
+
+        function fillPricingProfileSettings() {
+            var p = loadPricingProfile();
+            var el;
+            el = document.getElementById('pcProfLabour'); if (el) el.value = p.labourRate;
+            el = document.getElementById('pcProfSupplies'); if (el) el.value = p.supplies;
+            el = document.getElementById('pcProfTransport'); if (el) el.value = p.transport;
+            el = document.getElementById('pcProfOverhead'); if (el) el.value = p.overhead;
+            el = document.getElementById('pcProfMargin'); if (el) el.value = p.margin;
+        }
+
+        function pcMoney(n) {
+            n = Math.round(Number(n) || 0);
+            try {
+                if (typeof formatMoney === 'function') return formatMoney(n);
+            } catch (e) {}
+            return '₦' + n.toLocaleString('en-NG');
+        }
+
+        function pcRoundNice(n) {
+            n = Math.max(0, Number(n) || 0);
+            if (n < 5000) return Math.round(n / 100) * 100;
+            if (n < 50000) return Math.round(n / 500) * 500;
+            return Math.round(n / 1000) * 1000;
+        }
+
+        function openPricingCoach() {
+            var p = loadPricingProfile();
+            pcState = {
+                step: 0,
+                service: (typeof currentMode !== 'undefined' && currentMode === 'laundry') ? 'Wash & fold' : 'Standard Cleaning',
+                bedrooms: 3,
+                bathrooms: 2,
+                condition: 'normal',
+                cleaners: 2,
+                hours: 3,
+                travelMin: 30,
+                labourRate: p.labourRate,
+                supplies: p.supplies,
+                transport: p.transport,
+                overhead: p.overhead,
+                margin: p.margin,
+                result: null
+            };
+            var ov = document.getElementById('pcOverlay');
+            if (ov) {
+                ov.classList.add('open');
+                ov.setAttribute('aria-hidden', 'false');
+            }
+            renderPricingCoach();
+        }
+
+        function closePricingCoach() {
+            var ov = document.getElementById('pcOverlay');
+            if (ov) {
+                ov.classList.remove('open');
+                ov.setAttribute('aria-hidden', 'true');
+            }
+        }
+
+        function pcSetStep(s) {
+            pcState.step = s;
+            renderPricingCoach();
+        }
+
+        function pcCollectStep() {
+            var s = pcState.step;
+            if (s === 0) {
+                // chips already set service
+            } else if (s === 1) {
+                var br = document.getElementById('pcBedrooms');
+                var ba = document.getElementById('pcBathrooms');
+                if (br) pcState.bedrooms = Math.max(0, Number(br.value) || 0);
+                if (ba) pcState.bathrooms = Math.max(0, Number(ba.value) || 0);
+            } else if (s === 2) {
+                var c = document.getElementById('pcCleaners');
+                var h = document.getElementById('pcHours');
+                var tr = document.getElementById('pcTravel');
+                if (c) pcState.cleaners = Math.max(1, Number(c.value) || 1);
+                if (h) pcState.hours = Math.max(0.5, Number(h.value) || 1);
+                if (tr) pcState.travelMin = Math.max(0, Number(tr.value) || 0);
+            } else if (s === 3) {
+                var lr = document.getElementById('pcLabourRate');
+                var su = document.getElementById('pcSupplies');
+                var tp = document.getElementById('pcTransport');
+                var oh = document.getElementById('pcOverhead');
+                var mg = document.getElementById('pcMargin');
+                if (lr) pcState.labourRate = Math.max(0, Number(lr.value) || 0);
+                if (su) pcState.supplies = Math.max(0, Number(su.value) || 0);
+                if (tp) pcState.transport = Math.max(0, Number(tp.value) || 0);
+                if (oh) pcState.overhead = Math.max(0, Number(oh.value) || 0);
+                if (mg) pcState.margin = Math.min(60, Math.max(5, Number(mg.value) || 30));
+                savePricingProfile({
+                    labourRate: pcState.labourRate,
+                    supplies: pcState.supplies,
+                    transport: pcState.transport,
+                    overhead: pcState.overhead,
+                    margin: pcState.margin
+                });
+            }
+        }
+
+        function pcConditionMult() {
+            if (pcState.condition === 'light') return 0.85;
+            if (pcState.condition === 'heavy') return 1.3;
+            return 1;
+        }
+
+        function pcCalculate() {
+            var mult = pcConditionMult();
+            var hoursAdj = pcState.hours * mult;
+            var labourHours = pcState.cleaners * hoursAdj;
+            var travelHours = (pcState.travelMin / 60) * pcState.cleaners * 0.5;
+            var labourCost = (labourHours + travelHours) * pcState.labourRate;
+            var supplies = pcState.supplies;
+            var transport = pcState.transport;
+            var overhead = pcState.overhead;
+            var totalCost = labourCost + supplies + transport + overhead;
+            var margin = (pcState.margin || 30) / 100;
+            if (margin >= 0.9) margin = 0.3;
+            var recommended = totalCost / (1 - margin);
+            var minimum = totalCost / (1 - margin * 0.55);
+            var premium = recommended * 1.15;
+            // size nudge (gentle)
+            var sizeFactor = 1 + Math.max(0, (pcState.bedrooms - 2) * 0.04) + Math.max(0, (pcState.bathrooms - 1) * 0.03);
+            recommended *= sizeFactor;
+            minimum *= sizeFactor;
+            premium *= sizeFactor;
+            pcState.result = {
+                labourHours: labourHours,
+                labourCost: pcRoundNice(labourCost),
+                supplies: pcRoundNice(supplies),
+                transport: pcRoundNice(transport),
+                overhead: pcRoundNice(overhead),
+                totalCost: pcRoundNice(totalCost),
+                profit: pcRoundNice(recommended - totalCost),
+                margin: pcState.margin,
+                minimum: pcRoundNice(minimum),
+                recommended: pcRoundNice(recommended),
+                premium: pcRoundNice(premium),
+                service: pcState.service,
+                cleaners: pcState.cleaners,
+                hours: hoursAdj
+            };
+            try {
+                localStorage.setItem('cleancrew_pc_last', JSON.stringify({
+                    price: pcState.result.recommended,
+                    service: pcState.service,
+                    at: Date.now()
+                }));
+                var lab = document.getElementById('pcLastLabel');
+                if (lab) lab.textContent = 'Last: ' + pcMoney(pcState.result.recommended) + ' · ' + pcState.service;
+            } catch (e) {}
+            return pcState.result;
+        }
+
+        function renderPricingCoach() {
+            var body = document.getElementById('pcBody');
+            var foot = document.getElementById('pcFoot');
+            var dots = document.getElementById('pcStepDots');
+            if (!body || !foot) return;
+            var step = pcState.step;
+            if (dots) {
+                var ds = dots.querySelectorAll('.pc-step-dot');
+                for (var i = 0; i < ds.length; i++) {
+                    ds[i].className = 'pc-step-dot' + (i < step ? ' done' : (i === step ? ' on' : ''));
+                }
+            }
+            var laundry = (typeof currentMode !== 'undefined' && currentMode === 'laundry');
+            var html = '';
+            if (step === 0) {
+                html += '<p class="pc-step-label">Step 1 of 4</p><p class="pc-title">What are you pricing?</p><div class="pc-chips">';
+                var services = laundry
+                    ? ['Wash & fold', 'Wash & iron', 'Dry clean', 'Duvet / bulky', 'Commercial laundry', 'Other']
+                    : ['Standard Cleaning', 'Deep Cleaning', 'Move-in / Move-out', 'Office Cleaning', 'Post-Construction', 'Airbnb / Short-let', 'Fumigation', 'Other'];
+                services.forEach(function(s) {
+                    html += '<button type="button" class="pc-chip' + (pcState.service === s ? ' selected' : '') + '" onclick="pcState.service=\'' + s.replace(/'/g, "\\'") + '\';renderPricingCoach()">' + s + '</button>';
+                });
+                html += '</div>';
+                if (!laundry) {
+                    html += '<p class="pc-step-label" style="margin-top:8px;">Condition</p><div class="pc-cond">';
+                    [['light','Light','Quick tidy'],['normal','Normal','Typical home'],['heavy','Heavy','Neglected / deep']].forEach(function(row) {
+                        html += '<button type="button" class="' + (pcState.condition === row[0] ? 'selected' : '') + '" onclick="pcState.condition=\'' + row[0] + '\';renderPricingCoach()"><strong>' + row[1] + '</strong><span>' + row[2] + '</span></button>';
+                    });
+                    html += '</div>';
+                }
+            } else if (step === 1) {
+                html += '<p class="pc-step-label">Step 2 of 4</p><p class="pc-title">' + (laundry ? 'Rough job size' : 'How big is the job?') + '</p>';
+                html += '<div class="pc-grid">';
+                if (laundry) {
+                    html += '<div class="pc-field"><label>Bags / loads (est.)</label><input type="number" id="pcBedrooms" min="1" value="' + (pcState.bedrooms || 2) + '" /></div>';
+                    html += '<div class="pc-field"><label>Delicate items (est.)</label><input type="number" id="pcBathrooms" min="0" value="' + (pcState.bathrooms || 0) + '" /></div>';
+                } else {
+                    html += '<div class="pc-field"><label>Bedrooms</label><input type="number" id="pcBedrooms" min="0" value="' + pcState.bedrooms + '" /></div>';
+                    html += '<div class="pc-field"><label>Bathrooms</label><input type="number" id="pcBathrooms" min="0" value="' + pcState.bathrooms + '" /></div>';
+                }
+                html += '</div>';
+                html += '<p style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:12px;">Size gently adjusts the final range — your costs still drive the price.</p>';
+            } else if (step === 2) {
+                html += '<p class="pc-step-label">Step 3 of 4</p><p class="pc-title">How much work will it take?</p>';
+                html += '<div class="pc-grid">';
+                html += '<div class="pc-field"><label>Cleaners / staff</label><input type="number" id="pcCleaners" min="1" value="' + pcState.cleaners + '" /></div>';
+                html += '<div class="pc-field"><label>Hours each</label><input type="number" id="pcHours" min="0.5" step="0.5" value="' + pcState.hours + '" /></div>';
+                html += '<div class="pc-field"><label>Travel (minutes)</label><input type="number" id="pcTravel" min="0" value="' + pcState.travelMin + '" /></div>';
+                html += '</div>';
+                html += '<p style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:12px;">2 people × 3 hours = <strong style="color:#fde68a;">6 labour hours</strong>. That is what you are really paying for.</p>';
+            } else if (step === 3) {
+                html += '<p class="pc-step-label">Step 4 of 4</p><p class="pc-title">Your business costs</p>';
+                html += '<div class="pc-grid">';
+                html += '<div class="pc-field"><label>₦ / hour per cleaner</label><input type="number" id="pcLabourRate" min="0" step="50" value="' + pcState.labourRate + '" /></div>';
+                html += '<div class="pc-field"><label>Supplies / job</label><input type="number" id="pcSupplies" min="0" step="50" value="' + pcState.supplies + '" /></div>';
+                html += '<div class="pc-field"><label>Transport / job</label><input type="number" id="pcTransport" min="0" step="50" value="' + pcState.transport + '" /></div>';
+                html += '<div class="pc-field"><label>Overhead / job</label><input type="number" id="pcOverhead" min="0" step="50" value="' + pcState.overhead + '" /></div>';
+                html += '<div class="pc-field"><label>Target margin %</label><input type="number" id="pcMargin" min="5" max="60" value="' + pcState.margin + '" /></div>';
+                html += '</div>';
+                html += '<p style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:12px;">Saved for next time. Change anytime in Settings → Preferences.</p>';
+            } else if (step === 4) {
+                var r = pcState.result || pcCalculate();
+                html += '<div class="pc-result-hero">';
+                html += '<div class="pc-rec-label">Recommended price</div>';
+                html += '<div class="pc-rec-price">' + pcMoney(r.recommended) + '</div>';
+                html += '<div class="pc-rec-sub">Cost ' + pcMoney(r.totalCost) + ' · Keep ~' + pcMoney(r.profit) + ' (' + r.margin + '%)</div>';
+                html += '</div>';
+                html += '<div class="pc-range">';
+                html += '<div class="min"><span>Minimum</span><strong>' + pcMoney(r.minimum) + '</strong></div>';
+                html += '<div class="rec"><span>Recommended</span><strong>' + pcMoney(r.recommended) + '</strong></div>';
+                html += '<div class="prem"><span>Premium</span><strong>' + pcMoney(r.premium) + '</strong></div>';
+                html += '</div>';
+                html += '<p class="pc-step-label">How we got this</p>';
+                html += '<table class="pc-table"><thead><tr><th>Cost</th><th>Amount</th></tr></thead><tbody>';
+                html += '<tr><td>Labour (' + r.labourHours.toFixed(1) + ' hrs)</td><td>' + pcMoney(r.labourCost) + '</td></tr>';
+                html += '<tr><td>Supplies</td><td>' + pcMoney(r.supplies) + '</td></tr>';
+                html += '<tr><td>Transport</td><td>' + pcMoney(r.transport) + '</td></tr>';
+                html += '<tr><td>Overhead share</td><td>' + pcMoney(r.overhead) + '</td></tr>';
+                html += '<tr class="total"><td>Recommended price</td><td>' + pcMoney(r.recommended) + '</td></tr>';
+                html += '</tbody></table>';
+                html += '<div class="pc-why">You are not only charging for time on site. Price must cover people, supplies, transport and the business behind the job — or the work costs you money.</div>';
+            }
+            body.innerHTML = html;
+
+            var fh = '';
+            if (step === 0) {
+                fh = '<button type="button" class="btn btn-sm btn-ghost" onclick="closePricingCoach()">Close</button>';
+                fh += '<button type="button" class="btn btn-sm btn-next" onclick="pcCollectStep();pcSetStep(1)">Continue</button>';
+            } else if (step < 4) {
+                fh = '<button type="button" class="btn btn-sm btn-ghost" onclick="pcSetStep(' + (step - 1) + ')">Back</button>';
+                if (step === 3) {
+                    fh += '<button type="button" class="btn btn-sm btn-next" onclick="pcCollectStep();pcCalculate();pcSetStep(4)">See price</button>';
+                } else {
+                    fh += '<button type="button" class="btn btn-sm btn-next" onclick="pcCollectStep();pcSetStep(' + (step + 1) + ')">Continue</button>';
+                }
+            } else {
+                fh = '<button type="button" class="btn btn-sm btn-ghost" onclick="pcSetStep(3)">Edit costs</button>';
+                fh += '<button type="button" class="btn btn-sm btn-use" onclick="usePricingCoachPrice()">Create job at this price</button>';
+            }
+            foot.innerHTML = fh;
+        }
+
+        function usePricingCoachPrice() {
+            var r = pcState.result || pcCalculate();
+            closePricingCoach();
+            try {
+                if (typeof openModal === 'function') openModal('job');
+            } catch (e) {
+                showToast('Open New Job and enter ' + pcMoney(r.recommended), 'success');
+                return;
+            }
+            setTimeout(function() {
+                try {
+                    var amount = document.getElementById('jobAmount') || document.querySelector('#modalForm input[name="amount"]') || document.getElementById('amount');
+                    var service = document.getElementById('jobService') || document.getElementById('service');
+                    var notes = document.getElementById('jobNotes') || document.getElementById('notes');
+                    var staffCost = document.getElementById('jobStaffCost') || document.getElementById('staff_cost');
+                    if (amount) {
+                        amount.value = r.recommended;
+                        try { amount.dispatchEvent(new Event('input', { bubbles: true })); } catch (e2) {}
+                    }
+                    if (service) {
+                        service.value = r.service;
+                        try { service.dispatchEvent(new Event('change', { bubbles: true })); } catch (e3) {}
+                    }
+                    if (notes) {
+                        var line = 'Pricing Coach: ' + r.service + ' · ' + r.cleaners + ' staff × ' + Number(r.hours).toFixed(1) + 'h · cost ~' + pcMoney(r.totalCost) + ' · target margin ' + r.margin + '%';
+                        notes.value = (notes.value ? notes.value + '\n' : '') + line;
+                    }
+                    if (staffCost) staffCost.value = r.labourCost;
+                    showToast('Job form filled at ' + pcMoney(r.recommended), 'success');
+                } catch (err) {
+                    console.error(err);
+                    showToast('Price: ' + pcMoney(r.recommended) + ' — enter it on the job form', 'success');
+                }
+            }, 200);
+        }
+
+        (function pcInitLast() {
+            try {
+                var raw = localStorage.getItem('cleancrew_pc_last');
+                if (!raw) return;
+                var o = JSON.parse(raw);
+                var lab = document.getElementById('pcLastLabel');
+                if (lab && o.price) lab.textContent = 'Last: ₦' + Number(o.price).toLocaleString('en-NG') + (o.service ? ' · ' + o.service : '');
+            } catch (e) {}
+        })();
+
+
         function switchTab(tab) {
             try {
                 var panels = document.querySelectorAll('.tab-content');
@@ -4914,6 +5658,7 @@
                 if (tab === 'settings') {
                     try { loadInvoiceSettings(); } catch (e) {}
                     try { loadBusinessPage(); } catch (e2) {}
+                    try { fillPricingProfileSettings(); } catch (ePc) {}
                 }
                 if (tab === 'overview') {
                     try { loadBusinessPage(); } catch (e3) {}
