@@ -550,6 +550,41 @@
            TAB CONTENT
         ============================================ */
 
+
+        .pc-units {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin: 0 0 14px;
+        }
+        .pc-units button {
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.65);
+            border-radius: 12px;
+            padding: 10px 6px;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: inherit;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .pc-units button.selected {
+            border-color: #fbbf24;
+            background: rgba(251,191,36,0.14);
+            color: #fde68a;
+        }
+        .pc-unit-hint {
+            font-size: 12px;
+            color: rgba(255,255,255,0.45);
+            margin: -6px 0 14px;
+            line-height: 1.4;
+        }
+        @media (max-width: 540px) {
+            .pc-units { grid-template-columns: repeat(2, 1fr); }
+        }
+
         /* ── Pricing Coach (distinct from main blue chrome) ── */
         .pc-card {
             background: linear-gradient(135deg, #1a1c2e 0%, #2d1f3d 45%, #1e3a4c 100%);
@@ -5367,6 +5402,9 @@
                 transport: p.transport,
                 overhead: p.overhead,
                 margin: p.margin,
+                unit: 'job',
+                visitsPerMonth: 12,
+                hoursPerDay: 8,
                 result: null
             };
             var ov = document.getElementById('pcOverlay');
@@ -5385,7 +5423,14 @@
             }
         }
 
+        function pcSetUnit(u) {
+            pcState.unit = u || 'job';
+            pcCalculate();
+            renderPricingCoach();
+        }
+
         function pcSetStep(s) {
+
             pcState.step = s;
             renderPricingCoach();
         }
@@ -5433,6 +5478,14 @@
             return 1;
         }
 
+        function pcUnitLabel(u) {
+            u = u || pcState.unit || 'job';
+            if (u === 'hour') return 'per hour';
+            if (u === 'day') return 'per day';
+            if (u === 'month') return 'per month';
+            return 'per job';
+        }
+
         function pcCalculate() {
             var mult = pcConditionMult();
             var hoursAdj = pcState.hours * mult;
@@ -5445,38 +5498,96 @@
             var totalCost = labourCost + supplies + transport + overhead;
             var margin = (pcState.margin || 30) / 100;
             if (margin >= 0.9) margin = 0.3;
-            var recommended = totalCost / (1 - margin);
-            var minimum = totalCost / (1 - margin * 0.55);
-            var premium = recommended * 1.15;
-            // size nudge (gentle)
+            // Base = one visit / one job
+            var jobRec = totalCost / (1 - margin);
+            var jobMin = totalCost / (1 - margin * 0.55);
             var sizeFactor = 1 + Math.max(0, (pcState.bedrooms - 2) * 0.04) + Math.max(0, (pcState.bathrooms - 1) * 0.03);
-            recommended *= sizeFactor;
-            minimum *= sizeFactor;
-            premium *= sizeFactor;
+            jobRec *= sizeFactor;
+            jobMin *= sizeFactor;
+            var jobPrem = jobRec * 1.15;
+
+            var unit = pcState.unit || 'job';
+            var visits = Math.max(1, Number(pcState.visitsPerMonth) || 12);
+            var dayHours = Math.max(1, Number(pcState.hoursPerDay) || 8);
+            // Full-day cost: scale labour to day length if quoted hours differ
+            var dayLabourHours = pcState.cleaners * dayHours * mult;
+            var dayTravel = travelHours;
+            var dayLabourCost = (dayLabourHours + dayTravel) * pcState.labourRate;
+            var dayCost = dayLabourCost + supplies + transport + overhead;
+            var dayRec = (dayCost / (1 - margin)) * sizeFactor;
+            var dayMin = (dayCost / (1 - margin * 0.55)) * sizeFactor;
+            var dayPrem = dayRec * 1.15;
+
+            var recommended, minimum, premium, totalCostShow, profit, unitHint, labourHoursShow, labourCostShow;
+            if (unit === 'hour') {
+                var hrs = Math.max(0.5, labourHours);
+                recommended = jobRec / hrs;
+                minimum = jobMin / hrs;
+                premium = jobPrem / hrs;
+                totalCostShow = totalCost / hrs;
+                profit = recommended - totalCostShow;
+                labourHoursShow = 1;
+                labourCostShow = labourCost / hrs;
+                unitHint = 'Based on this job’s labour hours. Quote the client an hourly rate.';
+            } else if (unit === 'day') {
+                recommended = dayRec;
+                minimum = dayMin;
+                premium = dayPrem;
+                totalCostShow = dayCost;
+                profit = recommended - totalCostShow;
+                labourHoursShow = dayLabourHours;
+                labourCostShow = dayLabourCost;
+                unitHint = 'Full team day (~' + dayHours + 'h each). Common for day-rate cleaning crews.';
+            } else if (unit === 'month') {
+                recommended = jobRec * visits;
+                minimum = jobMin * visits;
+                premium = jobPrem * visits;
+                totalCostShow = totalCost * visits;
+                profit = recommended - totalCostShow;
+                labourHoursShow = labourHours * visits;
+                labourCostShow = labourCost * visits;
+                unitHint = visits + ' visits/month × per-visit price. Adjust visits below if needed.';
+            } else {
+                recommended = jobRec;
+                minimum = jobMin;
+                premium = jobPrem;
+                totalCostShow = totalCost;
+                profit = recommended - totalCostShow;
+                labourHoursShow = labourHours;
+                labourCostShow = labourCost;
+                unitHint = 'One visit / one-off job.';
+            }
+
             pcState.result = {
-                labourHours: labourHours,
-                labourCost: pcRoundNice(labourCost),
-                supplies: pcRoundNice(supplies),
-                transport: pcRoundNice(transport),
-                overhead: pcRoundNice(overhead),
-                totalCost: pcRoundNice(totalCost),
-                profit: pcRoundNice(recommended - totalCost),
+                labourHours: labourHoursShow,
+                labourCost: pcRoundNice(labourCostShow),
+                supplies: pcRoundNice(unit === 'month' ? supplies * visits : supplies),
+                transport: pcRoundNice(unit === 'month' ? transport * visits : transport),
+                overhead: pcRoundNice(unit === 'month' ? overhead * visits : overhead),
+                totalCost: pcRoundNice(totalCostShow),
+                profit: pcRoundNice(profit),
                 margin: pcState.margin,
                 minimum: pcRoundNice(minimum),
                 recommended: pcRoundNice(recommended),
                 premium: pcRoundNice(premium),
                 service: pcState.service,
                 cleaners: pcState.cleaners,
-                hours: hoursAdj
+                hours: hoursAdj,
+                unit: unit,
+                unitLabel: pcUnitLabel(unit),
+                unitHint: unitHint,
+                visitsPerMonth: visits,
+                jobEquivalent: pcRoundNice(jobRec)
             };
             try {
                 localStorage.setItem('cleancrew_pc_last', JSON.stringify({
                     price: pcState.result.recommended,
                     service: pcState.service,
+                    unit: unit,
                     at: Date.now()
                 }));
                 var lab = document.getElementById('pcLastLabel');
-                if (lab) lab.textContent = 'Last: ' + pcMoney(pcState.result.recommended) + ' · ' + pcState.service;
+                if (lab) lab.textContent = 'Last: ' + pcMoney(pcState.result.recommended) + ' ' + pcUnitLabel(unit) + ' · ' + pcState.service;
             } catch (e) {}
             return pcState.result;
         }
@@ -5543,8 +5654,23 @@
                 html += '<p style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:12px;">Saved for next time. Change anytime in Settings → Preferences.</p>';
             } else if (step === 4) {
                 var r = pcState.result || pcCalculate();
+                html += '<p class="pc-step-label">Quote as</p>';
+                html += '<div class="pc-units">';
+                [['job','Per job'],['hour','Per hour'],['day','Per day'],['month','Per month']].forEach(function(u) {
+                    html += '<button type="button" class="' + (pcState.unit === u[0] ? 'selected' : '') + '" data-pc-unit="' + u[0] + '">' + u[1] + '</button>';
+                });
+
+                html += '</div>';
+                if (pcState.unit === 'month') {
+                    html += '<div class="pc-grid" style="margin-bottom:12px;"><div class="pc-field"><label>Visits / month</label><input type="number" id="pcVisitsMonth" min="1" value="' + (pcState.visitsPerMonth || 12) + '" onchange="pcState.visitsPerMonth=Math.max(1,Number(this.value)||12);pcCalculate();renderPricingCoach()" /></div>';
+                    html += '<div class="pc-field"><label>≈ per visit</label><input type="text" readonly value="' + pcMoney(r.jobEquivalent || 0) + '" style="opacity:0.8" /></div></div>';
+                }
+                if (pcState.unit === 'day') {
+                    html += '<div class="pc-field" style="margin-bottom:12px;"><label>Hours in a work day</label><input type="number" id="pcDayHours" min="4" max="12" value="' + (pcState.hoursPerDay || 8) + '" onchange="pcState.hoursPerDay=Math.max(4,Number(this.value)||8);pcCalculate();renderPricingCoach()" /></div>';
+                }
+                html += '<p class="pc-unit-hint">' + (r.unitHint || '') + '</p>';
                 html += '<div class="pc-result-hero">';
-                html += '<div class="pc-rec-label">Recommended price</div>';
+                html += '<div class="pc-rec-label">Recommended · ' + (r.unitLabel || 'per job') + '</div>';
                 html += '<div class="pc-rec-price">' + pcMoney(r.recommended) + '</div>';
                 html += '<div class="pc-rec-sub">Cost ' + pcMoney(r.totalCost) + ' · Keep ~' + pcMoney(r.profit) + ' (' + r.margin + '%)</div>';
                 html += '</div>';
@@ -5564,8 +5690,16 @@
                 html += '<div class="pc-why">You are not only charging for time on site. Price must cover people, supplies, transport and the business behind the job — or the work costs you money.</div>';
             }
             body.innerHTML = html;
+            try {
+                body.querySelectorAll('[data-pc-unit]').forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        pcSetUnit(btn.getAttribute('data-pc-unit'));
+                    });
+                });
+            } catch (eBind) {}
 
             var fh = '';
+
             if (step === 0) {
                 fh = '<button type="button" class="btn btn-sm btn-ghost" onclick="closePricingCoach()">Close</button>';
                 fh += '<button type="button" class="btn btn-sm btn-next" onclick="pcCollectStep();pcSetStep(1)">Continue</button>';
@@ -5607,11 +5741,11 @@
                         try { service.dispatchEvent(new Event('change', { bubbles: true })); } catch (e3) {}
                     }
                     if (notes) {
-                        var line = 'Pricing Coach: ' + r.service + ' · ' + r.cleaners + ' staff × ' + Number(r.hours).toFixed(1) + 'h · cost ~' + pcMoney(r.totalCost) + ' · target margin ' + r.margin + '%';
+                        var line = 'Pricing Coach: ' + pcMoney(r.recommended) + ' ' + (r.unitLabel || 'per job') + ' · ' + r.service + ' · ' + r.cleaners + ' staff · cost ~' + pcMoney(r.totalCost) + ' · margin ' + r.margin + '%';
                         notes.value = (notes.value ? notes.value + '\n' : '') + line;
                     }
                     if (staffCost) staffCost.value = r.labourCost;
-                    showToast('Job form filled at ' + pcMoney(r.recommended), 'success');
+                    showToast('Job form filled at ' + pcMoney(r.recommended) + ' ' + (r.unitLabel || ''), 'success');
                 } catch (err) {
                     console.error(err);
                     showToast('Price: ' + pcMoney(r.recommended) + ' — enter it on the job form', 'success');
