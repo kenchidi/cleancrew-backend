@@ -4891,12 +4891,13 @@
         function switchTab(tab) {
             try {
                 var panels = document.querySelectorAll('.tab-content');
-                panels.forEach(function(el) {
+                for (var pi = 0; pi < panels.length; pi++) {
+                    var el = panels[pi];
                     el.classList.remove('active');
                     try { el.style.setProperty('display', 'none', 'important'); } catch (e1) { el.style.display = 'none'; }
                     try { el.setAttribute('hidden', 'hidden'); } catch (eH) {}
                     try { el.setAttribute('aria-hidden', 'true'); } catch (eA) {}
-                });
+                }
                 var target = document.getElementById('tab-' + tab);
                 if (target) {
                     target.classList.add('active');
@@ -4904,12 +4905,6 @@
                     try { target.removeAttribute('hidden'); } catch (eH2) {}
                     try { target.setAttribute('aria-hidden', 'false'); } catch (eA2) {}
                     try { window.scrollTo(0, 0); } catch (eS) {}
-                    try {
-                        var shell = document.querySelector('.main-shell');
-                        if (shell) shell.scrollTop = 0;
-                        var container = document.querySelector('.container');
-                        if (container) container.scrollTop = 0;
-                    } catch (eS2) {}
                 } else {
                     console.warn('Missing tab panel:', tab);
                     showToast('Could not open ' + tab, 'error');
@@ -4925,13 +4920,6 @@
                 });
 
                 try { closeSidebar(); } catch (eClose) {}
-
-                // Scroll main content into view (mobile)
-                try {
-                    var main = document.querySelector('.main-shell') || document.getElementById('tab-' + tab);
-                    if (main && main.scrollIntoView) main.scrollIntoView({ block: 'start' });
-                    window.scrollTo(0, 0);
-                } catch (eScr) {}
 
                 if (tab === 'settings') {
                     try { loadInvoiceSettings(); } catch (e) {}
@@ -4959,7 +4947,7 @@
                     try { if (typeof renderInventory === 'function') renderInventory(); } catch (eI) { console.error(eI); }
                 }
                 if (tab === 'staff') {
-                    try { if (typeof renderStaff === 'function') renderStaff(); } catch (eS) { console.error(eS); }
+                    try { if (typeof renderStaff === 'function') renderStaff(); } catch (eSt) { console.error(eSt); }
                 }
                 if (tab === 'invoices') {
                     try { if (typeof renderInvoices === 'function') renderInvoices(); } catch (eV) { console.error(eV); }
@@ -4967,7 +4955,7 @@
                 if (tab === 'messages') {
                     try { populateMessageRecipients(); } catch (eM) {}
                     try { renderMessageHistory(); } catch (eH) {}
-                    try { if (typeof renderMessages === 'function') renderMessages(); } catch (eM) { console.error(eM); }
+                    try { if (typeof renderMessages === 'function') renderMessages(); } catch (eM2) { console.error(eM2); }
                 }
             } catch (err) {
                 console.error('switchTab error', err);
