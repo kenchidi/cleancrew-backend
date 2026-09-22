@@ -3539,11 +3539,7 @@
             </div>
         </div>
 
-        
-        </div>
-
-        
-<div class="onboarding-card" id="onboardingCard" hidden>
+        <div class="onboarding-card" id="onboardingCard" hidden>
             <h3>Let's get your business running</h3>
             <p>Complete these steps to start tracking work and money.</p>
             <ul class="onboarding-steps">
@@ -3692,6 +3688,8 @@
                 </div>
             </div>
         <!-- /tab-overview -->
+
+                </div><!-- /tab-overview -->
 
         <!-- ════ JOBS TAB ════ -->
         <div class="tab-content" id="tab-jobs">
@@ -4896,29 +4894,21 @@
                     el.classList.remove('active');
                     try { el.style.setProperty('display', 'none', 'important'); } catch (e1) { el.style.display = 'none'; }
                     try { el.setAttribute('hidden', 'hidden'); } catch (eH) {}
-                    try { el.setAttribute('aria-hidden', 'true'); } catch (eA) {}
                 }
                 var target = document.getElementById('tab-' + tab);
                 if (target) {
                     target.classList.add('active');
                     try { target.style.setProperty('display', 'block', 'important'); } catch (e2) { target.style.display = 'block'; }
                     try { target.removeAttribute('hidden'); } catch (eH2) {}
-                    try { target.setAttribute('aria-hidden', 'false'); } catch (eA2) {}
                     try { window.scrollTo(0, 0); } catch (eS) {}
                 } else {
                     console.warn('Missing tab panel:', tab);
-                    showToast('Could not open ' + tab, 'error');
+                    if (typeof showToast === 'function') showToast('Could not open ' + tab, 'error');
                 }
 
-                document.querySelectorAll('#sidebarNav button').forEach(function(el) {
-                    el.classList.toggle('active', el.getAttribute('data-tab') === tab);
+                document.querySelectorAll('#sidebarNav button').forEach(function(btn) {
+                    btn.classList.toggle('active', btn.getAttribute('data-tab') === tab);
                 });
-                document.querySelectorAll('.nav-tabs button').forEach(function(el) {
-                    var onclick = el.getAttribute('onclick') || '';
-                    var on = onclick.indexOf("'" + tab + "'") !== -1 || onclick.indexOf('"' + tab + '"') !== -1;
-                    el.classList.toggle('active', on);
-                });
-
                 try { closeSidebar(); } catch (eClose) {}
 
                 if (tab === 'settings') {
@@ -4929,19 +4919,13 @@
                     try { loadBusinessPage(); } catch (e3) {}
                     try { loadWebsiteBookings(); } catch (e4) {}
                     try { refreshFreeJobs(); } catch (e5) {}
-                    try {
-                        if (jobsData) renderOverview(jobsData, clientsData || []);
-                    } catch (e6) {}
+                    try { if (jobsData) renderOverview(jobsData, clientsData || []); } catch (e6) {}
                 }
                 if (tab === 'jobs') {
-                    try {
-                        if (typeof renderJobs === 'function') renderJobs(jobsData || []);
-                    } catch (eJ) { console.error('renderJobs', eJ); }
+                    try { if (typeof renderJobs === 'function') renderJobs(jobsData || []); } catch (eJ) { console.error(eJ); }
                 }
                 if (tab === 'clients') {
-                    try {
-                        if (typeof renderClients === 'function') renderClients(clientsData || []);
-                    } catch (eC) { console.error(eC); }
+                    try { if (typeof renderClients === 'function') renderClients(clientsData || []); } catch (eC) { console.error(eC); }
                 }
                 if (tab === 'inventory') {
                     try { if (typeof renderInventory === 'function') renderInventory(); } catch (eI) { console.error(eI); }
@@ -4955,7 +4939,7 @@
                 if (tab === 'messages') {
                     try { populateMessageRecipients(); } catch (eM) {}
                     try { renderMessageHistory(); } catch (eH) {}
-                    try { if (typeof renderMessages === 'function') renderMessages(); } catch (eM2) { console.error(eM2); }
+                    try { if (typeof renderMessages === 'function') renderMessages(); } catch (eM2) {}
                 }
             } catch (err) {
                 console.error('switchTab error', err);
