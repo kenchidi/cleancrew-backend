@@ -3396,9 +3396,6 @@
         </div><!-- /nav-tabs -->
 
         <div class="tab-content active" id="tab-overview">
-
-        <!-- ABOVE THE FOLD: run the shop today -->
-        <div class="overview-primary">
 <div class="dash-greeting" id="dashGreeting">
             <div class="greet-text">
                 <h2 id="dashGreetingTitle">Good day</h2>
@@ -3413,8 +3410,60 @@
             <button type="button" class="btn btn-primary" id="overviewNewJobBtn" onclick="openModal('job')">+ New Job</button>
         </div>
 
+<div class="onboarding-card" id="onboardingCard" hidden>
+            <h3>Let's get your business running</h3>
+            <p>Complete these steps to start tracking work and money.</p>
+            <ul class="onboarding-steps">
+                <li id="obStepJob">
+                    <span class="ob-check" aria-hidden="true"></span>
+                    <span>Create your first job</span>
+                    <span class="ob-action"><button type="button" class="btn btn-primary btn-sm" onclick="openModal('job')">New Job</button></span>
+                </li>
+                <li id="obStepStatus">
+                    <span class="ob-check" aria-hidden="true"></span>
+                    <span>Update a job status</span>
+                    <span class="ob-action"><button type="button" class="btn btn-outline btn-sm" onclick="switchTab('jobs')">Open jobs</button></span>
+                </li>
+                <li id="obStepClient">
+                    <span class="ob-check" aria-hidden="true"></span>
+                    <span>Save a client <span style="font-weight:500;color:var(--slate);">(optional)</span></span>
+                    <span class="ob-action"><button type="button" class="btn btn-outline btn-sm" onclick="openModal('client')">Add client</button></span>
+                </li>
+            </ul>
+        </div>
+
+<div class="community-card" id="communityCard" hidden>
+            <button type="button" class="community-dismiss" onclick="dismissCommunityCard()" aria-label="Dismiss">Maybe later</button>
+            <h3>
+                <svg class="icon" style="width:18px;height:18px;stroke:#059669;"><use href="#ic-chat"/></svg>
+                Join the CleanCrew owners community
+            </h3>
+            <p>
+                Optional WhatsApp Community for cleaning &amp; laundry business owners — tips, product updates, and peers who run shops like yours.
+                Support for your account still goes through official CleanCrew support.
+            </p>
+            <div class="btn-row">
+                <a class="btn btn-wa-community btn-sm" id="communityJoinBtn" href="#" target="_blank" rel="noopener" onclick="return joinCommunityWa(event)">Join on WhatsApp</a>
+                <button type="button" class="btn btn-outline btn-sm" onclick="dismissCommunityCard()">Not now</button>
+            </div>
+        </div>
+
+<div class="first-run-hero" id="firstRunHero" hidden>
+            <strong>Create your first job to run the business from here</strong>
+            <span>When a customer books or drops clothes, add the job — then mark it done when you finish.</span>
+            <div class="btn-row">
+                <button type="button" class="btn btn-primary" onclick="openModal('job')">+ New Job</button>
+                <button type="button" class="btn btn-outline" onclick="openQuickCapture()">Quick capture</button>
+            </div>
+        </div>
+
         
-<div class="ops-kpi" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;">
+
+        
+
+
+
+        <div class="ops-kpi" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;">
             <div class="stat-card primary">
                 <div class="stat-label">Jobs today</div>
                 <div class="stat-value" id="ovJobsToday">0</div>
@@ -3468,7 +3517,6 @@
           .dash-greeting .greet-text { flex: 1; min-width: 180px; }
         </style>
 
-        
 <div class="ops-main">
             <div class="card">
                 <div class="card-header">
@@ -3494,7 +3542,7 @@
         
         </div>
 
-        <!-- New-user helpers (hidden when done) -->
+        
 <div class="onboarding-card" id="onboardingCard" hidden>
             <h3>Let's get your business running</h3>
             <p>Complete these steps to start tracking work and money.</p>
@@ -3536,20 +3584,6 @@
         </div>
 
         
-<div class="first-run-hero" id="firstRunHero" hidden>
-            <strong>Create your first job to run the business from here</strong>
-            <span>When a customer books or drops clothes, add the job — then mark it done when you finish.</span>
-            <div class="btn-row">
-                <button type="button" class="btn btn-primary" onclick="openModal('job')">+ New Job</button>
-                <button type="button" class="btn btn-outline" onclick="openQuickCapture()">Quick capture</button>
-            </div>
-        </div>
-
-        
-
-        <!-- BELOW: setup, money, history -->
-        <div class="overview-secondary" id="overviewSecondary">
-            <p class="overview-secondary-label">More</p>
 <div class="card" id="websiteCard" style="margin-bottom:16px;">
             <div class="card-header" style="margin-bottom:4px;">
                 <h3 style="margin:0;font-size:15px;" id="websiteCardHeading">Your booking page</h3>
@@ -3657,8 +3691,7 @@
                     </div>
                 </div>
             </div>
-        </div><!-- /overview-secondary -->
-        </div><!-- /tab-overview -->
+        <!-- /tab-overview -->
 
         <!-- ════ JOBS TAB ════ -->
         <div class="tab-content" id="tab-jobs">
