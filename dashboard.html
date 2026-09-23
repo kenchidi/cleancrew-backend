@@ -6993,7 +6993,7 @@
                     set('settingsAccountName', data.account_name);
                     set('settingsAccountNumber', data.account_number);
                     set('settingsPaymentWhatsapp', data.payment_whatsapp);
-                    set('settingsTerms', data.terms_and_conditions || data.terms);
+                    set('settingsTerms', data.terms_and_conditions || data.terms || (function(){ try { return localStorage.getItem('cleancrew_service_terms') || ''; } catch(e){ return ''; } })());
                     applyBusinessProfile(name, logo);
                 } else {
                     applyBusinessProfile(localName, localLogo);
@@ -7021,6 +7021,7 @@
                 account_number: document.getElementById('settingsAccountNumber').value.trim(),
                 payment_whatsapp: document.getElementById('settingsPaymentWhatsapp').value.trim(),
                 terms_and_conditions: (document.getElementById('settingsTerms') && document.getElementById('settingsTerms').value) || '',
+                // also keep a local copy so PDF can use terms even if DB column is missing
                 logo_url: (document.getElementById('settingsLogoUrl') && document.getElementById('settingsLogoUrl').value) || ''
             };
             try {
@@ -7034,6 +7035,7 @@
                     var savedLogo = (data && data.logo_url) || payload.logo_url || '';
                     var savedName = (data && data.business_name) || payload.business_name || '';
                     applyBusinessProfile(savedName, savedLogo);
+                    try { localStorage.setItem('cleancrew_service_terms', payload.terms_and_conditions || ''); } catch (eL) {}
                     showToast('Business profile saved', 'success');
                 } else {
                     var err = (data && data.error) || 'Failed to save settings';
@@ -7062,10 +7064,15 @@
             logoForPdf = (document.getElementById('settingsLogoUrl') && document.getElementById('settingsLogoUrl').value) ||
                 localStorage.getItem('cleancrew_business_logo') || '';
         } catch (e0) {}
+        var termsForPdf = '';
+        try {
+            termsForPdf = (document.getElementById('settingsTerms') && document.getElementById('settingsTerms').value) ||
+                localStorage.getItem('cleancrew_service_terms') || '';
+        } catch (eT) {}
         const res = await fetch(API_URL + '/invoices/' + id + '/generate-pdf', {
             method: 'POST',
             headers: getHeaders(),
-            body: JSON.stringify({ logo_url: logoForPdf })
+            body: JSON.stringify({ logo_url: logoForPdf, terms_and_conditions: termsForPdf })
         });
         const contentType = res.headers.get('content-type') || '';
         if (contentType.includes('application/pdf')) {

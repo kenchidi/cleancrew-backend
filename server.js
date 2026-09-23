@@ -5838,19 +5838,27 @@ app.post(
                 y += 10;
             }
 
-            // TERMS & CONDITIONS (custom per business)
-            const termsRaw = (settings?.terms_and_conditions || settings?.terms || '').trim();
+            // TERMS & CONDITIONS (settings, or body fallback from dashboard)
+            const bodyTerms = (req.body && (req.body.terms_and_conditions || req.body.terms))
+                ? String(req.body.terms_and_conditions || req.body.terms).trim()
+                : '';
+            const termsRaw = (
+                (settings && (settings.terms_and_conditions || settings.terms)) ||
+                bodyTerms ||
+                ''
+            ).toString().trim();
+
             if (termsRaw) {
-                y += 4;
-                if (y > 250) {
+                y += 8;
+                if (y > 240) {
                     doc.addPage();
                     y = 20;
                 }
                 doc.setFont('helvetica', 'bold');
-                doc.setFontSize(12);
+                doc.setFontSize(11);
                 doc.setTextColor(26, 109, 219);
                 doc.text('Payment & Service Terms', margin, y);
-                y += 8;
+                y += 7;
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(9);
                 doc.setTextColor(51, 51, 51);
@@ -5858,56 +5866,52 @@ app.post(
                     .split(/\r?\n/)
                     .map(function (line) { return String(line || '').trim(); })
                     .filter(Boolean);
-                termsLines.forEach(function (line) {
-                    const wrapped = doc.splitTextToSize(line, pageWidth - margin * 2);
-                    wrapped.forEach(function (wline) {
-                        if (y > 270) {
+                if (!termsLines.length) {
+                    // single paragraph without newlines
+                    const wrappedOne = doc.splitTextToSize(termsRaw, pageWidth - margin * 2);
+                    wrappedOne.forEach(function (wline) {
+                        if (y > 265) {
                             doc.addPage();
                             y = 20;
                         }
                         doc.text(wline, margin, y);
                         y += 5;
                     });
-                    y += 1;
-                });
-                y += 6;
+                } else {
+                    termsLines.forEach(function (line) {
+                        const wrapped = doc.splitTextToSize(line, pageWidth - margin * 2);
+                        wrapped.forEach(function (wline) {
+                            if (y > 265) {
+                                doc.addPage();
+                                y = 20;
+                            }
+                            doc.text(wline, margin, y);
+                            y += 5;
+                        });
+                        y += 1;
+                    });
+                }
+                y += 8;
             }
 
-            // FOOTER
-            const footerY = 280;
+            // FOOTER — place after content (not a fixed Y that can cover terms)
+            if (y > 265) {
+                doc.addPage();
+                y = 20;
+            }
+            const footerY = Math.min(Math.max(y + 6, 40), 280);
 
             doc.setFontSize(9);
-
-            doc.setTextColor(
-                150,
-                150,
-                150
-            );
-
-            doc.setFont(
-                'helvetica',
-                'italic'
-            );
-
+            doc.setTextColor(150, 150, 150);
+            doc.setFont('helvetica', 'italic');
             doc.text(
-                `Thank you for choosing ${businessName}!`,
+                'Thank you for choosing ' + businessName + '!',
                 margin,
                 footerY
             );
-
-            doc.setFont(
-                'helvetica',
-                'normal'
-            );
-
+            doc.setFont('helvetica', 'normal');
             doc.setFontSize(8);
-
-            doc.setTextColor(
-                180,
-                180,
-                180
-            );
-
+            doc.setTextColor(180, 180, 180);
             doc.text(
                 'Powered by CleanCrew — cleancrewapp.com',
                 margin,
