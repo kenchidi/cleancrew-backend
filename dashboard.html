@@ -8819,9 +8819,32 @@
                 });
         }
 
+        function findInvoiceById(id) {
+            var sid = String(id || '').trim();
+            if (!sid) return null;
+            var list = (typeof invoicesData !== 'undefined' && invoicesData) ? invoicesData : [];
+            return list.find(function(x) {
+                return x && String(x.id) === sid;
+            }) || null;
+        }
+
         function openRecordPayment(id) {
-            var inv = invoicesData.find(function(x) { return x.id === id; });
-            if (!inv) { showToast('Invoice not found', 'error'); return; }
+            var inv = findInvoiceById(id);
+            if (!inv) {
+                // Retry after a fresh fetch (stale list)
+                getInvoices().then(function(list) {
+                    invoicesData = list || [];
+                    var again = findInvoiceById(id);
+                    if (!again) {
+                        showToast('Invoice not found — refresh the page and try again', 'error');
+                        return;
+                    }
+                    openRecordPayment(again.id);
+                }).catch(function() {
+                    showToast('Invoice not found — refresh the page and try again', 'error');
+                });
+                return;
+            }
 
             var amountDue = inv.amount_due != null ? Number(inv.amount_due) : Number(inv.amount || 0);
             var amountPaid = inv.amount_paid != null ? Number(inv.amount_paid) : 0;
@@ -8832,11 +8855,13 @@
             document.getElementById('modalForm').reset();
             var f = document.getElementById('modalFormFields');
             f.innerHTML =
-                '<input type="hidden" id="payInvoiceId" value="' + inv.id + '" />' +
-                '<div class="form-group full-width"><label>Client</label><input type="text" value="' + (inv.client || '') + '" disabled /></div>' +
+                '<input type="hidden" id="payInvoiceId" value="' + String(inv.id).replace(/"/g, '') + '" />' +
+                '<input type="hidden" id="payAmountDue" value="' + amountDue + '" />' +
+                '<input type="hidden" id="payAlreadyPaid" value="' + amountPaid + '" />' +
+                '<div class="form-group full-width"><label>Client</label><input type="text" value="' + (inv.client || '').replace(/"/g, '&quot;') + '" disabled /></div>' +
                 '<div class="form-group"><label>Amount due</label><input type="text" value="' + formatMoney(amountDue) + '" disabled /></div>' +
                 '<div class="form-group"><label>Already paid</label><input type="text" value="' + formatMoney(amountPaid) + '" disabled /></div>' +
-                '<div class="form-group"><label>Payment amount (' + moneySymbol() + ') *</label><input type="number" id="payAmount" min="0" step="0.01" value="' + remaining + '" required /></div>' +
+                '<div class="form-group"><label>Payment amount (' + moneySymbol() + ') *</label><input type="number" id="payAmount" min="0" step="any" value="' + remaining + '" required /></div>' +
                 '<div class="form-group full-width"><label>Note (optional)</label><textarea id="payNote" placeholder="Bank transfer, cash, etc."></textarea></div>';
             document.getElementById('modalOverlay').classList.add('active');
         }
@@ -9965,25 +9990,32 @@
                     });
 
             } else if (modalType === 'record-payment') {
-                var invId = document.getElementById('payInvoiceId').value;
+                var invIdEl = document.getElementById('payInvoiceId');
+                var invId = invIdEl ? String(invIdEl.value || '').trim() : '';
                 var payAmount = parseFloat(document.getElementById('payAmount').value);
                 if (!invId || !(payAmount > 0)) {
                     showToast('Enter a valid payment amount', 'error');
                     return;
                 }
-                var inv = invoicesData.find(function(x) { return x.id === invId; });
-                if (!inv) { showToast('Invoice not found', 'error'); return; }
-
-                var amountDue = inv.amount_due != null ? Number(inv.amount_due) : Number(inv.amount || 0);
-                var prevPaid = inv.amount_paid != null ? Number(inv.amount_paid) : 0;
+                var inv = typeof findInvoiceById === 'function' ? findInvoiceById(invId) : null;
+                var dueEl = document.getElementById('payAmountDue');
+                var paidEl = document.getElementById('payAlreadyPaid');
+                var amountDue = dueEl ? Number(dueEl.value) : (inv && inv.amount_due != null ? Number(inv.amount_due) : (inv ? Number(inv.amount || 0) : 0));
+                var prevPaid = paidEl ? Number(paidEl.value) : (inv && inv.amount_paid != null ? Number(inv.amount_paid) : 0);
+                if (!(amountDue > 0) && inv) {
+                    amountDue = inv.amount_due != null ? Number(inv.amount_due) : Number(inv.amount || 0);
+                }
                 var newPaid = prevPaid + payAmount;
                 var newStatus = deriveInvoiceStatus(amountDue, newPaid);
+                var noteEl = document.getElementById('payNote');
+                var note = noteEl ? String(noteEl.value || '').trim() : '';
                 var payload = {
                     amount_paid: newPaid,
                     amount_due: amountDue,
                     status: newStatus === 'unpaid' ? 'pending' : newStatus,
-                    paid_at: newStatus === 'paid' ? new Date().toISOString() : (inv.paid_at || null)
+                    paid_at: newStatus === 'paid' ? new Date().toISOString() : null
                 };
+                if (note) payload.payment_note = note;
 
                 updateInvoice(invId, payload)
                     .then(function() {
@@ -9993,7 +10025,11 @@
                     })
                     .catch(function(e) {
                         console.error('Payment update failed:', e);
-                        showToast((e && e.message) || 'Failed to record payment', 'error');
+                        var msg = (e && e.message) || 'Failed to record payment';
+                        if (/not found/i.test(msg)) {
+                            msg = 'Could not update this invoice. Refresh the page and try Record payment again.';
+                        }
+                        showToast(msg, 'error');
                     });
             }
         }

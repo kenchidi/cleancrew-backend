@@ -3420,16 +3420,24 @@ app.put(
             const userId = req.user.id;
             const invoiceId = req.params.id;
 
-            const existing = await supabase
+            const invoiceIdClean = String(invoiceId || '').trim();
+            if (!invoiceIdClean) {
+                return res.status(400).json({ error: 'Missing invoice id' });
+            }
+
+            // Lookup by id first, then ownership — clearer errors than a combined filter miss
+            let existing = await supabase
                 .from('invoices')
                 .select('*')
-                .eq('id', invoiceId)
-                .eq('user_id', userId)
+                .eq('id', invoiceIdClean)
                 .maybeSingle();
 
             if (existing.error) throw existing.error;
             if (!existing.data) {
                 return res.status(404).json({ error: 'Invoice not found' });
+            }
+            if (String(existing.data.user_id) !== String(userId)) {
+                return res.status(403).json({ error: 'You do not have access to this invoice' });
             }
 
             const inv = existing.data;
@@ -3438,17 +3446,18 @@ app.put(
             const amountPaidNow = Number(inv.amount_paid) || 0;
             const isPaid = statusNow === 'paid' || (amountDueNow > 0 && amountPaidNow >= amountDueNow);
 
-            // Guardrail: no content edits after fully paid (payment recording uses dedicated fields only via openRecordPayment)
-            // Allow only status/payment-related updates if already paid? User said no edits after paid — block all field edits.
+            const body = req.body || {};
+            const isPaymentUpdate = body.amount_paid !== undefined;
+
+            // Guardrail: no content edits after fully paid — payment adjustments still allowed
             const isQuoteRow = inv.doc_type === 'quotation' ||
                 ['draft', 'sent', 'approved', 'expired', 'quotation'].indexOf(statusNow) !== -1;
-            if (isPaid && !isQuoteRow) {
+            if (isPaid && !isQuoteRow && !isPaymentUpdate) {
                 return res.status(400).json({
                     error: 'This invoice is paid and cannot be edited. Create a new invoice if you need a correction.'
                 });
             }
 
-            const body = req.body || {};
             // Allowed editable fields only — never invoice number / created_at / user_id / job_id reassignment via bulk body
             const updates = {};
             const changes = [];
