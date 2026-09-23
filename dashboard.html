@@ -4466,31 +4466,61 @@
                                     <input type="text" id="settingsPaymentWhatsapp" placeholder="e.g. 080-123-4567" />
                                 </div>
 
-                                <p class="settings-section-title" style="margin-top:18px;">Invoice look</p>
-                                <p class="settings-section-desc">Colour and layout for PDF invoices and quotations. Keep it simple — your clients still need to read amounts clearly.</p>
-                                <div class="form-grid">
-                                    <div class="form-group">
-                                        <label>Accent colour</label>
-                                        <div style="display:flex;align-items:center;gap:10px;">
-                                            <input type="color" id="settingsInvoiceAccent" value="#1a6ddb" style="width:48px;height:36px;border:1px solid var(--border);border-radius:8px;padding:2px;cursor:pointer;" />
-                                            <input type="text" id="settingsInvoiceAccentHex" value="#1a6ddb" placeholder="#1a6ddb" style="flex:1;" oninput="var c=document.getElementById('settingsInvoiceAccent');if(/^#[0-9A-Fa-f]{6}$/.test(this.value))c.value=this.value;" />
+                                <p class="settings-section-title" style="margin-top:18px;">Invoice customization</p>
+                                <p class="settings-section-desc">Your clients should see <strong>your</strong> brand on the PDF — not a generic template. Changes apply the next time you generate a PDF.</p>
+                                <div class="inv-customize-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+                                    <div>
+                                        <div class="form-grid">
+                                            <div class="form-group">
+                                                <label>Layout template</label>
+                                                <select id="settingsInvoiceTemplate" onchange="refreshInvoicePreview()">
+                                                    <option value="classic">Classic</option>
+                                                    <option value="modern">Modern</option>
+                                                    <option value="minimal">Minimal</option>
+                                                    <option value="bold">Bold</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Accent colour</label>
+                                                <div style="display:flex;align-items:center;gap:10px;">
+                                                    <input type="color" id="settingsInvoiceAccent" value="#0f4fa8" style="width:48px;height:36px;border:1px solid var(--border);border-radius:8px;padding:2px;cursor:pointer;" oninput="var h=document.getElementById('settingsInvoiceAccentHex');if(h)h.value=this.value;refreshInvoicePreview();" />
+                                                    <input type="text" id="settingsInvoiceAccentHex" value="#0f4fa8" oninput="var c=document.getElementById('settingsInvoiceAccent');if(/^#[0-9A-Fa-f]{6}$/.test(this.value)){c.value=this.value;refreshInvoicePreview();}" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group full-width">
+                                                <label>Document title (optional)</label>
+                                                <input type="text" id="settingsInvoiceTitle" placeholder="Leave blank for Invoice / Quotation" maxlength="40" oninput="refreshInvoicePreview()" />
+                                            </div>
+                                            <div class="form-group full-width">
+                                                <label>Tagline (optional)</label>
+                                                <input type="text" id="settingsInvoiceTagline" placeholder="e.g. Professional cleaning you can trust" maxlength="80" oninput="refreshInvoicePreview()" />
+                                            </div>
+                                        </div>
+                                        <p class="settings-section-desc" style="margin-top:12px;">Show on invoice</p>
+                                        <div class="inv-toggles" style="display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:13px;">
+                                            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="invShowLogo" checked onchange="refreshInvoicePreview()" /> Logo</label>
+                                            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="invShowAddress" checked onchange="refreshInvoicePreview()" /> Address</label>
+                                            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="invShowPhone" checked onchange="refreshInvoicePreview()" /> Phone</label>
+                                            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="invShowEmail" checked onchange="refreshInvoicePreview()" /> Email</label>
+                                            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="invShowPayment" checked onchange="refreshInvoicePreview()" /> Payment info</label>
+                                            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="invShowTerms" checked onchange="refreshInvoicePreview()" /> Terms</label>
+                                            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="invShowThankyou" checked onchange="refreshInvoicePreview()" /> Thank-you line</label>
                                         </div>
                                     </div>
-                                    <div class="form-group">
-                                        <label>Layout style</label>
-                                        <select id="settingsInvoiceTemplate">
-                                            <option value="classic">Classic — logo left, details right</option>
-                                            <option value="bold">Bold — full colour header bar</option>
-                                            <option value="minimal">Minimal — light and simple</option>
-                                        </select>
+                                    <div>
+                                        <p class="settings-section-desc" style="margin:0 0 8px;">Live preview</p>
+                                        <div id="invoiceLivePreview" class="invoice-live-preview" style="border:1px solid var(--border);border-radius:12px;background:#fff;padding:14px;min-height:220px;font-size:11px;color:#1e293b;box-shadow:0 8px 24px rgba(15,23,42,0.06);"></div>
+                                        <p class="logo-upload-hint" style="margin-top:8px;">Preview is approximate. Generate a PDF to see the final document.</p>
                                     </div>
                                 </div>
-                                <div class="form-group" style="margin-top:8px;">
-                                    <label>Invoice title (optional)</label>
-                                    <input type="text" id="settingsInvoiceTitle" placeholder="e.g. Invoice, Tax Invoice, Quotation" maxlength="40" />
-                                    <p class="logo-upload-hint">Leave blank to use Invoice or Quotation automatically.</p>
-                                </div>
+                                <style>
+                                    @media (max-width: 800px) {
+                                        .inv-customize-grid { grid-template-columns: 1fr !important; }
+                                    }
+                                </style>
+
                                 <p class="settings-section-title" style="margin-top:18px;">Customer terms</p>
+
                                 <p class="settings-section-desc">Policies customers should know (cancellation, deposits, etc.).</p>
                                 <div class="form-group full-width">
                                     <textarea id="settingsTerms" rows="5" placeholder="Example:&#10;• Deposit may be required to confirm booking&#10;• Balance due on completion&#10;• 24-hour cancellation notice preferred"></textarea>
@@ -5409,6 +5439,62 @@
             if (n < 5000) return Math.round(n / 100) * 100;
             if (n < 50000) return Math.round(n / 500) * 500;
             return Math.round(n / 1000) * 1000;
+        }
+
+        
+        function getInvoiceOptionsFromForm() {
+            return {
+                logo: !(document.getElementById('invShowLogo') && !document.getElementById('invShowLogo').checked),
+                address: !(document.getElementById('invShowAddress') && !document.getElementById('invShowAddress').checked),
+                phone: !(document.getElementById('invShowPhone') && !document.getElementById('invShowPhone').checked),
+                email: !(document.getElementById('invShowEmail') && !document.getElementById('invShowEmail').checked),
+                website: true,
+                payment: !(document.getElementById('invShowPayment') && !document.getElementById('invShowPayment').checked),
+                terms: !(document.getElementById('invShowTerms') && !document.getElementById('invShowTerms').checked),
+                thankyou: !(document.getElementById('invShowThankyou') && !document.getElementById('invShowThankyou').checked)
+            };
+        }
+
+        function refreshInvoicePreview() {
+            var el = document.getElementById('invoiceLivePreview');
+            if (!el) return;
+            var name = (document.getElementById('settingsBusinessName') && document.getElementById('settingsBusinessName').value) || 'Your Business';
+            var tagline = (document.getElementById('settingsInvoiceTagline') && document.getElementById('settingsInvoiceTagline').value) || '';
+            var accent = (document.getElementById('settingsInvoiceAccentHex') && document.getElementById('settingsInvoiceAccentHex').value) || '#0f4fa8';
+            var tmpl = (document.getElementById('settingsInvoiceTemplate') && document.getElementById('settingsInvoiceTemplate').value) || 'classic';
+            var title = (document.getElementById('settingsInvoiceTitle') && document.getElementById('settingsInvoiceTitle').value) || 'INVOICE';
+            var opts = getInvoiceOptionsFromForm();
+            var phone = (document.getElementById('settingsPhone') && document.getElementById('settingsPhone').value) || '';
+            var email = (document.getElementById('settingsEmail') && document.getElementById('settingsEmail').value) || '';
+            var addr = (document.getElementById('settingsBusinessAddress') && document.getElementById('settingsBusinessAddress').value) || '';
+            var borderTop = tmpl === 'bold' ? '28px solid ' + accent : (tmpl === 'modern' ? 'none' : '3px solid ' + accent);
+            var padLeft = tmpl === 'modern' ? '10px' : '0';
+            var bar = tmpl === 'modern' ? '4px solid ' + accent : 'none';
+            var html = '';
+            html += '<div style="border-left:' + bar + ';padding-left:' + padLeft + ';border-top:' + borderTop + ';">';
+            if (tmpl === 'bold') html += '<div style="background:' + accent + ';color:#fff;margin:-14px -14px 10px;padding:10px 14px;border-radius:12px 12px 0 0;">';
+            html += '<div style="display:flex;justify-content:space-between;gap:8px;">';
+            html += '<div><div style="font-weight:800;font-size:13px;color:' + (tmpl === 'bold' ? '#fff' : accent) + ';">' + name.replace(/</g,'') + '</div>';
+            if (tagline) html += '<div style="opacity:0.75;margin-top:2px;">' + tagline.replace(/</g,'') + '</div>';
+            if (opts.phone && phone) html += '<div style="opacity:0.7;margin-top:2px;">' + phone.replace(/</g,'') + '</div>';
+            if (opts.email && email) html += '<div style="opacity:0.7;">' + email.replace(/</g,'') + '</div>';
+            html += '</div>';
+            html += '<div style="text-align:right;"><div style="font-weight:800;font-size:14px;color:' + (tmpl === 'bold' ? '#fff' : accent) + ';">' + title.replace(/</g,'') + '</div>';
+            html += '<div style="opacity:0.75;">#CC-000000</div><div style="opacity:0.75;">Sample preview</div></div></div>';
+            if (tmpl === 'bold') html += '</div>';
+            html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">';
+            html += '<div><div style="font-size:9px;font-weight:800;color:' + accent + ';">FROM</div><div style="font-weight:700;">' + name.replace(/</g,'') + '</div>';
+            if (opts.address && addr) html += '<div style="opacity:0.7;">' + addr.replace(/</g,'').substring(0,48) + '</div>';
+            html += '</div><div><div style="font-size:9px;font-weight:800;color:' + accent + ';">BILL TO</div><div style="font-weight:700;">Sample Client</div><div style="opacity:0.7;">Client address</div></div></div>';
+            html += '<div style="margin-top:10px;border-top:1px solid #e2e8f0;padding-top:6px;">';
+            html += '<div style="display:flex;justify-content:space-between;font-weight:700;color:#64748b;font-size:9px;"><span>SERVICE</span><span>AMOUNT</span></div>';
+            html += '<div style="display:flex;justify-content:space-between;margin-top:4px;"><span>Sample service</span><span>₦45,000</span></div></div>';
+            html += '<div style="margin-top:10px;text-align:right;"><span style="background:' + accent + ';color:#fff;padding:4px 10px;border-radius:6px;font-weight:800;">TOTAL DUE  ₦45,000</span></div>';
+            if (opts.payment) html += '<div style="margin-top:10px;font-size:10px;opacity:0.75;">Payment information (from your bank details)</div>';
+            if (opts.terms) html += '<div style="margin-top:6px;font-size:10px;opacity:0.75;">Terms & conditions</div>';
+            if (opts.thankyou) html += '<div style="margin-top:8px;font-style:italic;opacity:0.7;">Thank you for choosing ' + name.replace(/</g,'') + '.</div>';
+            html += '</div>';
+            el.innerHTML = html;
         }
 
         function openPricingCoach() {
@@ -7027,6 +7113,29 @@
                     try { var sel = document.getElementById('settingsInvoiceTemplate'); if (sel) sel.value = tmpl; } catch(eT) {}
                     set('settingsInvoiceTitle', invTitle);
                     try {
+                        var tagEl = document.getElementById('settingsInvoiceTagline');
+                        if (tagEl) tagEl.value = data.invoice_tagline || localStorage.getItem('cleancrew_invoice_tagline') || '';
+                    } catch (eTag) {}
+                    try {
+                        var opts = data.invoice_options || {};
+                        try { opts = Object.assign(opts, JSON.parse(localStorage.getItem('cleancrew_invoice_options') || '{}')); } catch (eO) {}
+                        function setChk(id, key, def) {
+                            var el = document.getElementById(id);
+                            if (!el) return;
+                            var v = opts[key];
+                            el.checked = v === undefined ? def : !!v;
+                        }
+                        setChk('invShowLogo', 'logo', true);
+                        setChk('invShowAddress', 'address', true);
+                        setChk('invShowPhone', 'phone', true);
+                        setChk('invShowEmail', 'email', true);
+                        setChk('invShowPayment', 'payment', true);
+                        setChk('invShowTerms', 'terms', true);
+                        setChk('invShowThankyou', 'thankyou', true);
+                    } catch (eOpts) {}
+                    try { refreshInvoicePreview(); } catch (ePrev) {}
+
+                    try {
                         var colorPick = document.getElementById('settingsInvoiceAccent');
                         if (colorPick) colorPick.oninput = function() {
                             var hx = document.getElementById('settingsInvoiceAccentHex');
@@ -7064,6 +7173,9 @@
                 invoice_accent: (function(){ var h=document.getElementById('settingsInvoiceAccentHex'); var c=document.getElementById('settingsInvoiceAccent'); var v=(h&&h.value)||(c&&c.value)||'#1a6ddb'; return /^#[0-9A-Fa-f]{6}$/.test(v)?v:'#1a6ddb'; })(),
                 invoice_template: (document.getElementById('settingsInvoiceTemplate') && document.getElementById('settingsInvoiceTemplate').value) || 'classic',
                 invoice_title: (document.getElementById('settingsInvoiceTitle') && document.getElementById('settingsInvoiceTitle').value.trim()) || '',
+                invoice_tagline: (document.getElementById('settingsInvoiceTagline') && document.getElementById('settingsInvoiceTagline').value.trim()) || '',
+                invoice_options: typeof getInvoiceOptionsFromForm === 'function' ? getInvoiceOptionsFromForm() : {},
+
 
                 // also keep a local copy so PDF can use terms even if DB column is missing
                 logo_url: (document.getElementById('settingsLogoUrl') && document.getElementById('settingsLogoUrl').value) || ''
@@ -7083,6 +7195,9 @@
                     try { localStorage.setItem('cleancrew_invoice_accent', payload.invoice_accent || '#1a6ddb'); } catch (eA) {}
                     try { localStorage.setItem('cleancrew_invoice_template', payload.invoice_template || 'classic'); } catch (eT) {}
                     try { localStorage.setItem('cleancrew_invoice_title', payload.invoice_title || ''); } catch (eI) {}
+                    try { localStorage.setItem('cleancrew_invoice_tagline', payload.invoice_tagline || ''); } catch (eTg) {}
+                    try { localStorage.setItem('cleancrew_invoice_options', JSON.stringify(payload.invoice_options || {})); } catch (eOp) {}
+                    try { refreshInvoicePreview(); } catch (eR) {}
                     showToast('Business profile saved', 'success');
                 } else {
                     var err = (data && data.error) || 'Failed to save settings';
@@ -7127,6 +7242,15 @@
             titleForPdf = (document.getElementById('settingsInvoiceTitle') && document.getElementById('settingsInvoiceTitle').value) ||
                 localStorage.getItem('cleancrew_invoice_title') || '';
         } catch (eStyle) {}
+        var taglineForPdf = '';
+        try {
+            taglineForPdf = (document.getElementById('settingsInvoiceTagline') && document.getElementById('settingsInvoiceTagline').value) ||
+                localStorage.getItem('cleancrew_invoice_tagline') || '';
+        } catch (eTg2) {}
+        var optionsForPdf = {};
+        try {
+            optionsForPdf = typeof getInvoiceOptionsFromForm === 'function' ? getInvoiceOptionsFromForm() : JSON.parse(localStorage.getItem('cleancrew_invoice_options') || '{}');
+        } catch (eOp2) {}
         const res = await fetch(API_URL + '/invoices/' + id + '/generate-pdf', {
             method: 'POST',
             headers: getHeaders(),
@@ -7135,7 +7259,9 @@
                 terms_and_conditions: termsForPdf,
                 invoice_accent: accentForPdf,
                 invoice_template: templateForPdf,
-                invoice_title: titleForPdf
+                invoice_title: titleForPdf,
+                invoice_tagline: taglineForPdf,
+                invoice_options: optionsForPdf
             })
         });
         const contentType = res.headers.get('content-type') || '';

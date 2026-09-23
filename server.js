@@ -5057,6 +5057,8 @@ app.post(
                 invoice_accent: body.invoice_accent != null ? String(body.invoice_accent).trim() : '#1a6ddb',
                 invoice_template: body.invoice_template != null ? String(body.invoice_template).trim() : 'classic',
                 invoice_title: body.invoice_title != null ? String(body.invoice_title).trim() : '',
+                invoice_tagline: body.invoice_tagline != null ? String(body.invoice_tagline).trim() : '',
+                invoice_options: body.invoice_options && typeof body.invoice_options === 'object' ? JSON.stringify(body.invoice_options) : '{}',
                 updated_at: new Date().toISOString()
             };
 
@@ -5097,6 +5099,8 @@ app.post(
                 if (/invoice_accent/i.test(error.message || '')) delete payload.invoice_accent;
                 if (/invoice_template/i.test(error.message || '')) delete payload.invoice_template;
                 if (/invoice_title/i.test(error.message || '')) delete payload.invoice_title;
+                if (/invoice_tagline/i.test(error.message || '')) delete payload.invoice_tagline;
+                if (/invoice_options/i.test(error.message || '')) delete payload.invoice_options;
                 const retry = existing.data && existing.data.id
                     ? await supabase.from('invoice_settings').update(payload).eq('user_id', userId).select().single()
                     : await supabase.from('invoice_settings').upsert(payload, { onConflict: 'user_id' }).select().single();
@@ -5232,674 +5236,424 @@ app.post(
                 }
             }
 
+            
             const {
                 jsPDF
             } = require('jspdf');
 
-            const doc =
-                new jsPDF();
+            const doc = new jsPDF();
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const margin = 18;
+            const contentW = pageWidth - margin * 2;
+            let y = margin;
 
-            const pageWidth =
-                doc.internal.pageSize.getWidth();
-
-            const margin = 20;
-
-            let y = 20;
-
-            const businessName =
-                settings?.business_name ||
-                'CleanCrew Laundry';
-
+            // ── Resolve business / invoice data (never invent) ──
+            const businessName = (settings && settings.business_name) || 'Your Business';
+            const tagline = String(
+                (req.body && req.body.invoice_tagline) ||
+                (settings && (settings.invoice_tagline || settings.tagline)) ||
+                ''
+            ).trim();
             const address =
                 (branchLocation && branchLocation.address) ||
-                settings?.business_address ||
+                (settings && settings.business_address) ||
                 '';
-
             const phone =
                 (branchLocation && branchLocation.phone) ||
-                settings?.phone ||
+                (settings && settings.phone) ||
                 '';
-
-            const email =
-                settings?.email ||
-                '';
-
-            // Prefer logo saved on settings; also accept body (client localStorage fallback)
+            const email = (settings && settings.email) || '';
+            const website = String(
+                (req.body && req.body.website) ||
+                (settings && settings.website) ||
+                ''
+            ).trim();
             const logoUrl =
                 (req.body && req.body.logo_url) ||
-                settings?.logo_url ||
+                (settings && settings.logo_url) ||
                 '';
 
-            // Soft page background (not plain white)
-            doc.setFillColor(245, 249, 255);
-            doc.rect(0, 0, pageWidth, doc.internal.pageSize.getHeight(), 'F');
+            const bankName = (settings && settings.bank_name) || '';
+            const accountName = (settings && settings.account_name) || '';
+            const accountNumber = (settings && settings.account_number) || '';
+            const paymentWhatsapp = (settings && settings.payment_whatsapp) || '';
 
-            // Top brand bar
-            doc.setFillColor(15, 79, 168);
-            doc.rect(0, 0, pageWidth, 28, 'F');
-            doc.setFillColor(14, 116, 144);
-            doc.rect(pageWidth * 0.55, 0, pageWidth * 0.45, 28, 'F');
+            const bodyOpts = (req.body && req.body.invoice_options) || {};
+            let setOpts = (settings && settings.invoice_options) || {};
+            if (typeof setOpts === 'string') {
+                try { setOpts = JSON.parse(setOpts); } catch (eSo) { setOpts = {}; }
+            }
+            if (!setOpts || typeof setOpts !== 'object') setOpts = {};
+            function optOn(key, def) {
+                if (bodyOpts[key] !== undefined) return !!bodyOpts[key];
+                if (typeof setOpts === 'object' && setOpts && setOpts[key] !== undefined) return !!setOpts[key];
+                // legacy bool columns
+                if (settings && settings['show_' + key] !== undefined && settings['show_' + key] !== null) {
+                    return !!settings['show_' + key];
+                }
+                return def;
+            }
+            const showLogo = optOn('logo', true);
+            const showAddress = optOn('address', true);
+            const showPhone = optOn('phone', true);
+            const showEmail = optOn('email', true);
+            const showWebsite = optOn('website', true);
+            const showPayment = optOn('payment', true);
+            const showTerms = optOn('terms', true);
+            const showThankYou = optOn('thankyou', true);
 
-            doc.setFontSize(11);
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(255, 255, 255);
-            doc.text(String(businessName).substring(0, 48), margin, 17);
+            const isQuote = invoice.doc_type === 'quotation' ||
+                String(invoice.status || '').toLowerCase() === 'quotation';
+            const docLabel = customTitle || (isQuote ? 'QUOTATION' : 'INVOICE');
+            const invoiceNumber = invoice.number || invoice.invoice_numb || invoice.id || '';
+            const invDate = invoice.date ? new Date(invoice.date) : (invoice.created_at ? new Date(invoice.created_at) : new Date());
+            const dueDate = invoice.due_date || invoice.valid_until || null;
+            const amountDue = Number(invoice.amount_due != null ? invoice.amount_due : invoice.amount) || 0;
+            const amountPaid = Number(invoice.amount_paid) || 0;
+            let statusRaw = String(invoice.status || 'unpaid').toLowerCase();
+            if (!isQuote) {
+                if (amountPaid <= 0) statusRaw = 'unpaid';
+                else if (amountDue > 0 && amountPaid >= amountDue) statusRaw = 'paid';
+                else if (amountPaid > 0) statusRaw = 'partial';
+            }
+            const statusLabel = isQuote
+                ? String(invoice.quote_status || invoice.status || 'draft').toUpperCase()
+                : statusRaw.toUpperCase();
 
-            y = 40;
+            function fmtDate(d) {
+                try {
+                    const dt = d instanceof Date ? d : new Date(d);
+                    if (isNaN(dt.getTime())) return '—';
+                    return dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                } catch (e) { return '—'; }
+            }
+            function fmtMoney(n) {
+                const v = Math.round(Number(n) || 0);
+                try {
+                    return 'NGN ' + v.toLocaleString('en-NG');
+                } catch (e) {
+                    return 'NGN ' + String(v);
+                }
+            }
+            // Prefer Naira symbol if possible in Helvetica
+            function money(n) {
+                const v = Math.round(Number(n) || 0);
+                return 'N' + v.toLocaleString('en-NG');
+            }
 
-            // HEADER card — logo left, name + contact stacked to the right (no overlap)
-            const logoSize = 28;
-            const headerTop = y;
-            let textX = margin;
+            function ensureSpace(need) {
+                if (y + need > pageHeight - 22) {
+                    doc.addPage();
+                    y = margin;
+                }
+            }
+
+            // White page — professional documents stay clean
+            doc.setFillColor(255, 255, 255);
+            doc.rect(0, 0, pageWidth, pageHeight, 'F');
+
+            // ════════ HEADER ════════
+            if (invoiceTemplate === 'bold') {
+                doc.setFillColor(accent.r, accent.g, accent.b);
+                doc.rect(0, 0, pageWidth, 48, 'F');
+                y = 14;
+            } else if (invoiceTemplate === 'modern') {
+                doc.setFillColor(accent.r, accent.g, accent.b);
+                doc.rect(0, 0, 4, pageHeight, 'F');
+                y = margin;
+            } else {
+                y = margin;
+            }
+
+            const headerIsDark = invoiceTemplate === 'bold';
+            const nameColor = headerIsDark ? [255, 255, 255] : [accent.r, accent.g, accent.b];
+            const mutedColor = headerIsDark ? [230, 235, 245] : [100, 110, 125];
+
+            // Logo + business (left)
+            let leftX = margin;
             let logoDrawn = false;
-
-            if (logoUrl) {
+            const logoSize = invoiceTemplate === 'minimal' ? 18 : 22;
+            if (showLogo && logoUrl) {
                 try {
                     let fmt = 'JPEG';
                     let b64 = null;
                     const raw = String(logoUrl).trim();
-
                     const dataMatch = raw.match(/^data:image\/([a-zA-Z0-9+.-]+);base64,([\s\S]+)$/i);
                     if (dataMatch) {
                         let kind = dataMatch[1].toLowerCase();
-                        if (kind === 'jpg' || kind === 'jpeg') fmt = 'JPEG';
-                        else if (kind === 'png') fmt = 'PNG';
-                        else if (kind.indexOf('jpeg') !== -1) fmt = 'JPEG';
-                        else if (kind === 'webp') throw new Error('WEBP not supported in PDF');
+                        if (kind === 'png') fmt = 'PNG';
                         else fmt = 'JPEG';
                         b64 = dataMatch[2].replace(/\s/g, '');
                     } else if (/^https?:\/\//i.test(raw)) {
                         const imgRes = await fetch(raw);
-                        if (!imgRes.ok) throw new Error('Logo URL fetch failed: ' + imgRes.status);
+                        if (!imgRes.ok) throw new Error('logo fetch');
                         const buf = Buffer.from(await imgRes.arrayBuffer());
                         b64 = buf.toString('base64');
-                        const ct = (imgRes.headers.get('content-type') || '').toLowerCase();
-                        if (ct.includes('png')) fmt = 'PNG';
-                        else fmt = 'JPEG';
-                    } else if (raw.length > 100) {
-                        b64 = raw.replace(/\s/g, '');
-                        fmt = 'JPEG';
+                        if (raw.toLowerCase().indexOf('.png') !== -1) fmt = 'PNG';
                     }
-
-                    if (!b64 || b64.length < 50) throw new Error('Logo data empty');
-
-                    doc.setFillColor(255, 255, 255);
-                    doc.roundedRect(margin - 1, headerTop - 2, logoSize + 2, logoSize + 2, 3, 3, 'F');
-                    try {
-                        doc.addImage(b64, fmt, margin, headerTop, logoSize, logoSize);
-                    } catch (e1) {
-                        const alt = fmt === 'PNG' ? 'JPEG' : 'PNG';
-                        doc.addImage(b64, alt, margin, headerTop, logoSize, logoSize);
+                    if (b64) {
+                        doc.addImage(b64, fmt, leftX, y, logoSize, logoSize);
+                        logoDrawn = true;
+                        leftX = margin + logoSize + 6;
                     }
-                    logoDrawn = true;
-                    textX = margin + logoSize + 8;
-                    console.log('Invoice logo embedded OK', fmt, b64.length);
                 } catch (logoErr) {
-                    console.warn('Invoice logo draw failed:', logoErr && logoErr.message ? logoErr.message : logoErr);
-                    textX = margin;
-                    logoDrawn = false;
+                    console.warn('Invoice logo skip', logoErr && logoErr.message);
                 }
             }
 
-
-            // Template: bold full-width header bar
-            if (invoiceTemplate === 'bold') {
-                doc.setFillColor(accent.r, accent.g, accent.b);
-                doc.rect(0, 0, pageWidth, 42, 'F');
-                doc.setTextColor(255, 255, 255);
-                y = 14;
-            } else if (invoiceTemplate === 'minimal') {
-                doc.setDrawColor(accent.r, accent.g, accent.b);
-                doc.setLineWidth(0.8);
-                doc.line(margin, 12, pageWidth - margin, 12);
-                y = 18;
-            }
-
-            // Business name beside logo
-            doc.setFontSize(invoiceTemplate === 'minimal' ? 16 : 18);
             doc.setFont('helvetica', 'bold');
-            if (invoiceTemplate === 'bold') {
-                doc.setTextColor(255, 255, 255);
-            } else {
-                doc.setTextColor(accent.r, accent.g, accent.b);
-            }
-            doc.text(String(businessName).substring(0, 40), textX, headerTop + 8);
+            doc.setFontSize(invoiceTemplate === 'minimal' ? 14 : 16);
+            doc.setTextColor(nameColor[0], nameColor[1], nameColor[2]);
+            doc.text(String(businessName).substring(0, 48), leftX, y + 7);
 
-            // Contact lines under the name (same column as name — never under the logo)
-            let infoY = headerTop + 16;
-            doc.setFontSize(9);
+            let metaY = y + 13;
             doc.setFont('helvetica', 'normal');
-            if (invoiceTemplate === 'bold') {
-                doc.setTextColor(240, 245, 255);
-            } else {
-                doc.setTextColor(90, 100, 120);
+            doc.setFontSize(8);
+            doc.setTextColor(mutedColor[0], mutedColor[1], mutedColor[2]);
+            if (tagline) {
+                doc.text(String(tagline).substring(0, 60), leftX, metaY);
+                metaY += 4.5;
             }
-
-            if (address) {
-                const addrLines = doc.splitTextToSize(String(address), pageWidth - textX - margin);
-                addrLines.forEach(function (line) {
-                    doc.text(line, textX, infoY);
-                    infoY += 5;
+            const contactBits = [];
+            if (showPhone && phone) contactBits.push(String(phone));
+            if (showEmail && email) contactBits.push(String(email));
+            if (showWebsite && website) contactBits.push(String(website));
+            if (contactBits.length) {
+                doc.text(contactBits.join('  ·  ').substring(0, 90), leftX, metaY);
+                metaY += 4.5;
+            }
+            if (showAddress && address) {
+                const addrLines = doc.splitTextToSize(String(address), contentW * 0.48);
+                addrLines.slice(0, 2).forEach(function (ln) {
+                    doc.text(ln, leftX, metaY);
+                    metaY += 4;
                 });
             }
-            if (phone) {
-                doc.text('Phone: ' + phone, textX, infoY);
-                infoY += 5;
-            }
-            if (email) {
-                doc.text('Email: ' + email, textX, infoY);
-                infoY += 5;
-            }
 
-            // Next content starts below whichever is taller: logo or text block
-            const blockBottom = logoDrawn
-                ? Math.max(headerTop + logoSize, infoY)
-                : infoY;
-            y = blockBottom + 10;
+            // Right: document meta
+            const rightX = pageWidth - margin;
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(18);
+            doc.setTextColor(nameColor[0], nameColor[1], nameColor[2]);
+            doc.text(String(docLabel).toUpperCase().substring(0, 24), rightX, y + 7, { align: 'right' });
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            doc.setTextColor(mutedColor[0], mutedColor[1], mutedColor[2]);
+            let ry = y + 14;
+            if (invoiceNumber) {
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(headerIsDark ? 255 : 40, headerIsDark ? 255 : 40, headerIsDark ? 255 : 50);
+                doc.text('#' + String(invoiceNumber).replace(/^#/, ''), rightX, ry, { align: 'right' });
+                ry += 5;
+            }
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(mutedColor[0], mutedColor[1], mutedColor[2]);
+            doc.text('Date: ' + fmtDate(invDate), rightX, ry, { align: 'right' });
+            ry += 5;
+            if (dueDate) {
+                doc.text((isQuote ? 'Valid until: ' : 'Due: ') + fmtDate(dueDate), rightX, ry, { align: 'right' });
+                ry += 5;
+            }
+            // Status pill
+            let stR = 100, stG = 100, stB = 100;
+            if (statusRaw === 'paid') { stR = 5; stG = 150; stB = 105; }
+            else if (statusRaw === 'partial') { stR = 37; stG = 99; stB = 235; }
+            else if (statusRaw === 'overdue') { stR = 220; stG = 38; stB = 38; }
+            else if (isQuote) { stR = 124; stG = 58; stB = 237; }
+            else { stR = 180; stG = 120; stB = 20; }
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(8);
+            doc.setTextColor(stR, stG, stB);
+            doc.text(statusLabel, rightX, ry, { align: 'right' });
+
+            y = Math.max(metaY, ry) + (invoiceTemplate === 'bold' ? 18 : 12);
             if (invoiceTemplate === 'bold') {
-                y = Math.max(y, 48);
-                doc.setTextColor(30, 30, 30);
+                y = Math.max(y, 56);
             }
 
+            // Divider
             if (invoiceTemplate !== 'bold') {
                 doc.setDrawColor(accent.r, accent.g, accent.b);
-                doc.setLineWidth(invoiceTemplate === 'minimal' ? 0.3 : 0.5);
+                doc.setLineWidth(invoiceTemplate === 'minimal' ? 0.4 : 0.7);
                 doc.line(margin, y, pageWidth - margin, y);
-                y += invoiceTemplate === 'minimal' ? 8 : 10;
+                y += 10;
             } else {
-                y += 8;
-            }
-
-            // INVOICE TITLE band
-            doc.setFillColor(Math.min(255, accent.r + 180), Math.min(255, accent.g + 180), Math.min(255, accent.b + 180));
-            doc.roundedRect(margin - 4, y - 6, pageWidth - margin * 2 + 8, 16, 2, 2, 'F');
-
-            doc.setFontSize(16);
-
-            doc.setFont(
-                'helvetica',
-                'bold'
-            );
-
-            doc.setTextColor(accent.r, accent.g, accent.b);
-
-            const docTitle = customTitle || (invoice.doc_type === 'quotation' || (invoice.status && String(invoice.status).toLowerCase() === 'quotation') ? 'QUOTATION' : 'INVOICE');
-            doc.text(
-                String(docTitle).toUpperCase().substring(0, 40),
-                margin,
-                y + 5
-            );
-            y += 8;
-
-            const invoiceNumber =
-                invoice.number ||
-                invoice.invoice_numb ||
-                `CC-${String(
-                    invoice.id
-                ).slice(0, 8)}`;
-
-            const invoiceDate =
-                new Date(
-                    invoice.date ||
-                    invoice.created_at
-                ).toLocaleDateString(
-                    'en-NG',
-                    {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric'
-                    }
-                );
-
-            doc.setFontSize(11);
-
-            doc.setFont(
-                'helvetica',
-                'normal'
-            );
-
-            doc.setTextColor(
-                51,
-                51,
-                51
-            );
-
-            doc.text(
-                `#${invoiceNumber}`,
-                pageWidth -
-                    margin -
-                    10,
-                y,
-                {
-                    align:
-                        'right'
-                }
-            );
-
-            y += 8;
-
-            doc.text(
-                `Date: ${invoiceDate}`,
-                pageWidth -
-                    margin -
-                    10,
-                y,
-                {
-                    align:
-                        'right'
-                }
-            );
-
-            y += 8;
-
-            const statusText =
-                invoice.status ||
-                'Unpaid';
-
-            const statusColor =
-                statusText === 'paid'
-                    ? '#16A34A'
-                    : statusText ===
-                      'pending'
-                    ? '#F0A421'
-                    : '#DC2626';
-
-            doc.setTextColor(
-                statusColor
-            );
-
-            doc.text(
-                `Status: ${statusText
-                    .charAt(0)
-                    .toUpperCase() +
-                    statusText.slice(
-                        1
-                    )}`,
-                pageWidth -
-                    margin -
-                    10,
-                y,
-                {
-                    align:
-                        'right'
-                }
-            );
-
-            y += 14;
-
-            // BILL TO
-            doc.setFontSize(11);
-
-            doc.setFont(
-                'helvetica',
-                'bold'
-            );
-
-            doc.setTextColor(
-                51,
-                51,
-                51
-            );
-
-            doc.text(
-                'BILL TO:',
-                margin,
-                y
-            );
-
-            y += 8;
-
-            doc.setFont(
-                'helvetica',
-                'normal'
-            );
-
-            doc.text(
-                invoice.client ||
-                    'Customer',
-                margin,
-                y
-            );
-
-            y += 6;
-
-            if (invoice.phone) {
-                doc.text(
-                    `Phone: ${invoice.phone}`,
-                    margin,
-                    y
-                );
-
                 y += 6;
             }
 
-            y += 8;
+            // ════════ FROM / BILL TO ════════
+            ensureSpace(36);
+            const colW = (contentW - 10) / 2;
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(8);
+            doc.setTextColor(accent.r, accent.g, accent.b);
+            doc.text('FROM', margin, y);
+            doc.text('BILL TO', margin + colW + 10, y);
+            y += 5;
 
-            // ITEMS TABLE
-            const col1 = margin;
-            const col2 = 110;
-            const col3 = 150;
-            const col4 = 175;
-
-            const rowHeight = 8;
-
-            doc.setFillColor(
-                240,
-                244,
-                248
-            );
-
-            doc.rect(
-                margin,
-                y - 4,
-                pageWidth -
-                    margin * 2,
-                rowHeight,
-                'F'
-            );
-
-            doc.setFont(
-                'helvetica',
-                'bold'
-            );
-
+            doc.setFont('helvetica', 'bold');
             doc.setFontSize(10);
+            doc.setTextColor(30, 35, 45);
+            doc.text(String(businessName).substring(0, 40), margin, y);
+            const clientName = String(invoice.client || invoice.client_name || 'Customer').substring(0, 40);
+            doc.text(clientName, margin + colW + 10, y);
+            y += 5;
 
-            doc.setTextColor(
-                51,
-                51,
-                51
-            );
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8);
+            doc.setTextColor(90, 100, 115);
+            let leftY = y;
+            let rightY = y;
+            if (showAddress && address) {
+                const lines = doc.splitTextToSize(String(address), colW);
+                lines.slice(0, 3).forEach(function (ln) {
+                    doc.text(ln, margin, leftY);
+                    leftY += 4;
+                });
+            }
+            if (showPhone && phone) { doc.text(String(phone), margin, leftY); leftY += 4; }
+            if (showEmail && email) { doc.text(String(email), margin, leftY); leftY += 4; }
 
-            doc.text(
-                'Description',
-                col1,
-                y
-            );
+            const clientPhone = invoice.phone || invoice.client_phone || '';
+            const clientEmail = invoice.client_email || invoice.email || '';
+            const clientAddr = invoice.client_address || invoice.address || '';
+            if (clientAddr) {
+                const lines = doc.splitTextToSize(String(clientAddr), colW);
+                lines.slice(0, 3).forEach(function (ln) {
+                    doc.text(ln, margin + colW + 10, rightY);
+                    rightY += 4;
+                });
+            }
+            if (clientPhone) { doc.text(String(clientPhone), margin + colW + 10, rightY); rightY += 4; }
+            if (clientEmail) { doc.text(String(clientEmail), margin + colW + 10, rightY); rightY += 4; }
 
-            doc.text(
-                'Qty',
-                col2,
-                y
-            );
+            y = Math.max(leftY, rightY) + 10;
 
-            doc.text(
-                'Price',
-                col3,
-                y
-            );
-
-            doc.text(
-                'Total',
-                col4,
-                y
-            );
-
-            y +=
-                rowHeight + 4;
-
-            const amount =
-                Number(
-                    invoice.amount ||
-                    invoice.amount_due ||
-                    0
-                );
-
+            // ════════ LINE ITEMS ════════
+            ensureSpace(40);
             let items = [];
-
-            const rawLines = invoice.line_items || invoice.items;
-            if (rawLines) {
-                try {
-                    items =
-                        typeof rawLines ===
-                        'string'
-                            ? JSON.parse(
-                                  rawLines
-                              )
-                            : rawLines;
-                } catch (e) {
-                    items = [];
-                }
+            if (Array.isArray(invoice.line_items) && invoice.line_items.length) {
+                items = invoice.line_items.map(function (it) {
+                    const qty = Number(it.qty != null ? it.qty : it.quantity) || 1;
+                    const rate = Number(it.rate != null ? it.rate : it.unit_price != null ? it.unit_price : it.amount) || 0;
+                    const amt = Number(it.amount != null ? it.amount : qty * rate) || 0;
+                    return {
+                        service: String(it.service || it.name || it.description || 'Service').substring(0, 48),
+                        desc: String(it.description || it.notes || '').substring(0, 48),
+                        qty: qty,
+                        rate: rate,
+                        amount: amt
+                    };
+                });
+            } else {
+                // Single line from invoice fields — no fabricated extras
+                items = [{
+                    service: String(invoice.service || invoice.description || (isQuote ? 'Quoted service' : 'Service')).substring(0, 48),
+                    desc: '',
+                    qty: 1,
+                    rate: amountDue,
+                    amount: amountDue
+                }];
             }
 
-            if (
-                !items ||
-                items.length === 0
-            ) {
-                items = [
-                    {
-                        name:
-                            invoice.service ||
-                            'Service',
-
-                        qty: 1,
-
-                        price:
-                            amount
-                    }
-                ];
-            }
-
-            doc.setFont(
-                'helvetica',
-                'normal'
+            // Table header
+            const rowH = 7;
+            doc.setFillColor(
+                Math.min(255, accent.r + 200),
+                Math.min(255, accent.g + 200),
+                Math.min(255, accent.b + 200)
             );
+            doc.roundedRect(margin, y - 4, contentW, rowH + 2, 1, 1, 'F');
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(8);
+            doc.setTextColor(50, 60, 75);
+            const c1 = margin + 2;
+            const c2 = margin + contentW * 0.38;
+            const c3 = margin + contentW * 0.62;
+            const c4 = margin + contentW * 0.74;
+            const c5 = margin + contentW - 2;
+            doc.text('SERVICE', c1, y + 1);
+            doc.text('DESCRIPTION', c2, y + 1);
+            doc.text('QTY', c3, y + 1);
+            doc.text('RATE', c4, y + 1);
+            doc.text('AMOUNT', c5, y + 1, { align: 'right' });
+            y += rowH + 3;
 
-            doc.setFontSize(10);
-
-            doc.setTextColor(
-                51,
-                51,
-                51
-            );
-
-            items.forEach(
-                (item) => {
-                    const itemName =
-                        item.name ||
-                        item.service ||
-                        'Service';
-
-                    const qty =
-                        Number(
-                            item.qty || 1
-                        );
-
-                    const price =
-                        Number(
-                            item.price ?? item.unit_price ??
-                                (
-                                    amount /
-                                    qty
-                                )
-                        );
-
-                    const total =
-                        qty * price;
-
-                    doc.text(
-                        String(
-                            itemName
-                        ).substring(
-                            0,
-                            30
-                        ),
-                        col1,
-                        y
-                    );
-
-                    doc.text(
-                        String(qty),
-                        col2,
-                        y
-                    );
-
-                    doc.text(
-                        `NGN ${price.toLocaleString()}`,
-                        col3,
-                        y
-                    );
-
-                    doc.text(
-                        `NGN ${total.toLocaleString()}`,
-                        col4,
-                        y
-                    );
-
-                    y += rowHeight;
-
-                    if (y > 260) {
-                        doc.addPage();
-                        y = 20;
-                    }
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            items.forEach(function (it, idx) {
+                ensureSpace(12);
+                if (idx % 2 === 1) {
+                    doc.setFillColor(248, 249, 251);
+                    doc.rect(margin, y - 4, contentW, rowH + 1, 'F');
                 }
-            );
+                doc.setTextColor(30, 35, 45);
+                doc.text(String(it.service).substring(0, 28), c1, y);
+                doc.setTextColor(110, 118, 130);
+                doc.text(String(it.desc || '—').substring(0, 22), c2, y);
+                doc.setTextColor(30, 35, 45);
+                doc.text(String(it.qty), c3, y);
+                doc.text(money(it.rate), c4, y);
+                doc.text(money(it.amount), c5, y, { align: 'right' });
+                y += rowH + 2;
+            });
 
             y += 4;
-
-            doc.setDrawColor(
-                200,
-                200,
-                200
-            );
-
-            doc.line(
-                margin,
-                y,
-                pageWidth -
-                    margin,
-                y
-            );
-
-            y += 6;
-
-            doc.setFont(
-                'helvetica',
-                'bold'
-            );
-
-            doc.setFontSize(12);
-
-            doc.setTextColor(
-                26,
-                109,
-                219
-            );
-
-            doc.text(
-                'TOTAL',
-                col3,
-                y
-            );
-
-            doc.text(
-                `NGN ${amount.toLocaleString()}`,
-                col4,
-                y
-            );
-
-            y += 16;
-
-            // PAYMENT INSTRUCTIONS
-            doc.setFont(
-                'helvetica',
-                'bold'
-            );
-
-            doc.setFontSize(12);
-
-            doc.setTextColor(
-                26,
-                109,
-                219
-            );
-
-            doc.text(
-                'Payment Instructions',
-                margin,
-                y
-            );
-
+            doc.setDrawColor(220, 225, 232);
+            doc.setLineWidth(0.3);
+            doc.line(margin + contentW * 0.55, y, pageWidth - margin, y);
             y += 8;
 
-            doc.setFont(
-                'helvetica',
-                'normal'
-            );
-
-            doc.setFontSize(10);
-
-            doc.setTextColor(
-                51,
-                51,
-                51
-            );
-
-            const bankName =
-                settings?.bank_name ||
-                '';
-
-            const accountName =
-                settings?.account_name ||
-                '';
-
-            const accountNumber =
-                settings?.account_number ||
-                '';
-
-            const paymentWhatsapp =
-                settings?.payment_whatsapp ||
-                '';
-
-            if (bankName) {
-                doc.text(
-                    `Bank: ${bankName}`,
-                    margin,
-                    y
-                );
-
-                y += 6;
-            }
-
-            if (accountName) {
-                doc.text(
-                    `Account Name: ${accountName}`,
-                    margin,
-                    y
-                );
-
-                y += 6;
-            }
-
-            if (accountNumber) {
-                doc.text(
-                    `Account Number: ${accountNumber}`,
-                    margin,
-                    y
-                );
-
-                y += 6;
-            }
-
-            doc.text(
-                `Reference: ${invoiceNumber}`,
-                margin,
-                y
-            );
-
+            // Totals
+            ensureSpace(28);
+            const totalsX = margin + contentW * 0.58;
+            const totalsValX = pageWidth - margin;
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            doc.setTextColor(90, 100, 115);
+            doc.text('Subtotal', totalsX, y);
+            doc.text(money(amountDue), totalsValX, y, { align: 'right' });
             y += 6;
+            if (amountPaid > 0 && amountPaid < amountDue) {
+                doc.text('Amount paid', totalsX, y);
+                doc.text(money(amountPaid), totalsValX, y, { align: 'right' });
+                y += 6;
+            }
+            // Total due box
+            ensureSpace(16);
+            doc.setFillColor(accent.r, accent.g, accent.b);
+            doc.roundedRect(totalsX - 4, y - 5, contentW * 0.42 + 4, 14, 2, 2, 'F');
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(10);
+            doc.setTextColor(255, 255, 255);
+            const totalLabel = isQuote ? 'QUOTE TOTAL' : (statusRaw === 'paid' ? 'TOTAL PAID' : 'TOTAL DUE');
+            const totalVal = statusRaw === 'paid' ? amountDue : Math.max(amountDue - amountPaid, 0);
+            doc.text(totalLabel, totalsX, y + 3);
+            doc.text(money(statusRaw === 'paid' ? amountDue : (amountPaid > 0 ? totalVal : amountDue)), totalsValX, y + 3, { align: 'right' });
+            y += 18;
 
-            if (paymentWhatsapp) {
-                doc.text(
-                    `After payment, send proof to: ${paymentWhatsapp}`,
-                    margin,
-                    y
-                );
-
-                y += 10;
+            // ════════ PAYMENT INFO ════════
+            if (showPayment && (bankName || accountName || accountNumber || paymentWhatsapp)) {
+                ensureSpace(32);
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(9);
+                doc.setTextColor(accent.r, accent.g, accent.b);
+                doc.text('PAYMENT INFORMATION', margin, y);
+                y += 6;
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(9);
+                doc.setTextColor(40, 45, 55);
+                if (accountName) { doc.text('Account name: ' + accountName, margin, y); y += 5; }
+                if (bankName) { doc.text('Bank: ' + bankName, margin, y); y += 5; }
+                if (accountNumber) { doc.text('Account number: ' + accountNumber, margin, y); y += 5; }
+                if (invoiceNumber) { doc.text('Payment reference: ' + String(invoiceNumber), margin, y); y += 5; }
+                if (paymentWhatsapp) { doc.text('Send payment proof to: ' + paymentWhatsapp, margin, y); y += 5; }
+                y += 4;
             }
 
-            // TERMS & CONDITIONS (settings, or body fallback from dashboard)
+            // ════════ TERMS ════════
             const bodyTerms = (req.body && (req.body.terms_and_conditions || req.body.terms))
                 ? String(req.body.terms_and_conditions || req.body.terms).trim()
                 : '';
@@ -5908,78 +5662,47 @@ app.post(
                 bodyTerms ||
                 ''
             ).toString().trim();
-
-            if (termsRaw) {
-                y += 8;
-                if (y > 240) {
-                    doc.addPage();
-                    y = 20;
-                }
+            if (showTerms && termsRaw) {
+                ensureSpace(28);
                 doc.setFont('helvetica', 'bold');
-                doc.setFontSize(11);
-                doc.setTextColor(accent.r, accent.g, accent.b);
-                doc.text('Payment & Service Terms', margin, y);
-                y += 7;
-                doc.setFont('helvetica', 'normal');
                 doc.setFontSize(9);
-                doc.setTextColor(51, 51, 51);
-                const termsLines = termsRaw
-                    .split(/\r?\n/)
-                    .map(function (line) { return String(line || '').trim(); })
-                    .filter(Boolean);
-                if (!termsLines.length) {
-                    // single paragraph without newlines
-                    const wrappedOne = doc.splitTextToSize(termsRaw, pageWidth - margin * 2);
-                    wrappedOne.forEach(function (wline) {
-                        if (y > 265) {
-                            doc.addPage();
-                            y = 20;
-                        }
+                doc.setTextColor(accent.r, accent.g, accent.b);
+                doc.text('TERMS & CONDITIONS', margin, y);
+                y += 5;
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(8);
+                doc.setTextColor(80, 90, 100);
+                const termsLines = termsRaw.split(/\r?\n/).map(function (l) { return String(l || '').trim(); }).filter(Boolean);
+                const blocks = termsLines.length ? termsLines : [termsRaw];
+                blocks.forEach(function (line) {
+                    const wrapped = doc.splitTextToSize(line, contentW);
+                    wrapped.forEach(function (wline) {
+                        ensureSpace(6);
                         doc.text(wline, margin, y);
-                        y += 5;
+                        y += 4;
                     });
-                } else {
-                    termsLines.forEach(function (line) {
-                        const wrapped = doc.splitTextToSize(line, pageWidth - margin * 2);
-                        wrapped.forEach(function (wline) {
-                            if (y > 265) {
-                                doc.addPage();
-                                y = 20;
-                            }
-                            doc.text(wline, margin, y);
-                            y += 5;
-                        });
-                        y += 1;
-                    });
-                }
+                    y += 1;
+                });
+                y += 4;
+            }
+
+            // ════════ FOOTER ════════
+            ensureSpace(16);
+            if (showThankYou) {
+                doc.setFont('helvetica', 'italic');
+                doc.setFontSize(9);
+                doc.setTextColor(70, 80, 95);
+                doc.text('Thank you for choosing ' + String(businessName).substring(0, 40) + '.', margin, y);
                 y += 8;
             }
-
-            // FOOTER — place after content (not a fixed Y that can cover terms)
-            if (y > 265) {
-                doc.addPage();
-                y = 20;
-            }
-            const footerY = Math.min(Math.max(y + 6, 40), 280);
-
-            doc.setFontSize(9);
-            doc.setTextColor(150, 150, 150);
-            doc.setFont('helvetica', 'italic');
-            doc.text(
-                'Thank you for choosing ' + businessName + '!',
-                margin,
-                footerY
-            );
+            // Subtle CleanCrew credit — secondary, not brand takeover
             doc.setFont('helvetica', 'normal');
-            doc.setFontSize(8);
-            doc.setTextColor(180, 180, 180);
-            doc.text(
-                'Powered by CleanCrew — cleancrewapp.com',
-                margin,
-                footerY + 6
-            );
+            doc.setFontSize(7);
+            doc.setTextColor(170, 175, 185);
+            doc.text('Document generated with CleanCrew', margin, Math.min(y + 4, pageHeight - 12));
 
             const pdfBuffer =
+
                 doc.output(
                     'arraybuffer'
                 );
