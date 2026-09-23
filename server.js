@@ -5339,7 +5339,7 @@ app.post(
             // Prefer Naira symbol if possible in Helvetica
             function money(n) {
                 const v = Math.round(Number(n) || 0);
-                return 'N' + v.toLocaleString('en-NG');
+                return 'NGN ' + v.toLocaleString('en-NG');
             }
 
             function ensureSpace(need) {
@@ -5349,31 +5349,27 @@ app.post(
                 }
             }
 
+
             // White page — professional documents stay clean
             doc.setFillColor(255, 255, 255);
             doc.rect(0, 0, pageWidth, pageHeight, 'F');
 
-            // ════════ HEADER ════════
+            const headerIsDark = invoiceTemplate === 'bold';
             if (invoiceTemplate === 'bold') {
                 doc.setFillColor(accent.r, accent.g, accent.b);
-                doc.rect(0, 0, pageWidth, 48, 'F');
-                y = 14;
+                doc.rect(0, 0, pageWidth, 52, 'F');
             } else if (invoiceTemplate === 'modern') {
                 doc.setFillColor(accent.r, accent.g, accent.b);
-                doc.rect(0, 0, 4, pageHeight, 'F');
-                y = margin;
-            } else {
-                y = margin;
+                doc.rect(0, 0, 5, pageHeight, 'F');
             }
 
-            const headerIsDark = invoiceTemplate === 'bold';
-            const nameColor = headerIsDark ? [255, 255, 255] : [accent.r, accent.g, accent.b];
-            const mutedColor = headerIsDark ? [230, 235, 245] : [100, 110, 125];
+            // ── Top row: brand left | document meta right ──
+            let cursorY = 16;
+            if (invoiceTemplate === 'modern') cursorY = 16;
 
-            // Logo + business (left)
-            let leftX = margin;
-            let logoDrawn = false;
-            const logoSize = invoiceTemplate === 'minimal' ? 18 : 22;
+            // Logo
+            let brandX = margin;
+            const logoSize = 20;
             if (showLogo && logoUrl) {
                 try {
                     let fmt = 'JPEG';
@@ -5381,107 +5377,117 @@ app.post(
                     const raw = String(logoUrl).trim();
                     const dataMatch = raw.match(/^data:image\/([a-zA-Z0-9+.-]+);base64,([\s\S]+)$/i);
                     if (dataMatch) {
-                        let kind = dataMatch[1].toLowerCase();
-                        if (kind === 'png') fmt = 'PNG';
-                        else fmt = 'JPEG';
+                        if (String(dataMatch[1]).toLowerCase().indexOf('png') !== -1) fmt = 'PNG';
                         b64 = dataMatch[2].replace(/\s/g, '');
                     } else if (/^https?:\/\//i.test(raw)) {
                         const imgRes = await fetch(raw);
-                        if (!imgRes.ok) throw new Error('logo fetch');
-                        const buf = Buffer.from(await imgRes.arrayBuffer());
-                        b64 = buf.toString('base64');
-                        if (raw.toLowerCase().indexOf('.png') !== -1) fmt = 'PNG';
+                        if (imgRes.ok) {
+                            const buf = Buffer.from(await imgRes.arrayBuffer());
+                            b64 = buf.toString('base64');
+                            if (raw.toLowerCase().indexOf('.png') !== -1) fmt = 'PNG';
+                        }
                     }
                     if (b64) {
-                        doc.addImage(b64, fmt, leftX, y, logoSize, logoSize);
-                        logoDrawn = true;
-                        leftX = margin + logoSize + 6;
+                        doc.addImage(b64, fmt, brandX, cursorY, logoSize, logoSize);
+                        brandX = margin + logoSize + 7;
                     }
                 } catch (logoErr) {
                     console.warn('Invoice logo skip', logoErr && logoErr.message);
                 }
             }
 
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(invoiceTemplate === 'minimal' ? 14 : 16);
-            doc.setTextColor(nameColor[0], nameColor[1], nameColor[2]);
-            doc.text(String(businessName).substring(0, 48), leftX, y + 7);
+            const textOnDark = headerIsDark;
+            const primaryR = textOnDark ? 255 : accent.r;
+            const primaryG = textOnDark ? 255 : accent.g;
+            const primaryB = textOnDark ? 255 : accent.b;
+            const bodyR = textOnDark ? 235 : 55;
+            const bodyG = textOnDark ? 240 : 65;
+            const bodyB = textOnDark ? 250 : 80;
 
-            let metaY = y + 13;
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(15);
+            doc.setTextColor(primaryR, primaryG, primaryB);
+            doc.text(String(businessName).substring(0, 42), brandX, cursorY + 7);
+
+            let leftMetaY = cursorY + 13;
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(8);
-            doc.setTextColor(mutedColor[0], mutedColor[1], mutedColor[2]);
+            doc.setTextColor(bodyR, bodyG, bodyB);
             if (tagline) {
-                doc.text(String(tagline).substring(0, 60), leftX, metaY);
-                metaY += 4.5;
+                doc.text(String(tagline).substring(0, 55), brandX, leftMetaY);
+                leftMetaY += 4.5;
             }
-            const contactBits = [];
-            if (showPhone && phone) contactBits.push(String(phone));
-            if (showEmail && email) contactBits.push(String(email));
-            if (showWebsite && website) contactBits.push(String(website));
-            if (contactBits.length) {
-                doc.text(contactBits.join('  ·  ').substring(0, 90), leftX, metaY);
-                metaY += 4.5;
+            const contactLine = [];
+            if (showPhone && phone) contactLine.push(String(phone));
+            if (showEmail && email) contactLine.push(String(email));
+            if (showWebsite && website) contactLine.push(String(website));
+            if (contactLine.length) {
+                doc.text(contactLine.join('  ·  ').substring(0, 85), brandX, leftMetaY);
+                leftMetaY += 4.5;
             }
             if (showAddress && address) {
-                const addrLines = doc.splitTextToSize(String(address), contentW * 0.48);
+                const addrLines = doc.splitTextToSize(String(address), contentW * 0.5);
                 addrLines.slice(0, 2).forEach(function (ln) {
-                    doc.text(ln, leftX, metaY);
-                    metaY += 4;
+                    doc.text(ln, brandX, leftMetaY);
+                    leftMetaY += 4;
                 });
             }
 
-            // Right: document meta
-            const rightX = pageWidth - margin;
+            // Right meta block — always visible
+            const rightEdge = pageWidth - margin;
             doc.setFont('helvetica', 'bold');
-            doc.setFontSize(18);
-            doc.setTextColor(nameColor[0], nameColor[1], nameColor[2]);
-            doc.text(String(docLabel).toUpperCase().substring(0, 24), rightX, y + 7, { align: 'right' });
+            doc.setFontSize(16);
+            doc.setTextColor(primaryR, primaryG, primaryB);
+            doc.text(String(docLabel).toUpperCase().substring(0, 22), rightEdge, cursorY + 7, { align: 'right' });
 
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(9);
-            doc.setTextColor(mutedColor[0], mutedColor[1], mutedColor[2]);
-            let ry = y + 14;
+            let rightMetaY = cursorY + 14;
+            doc.setFontSize(10);
+            doc.setTextColor(textOnDark ? 255 : 30, textOnDark ? 255 : 35, textOnDark ? 255 : 45);
             if (invoiceNumber) {
                 doc.setFont('helvetica', 'bold');
-                doc.setTextColor(headerIsDark ? 255 : 40, headerIsDark ? 255 : 40, headerIsDark ? 255 : 50);
-                doc.text('#' + String(invoiceNumber).replace(/^#/, ''), rightX, ry, { align: 'right' });
-                ry += 5;
+                doc.text('#' + String(invoiceNumber).replace(/^#/, ''), rightEdge, rightMetaY, { align: 'right' });
+                rightMetaY += 5.5;
             }
             doc.setFont('helvetica', 'normal');
-            doc.setTextColor(mutedColor[0], mutedColor[1], mutedColor[2]);
-            doc.text('Date: ' + fmtDate(invDate), rightX, ry, { align: 'right' });
-            ry += 5;
+            doc.setFontSize(9);
+            doc.setTextColor(bodyR, bodyG, bodyB);
+            doc.text('Invoice date: ' + fmtDate(invDate), rightEdge, rightMetaY, { align: 'right' });
+            rightMetaY += 5;
             if (dueDate) {
-                doc.text((isQuote ? 'Valid until: ' : 'Due: ') + fmtDate(dueDate), rightX, ry, { align: 'right' });
-                ry += 5;
+                doc.text((isQuote ? 'Valid until: ' : 'Due date: ') + fmtDate(dueDate), rightEdge, rightMetaY, { align: 'right' });
+                rightMetaY += 5;
             }
-            // Status pill
-            let stR = 100, stG = 100, stB = 100;
-            if (statusRaw === 'paid') { stR = 5; stG = 150; stB = 105; }
-            else if (statusRaw === 'partial') { stR = 37; stG = 99; stB = 235; }
-            else if (statusRaw === 'overdue') { stR = 220; stG = 38; stB = 38; }
-            else if (isQuote) { stR = 124; stG = 58; stB = 237; }
-            else { stR = 180; stG = 120; stB = 20; }
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(8);
-            doc.setTextColor(stR, stG, stB);
-            doc.text(statusLabel, rightX, ry, { align: 'right' });
-
-            y = Math.max(metaY, ry) + (invoiceTemplate === 'bold' ? 18 : 12);
-            if (invoiceTemplate === 'bold') {
-                y = Math.max(y, 56);
-            }
-
-            // Divider
-            if (invoiceTemplate !== 'bold') {
-                doc.setDrawColor(accent.r, accent.g, accent.b);
-                doc.setLineWidth(invoiceTemplate === 'minimal' ? 0.4 : 0.7);
-                doc.line(margin, y, pageWidth - margin, y);
-                y += 10;
+            // Status
+            let stR = 120, stG = 120, stB = 120;
+            if (statusRaw === 'paid') { stR = 5; stG = 140; stB = 90; }
+            else if (statusRaw === 'partial') { stR = 30; stG = 90; stB = 200; }
+            else if (statusRaw === 'overdue') { stR = 200; stG = 40; stB = 40; }
+            else if (isQuote) { stR = 110; stG = 50; stB = 200; }
+            else { stR = 160; stG = 110; stB = 20; }
+            if (textOnDark) {
+                // keep status readable on bold bar
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(9);
+                doc.setTextColor(255, 255, 255);
+                doc.text('Status: ' + statusLabel, rightEdge, rightMetaY, { align: 'right' });
             } else {
-                y += 6;
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(9);
+                doc.setTextColor(stR, stG, stB);
+                doc.text(statusLabel, rightEdge, rightMetaY, { align: 'right' });
             }
+            rightMetaY += 4;
+
+            y = Math.max(leftMetaY, rightMetaY, cursorY + logoSize) + 8;
+            if (invoiceTemplate === 'bold') {
+                y = Math.max(y, 58);
+            }
+
+            // Accent rule under header
+            doc.setDrawColor(accent.r, accent.g, accent.b);
+            doc.setLineWidth(invoiceTemplate === 'minimal' ? 0.4 : 1.0);
+            doc.line(margin, y, pageWidth - margin, y);
+            y += 12;
 
             // ════════ FROM / BILL TO ════════
             ensureSpace(36);
@@ -5549,9 +5555,15 @@ app.post(
                 });
             } else {
                 // Single line from invoice fields — no fabricated extras
+                const svcLabel = String(
+                    invoice.service ||
+                    invoice.description ||
+                    invoice.notes ||
+                    (isQuote ? 'Quoted work' : 'Professional service')
+                ).trim() || 'Professional service';
                 items = [{
-                    service: String(invoice.service || invoice.description || (isQuote ? 'Quoted service' : 'Service')).substring(0, 48),
-                    desc: '',
+                    service: svcLabel.substring(0, 48),
+                    desc: String(invoice.description && invoice.service ? invoice.description : '').substring(0, 48),
                     qty: 1,
                     rate: amountDue,
                     amount: amountDue
