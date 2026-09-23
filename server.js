@@ -5633,18 +5633,23 @@ app.post(
                 doc.text(money(amountPaid), totalsValX, y, { align: 'right' });
                 y += 6;
             }
-            // Total due box
-            ensureSpace(16);
+            // Total due box — keep label + amount inside with padding
+            ensureSpace(18);
+            const totalLabel = isQuote ? 'QUOTE TOTAL' : (statusRaw === 'paid' ? 'TOTAL PAID' : 'TOTAL DUE');
+            const totalVal = statusRaw === 'paid' ? amountDue : Math.max(amountDue - amountPaid, 0);
+            const totalText = money(statusRaw === 'paid' ? amountDue : (amountPaid > 0 ? totalVal : amountDue));
+            const boxX = totalsX - 4;
+            const boxW = (pageWidth - margin) - boxX; // flush to right margin
+            const boxH = 16;
             doc.setFillColor(accent.r, accent.g, accent.b);
-            doc.roundedRect(totalsX - 4, y - 5, contentW * 0.42 + 4, 14, 2, 2, 'F');
+            doc.roundedRect(boxX, y - 5, boxW, boxH, 2, 2, 'F');
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(10);
             doc.setTextColor(255, 255, 255);
-            const totalLabel = isQuote ? 'QUOTE TOTAL' : (statusRaw === 'paid' ? 'TOTAL PAID' : 'TOTAL DUE');
-            const totalVal = statusRaw === 'paid' ? amountDue : Math.max(amountDue - amountPaid, 0);
-            doc.text(totalLabel, totalsX, y + 3);
-            doc.text(money(statusRaw === 'paid' ? amountDue : (amountPaid > 0 ? totalVal : amountDue)), totalsValX, y + 3, { align: 'right' });
-            y += 18;
+            const pad = 8;
+            doc.text(totalLabel, boxX + pad, y + 4);
+            doc.text(totalText, boxX + boxW - pad, y + 4, { align: 'right' });
+            y += 20;
 
             // ════════ PAYMENT INFO ════════
             if (showPayment && (bankName || accountName || accountNumber || paymentWhatsapp)) {
