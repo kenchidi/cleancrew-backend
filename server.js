@@ -5134,17 +5134,30 @@ app.post(
 app.get('/api/public/invoice/:id', async (req, res) => {
     try {
         const id = String(req.params.id || '').trim();
-        if (!id || id.length < 10) {
+        // Accept UUID form only (avoids PostgREST errors on garbage ids)
+        const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        if (!uuidRe.test(id)) {
             return res.status(400).json({ error: 'Invalid invoice link' });
         }
 
-        const { data: invoice, error } = await supabase
+        // select * so missing optional columns never break the public link
+        let invoice = null;
+        let error = null;
+        const full = await supabase
             .from('invoices')
-            .select('id, pdf_url, number, invoice_numb, client, amount, amount_due, status, doc_type, date')
+            .select('*')
             .eq('id', id)
             .maybeSingle();
+        error = full.error;
+        invoice = full.data;
 
-        if (error) throw error;
+        if (error) {
+            console.error('Public invoice query error:', error.message || error);
+            return res.status(500).json({
+                error: 'Could not open invoice',
+                details: error.message || String(error)
+            });
+        }
         if (!invoice) {
             return res.status(404).json({ error: 'Invoice not found' });
         }
@@ -5154,25 +5167,29 @@ app.get('/api/public/invoice/:id', async (req, res) => {
             });
         }
 
-        // JSON for the cleancrewapp.com viewer page
         if (String(req.query.format || '') === 'json') {
+            const amount =
+                invoice.amount_due != null ? invoice.amount_due :
+                (invoice.amount != null ? invoice.amount : null);
             return res.json({
                 id: invoice.id,
                 pdf_url: invoice.pdf_url,
                 number: invoice.number || invoice.invoice_numb || '',
                 client: invoice.client || '',
-                amount: invoice.amount_due != null ? invoice.amount_due : invoice.amount,
+                amount: amount,
                 status: invoice.status || '',
                 doc_type: invoice.doc_type || 'invoice',
-                date: invoice.date || null
+                date: invoice.date || invoice.created_at || null
             });
         }
 
-        // Default: send customer straight to the PDF
         return res.redirect(302, invoice.pdf_url);
     } catch (err) {
         console.error('Public invoice error:', err);
-        return res.status(500).json({ error: 'Could not open invoice' });
+        return res.status(500).json({
+            error: 'Could not open invoice',
+            details: err && err.message ? err.message : String(err)
+        });
     }
 });
 
