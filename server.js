@@ -5054,6 +5054,9 @@ app.post(
                 payment_whatsapp: body.payment_whatsapp != null ? String(body.payment_whatsapp).trim() : '',
                 terms_and_conditions: body.terms_and_conditions != null ? String(body.terms_and_conditions).trim() : '',
                 logo_url: body.logo_url != null ? String(body.logo_url).trim() : '',
+                invoice_accent: body.invoice_accent != null ? String(body.invoice_accent).trim() : '#1a6ddb',
+                invoice_template: body.invoice_template != null ? String(body.invoice_template).trim() : 'classic',
+                invoice_title: body.invoice_title != null ? String(body.invoice_title).trim() : '',
                 updated_at: new Date().toISOString()
             };
 
@@ -5088,9 +5091,12 @@ app.post(
                 error = inserted.error;
             }
 
-            if (error && /logo_url|terms_and_conditions|column/i.test(error.message || '')) {
+            if (error && /logo_url|terms_and_conditions|invoice_accent|invoice_template|invoice_title|column/i.test(error.message || '')) {
                 if (/logo_url/i.test(error.message || '')) delete payload.logo_url;
                 if (/terms_and_conditions/i.test(error.message || '')) delete payload.terms_and_conditions;
+                if (/invoice_accent/i.test(error.message || '')) delete payload.invoice_accent;
+                if (/invoice_template/i.test(error.message || '')) delete payload.invoice_template;
+                if (/invoice_title/i.test(error.message || '')) delete payload.invoice_title;
                 const retry = existing.data && existing.data.id
                     ? await supabase.from('invoice_settings').update(payload).eq('user_id', userId).select().single()
                     : await supabase.from('invoice_settings').upsert(payload, { onConflict: 'user_id' }).select().single();
@@ -5173,6 +5179,34 @@ app.post(
             if (settingsError) {
                 throw settingsError;
             }
+
+            function hexToRgb(hex) {
+                const h = String(hex || '').replace('#', '').trim();
+                if (h.length === 6 && /^[0-9a-fA-F]+$/.test(h)) {
+                    return {
+                        r: parseInt(h.slice(0, 2), 16),
+                        g: parseInt(h.slice(2, 4), 16),
+                        b: parseInt(h.slice(4, 6), 16)
+                    };
+                }
+                return { r: 26, g: 109, b: 219 };
+            }
+            const invoiceTemplate = String(
+                (req.body && req.body.invoice_template) ||
+                (settings && settings.invoice_template) ||
+                'classic'
+            ).toLowerCase();
+            const accentHex = String(
+                (req.body && req.body.invoice_accent) ||
+                (settings && (settings.invoice_accent || settings.accent_color)) ||
+                '#1a6ddb'
+            );
+            const accent = hexToRgb(accentHex);
+            const customTitle = String(
+                (req.body && req.body.invoice_title) ||
+                (settings && settings.invoice_title) ||
+                ''
+            ).trim();
 
             // Branch contact from job location when set
             let branchLocation = null;
@@ -5307,17 +5341,39 @@ app.post(
                 }
             }
 
+
+            // Template: bold full-width header bar
+            if (invoiceTemplate === 'bold') {
+                doc.setFillColor(accent.r, accent.g, accent.b);
+                doc.rect(0, 0, pageWidth, 42, 'F');
+                doc.setTextColor(255, 255, 255);
+                y = 14;
+            } else if (invoiceTemplate === 'minimal') {
+                doc.setDrawColor(accent.r, accent.g, accent.b);
+                doc.setLineWidth(0.8);
+                doc.line(margin, 12, pageWidth - margin, 12);
+                y = 18;
+            }
+
             // Business name beside logo
-            doc.setFontSize(18);
+            doc.setFontSize(invoiceTemplate === 'minimal' ? 16 : 18);
             doc.setFont('helvetica', 'bold');
-            doc.setTextColor(15, 79, 168);
+            if (invoiceTemplate === 'bold') {
+                doc.setTextColor(255, 255, 255);
+            } else {
+                doc.setTextColor(accent.r, accent.g, accent.b);
+            }
             doc.text(String(businessName).substring(0, 40), textX, headerTop + 8);
 
             // Contact lines under the name (same column as name — never under the logo)
             let infoY = headerTop + 16;
             doc.setFontSize(9);
             doc.setFont('helvetica', 'normal');
-            doc.setTextColor(90, 100, 120);
+            if (invoiceTemplate === 'bold') {
+                doc.setTextColor(240, 245, 255);
+            } else {
+                doc.setTextColor(90, 100, 120);
+            }
 
             if (address) {
                 const addrLines = doc.splitTextToSize(String(address), pageWidth - textX - margin);
@@ -5340,14 +5396,22 @@ app.post(
                 ? Math.max(headerTop + logoSize, infoY)
                 : infoY;
             y = blockBottom + 10;
+            if (invoiceTemplate === 'bold') {
+                y = Math.max(y, 48);
+                doc.setTextColor(30, 30, 30);
+            }
 
-            doc.setDrawColor(26, 109, 219);
-            doc.setLineWidth(0.5);
-            doc.line(margin, y, pageWidth - margin, y);
-            y += 10;
+            if (invoiceTemplate !== 'bold') {
+                doc.setDrawColor(accent.r, accent.g, accent.b);
+                doc.setLineWidth(invoiceTemplate === 'minimal' ? 0.3 : 0.5);
+                doc.line(margin, y, pageWidth - margin, y);
+                y += invoiceTemplate === 'minimal' ? 8 : 10;
+            } else {
+                y += 8;
+            }
 
             // INVOICE TITLE band
-            doc.setFillColor(235, 243, 254);
+            doc.setFillColor(Math.min(255, accent.r + 180), Math.min(255, accent.g + 180), Math.min(255, accent.b + 180));
             doc.roundedRect(margin - 4, y - 6, pageWidth - margin * 2 + 8, 16, 2, 2, 'F');
 
             doc.setFontSize(16);
@@ -5357,14 +5421,11 @@ app.post(
                 'bold'
             );
 
-            doc.setTextColor(
-                15,
-                79,
-                168
-            );
+            doc.setTextColor(accent.r, accent.g, accent.b);
 
+            const docTitle = customTitle || (invoice.doc_type === 'quotation' || (invoice.status && String(invoice.status).toLowerCase() === 'quotation') ? 'QUOTATION' : 'INVOICE');
             doc.text(
-                'INVOICE',
+                String(docTitle).toUpperCase().substring(0, 40),
                 margin,
                 y + 5
             );
@@ -5856,7 +5917,7 @@ app.post(
                 }
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(11);
-                doc.setTextColor(26, 109, 219);
+                doc.setTextColor(accent.r, accent.g, accent.b);
                 doc.text('Payment & Service Terms', margin, y);
                 y += 7;
                 doc.setFont('helvetica', 'normal');

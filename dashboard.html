@@ -4465,6 +4465,31 @@
                                     <label>WhatsApp number</label>
                                     <input type="text" id="settingsPaymentWhatsapp" placeholder="e.g. 080-123-4567" />
                                 </div>
+
+                                <p class="settings-section-title" style="margin-top:18px;">Invoice look</p>
+                                <p class="settings-section-desc">Colour and layout for PDF invoices and quotations. Keep it simple — your clients still need to read amounts clearly.</p>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>Accent colour</label>
+                                        <div style="display:flex;align-items:center;gap:10px;">
+                                            <input type="color" id="settingsInvoiceAccent" value="#1a6ddb" style="width:48px;height:36px;border:1px solid var(--border);border-radius:8px;padding:2px;cursor:pointer;" />
+                                            <input type="text" id="settingsInvoiceAccentHex" value="#1a6ddb" placeholder="#1a6ddb" style="flex:1;" oninput="var c=document.getElementById('settingsInvoiceAccent');if(/^#[0-9A-Fa-f]{6}$/.test(this.value))c.value=this.value;" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Layout style</label>
+                                        <select id="settingsInvoiceTemplate">
+                                            <option value="classic">Classic — logo left, details right</option>
+                                            <option value="bold">Bold — full colour header bar</option>
+                                            <option value="minimal">Minimal — light and simple</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group" style="margin-top:8px;">
+                                    <label>Invoice title (optional)</label>
+                                    <input type="text" id="settingsInvoiceTitle" placeholder="e.g. Invoice, Tax Invoice, Quotation" maxlength="40" />
+                                    <p class="logo-upload-hint">Leave blank to use Invoice or Quotation automatically.</p>
+                                </div>
                                 <p class="settings-section-title" style="margin-top:18px;">Customer terms</p>
                                 <p class="settings-section-desc">Policies customers should know (cancellation, deposits, etc.).</p>
                                 <div class="form-group full-width">
@@ -6994,6 +7019,21 @@
                     set('settingsAccountNumber', data.account_number);
                     set('settingsPaymentWhatsapp', data.payment_whatsapp);
                     set('settingsTerms', data.terms_and_conditions || data.terms || (function(){ try { return localStorage.getItem('cleancrew_service_terms') || ''; } catch(e){ return ''; } })());
+                    var accent = data.invoice_accent || data.accent_color || (function(){ try { return localStorage.getItem('cleancrew_invoice_accent') || '#1a6ddb'; } catch(e){ return '#1a6ddb'; } })();
+                    var tmpl = data.invoice_template || (function(){ try { return localStorage.getItem('cleancrew_invoice_template') || 'classic'; } catch(e){ return 'classic'; } })();
+                    var invTitle = data.invoice_title || (function(){ try { return localStorage.getItem('cleancrew_invoice_title') || ''; } catch(e){ return ''; } })();
+                    set('settingsInvoiceAccentHex', accent);
+                    try { var cp = document.getElementById('settingsInvoiceAccent'); if (cp) cp.value = accent; } catch(eA) {}
+                    try { var sel = document.getElementById('settingsInvoiceTemplate'); if (sel) sel.value = tmpl; } catch(eT) {}
+                    set('settingsInvoiceTitle', invTitle);
+                    try {
+                        var colorPick = document.getElementById('settingsInvoiceAccent');
+                        if (colorPick) colorPick.oninput = function() {
+                            var hx = document.getElementById('settingsInvoiceAccentHex');
+                            if (hx) hx.value = colorPick.value;
+                        };
+                    } catch(eC) {}
+
                     applyBusinessProfile(name, logo);
                 } else {
                     applyBusinessProfile(localName, localLogo);
@@ -7021,6 +7061,10 @@
                 account_number: document.getElementById('settingsAccountNumber').value.trim(),
                 payment_whatsapp: document.getElementById('settingsPaymentWhatsapp').value.trim(),
                 terms_and_conditions: (document.getElementById('settingsTerms') && document.getElementById('settingsTerms').value) || '',
+                invoice_accent: (function(){ var h=document.getElementById('settingsInvoiceAccentHex'); var c=document.getElementById('settingsInvoiceAccent'); var v=(h&&h.value)||(c&&c.value)||'#1a6ddb'; return /^#[0-9A-Fa-f]{6}$/.test(v)?v:'#1a6ddb'; })(),
+                invoice_template: (document.getElementById('settingsInvoiceTemplate') && document.getElementById('settingsInvoiceTemplate').value) || 'classic',
+                invoice_title: (document.getElementById('settingsInvoiceTitle') && document.getElementById('settingsInvoiceTitle').value.trim()) || '',
+
                 // also keep a local copy so PDF can use terms even if DB column is missing
                 logo_url: (document.getElementById('settingsLogoUrl') && document.getElementById('settingsLogoUrl').value) || ''
             };
@@ -7036,6 +7080,9 @@
                     var savedName = (data && data.business_name) || payload.business_name || '';
                     applyBusinessProfile(savedName, savedLogo);
                     try { localStorage.setItem('cleancrew_service_terms', payload.terms_and_conditions || ''); } catch (eL) {}
+                    try { localStorage.setItem('cleancrew_invoice_accent', payload.invoice_accent || '#1a6ddb'); } catch (eA) {}
+                    try { localStorage.setItem('cleancrew_invoice_template', payload.invoice_template || 'classic'); } catch (eT) {}
+                    try { localStorage.setItem('cleancrew_invoice_title', payload.invoice_title || ''); } catch (eI) {}
                     showToast('Business profile saved', 'success');
                 } else {
                     var err = (data && data.error) || 'Failed to save settings';
@@ -7069,10 +7116,27 @@
             termsForPdf = (document.getElementById('settingsTerms') && document.getElementById('settingsTerms').value) ||
                 localStorage.getItem('cleancrew_service_terms') || '';
         } catch (eT) {}
+        var accentForPdf = '#1a6ddb';
+        var templateForPdf = 'classic';
+        var titleForPdf = '';
+        try {
+            accentForPdf = (document.getElementById('settingsInvoiceAccentHex') && document.getElementById('settingsInvoiceAccentHex').value) ||
+                localStorage.getItem('cleancrew_invoice_accent') || '#1a6ddb';
+            templateForPdf = (document.getElementById('settingsInvoiceTemplate') && document.getElementById('settingsInvoiceTemplate').value) ||
+                localStorage.getItem('cleancrew_invoice_template') || 'classic';
+            titleForPdf = (document.getElementById('settingsInvoiceTitle') && document.getElementById('settingsInvoiceTitle').value) ||
+                localStorage.getItem('cleancrew_invoice_title') || '';
+        } catch (eStyle) {}
         const res = await fetch(API_URL + '/invoices/' + id + '/generate-pdf', {
             method: 'POST',
             headers: getHeaders(),
-            body: JSON.stringify({ logo_url: logoForPdf, terms_and_conditions: termsForPdf })
+            body: JSON.stringify({
+                logo_url: logoForPdf,
+                terms_and_conditions: termsForPdf,
+                invoice_accent: accentForPdf,
+                invoice_template: templateForPdf,
+                invoice_title: titleForPdf
+            })
         });
         const contentType = res.headers.get('content-type') || '';
         if (contentType.includes('application/pdf')) {
