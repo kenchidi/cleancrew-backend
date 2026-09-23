@@ -7290,7 +7290,19 @@
 }
         // Open an invoice in WhatsApp. The invoice currently stores the client name,
         // not the client's phone, so resolve the phone from the Clients table.
-        async function shareInvoiceWhatsApp(id) {
+        
+        function getPublicInvoiceUrl(invoiceId) {
+            var id = encodeURIComponent(String(invoiceId || '').trim());
+            var origin = 'https://www.cleancrewapp.com';
+            try {
+                if (window.location && /cleancrewapp\.com/i.test(window.location.hostname)) {
+                    origin = window.location.origin;
+                }
+            } catch (e) {}
+            return origin + '/invoice.html?id=' + id;
+        }
+
+async function shareInvoiceWhatsApp(id) {
             try {
                 var inv = invoicesData.find(function(x) { return x.id === id; });
                 if (!inv) { showToast('Invoice not found', 'error'); return; }
@@ -7378,8 +7390,9 @@
                         if (acctNumber) msg += '\nAccount number: ' + acctNumber;
                     }
                 }
-                if (inv.pdf_url) {
-                    msg += '\n\nView / download PDF:\n' + inv.pdf_url;
+                var publicLink = typeof getPublicInvoiceUrl === 'function' ? getPublicInvoiceUrl(inv.id) : ('https://www.cleancrewapp.com/invoice.html?id=' + encodeURIComponent(inv.id));
+                if (inv.pdf_url || inv.id) {
+                    msg += '\n\nView your invoice:\n' + publicLink;
                 }
 
                 window.open('https://wa.me/' + digits + '?text=' + encodeURIComponent(msg), '_blank');

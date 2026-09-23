@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Invoice · CleanCrew</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" href="/favicon.ico" />
+    <style>
+        :root {
+            --ink: #0f172a;
+            --muted: #64748b;
+            --line: #e2e8f0;
+            --blue: #0f4fa8;
+            --bg: #f8fafc;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .card {
+            width: min(420px, 100%);
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 28px 24px;
+            box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
+            text-align: center;
+        }
+        .mark {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #0f4fa8, #1d6fe5);
+            margin: 0 auto 14px;
+        }
+        h1 {
+            margin: 0 0 6px;
+            font-size: 1.25rem;
+            letter-spacing: -0.02em;
+        }
+        p {
+            margin: 0 0 8px;
+            color: var(--muted);
+            font-size: 0.95rem;
+            line-height: 1.45;
+        }
+        .meta {
+            margin: 16px 0;
+            padding: 12px;
+            background: #f1f5f9;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            color: var(--ink);
+            text-align: left;
+        }
+        .meta div { margin: 4px 0; }
+        .meta strong { color: var(--muted); font-weight: 600; margin-right: 6px; }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            margin-top: 8px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: none;
+            background: var(--blue);
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .btn:hover { filter: brightness(1.05); }
+        .btn.secondary {
+            background: #fff;
+            color: var(--blue);
+            border: 1px solid var(--line);
+            margin-top: 8px;
+        }
+        .err { color: #b91c1c; }
+        .foot {
+            margin-top: 18px;
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+        .spin {
+            width: 28px;
+            height: 28px;
+            border: 3px solid #e2e8f0;
+            border-top-color: var(--blue);
+            border-radius: 50%;
+            margin: 12px auto;
+            animation: s 0.7s linear infinite;
+        }
+        @keyframes s { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="card" id="card">
+        <div class="mark" aria-hidden="true"></div>
+        <h1 id="title">Opening invoice…</h1>
+        <p id="sub">Please wait a moment.</p>
+        <div class="spin" id="spin"></div>
+        <div id="body"></div>
+        <p class="foot">Secure document link · CleanCrew</p>
+    </div>
+    <script>
+        (function () {
+            var API = 'https://cleancrew-backend.onrender.com/api';
+            var params = new URLSearchParams(window.location.search);
+            var id = params.get('id') || params.get('invoice') || '';
+            var title = document.getElementById('title');
+            var sub = document.getElementById('sub');
+            var body = document.getElementById('body');
+            var spin = document.getElementById('spin');
+
+            function showError(msg) {
+                spin.style.display = 'none';
+                title.textContent = 'Invoice unavailable';
+                sub.innerHTML = '<span class="err">' + msg + '</span>';
+                body.innerHTML = '<a class="btn secondary" href="https://www.cleancrewapp.com">Go to CleanCrew</a>';
+            }
+
+            if (!id || id.length < 10) {
+                showError('This invoice link is incomplete or invalid.');
+                return;
+            }
+
+            fetch(API + '/public/invoice/' + encodeURIComponent(id) + '?format=json')
+                .then(function (res) {
+                    return res.json().then(function (data) {
+                        if (!res.ok) throw new Error((data && data.error) || 'Could not open invoice');
+                        return data;
+                    });
+                })
+                .then(function (data) {
+                    spin.style.display = 'none';
+                    var num = data.number ? ('#' + String(data.number).replace(/^#/, '')) : '';
+                    var isQuote = data.doc_type === 'quotation';
+                    title.textContent = (isQuote ? 'Quotation' : 'Invoice') + (num ? ' ' + num : '');
+                    sub.textContent = data.client
+                        ? ('Prepared for ' + data.client)
+                        : 'Your document is ready.';
+                    var amount = data.amount != null ? Number(data.amount) : null;
+                    var meta = '<div class="meta">';
+                    if (num) meta += '<div><strong>Number</strong> ' + num + '</div>';
+                    if (amount != null && !isNaN(amount)) {
+                        meta += '<div><strong>Amount</strong> NGN ' + Math.round(amount).toLocaleString('en-NG') + '</div>';
+                    }
+                    if (data.status) meta += '<div><strong>Status</strong> ' + String(data.status).toUpperCase() + '</div>';
+                    meta += '</div>';
+                    body.innerHTML = meta +
+                        '<a class="btn" id="openPdf" href="' + data.pdf_url + '" target="_blank" rel="noopener">Open PDF</a>' +
+                        '<a class="btn secondary" href="' + data.pdf_url + '" download>Download</a>';
+                    // Auto-open PDF shortly (customers expect the file)
+                    setTimeout(function () {
+                        try { window.location.href = data.pdf_url; } catch (e) {}
+                    }, 600);
+                })
+                .catch(function (err) {
+                    showError(err.message || 'Could not open this invoice.');
+                });
+        })();
+    </script>
+</body>
+</html>

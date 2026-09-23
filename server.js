@@ -5128,6 +5128,54 @@ app.post(
     }
 );
 
+
+// ─── PUBLIC INVOICE LINK (branded share — no login) ─────────
+// UUID acts as the secret; only invoices with a generated PDF are reachable.
+app.get('/api/public/invoice/:id', async (req, res) => {
+    try {
+        const id = String(req.params.id || '').trim();
+        if (!id || id.length < 10) {
+            return res.status(400).json({ error: 'Invalid invoice link' });
+        }
+
+        const { data: invoice, error } = await supabase
+            .from('invoices')
+            .select('id, pdf_url, number, invoice_numb, client, amount, amount_due, status, doc_type, date')
+            .eq('id', id)
+            .maybeSingle();
+
+        if (error) throw error;
+        if (!invoice) {
+            return res.status(404).json({ error: 'Invoice not found' });
+        }
+        if (!invoice.pdf_url) {
+            return res.status(404).json({
+                error: 'This invoice PDF is not ready yet. Ask the business to generate it again.'
+            });
+        }
+
+        // JSON for the cleancrewapp.com viewer page
+        if (String(req.query.format || '') === 'json') {
+            return res.json({
+                id: invoice.id,
+                pdf_url: invoice.pdf_url,
+                number: invoice.number || invoice.invoice_numb || '',
+                client: invoice.client || '',
+                amount: invoice.amount_due != null ? invoice.amount_due : invoice.amount,
+                status: invoice.status || '',
+                doc_type: invoice.doc_type || 'invoice',
+                date: invoice.date || null
+            });
+        }
+
+        // Default: send customer straight to the PDF
+        return res.redirect(302, invoice.pdf_url);
+    } catch (err) {
+        console.error('Public invoice error:', err);
+        return res.status(500).json({ error: 'Could not open invoice' });
+    }
+});
+
 // ─── GENERATE INVOICE PDF ───────────────────────────────────
 
 app.post(
