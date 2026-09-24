@@ -907,6 +907,39 @@
             .pc-result-hero .pc-rec-price { font-size: 34px; }
         }
 
+        
+        .credit-topup-card .topup-inner {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: 14px;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(59, 130, 246, 0.06));
+        }
+        .credit-topup-card .topup-title {
+            font-weight: 800;
+            font-size: 14px;
+            color: var(--ink);
+            margin: 0 0 2px;
+        }
+        .credit-topup-card .topup-sub {
+            font-size: 12px;
+            color: var(--ink-soft);
+            margin: 0;
+        }
+        .credit-topup-card .topup-price {
+            font-weight: 800;
+            font-size: 18px;
+            color: var(--ink);
+        }
+        .credit-topup-card .topup-jobs {
+            font-size: 12px;
+            color: var(--ink-soft);
+        }
+
         .tab-content {
             display: none !important;
         }
@@ -4034,17 +4067,21 @@
                 </div>
                 <div class="credits-quiet-bar">
                     <div class="credits-quiet-stats">
-                        <span>Free jobs left: <strong id="freeJobsLabel">—</strong> / 25</span>
+                        <span>Free jobs remaining: <strong id="freeJobsLabel">—</strong> / 25</span>
                         <span class="credits-quiet-dot">·</span>
-                        <span>Credits: <strong id="creditBalanceLabel">0</strong></span>
+                        <span>Paid credits: <strong id="creditBalanceLabel">0</strong></span>
+                        <span class="credits-quiet-dot">·</span>
+                        <span style="color:var(--ink-soft);font-size:12px;">Need more? From ₦1,000</span>
                     </div>
-                    <button type="button" class="btn btn-outline btn-sm" id="manageCreditsBtn" onclick="toggleCreditsManager()">Manage credits</button>
+                    <button type="button" class="btn btn-outline btn-sm" id="manageCreditsBtn" onclick="toggleCreditsManager()">Add credits</button>
                 </div>
                 <div id="creditsManagerPanel" class="credits-manager-panel" hidden>
                     <p id="creditsValueProp" style="font-size:13px;color:var(--ink-soft);margin:0 0 12px;line-height:1.45;">
-                        Start free (25 jobs). Buy credits when you need more — spent only when you create a job. Credits don’t expire. Or go unlimited for a flat monthly fee.
+                        Start free (25 jobs). <strong>1 credit = 1 job</strong>. Credits are only used when a job is created successfully. They don’t expire.
+                        Need just a few more? Add credits from ₦1,000 — or buy a larger pack and save.
                     </p>
-                    <p class="credit-packs-scroll-hint">Swipe for packs →</p>
+                    <div id="creditTopupCard" class="credit-topup-card" style="margin-bottom:14px;"></div>
+                    <p class="credit-packs-scroll-hint" id="creditPacksHeading" style="font-weight:700;color:var(--ink);margin:0 0 8px;">Buy more and save</p>
                     <div class="credit-packs-grid" id="creditPacksGrid">
                         <!-- filled by renderCreditPacksUI() -->
                     </div>
@@ -4732,16 +4769,22 @@
             network: 'MoMo PSB',
             whatsapp: '2347057295546'
         };
+        var CREDIT_UI_CONFIG = {
+            NG: { nairaPerJobTopup: 200, minTopupNaira: 1000 },
+            GH: { nairaPerJobTopup: 2.4, minTopupNaira: 12 }
+        };
         var PACKS_BY_COUNTRY = {
             NG: {
-                starter: { jobs: 25,  price: 5000,  per: 200, label: 'Starter' },
-                growth:  { jobs: 80,  price: 12000, per: 150, label: 'Growth' },
-                scale:   { jobs: 200, price: 25000, per: 125, label: 'Scale' }
+                topup:   { jobs: 5,   price: 1000,  per: 200, label: 'Add credits', kind: 'topup' },
+                starter: { jobs: 25,  price: 5000,  per: 200, label: 'Starter', kind: 'pack' },
+                growth:  { jobs: 80,  price: 12000, per: 150, label: 'Growth', kind: 'pack' },
+                scale:   { jobs: 200, price: 25000, per: 125, label: 'Scale', kind: 'pack' }
             },
             GH: {
-                starter: { jobs: 25,  price: 60,  per: 2.4, label: 'Starter' },
-                growth:  { jobs: 80,  price: 145, per: 1.81, label: 'Growth' },
-                scale:   { jobs: 200, price: 300, per: 1.5,  label: 'Scale' }
+                topup:   { jobs: 5,   price: 12,   per: 2.4, label: 'Add credits', kind: 'topup' },
+                starter: { jobs: 25,  price: 60,   per: 2.4, label: 'Starter', kind: 'pack' },
+                growth:  { jobs: 80,  price: 145,  per: 1.81, label: 'Growth', kind: 'pack' },
+                scale:   { jobs: 200, price: 300,  per: 1.5,  label: 'Scale', kind: 'pack' }
             }
         };
         var UNLIMITED_PRICE = { NG: 12500, GH: 150 };
@@ -4785,6 +4828,23 @@
             var grid = document.getElementById('creditPacksGrid');
             if (!grid) return;
             var packs = getPacks();
+            var topEl = document.getElementById('creditTopupCard');
+            if (topEl) {
+                var tu = packs.topup;
+                if (tu) {
+                    topEl.innerHTML =
+                        '<div class="topup-inner">' +
+                        '<div><p class="topup-title">Need just a few more jobs?</p>' +
+                        '<p class="topup-sub">1 credit = 1 job. Small top-up when free jobs run out.</p></div>' +
+                        '<div style="text-align:right;">' +
+                        '<div class="topup-price">' + formatMoney(tu.price) + '</div>' +
+                        '<div class="topup-jobs">' + tu.jobs + ' job credits</div>' +
+                        '<button type="button" class="btn btn-primary btn-sm" style="margin-top:8px;" onclick="buyCredits(\'topup\')">Add ' + formatMoney(tu.price) + '</button>' +
+                        '</div></div>';
+                } else {
+                    topEl.innerHTML = '';
+                }
+            }
             var order = ['starter', 'growth', 'scale'];
             var html = '';
             order.forEach(function(key) {

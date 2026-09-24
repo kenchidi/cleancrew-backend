@@ -158,18 +158,42 @@ const PLANS = {
 
 
 /*
- * Pay-as-you-go job credits (amount in kobo).
- * After the 25 lifetime free jobs, users buy these packs.
+ * Pay-as-you-go job credits (amounts in kobo for Paystack).
+ * After the 25 lifetime free jobs, users buy credits.
+ * Central rates — change CREDIT_CONFIG to adjust the ₦1,000 top-up without touching payment code.
  */
+const CREDIT_CONFIG = {
+    nairaPerJobTopup: 200,   // ₦200 = 1 job for the small top-up
+    minTopupNaira: 1000,     // minimum purchase ₦1,000
+    freeJobsLifetime: 25
+};
+
+function buildTopupPack() {
+    const naira = CREDIT_CONFIG.minTopupNaira;
+    const jobs = Math.max(1, Math.round(naira / CREDIT_CONFIG.nairaPerJobTopup));
+    return {
+        name: 'Add credits',
+        amount: naira * 100, // kobo
+        jobs: jobs,
+        kind: 'topup',
+        perJobNaira: CREDIT_CONFIG.nairaPerJobTopup
+    };
+}
+
 const CREDIT_PACKS = {
-    // Primary packs (simplified pricing)
-    starter: { name: 'Starter Pack', amount: 500000, jobs: 25 },       // ₦5,000  · ₦200/job
-    growth:  { name: 'Growth Pack',  amount: 1200000, jobs: 80 },      // ₦12,000 · ₦150/job
-    scale:   { name: 'Scale Pack',   amount: 2500000, jobs: 200 },     // ₦25,000 · ₦125/job
+    // Small top-up — entry after free jobs (₦1,000 → 5 jobs at ₦200/job)
+    topup: buildTopupPack(),
+    mini: buildTopupPack(), // alias
+
+    // Larger discounted packs
+    starter: { name: 'Starter Pack', amount: 500000, jobs: 25, kind: 'pack', perJobNaira: 200 },
+    growth:  { name: 'Growth Pack',  amount: 1200000, jobs: 80, kind: 'pack', perJobNaira: 150 },
+    scale:   { name: 'Scale Pack',   amount: 2500000, jobs: 200, kind: 'pack', perJobNaira: 125 },
+
     // Aliases so older clients / bookmarks still work
-    business:     { name: 'Growth Pack',  amount: 1200000, jobs: 80 },
-    professional: { name: 'Growth Pack',  amount: 1200000, jobs: 80 },
-    enterprise:   { name: 'Scale Pack',   amount: 2500000, jobs: 200 }
+    business:     { name: 'Growth Pack',  amount: 1200000, jobs: 80, kind: 'pack', perJobNaira: 150 },
+    professional: { name: 'Growth Pack',  amount: 1200000, jobs: 80, kind: 'pack', perJobNaira: 150 },
+    enterprise:   { name: 'Scale Pack',   amount: 2500000, jobs: 200, kind: 'pack', perJobNaira: 125 }
 };
 
 const FRONTEND_URL =
@@ -1452,6 +1476,34 @@ app.get(
 );
 
 
+
+// Public list of credit packs (for dashboard UI)
+app.get('/api/credits/packs', authenticate, (req, res) => {
+    const list = Object.keys(CREDIT_PACKS)
+        .filter(function (k) {
+            return ['topup', 'starter', 'growth', 'scale'].indexOf(k) !== -1;
+        })
+        .map(function (k) {
+            const p = CREDIT_PACKS[k];
+            return {
+                key: k,
+                name: p.name,
+                jobs: p.jobs,
+                amount_naira: p.amount / 100,
+                per_job_naira: p.perJobNaira || Math.round((p.amount / 100) / p.jobs),
+                kind: p.kind || 'pack'
+            };
+        });
+    res.json({
+        packs: list,
+        config: {
+            naira_per_job_topup: CREDIT_CONFIG.nairaPerJobTopup,
+            min_topup_naira: CREDIT_CONFIG.minTopupNaira,
+            free_jobs_lifetime: CREDIT_CONFIG.freeJobsLifetime
+        }
+    });
+});
+
 // ─── CREDIT PURCHASE (Paystack) ─────────────────────────────
 
 app.post(
@@ -1468,7 +1520,7 @@ app.post(
             const pack = req.body.pack || 'starter';
             if (!CREDIT_PACKS[pack]) {
                 return res.status(400).json({
-                    error: 'Invalid credit pack. Use starter, growth, or scale.'
+                    error: 'Invalid credit pack. Use topup, starter, growth, or scale.'
                 });
             }
 
