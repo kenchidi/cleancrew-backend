@@ -3797,12 +3797,16 @@
                         <option value="all">All locations</option>
                     </select>
                 </div>
+                </div>
             </div>
             <button type="button" class="btn btn-primary" id="overviewNewJobBtn" onclick="openModal('job')">+ New Job</button>
         </div>
 
 <div class="onboarding-card" id="onboardingCard" hidden>
-            <h3>Let's get your business running</h3>
+            <div class="ob-mascot-row">
+                <img class="cc-mascot sm" src="mascot.png" alt="" width="40" height="40" />
+                <h3>Let's get your business running</h3>
+            </div>
             <p>Complete these steps to start tracking work and money.</p>
             <ul class="onboarding-steps">
                 <li id="obStepJob">
@@ -4045,7 +4049,7 @@
                     <h3 id="recentJobsTitle" style="margin:0;font-size:15px;">Recent activity</h3>
                     <button class="btn btn-outline btn-sm" onclick="switchTab('jobs')">All jobs</button>
                 </div>
-                <div id="recentJobs"><p style="color:var(--slate);">No jobs yet</p></div>
+                <div id="recentJobs"><div class="empty-state with-mascot" style="padding:12px;"><img class="cc-mascot sm" src="mascot.png" alt="" /><strong>No jobs yet</strong><span>Create your first job to see it here.</span></div></div>
             </div>
 
             <!-- Subscription status (no rate cards) -->
@@ -4759,6 +4763,12 @@
         // ─── CONFIG ──────────────────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
         const API_URL = 'https://cleancrew-backend.onrender.com/api';
+        var MASCOT_SRC = 'mascot.png';
+        function mascotHtml(size) {
+            size = size || 'md';
+            return '<img class="cc-mascot ' + size + '" src="' + MASCOT_SRC + '" alt="" width="64" height="64" loading="lazy" />';
+        }
+
         var creditBalance = 0;
 
         // ─── Country / currency (NG = Naira, GH = Cedis + manual MoMo) ───
@@ -7507,7 +7517,7 @@ async function shareInvoiceWhatsApp(id) {
                             (cat !== 'laundry' && cat.indexOf('laundry') === -1);
                     });
                     if (filtered.length === 0) {
-                        list.innerHTML = '<div class="empty-state"><strong>No inventory items</strong><span>Track supplies for this service mode so you never run short mid-job.</span><button type="button" class="btn btn-primary btn-sm" onclick="openModal(\'inventory\')">+ Add item</button></div>';
+                        list.innerHTML = '<div class="empty-state with-mascot">' + mascotHtml('sm') + '<strong>No inventory items</strong><span>Track supplies for this service mode so you never run short mid-job.</span><button type="button" class="btn btn-primary btn-sm" onclick="openModal(\'inventory\')">+ Add item</button></div>';
                         return;
                     }
                     var rows = filtered.map(function(it, i) {
@@ -8144,7 +8154,8 @@ async function shareInvoiceWhatsApp(id) {
             if (todayEl) {
                 if (!todayJobs.length) {
                     if (!filteredJobs.length) {
-                        todayEl.innerHTML = '<div class="empty-state" style="padding:20px 8px;text-align:center;">' +
+                        todayEl.innerHTML = '<div class="empty-state with-mascot" style="padding:20px 8px;text-align:center;">' +
+                            mascotHtml('md') +
                             '<strong style="display:block;margin-bottom:6px;">You\'re all caught up</strong>' +
                             '<span style="font-size:13px;color:var(--slate);">No jobs scheduled for today. Create a job or share your booking page.</span>' +
                             '<div style="margin-top:12px;"><button type="button" class="btn btn-primary btn-sm" onclick="openModal(\'job\')">+ New Job</button></div></div>';
