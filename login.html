@@ -3,169 +3,309 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-    <meta name="theme-color" content="#1A6DDB" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="CleanCrew" />
-    <meta name="application-name" content="CleanCrew" />
-    <title>Login — CleanCrew</title>
-    <meta name="description" content="Login to your CleanCrew dashboard."/>
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png"/>
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png"/>
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png"/>
-    <link rel="manifest" href="site.webmanifest"/>
-    <link rel="preconnect" href="https://fonts.googleapis.com"/>
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#F5F0E8" />
+    <title>Log in · CleanCrew</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <style>
+
         :root {
-            --blue: #1A6DDB;
-            --blue-dark: #0F4FA8;
-            --blue-deep: #0B3B85;
-            --blue-light: #EBF3FE;
-            --blue-mist: #F5F9FF;
-            --blue-gradient: linear-gradient(135deg, #2E7DE8 0%, #0F4FA8 100%);
-            --ink: #0B1526;
-            --ink-soft: #33405C;
-            --slate: #5B6B85;
-            --slate-light: #93A0B8;
-            --border: #E7EBF3;
-            --surface: #F7F9FC;
+            --cream: #F5F0E8;
+            --ink: #14120F;
+            --ink-soft: #3F3A34;
+            --muted: #7A736A;
+            --line: rgba(20, 18, 15, 0.08);
             --white: #FFFFFF;
-            --green: #16A34A;
+            --blue: #1A6DDB;
+            --blue-deep: #0F4FA8;
+            --green: #0D9F6E;
             --red: #DC2626;
-            --radius-lg: 24px;
-            --radius-sm: 11px;
-            --shadow-md: 0 10px 30px rgba(11,21,38,.07);
-            --shadow-lg: 0 24px 64px rgba(11,21,38,.14);
-            --shadow-blue: 0 14px 34px rgba(15,79,168,.28);
+            --shadow: 0 24px 60px rgba(20, 18, 15, 0.08);
+            --shadow-sm: 0 8px 28px rgba(20, 18, 15, 0.06);
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { height: 100%; }
         body {
-            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-            background: var(--surface);
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
             color: var(--ink);
-            min-height: 100vh;
+            background: var(--cream);
+            min-height: 100%;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            display: flex;
+            flex-direction: column;
+        }
+        a { color: var(--blue); text-decoration: none; font-weight: 600; }
+        a:hover { text-decoration: underline; }
+
+        .nav-shell {
+            padding: 16px 20px 0;
+        }
+        .nav {
+            width: min(480px, 100%);
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 12px 10px 16px;
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: 999px;
+            box-shadow: 0 8px 32px rgba(20, 18, 15, 0.06);
+        }
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 1.05rem;
+            letter-spacing: -0.03em;
+            color: var(--ink);
+            text-decoration: none;
+        }
+        .nav-brand:hover { text-decoration: none; }
+        .nav-brand img { width: 28px; height: 28px; object-fit: contain; }
+        .nav-brand span span { color: var(--blue); }
+        .nav-back {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--ink-soft);
+            padding: 8px 14px;
+            border-radius: 999px;
+            text-decoration: none;
+        }
+        .nav-back:hover { background: rgba(20,18,15,0.05); text-decoration: none; color: var(--ink); }
+
+        .main {
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 32px 20px;
-            -webkit-font-smoothing: antialiased;
+            padding: 32px 20px 48px;
         }
-        .icon { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
-        .auth-card {
-            width: 100%; max-width: 420px; background: var(--white);
-            border-radius: var(--radius-lg); padding: 40px 36px;
-            box-shadow: var(--shadow-md); border: 1px solid var(--border);
+        .card {
+            width: min(420px, 100%);
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid var(--line);
+            border-radius: 24px;
+            padding: 36px 28px 28px;
+            box-shadow: var(--shadow-sm);
+            text-align: center;
         }
-        .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; justify-content: center; margin-bottom: 8px; }
-        .logo-mark {
-            width: 36px; height: 36px; border-radius: 10px; background: var(--blue-gradient);
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 12px rgba(15, 79, 168, .3);
+        .card-mascot {
+            width: 64px;
+            height: 64px;
+            object-fit: contain;
+            margin: 0 auto 14px;
+            display: block;
+            filter: drop-shadow(0 8px 16px rgba(26, 109, 219, 0.18));
         }
-        .logo-mark svg { width: 20px; height: 20px; }
-        .logo-word { font-size: 20px; font-weight: 800; color: var(--ink); letter-spacing: -0.4px; }
-        .logo-word span { color: var(--blue); }
-        .sub { text-align: center; color: var(--slate); font-size: 14px; margin-bottom: 28px; }
-        .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; font-size: 12.5px; font-weight: 600; color: var(--slate); margin-bottom: 6px; }
+        .card h1 {
+            font-size: 1.55rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 6px;
+            color: var(--ink);
+        }
+        .card .sub {
+            font-size: 0.95rem;
+            color: var(--ink-soft);
+            font-weight: 500;
+            margin-bottom: 24px;
+            line-height: 1.45;
+        }
+        .form-group {
+            margin-bottom: 14px;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--ink-soft);
+            margin-bottom: 6px;
+        }
         .form-group input {
-            width: 100%; padding: 12px 16px; border: 1.5px solid var(--border);
-            border-radius: var(--radius-sm); font-family: inherit; font-size: 14px;
-            color: var(--ink); background: var(--white); outline: none;
-            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            background: #fff;
+            color: var(--ink);
+            transition: border-color 0.15s, box-shadow 0.15s;
         }
-        .form-group input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(26, 109, 219, 0.12); }
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(26, 109, 219, 0.14);
+        }
+        .password-hint {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-top: 5px;
+            font-weight: 500;
+        }
         .btn {
-            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-            padding: 13px 24px; border: none; border-radius: var(--radius-sm);
-            font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
-            transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.15s ease;
-            text-decoration: none; width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            font-family: inherit;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.15s, filter 0.15s, opacity 0.15s;
+            margin-top: 6px;
         }
-        .btn .icon { width: 16px; height: 16px; }
-        .btn-primary { background: var(--blue-gradient); color: #fff; box-shadow: var(--shadow-blue); }
-        .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 18px 40px rgba(15,79,168,.36); }
-        .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
-        .btn-sm { width: auto; padding: 8px 16px; font-size: 13px; }
+        .btn:hover:not(:disabled) { transform: translateY(-1px); }
+        .btn:disabled { opacity: 0.65; cursor: not-allowed; }
+        .btn-primary {
+            background: var(--blue);
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(26, 109, 219, 0.3);
+        }
+        .btn-primary:hover:not(:disabled) { filter: brightness(1.05); }
+        .btn-sm { width: auto; padding: 10px 16px; font-size: 0.88rem; margin-top: 8px; }
+        .btn-ghost {
+            background: transparent;
+            color: var(--ink-soft);
+            border: 1px solid var(--line);
+            margin-top: 10px;
+        }
+        .card-foot {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: var(--ink-soft);
+            font-weight: 500;
+        }
+        .card-foot a { font-weight: 700; }
         .error-msg, .success-msg {
-            padding: 11px 14px; border-radius: var(--radius-sm); font-size: 13px;
-            margin-bottom: 16px; display: none; line-height: 1.45;
+            display: none;
+            padding: 11px 14px;
+            border-radius: 12px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            margin-bottom: 14px;
+            text-align: left;
+            line-height: 1.4;
         }
-        .error-msg { background: #FEE2E2; color: #991B1B; }
-        .success-msg { background: #D1FAE5; color: #065F46; }
         .error-msg.show, .success-msg.show { display: block; }
-        .link { text-align: center; margin-top: 22px; font-size: 14px; color: var(--slate); }
-        .link a { color: var(--blue); text-decoration: none; font-weight: 700; }
-        .link a:hover { text-decoration: underline; }
-        .forgot-link {
-            display: block; margin-top: 10px; background: none; border: none;
-            color: var(--blue); font-family: inherit; font-size: 13px; font-weight: 600;
-            cursor: pointer; padding: 0;
+        .error-msg {
+            background: #FEF2F2;
+            color: #B91C1C;
+            border: 1px solid #FECACA;
         }
-        .forgot-link:hover { text-decoration: underline; }
+        .success-msg {
+            background: #ECFDF5;
+            color: #047857;
+            border: 1px solid #A7F3D0;
+        }
         .toast {
-            position: fixed; bottom: 24px; right: 24px; background: var(--ink); color: #fff;
-            padding: 14px 22px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600;
-            z-index: 999; transform: translateY(80px); opacity: 0; transition: all 0.3s ease;
-            max-width: 380px; box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 10px;
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: var(--ink);
+            color: #fff;
+            padding: 12px 18px;
+            border-radius: 999px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 999;
+            max-width: min(360px, calc(100% - 32px));
+            text-align: center;
+            box-shadow: var(--shadow);
         }
-        .toast .icon { width: 16px; height: 16px; stroke: #fff; }
-        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
         .toast.success { background: var(--green); }
         .toast.error { background: var(--red); }
-        @media (max-width: 480px) {
-            .auth-card { padding: 32px 22px; }
+        .icon { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
+        .forgot-link {
+            display: block;
+            text-align: right;
+            font-size: 0.82rem;
+            margin: -6px 0 12px;
+            font-weight: 600;
         }
+        .community-note {
+            margin-top: 16px;
+            padding: 12px 14px;
+            background: rgba(26, 109, 219, 0.06);
+            border-radius: 14px;
+            font-size: 0.82rem;
+            color: var(--ink-soft);
+            font-weight: 500;
+            text-align: left;
+            line-height: 1.45;
+        }
+
     </style>
 </head>
 <body>
-    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-        <defs>
-            <symbol id="ic-sparkle" viewBox="0 0 24 24"><path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z"/></symbol>
-            <symbol id="ic-check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></symbol>
-            <symbol id="ic-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
-        </defs>
+
+    <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+        <symbol id="ic-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+        <symbol id="ic-check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+        <symbol id="ic-sparkle" viewBox="0 0 24 24"><path d="M12 3l1.5 5.5L19 10l-5.5 1.5L12 17l-1.5-5.5L5 10l5.5-1.5L12 3z" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     </svg>
-    <div class="auth-card">
-        <a href="/" class="logo">
-            <span class="logo-mark">
-                <svg viewBox="0 0 100 100" fill="none">
-                    <path d="M80 34 C74 22 62 14 48 14 C28 14 12 30 12 50 C12 70 28 86 48 86 C62 86 74 78 80 66" stroke="white" stroke-width="13" stroke-linecap="round" fill="none"/>
-                    <g transform="translate(68,46)"><path d="M0,-9 L1.6,-1.6 L9,0 L1.6,1.6 L0,9 L-1.6,1.6 L-9,0 L-1.6,-1.6 Z" fill="white"/></g>
-                </svg>
-            </span>
-            <span class="logo-word">Clean<span>Crew</span>.</span>
-        </a>
-        <div class="sub">Login to your dashboard</div>
-        <div class="error-msg" id="errorMsg"></div>
-        <div class="success-msg" id="successMsg"></div>
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" placeholder="you@email.com" required autocomplete="email"/>
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" placeholder="Enter your password" required autocomplete="current-password"/>
-            </div>
-            <button type="submit" class="btn btn-primary" id="loginBtn">
-                <svg class="icon"><use href="#ic-arrow"/></svg>
-                Login
-            </button>
-        </form>
-        <div class="link">
-            <div>Don't have an account? <a href="signup.html">Create one</a></div>
-            <button class="forgot-link" type="button" onclick="forgotPassword()">Forgot Password?</button>
+
+    <div class="nav-shell">
+        <nav class="nav">
+            <a href="index.html" class="nav-brand">
+                <img src="mascot.png" alt="" width="28" height="28" />
+                <span>Clean<span>Crew</span></span>
+            </a>
+            <a class="nav-back" href="index.html">← Home</a>
+        </nav>
+    </div>
+
+    <div class="main">
+        <div class="card">
+            <img class="card-mascot" src="mascot.png" alt="" width="64" height="64" />
+            <h1>Welcome back</h1>
+            <div class="sub" id="statusMessage">Log in to run your cleaning or laundry business.</div>
+            <div class="error-msg" id="errorMsg"></div>
+            <div class="success-msg" id="successMsg"></div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email address</label>
+                    <input type="email" id="email" placeholder="you@email.com" required autocomplete="email"/>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" required autocomplete="current-password"/>
+                </div>
+                <a class="forgot-link" href="#" id="forgotLink" onclick="forgotPassword(); return false;">Forgot password?</a>
+                <button type="submit" class="btn btn-primary" id="loginBtn">
+                    <svg class="icon"><use href="#ic-arrow"/></svg>
+                    Log in
+                </button>
+            </form>
+
+            
+            <div class="card-foot">New here? <a href="signup.html">Create a free account</a></div>
         </div>
     </div>
+
     <div class="toast" id="toast">
-        <svg class="icon"><use href="#ic-check"/></svg>
         <span id="toastMessage">Success</span>
     </div>
-    <script>
+
+<script>
         const SERVER_URL = 'https://cleancrew-backend.onrender.com';
 
         function showToast(msg, type) {
@@ -321,8 +461,7 @@
             } catch (e) {}
         })();
     </script>
-
-    <script>
+<script>
     (function () {
       if (!('serviceWorker' in navigator)) return;
       window.addEventListener('load', function () {
@@ -330,7 +469,6 @@
       });
     })();
     </script>
-
 <script>
 (function(){
   try {
@@ -339,6 +477,5 @@
   } catch(e) {}
 })();
 </script>
-
 </body>
 </html>
