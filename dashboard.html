@@ -482,6 +482,134 @@
         .job-more-menu button:hover { background: var(--surface); }
         .job-more-menu button.danger { color: #B91C1C; }
         .job-more-menu button.danger:hover { background: #FEF2F2; }
+
+        /* ── Jobs: desktop table / mobile cards ── */
+        .jobs-mobile-list {
+            display: none;
+        }
+        .job-card {
+            background: var(--white, #fff);
+            border: 1px solid var(--border, #E2E8F0);
+            border-radius: 14px;
+            padding: 14px 14px 12px;
+            box-shadow: 0 1px 2px rgba(11, 21, 38, 0.04);
+            cursor: pointer;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            text-align: left;
+        }
+        .job-card:active {
+            border-color: var(--blue, #1A6DDB);
+            box-shadow: 0 0 0 3px rgba(26, 109, 219, 0.12);
+        }
+        .job-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .job-card-client {
+            font-weight: 800;
+            font-size: 15px;
+            color: var(--ink, #0B1526);
+            letter-spacing: -0.02em;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+        }
+        .job-card-phone {
+            font-size: 12px;
+            color: var(--slate, #64748B);
+            margin-top: 2px;
+            font-weight: 500;
+        }
+        .job-card-service {
+            font-size: 13.5px;
+            font-weight: 650;
+            color: var(--ink, #0B1526);
+            line-height: 1.35;
+            margin-bottom: 2px;
+        }
+        .job-card-detail {
+            font-size: 12px;
+            color: var(--slate, #64748B);
+            margin-bottom: 8px;
+            line-height: 1.35;
+        }
+        .job-card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 12px;
+            margin: 10px 0 4px;
+        }
+        .job-card-date {
+            font-size: 12px;
+            color: var(--slate, #64748B);
+            font-weight: 600;
+        }
+        .job-card-amount {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--ink, #0B1526);
+            letter-spacing: -0.02em;
+            white-space: nowrap;
+        }
+        .job-card-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 10px;
+            min-height: 36px;
+        }
+        .job-card-actions .btn {
+            flex: 0 0 auto;
+        }
+        .job-card .status-pill {
+            flex-shrink: 0;
+            text-transform: capitalize;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+        .job-card .note-pill {
+            font-size: 10px;
+            font-weight: 700;
+        }
+        @media (max-width: 720px) {
+            .jobs-table-desktop {
+                display: none !important;
+            }
+            .jobs-mobile-list {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                padding: 2px 0 12px;
+            }
+            #tab-jobs .jobs-card .card-header h3 {
+                font-size: 1.15rem;
+            }
+            #tab-jobs .app-toolbar {
+                flex-wrap: wrap;
+            }
+            #tab-jobs .app-toolbar .toolbar-search {
+                flex: 1 1 100%;
+                min-width: 0;
+            }
+        }
+        @media (min-width: 721px) {
+            .jobs-mobile-list {
+                display: none !important;
+            }
+            .jobs-table-desktop {
+                display: block;
+            }
+        }
+
         .inv-actions {
             display: flex;
             flex-wrap: wrap;
@@ -4164,8 +4292,7 @@
                     <button type="button" class="btn btn-outline btn-sm" onclick="openQuickCapture()">⚡ Quick</button>
                     <button type="button" class="btn btn-primary btn-sm" onclick="openModal('job')">+ Job</button>
                 </div>
-                <div class="table-wrap">
-
+                <div class="table-wrap jobs-table-desktop">
                     <table>
                         <thead>
                             <tr>
@@ -4181,6 +4308,7 @@
                         <tbody id="jobsTable"></tbody>
                     </table>
                 </div>
+                <div class="jobs-mobile-list" id="jobsMobileList" aria-label="Jobs list"></div>
             </div>
         </div>
 
@@ -8506,8 +8634,9 @@ async function shareInvoiceWhatsApp(id) {
         function renderJobs(jobs) {
             jobs = jobs || jobsData || [];
             var tbody = document.getElementById('jobsTable');
-            if (!tbody) {
-                console.warn('jobsTable missing');
+            var mobileList = document.getElementById('jobsMobileList');
+            if (!tbody && !mobileList) {
+                console.warn('jobsTable / jobsMobileList missing');
                 return;
             }
             var filter = document.getElementById('jobFilter') ? document.getElementById('jobFilter').value : 'all';
@@ -8535,33 +8664,7 @@ async function shareInvoiceWhatsApp(id) {
                 });
             }
 
-            var tbody = document.getElementById('jobsTable');
-            if (filtered.length === 0) {
-                var qEl2 = document.getElementById('jobsSearch');
-                var q2 = qEl2 ? qEl2.value.trim() : '';
-                tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state">' +
-                    (q2
-                        ? ('<strong>No matches</strong><span>Nothing found for “' + q2 + '”. Try another name or clear search.</span>')
-                        : ('<strong>No ' + modeLabel + ' jobs yet</strong><span>Add your first job to start tracking work and payments.</span><button type="button" class="btn btn-primary btn-sm" onclick="openModal(\'job\')">+ New job</button>')) +
-                    '</div></td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = filtered.map(function(j, i) {
-                var actionButtons = '';
-                if (j.status === 'draft') {
-                    actionButtons = '<button class="btn btn-primary btn-sm" onclick="finishDraftJob(\'' + j.id + '\')">Finish details</button>';
-                } else if (j.status === 'pending') {
-                    actionButtons = '<button class="btn btn-success btn-sm" onclick="updateJobStatus(\'' + j.id + '\', \'in-progress\')">Start</button>';
-                } else if (j.status === 'in-progress') {
-                    actionButtons = '<button class="btn btn-success btn-sm" onclick="updateJobStatus(\'' + j.id + '\', \'completed\')">Complete</button>';
-                } else if (j.status === 'completed' && currentServiceType === 'laundry') {
-                    actionButtons = '<button class="btn btn-primary btn-sm" onclick="markJobCollected(\'' + j.id + '\')">Collected</button>';
-                }
-
-                var cancelButton = (j.status === 'draft' || j.status === 'pending' || j.status === 'in-progress') ?
-                    '<button class="btn btn-danger btn-sm" onclick="updateJobStatus(\'' + j.id + '\', \'cancelled\')">Cancel</button>' : '';
-
+            function jobDetailLine(j) {
                 var detail = '';
                 if (getJobMode(j) === 'laundry' && j.items && j.items.length) {
                     var itemsArr = typeof j.items === 'string' ? (function() { try { return JSON.parse(j.items); } catch (e) { return []; } })() : j.items;
@@ -8574,42 +8677,120 @@ async function shareInvoiceWhatsApp(id) {
                     if (j.property_size) bits.push(j.property_size);
                     detail = bits.join(' · ');
                 }
+                return detail;
+            }
 
-                var hasNotes = j.notes && String(j.notes).trim() && String(j.notes).trim().toLowerCase() !== 'none';
-                var noteIcon = hasNotes
-                    ? '<span class="note-pill" title="Has notes">📝 Note</span>'
-                    : '';
+            function jobPrimaryBtn(j) {
+                var actionButtons = '';
+                if (j.status === 'draft') {
+                    actionButtons = '<button type="button" class="btn btn-primary btn-sm" onclick="event.stopPropagation();finishDraftJob(\'' + j.id + '\')">Finish details</button>';
+                } else if (j.status === 'pending') {
+                    actionButtons = '<button type="button" class="btn btn-success btn-sm" onclick="event.stopPropagation();updateJobStatus(\'' + j.id + '\', \'in-progress\')">Start</button>';
+                } else if (j.status === 'in-progress') {
+                    actionButtons = '<button type="button" class="btn btn-success btn-sm" onclick="event.stopPropagation();updateJobStatus(\'' + j.id + '\', \'completed\')">Complete</button>';
+                } else if (j.status === 'completed' && currentServiceType === 'laundry') {
+                    actionButtons = '<button type="button" class="btn btn-primary btn-sm" onclick="event.stopPropagation();markJobCollected(\'' + j.id + '\')">Collected</button>';
+                }
+                return actionButtons;
+            }
 
-                // Primary action + compact "More" menu (mobile-friendly)
-                var primary = actionButtons.replace(/onclick="/g, 'onclick="event.stopPropagation();');
+            function jobMoreMenu(j) {
+                var phoneEsc = typeof escJsAttr === 'function' ? escJsAttr(j.phone || '') : String(j.phone || '').replace(/'/g, "\\'");
+                var clientEsc = typeof escJsAttr === 'function' ? escJsAttr(j.client || '') : String(j.client || '').replace(/'/g, "\\'");
                 var moreItems = '';
                 moreItems += '<button type="button" onclick="event.stopPropagation();openJobDetail(\'' + j.id + '\')">View details</button>';
-                moreItems += '<button type="button" onclick="event.stopPropagation();sendSingleWhatsApp(\'' + j.client + '\', \'' + (j.phone || '') + '\')">WhatsApp</button>';
+                moreItems += '<button type="button" onclick="event.stopPropagation();sendSingleWhatsApp(\'' + clientEsc + '\', \'' + phoneEsc + '\')">WhatsApp</button>';
                 if (j.status === 'draft' || j.status === 'pending' || j.status === 'in-progress') {
                     moreItems += '<button type="button" class="danger" onclick="event.stopPropagation();updateJobStatus(\'' + j.id + '\', \'cancelled\')">Cancel job</button>';
                 }
                 moreItems += '<button type="button" class="danger" onclick="event.stopPropagation();deleteJobItem(\'' + j.id + '\')">Delete</button>';
+                return moreItems;
+            }
 
-                return '<tr class="job-row" onclick="openJobDetail(\'' + j.id + '\')">' +
-                    '<td>' + (i + 1) + '</td>' +
-                    '<td><strong>' + j.client + '</strong>' + noteIcon +
-                    '<br><span style="font-size:11px;color:var(--slate);">' + (j.phone || '') + '</span></td>' +
-                    '<td>' + modeIcon + ' ' + (j.service || 'N/A') +
-                    (detail ? '<br><span style="font-size:11px;color:var(--slate);">' + detail + '</span>' : '') +
-                    '</td>' +
-                    '<td>' + (j.date || 'N/A') + '</td>' +
-                    '<td><strong>' + formatMoney(j.amount) + '</strong></td>' +
-                    '<td><span class="status-pill status-' + String(j.status || '').replace(/\\s+/g, '-') + '">' + String(j.status || '').replace(/-/g, ' ') + '</span></td>' +
-                    '<td><div class="job-actions" onclick="event.stopPropagation()">' +
-                    '<div class="job-actions-primary">' +
-                    (primary || '') +
-                    '<details class="job-more">' +
-                    '<summary title="More actions" onclick="event.stopPropagation()">···</summary>' +
-                    '<div class="job-more-menu">' + moreItems + '</div>' +
-                    '</details>' +
-                    '</div></div></td>' +
-                    '</tr>';
-            }).join('');
+            function shortService(svc) {
+                var s = String(svc || 'N/A');
+                s = s.replace(/,?\s*totalling\s+[\d,.]+\s*naira\.?/i, '');
+                s = s.replace(/,?\s*totalling\s+[\d,.]+/i, '');
+                s = s.replace(/\s+/g, ' ').trim();
+                if (s.length > 56) s = s.slice(0, 53) + '…';
+                return s;
+            }
+
+            if (filtered.length === 0) {
+                var q2 = qEl ? qEl.value.trim() : '';
+                var emptyInner = q2
+                    ? ('<strong>No matches</strong><span>Nothing found for “' + q2 + '”. Try another name or clear search.</span>')
+                    : ('<strong>No ' + modeLabel + ' jobs yet</strong><span>Add your first job to start tracking work and payments.</span><button type="button" class="btn btn-primary btn-sm" onclick="openModal(\'job\')">+ New job</button>');
+                if (tbody) {
+                    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state">' + emptyInner + '</div></td></tr>';
+                }
+                if (mobileList) {
+                    mobileList.innerHTML = '<div class="empty-state" style="padding:28px 12px;">' + emptyInner + '</div>';
+                }
+                return;
+            }
+
+            if (tbody) {
+                tbody.innerHTML = filtered.map(function(j, i) {
+                    var detail = jobDetailLine(j);
+                    var hasNotes = j.notes && String(j.notes).trim() && String(j.notes).trim().toLowerCase() !== 'none';
+                    var noteIcon = hasNotes ? '<span class="note-pill" title="Has notes">📝 Note</span>' : '';
+                    var primary = jobPrimaryBtn(j);
+                    var moreItems = jobMoreMenu(j);
+                    return '<tr class="job-row" onclick="openJobDetail(\'' + j.id + '\')">' +
+                        '<td>' + (i + 1) + '</td>' +
+                        '<td><strong>' + j.client + '</strong>' + noteIcon +
+                        '<br><span style="font-size:11px;color:var(--slate);">' + (j.phone || '') + '</span></td>' +
+                        '<td>' + modeIcon + ' ' + shortService(j.service) +
+                        (detail ? '<br><span style="font-size:11px;color:var(--slate);">' + detail + '</span>' : '') +
+                        '</td>' +
+                        '<td>' + (j.date || 'N/A') + '</td>' +
+                        '<td><strong>' + formatMoney(j.amount) + '</strong></td>' +
+                        '<td><span class="status-pill status-' + String(j.status || '').replace(/\\s+/g, '-') + '">' + String(j.status || '').replace(/-/g, ' ') + '</span></td>' +
+                        '<td><div class="job-actions" onclick="event.stopPropagation()">' +
+                        '<div class="job-actions-primary">' +
+                        (primary || '') +
+                        '<details class="job-more">' +
+                        '<summary title="More actions" onclick="event.stopPropagation()">···</summary>' +
+                        '<div class="job-more-menu">' + moreItems + '</div>' +
+                        '</details>' +
+                        '</div></div></td>' +
+                        '</tr>';
+                }).join('');
+            }
+
+            if (mobileList) {
+                mobileList.innerHTML = filtered.map(function(j) {
+                    var detail = jobDetailLine(j);
+                    var hasNotes = j.notes && String(j.notes).trim() && String(j.notes).trim().toLowerCase() !== 'none';
+                    var noteIcon = hasNotes ? '<span class="note-pill" title="Has notes">📝 Note</span>' : '';
+                    var primary = jobPrimaryBtn(j);
+                    var moreItems = jobMoreMenu(j);
+                    var statusCls = 'status-pill status-' + String(j.status || '').replace(/\\s+/g, '-');
+                    var statusTxt = String(j.status || '').replace(/-/g, ' ');
+                    return '<div class="job-card" onclick="openJobDetail(\'' + j.id + '\')">' +
+                        '<div class="job-card-top">' +
+                        '<div><div class="job-card-client">' + (j.client || 'Client') + noteIcon + '</div>' +
+                        (j.phone ? '<div class="job-card-phone">' + j.phone + '</div>' : '') +
+                        '</div>' +
+                        '<span class="' + statusCls + '">' + statusTxt + '</span>' +
+                        '</div>' +
+                        '<div class="job-card-service">' + modeIcon + ' ' + shortService(j.service) + '</div>' +
+                        (detail ? '<div class="job-card-detail">' + detail + '</div>' : '') +
+                        '<div class="job-card-meta">' +
+                        '<span class="job-card-date">' + (j.date || '—') + '</span>' +
+                        '<span class="job-card-amount">' + formatMoney(j.amount) + '</span>' +
+                        '</div>' +
+                        '<div class="job-card-actions" onclick="event.stopPropagation()">' +
+                        (primary || '') +
+                        '<details class="job-more">' +
+                        '<summary title="More actions" onclick="event.stopPropagation()">···</summary>' +
+                        '<div class="job-more-menu">' + moreItems + '</div>' +
+                        '</details>' +
+                        '</div>' +
+                        '</div>';
+                }).join('');
+            }
         }
 
 
