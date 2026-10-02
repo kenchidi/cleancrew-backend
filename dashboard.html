@@ -347,10 +347,10 @@
             border-radius: 9px;
             font-family: inherit;
             font-size: 13px;
-            font-weight: 700;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.15s ease;
-            color: var(--slate);
+            color: #7B879C;
             min-height: 36px;
         }
         .service-toggle button .icon {
@@ -364,18 +364,18 @@
         }
         .service-toggle button.active {
             background: var(--white);
-            color: var(--ink);
-            box-shadow: 0 1px 3px rgba(11,21,38,.12);
+            color: #5B6B85;
+            box-shadow: 0 1px 2px rgba(11,21,38,.06);
         }
         .service-toggle button.cleaning.active {
-            background: var(--blue);
-            color: #fff;
-            box-shadow: 0 4px 12px rgba(26,109,219,.35);
+            background: #EAF2FC;
+            color: #1A5FB4;
+            box-shadow: none;
         }
         .service-toggle button.laundry.active {
-            background: var(--whatsapp, #25D366);
-            color: #fff;
-            box-shadow: 0 4px 12px rgba(37,211,102,.35);
+            background: #E8F8F0;
+            color: #0B7A54;
+            box-shadow: none;
         }
         @media (max-width: 480px) {
             .mode-switch-wrap .mode-label { display: none; }
@@ -3385,11 +3385,14 @@
             background: linear-gradient(160deg, #ECFDF5 0%, #FFFFFF 55%) !important;
         }
         body.mode-laundry .service-toggle button.laundry.active {
-            background: var(--mode-accent) !important;
-            box-shadow: 0 4px 12px var(--mode-accent-shadow) !important;
+            background: #E8F8F0 !important;
+            color: #0B7A54 !important;
+            box-shadow: none !important;
         }
         body.mode-cleaning .service-toggle button.cleaning.active {
-            background: var(--blue) !important;
+            background: #EAF2FC !important;
+            color: #1A5FB4 !important;
+            box-shadow: none !important;
         }
 
         /* Mobile modals: full-width sheet so dropdowns aren't cramped */
@@ -3914,27 +3917,36 @@
         }
         .service-toggle button {
             background: transparent !important;
-            color: var(--slate) !important;
+            color: #7B879C !important;
             border: none !important;
             box-shadow: none !important;
             font-weight: 600 !important;
         }
         .service-toggle button:not(.active):hover {
-            background: rgba(255,255,255,0.55) !important;
-            color: var(--ink) !important;
+            background: rgba(255,255,255,0.65) !important;
+            color: #5B6B85 !important;
         }
-        .service-toggle button.active,
-        .service-toggle button.cleaning.active,
-        .service-toggle button.laundry.active {
+        .service-toggle button.active {
             background: var(--white) !important;
-            color: var(--ink) !important;
-            box-shadow: 0 1px 2px rgba(11,21,38,.06) !important;
+            color: #5B6B85 !important;
+            box-shadow: 0 1px 2px rgba(11,21,38,.05) !important;
         }
-        body.mode-laundry .service-toggle button.laundry.active {
-            color: #0B7A54 !important;
-        }
+        .service-toggle button.cleaning.active,
         body.mode-cleaning .service-toggle button.cleaning.active {
-            color: var(--blue-dark) !important;
+            background: #EAF2FC !important;
+            color: #1A5FB4 !important;
+            box-shadow: none !important;
+        }
+        .service-toggle button.laundry.active,
+        body.mode-laundry .service-toggle button.laundry.active {
+            background: #E8F8F0 !important;
+            color: #0B7A54 !important;
+            box-shadow: none !important;
+        }
+        .mode-switch-wrap .mode-label {
+            color: #94A3B8 !important;
+            font-weight: 600 !important;
+            letter-spacing: 0.04em !important;
         }
 
         /* Nav tabs — quiet selected state */
