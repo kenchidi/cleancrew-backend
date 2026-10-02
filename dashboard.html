@@ -3766,6 +3766,263 @@
         }
         .ob-mascot-row h3 { margin: 0; }
 
+        /* ============================================
+           GMAIL-LIGHT UI PASS
+           Quiet surfaces · soft controls · one solid CTA weight
+        ============================================ */
+        :root {
+            --shadow-sm: 0 1px 2px rgba(11,21,38,.04);
+            --shadow-md: 0 4px 16px rgba(11,21,38,.05);
+            --shadow-lg: 0 12px 40px rgba(11,21,38,.08);
+            --shadow-blue: 0 1px 2px rgba(15,79,168,.08);
+            --border: #E8ECF2;
+            --surface: #F8FAFC;
+        }
+        body {
+            background: #F6F7F9 !important;
+        }
+
+        /* Buttons — lighter defaults */
+        .btn {
+            border-radius: 10px !important;
+            font-weight: 600 !important;
+            box-shadow: none !important;
+            transform: none !important;
+        }
+        .btn:hover {
+            transform: none !important;
+        }
+        .btn-primary,
+        .btn.btn-primary {
+            background: #EEF4FC !important;
+            color: var(--blue-dark) !important;
+            border: 1px solid #D0E2F8 !important;
+            box-shadow: none !important;
+        }
+        .btn-primary:hover,
+        .btn.btn-primary:hover {
+            background: #E2EEFB !important;
+            border-color: #B6D2F5 !important;
+            box-shadow: none !important;
+            filter: none !important;
+        }
+        /* Keep a true solid only when explicitly marked */
+        .btn-primary.btn-solid,
+        .btn.btn-solid,
+        .hero-actions .btn-primary,
+        .app-toolbar .btn-primary,
+        .dash-greeting .btn-primary,
+        #tab-overview .btn-primary {
+            background: var(--blue) !important;
+            color: #fff !important;
+            border: 1px solid var(--blue) !important;
+            box-shadow: none !important;
+        }
+        .btn-primary.btn-solid:hover,
+        .btn.btn-solid:hover,
+        .hero-actions .btn-primary:hover,
+        .app-toolbar .btn-primary:hover,
+        .dash-greeting .btn-primary:hover,
+        #tab-overview .btn-primary:hover {
+            background: var(--blue-dark) !important;
+            border-color: var(--blue-dark) !important;
+        }
+        body.mode-laundry .btn-primary,
+        body.mode-laundry .btn.btn-primary {
+            background: #ECFDF5 !important;
+            color: #0B7A54 !important;
+            border: 1px solid #A7F3D0 !important;
+            box-shadow: none !important;
+        }
+        body.mode-laundry .btn-primary:hover {
+            background: #D1FAE5 !important;
+            box-shadow: none !important;
+        }
+        body.mode-laundry .btn-primary.btn-solid,
+        body.mode-laundry .app-toolbar .btn-primary,
+        body.mode-laundry .dash-greeting .btn-primary,
+        body.mode-laundry #tab-overview .btn-primary,
+        body.mode-laundry .hero-actions .btn-primary {
+            background: #0F9F6E !important;
+            color: #fff !important;
+            border-color: #0F9F6E !important;
+        }
+        .btn-success {
+            background: #ECFDF5 !important;
+            color: #047857 !important;
+            border: 1px solid #A7F3D0 !important;
+        }
+        .btn-success:hover {
+            background: #D1FAE5 !important;
+            opacity: 1 !important;
+        }
+        .btn-danger {
+            background: #FEF2F2 !important;
+            color: #B91C1C !important;
+            border: 1px solid #FECACA !important;
+        }
+        .btn-danger:hover {
+            background: #FEE2E2 !important;
+            opacity: 1 !important;
+        }
+        .btn-whatsapp {
+            background: #ECFDF5 !important;
+            color: #128C7E !important;
+            border: 1px solid #A7F3D0 !important;
+        }
+        .btn-whatsapp:hover {
+            background: #D1FAE5 !important;
+            opacity: 1 !important;
+        }
+        .btn-secondary,
+        .btn-outline {
+            background: var(--white) !important;
+            color: var(--ink-soft) !important;
+            border: 1px solid var(--border) !important;
+            box-shadow: none !important;
+        }
+        .btn-secondary:hover,
+        .btn-outline:hover {
+            background: var(--surface) !important;
+            border-color: #D5DBE6 !important;
+        }
+        .btn-sm {
+            font-weight: 600 !important;
+        }
+
+        /* Cards & surfaces */
+        .card,
+        .stat-card,
+        .jobs-card,
+        .plan-card {
+            box-shadow: none !important;
+            border: 1px solid var(--border) !important;
+            background: var(--white) !important;
+        }
+        .stat-card:hover,
+        .card:hover {
+            box-shadow: none !important;
+            transform: none !important;
+        }
+
+        /* Service mode toggle — segmented, not solid blocks */
+        .service-toggle {
+            background: #EEF1F6 !important;
+            border: 1px solid transparent !important;
+            box-shadow: none !important;
+            padding: 3px !important;
+        }
+        .service-toggle button {
+            background: transparent !important;
+            color: var(--slate) !important;
+            border: none !important;
+            box-shadow: none !important;
+            font-weight: 600 !important;
+        }
+        .service-toggle button:not(.active):hover {
+            background: rgba(255,255,255,0.55) !important;
+            color: var(--ink) !important;
+        }
+        .service-toggle button.active,
+        .service-toggle button.cleaning.active,
+        .service-toggle button.laundry.active {
+            background: var(--white) !important;
+            color: var(--ink) !important;
+            box-shadow: 0 1px 2px rgba(11,21,38,.06) !important;
+        }
+        body.mode-laundry .service-toggle button.laundry.active {
+            color: #0B7A54 !important;
+        }
+        body.mode-cleaning .service-toggle button.cleaning.active {
+            color: var(--blue-dark) !important;
+        }
+
+        /* Nav tabs — quiet selected state */
+        .nav-tabs {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            gap: 4px !important;
+            padding: 0 !important;
+        }
+        .nav-tabs button {
+            background: transparent !important;
+            color: var(--slate) !important;
+            border: 1px solid transparent !important;
+            font-weight: 600 !important;
+            box-shadow: none !important;
+        }
+        .nav-tabs button:hover {
+            background: rgba(15,23,42,0.04) !important;
+            color: var(--ink) !important;
+        }
+        .nav-tabs button.active {
+            background: var(--white) !important;
+            color: var(--ink) !important;
+            border-color: var(--border) !important;
+            box-shadow: none !important;
+        }
+        .nav-tabs button.active .icon {
+            color: var(--blue) !important;
+        }
+        body.mode-laundry .nav-tabs button.active .icon {
+            color: #0F9F6E !important;
+        }
+
+        /* Sidebar active — soft */
+        .sidebar .nav-links button.active {
+            background: #EEF4FC !important;
+            color: var(--blue-dark) !important;
+            box-shadow: none !important;
+            border: none !important;
+        }
+        body.mode-laundry .sidebar .nav-links button.active {
+            background: #ECFDF5 !important;
+            color: #0B7A54 !important;
+        }
+
+        /* Status chips — keep tint, reduce weight */
+        .status-pill,
+        .status-badge {
+            font-weight: 600 !important;
+            border: 1px solid transparent;
+        }
+        .status-pill.status-pending, .status-pill.status-draft,
+        .status-badge.pending, .status-badge.draft {
+            background: #FFF8F1 !important;
+            color: #B45309 !important;
+        }
+        .status-pill.status-in-progress,
+        .status-badge.in-progress {
+            background: #F0F6FF !important;
+            color: #1D4ED8 !important;
+        }
+        .status-pill.status-completed, .status-pill.status-collected, .status-pill.status-paid,
+        .status-badge.completed, .status-badge.collected {
+            background: #F0FDF6 !important;
+            color: #047857 !important;
+        }
+
+        /* Job cards mobile */
+        .job-card {
+            box-shadow: none !important;
+            border-color: var(--border) !important;
+        }
+
+        /* Credit / free chips */
+        .credit-badge,
+        .user-info .plan-badge {
+            box-shadow: none !important;
+            font-weight: 600 !important;
+        }
+
+        /* Topbar / header quieter */
+        .topbar, .header {
+            box-shadow: none !important;
+            border-bottom: 1px solid var(--border);
+            background: rgba(255,255,255,0.92) !important;
+        }
+
     </style>
 
     <script>
