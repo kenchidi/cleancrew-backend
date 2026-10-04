@@ -4035,6 +4035,291 @@
             background: rgba(255,255,255,0.92) !important;
         }
 
+    
+        /* ===== MOBILE OVERVIEW POLISH (focused, desktop untouched) ===== */
+        @media (max-width: 640px) {
+            /* Header: tighter, no email */
+            .top-bar-redesign {
+                padding: 8px 12px !important;
+                gap: 8px !important;
+                flex-wrap: nowrap !important;
+                align-items: center !important;
+            }
+            .top-bar-redesign .mobile-menu-btn {
+                padding: 7px !important;
+                border-radius: 10px !important;
+                flex-shrink: 0;
+            }
+            .top-bar-redesign .mode-switch-wrap {
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+            .top-bar-redesign .mode-label { display: none !important; }
+            .top-bar-redesign .service-toggle {
+                width: 100%;
+                max-width: 220px;
+            }
+            .top-bar-redesign .service-toggle button {
+                padding: 7px 10px !important;
+                font-size: 12px !important;
+                gap: 4px;
+            }
+            .top-bar-redesign .user-stats {
+                gap: 6px !important;
+                flex-wrap: nowrap !important;
+                flex-shrink: 0;
+            }
+            .top-bar-redesign #userEmail,
+            .top-bar-redesign .user-email,
+            .top-bar-redesign .email {
+                display: none !important;
+            }
+            .top-bar-redesign .credit-badge {
+                font-size: 11px !important;
+                padding: 4px 8px !important;
+                white-space: nowrap;
+            }
+
+            .main-shell .container {
+                padding: 12px 14px calc(28px + env(safe-area-inset-bottom, 0px)) !important;
+            }
+
+            /* Greeting: compact */
+            .dash-greeting {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 10px !important;
+                margin-bottom: 12px !important;
+                padding: 0 !important;
+            }
+            .dash-greeting .greet-left {
+                display: flex !important;
+                align-items: flex-start !important;
+                gap: 10px !important;
+                min-width: 0 !important;
+            }
+            .dash-greeting .greet-left .cc-mascot,
+            .dash-greeting .cc-mascot.md {
+                width: 36px !important;
+                height: 36px !important;
+                margin-top: 2px !important;
+            }
+            .dash-greeting h2 {
+                font-size: 1.15rem !important;
+                font-weight: 800 !important;
+                letter-spacing: -0.03em !important;
+                margin: 0 0 2px !important;
+                line-height: 1.2 !important;
+            }
+            .dash-greeting p {
+                font-size: 12px !important;
+                font-weight: 500 !important;
+                color: var(--slate) !important;
+                margin: 0 !important;
+                line-height: 1.35 !important;
+            }
+            .dash-greeting .loc-filter-row {
+                margin-top: 8px !important;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .dash-greeting .loc-filter-row label {
+                font-size: 11px;
+                font-weight: 600;
+                color: var(--slate);
+            }
+            .dash-greeting .loc-filter-row select {
+                flex: 1;
+                min-width: 0;
+                font-size: 13px;
+                padding: 6px 10px;
+                border-radius: 10px;
+            }
+            .dash-greeting #overviewNewJobBtn,
+            .dash-greeting .btn-primary {
+                width: 100% !important;
+                justify-content: center !important;
+                padding: 12px 16px !important;
+                font-size: 14px !important;
+                border-radius: 12px !important;
+                order: 2;
+            }
+            .dash-greeting .greet-left { order: 1; }
+            .dash-greeting .loc-filter-row { order: 3; }
+
+            /* KPI cards: 2x2, cleaner hierarchy */
+            .ops-kpi {
+                gap: 8px !important;
+                margin-bottom: 12px !important;
+            }
+            .ops-kpi .stat-card {
+                padding: 12px 12px 10px !important;
+                border-radius: 12px !important;
+                border: 1px solid var(--border) !important;
+                box-shadow: none !important;
+                background: var(--white) !important;
+                min-width: 0 !important;
+            }
+            .ops-kpi .stat-card.primary { border-left: 3px solid var(--blue) !important; }
+            .ops-kpi .stat-card.orange { border-left: 3px solid #F59E0B !important; }
+            .ops-kpi .stat-card.green,
+            .ops-kpi #revenueStatCard { border-left: 3px solid #10B981 !important; }
+            .ops-kpi .stat-label {
+                font-size: 10px !important;
+                font-weight: 700 !important;
+                letter-spacing: 0.04em !important;
+                text-transform: uppercase !important;
+                color: var(--slate) !important;
+                margin-bottom: 4px !important;
+            }
+            .ops-kpi .stat-value {
+                font-size: 1.2rem !important;
+                font-weight: 800 !important;
+                letter-spacing: -0.03em !important;
+                line-height: 1.15 !important;
+                word-break: break-word !important;
+                color: var(--ink) !important;
+            }
+            .ops-kpi .stat-card > div[style*="font-size:11px"],
+            .ops-kpi .stat-sub {
+                font-size: 10px !important;
+                color: var(--slate) !important;
+                margin-top: 3px !important;
+                font-weight: 500 !important;
+            }
+            /* Soften revenue unlock — secondary control */
+            .ops-kpi .unlock-revenue-btn {
+                margin-top: 6px !important;
+                padding: 4px 8px !important;
+                font-size: 10px !important;
+                font-weight: 600 !important;
+                border-radius: 8px !important;
+                border-color: #E2E8F0 !important;
+                color: var(--slate) !important;
+                background: #F8FAFC !important;
+                width: auto !important;
+            }
+
+            /* Pricing Coach — premium navy, restrained */
+            .pc-card {
+                border-radius: 14px !important;
+                padding: 14px 16px !important;
+                margin-bottom: 12px !important;
+                background: linear-gradient(145deg, #0B1F33 0%, #0F3D4C 100%) !important;
+                border: 1px solid rgba(255,255,255,0.06) !important;
+                box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12) !important;
+            }
+            .pc-card::before { display: none !important; }
+            .pc-card h3 {
+                font-size: 15px !important;
+                margin: 0 0 6px !important;
+                color: #fff !important;
+            }
+            .pc-card > p {
+                font-size: 12px !important;
+                line-height: 1.4 !important;
+                color: rgba(255,255,255,0.78) !important;
+                margin: 0 0 12px !important;
+            }
+            .pc-card .btn-pc {
+                background: #fff !important;
+                color: #0B1F33 !important;
+                font-weight: 700 !important;
+                border-radius: 10px !important;
+                padding: 9px 14px !important;
+                font-size: 13px !important;
+            }
+            .pc-card .pc-badge {
+                background: rgba(255,255,255,0.15) !important;
+                color: #A5F3FC !important;
+                font-size: 10px !important;
+            }
+            .pc-card .pc-last { color: rgba(255,255,255,0.55) !important; font-size: 11px !important; }
+
+            /* Today's jobs — compact cards */
+            .ops-main { gap: 12px !important; margin-bottom: 12px !important; }
+            .ops-main > .card {
+                border-radius: 14px !important;
+                border: 1px solid var(--border) !important;
+                box-shadow: none !important;
+                padding: 12px !important;
+            }
+            .ops-main .card-header {
+                margin-bottom: 8px !important;
+                padding-bottom: 8px !important;
+            }
+            .ops-main .card-header h3 {
+                font-size: 14px !important;
+                font-weight: 800 !important;
+            }
+            .today-job-row {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 6px !important;
+                padding: 12px !important;
+                margin-bottom: 8px !important;
+                border: 1px solid var(--border) !important;
+                border-radius: 12px !important;
+                border-bottom: 1px solid var(--border) !important;
+                background: #fff !important;
+            }
+            .today-job-row:last-child { margin-bottom: 0 !important; }
+            .today-job-row .tj-top {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            .today-job-row .tj-top strong {
+                font-size: 14px;
+                font-weight: 700;
+                color: var(--ink);
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .today-job-row .tj-service {
+                font-size: 13px;
+                font-weight: 600;
+                color: var(--ink);
+                line-height: 1.3;
+            }
+            .today-job-row .tj-meta {
+                font-size: 12px !important;
+                color: var(--slate) !important;
+            }
+            .today-job-row .tj-bottom {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 8px;
+                margin-top: 2px;
+            }
+            .today-job-row .tj-amt {
+                font-size: 14px;
+                font-weight: 800;
+                color: var(--ink);
+                letter-spacing: -0.02em;
+                white-space: nowrap;
+            }
+            .today-job-row .status-pill {
+                flex-shrink: 0;
+                font-size: 10px !important;
+                padding: 3px 8px !important;
+            }
+
+            /* Quiet secondary cards on overview */
+            #tab-overview .card {
+                border-radius: 14px;
+            }
+            #tab-overview .quick-actions .qa-btn {
+                padding: 11px 12px !important;
+                border-radius: 12px !important;
+            }
+        }
+
     </style>
 
     <script>
@@ -4300,7 +4585,7 @@
             <div class="stat-card primary">
                 <div class="stat-label">Jobs today</div>
                 <div class="stat-value" id="ovJobsToday">0</div>
-                <div id="ovJobsSub" style="font-size:11px;color:var(--slate);margin-top:4px;">Scheduled for today</div>
+                <div id="ovJobsSub" class="stat-sub" style="font-size:11px;color:var(--slate);margin-top:4px;">Scheduled for today</div>
             </div>
             <div class="stat-card orange">
                 <div class="stat-label">Pending</div>
@@ -4310,7 +4595,8 @@
             <div class="stat-card green revenue-locked" id="revenueStatCard">
                 <div class="stat-label">Revenue</div>
                 <div class="stat-value" id="ovRevenue">₦••••</div>
-                <button type="button" class="btn btn-outline btn-sm unlock-revenue-btn" id="unlockRevenueBtn" onclick="promptUnlockRevenue()" style="display:inline-flex;margin-top:6px;">Tap to unlock</button>
+                <div class="stat-sub" id="ovRevenueSub" style="font-size:11px;color:var(--slate);margin-top:4px;">This month</div>
+                <button type="button" class="btn btn-outline btn-sm unlock-revenue-btn" id="unlockRevenueBtn" onclick="promptUnlockRevenue()" style="display:inline-flex;margin-top:6px;">Unlock</button>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Outstanding</div>
@@ -8602,12 +8888,22 @@ async function shareInvoiceWhatsApp(id) {
                 } else {
                     todayEl.innerHTML = todayJobs.map(function(j) {
                         var st = j.status || 'pending';
+                        var stLabel = String(st).replace(/-/g, ' ');
                         var svc = j.service || j.mode || modeLabel;
+                        if (typeof shortService === 'function') svc = shortService(svc);
                         var amt = (j.amount != null && Number(j.amount) > 0 && typeof formatMoney === 'function') ? formatMoney(j.amount) : '';
+                        var detailBits = [];
+                        if (j.rooms) detailBits.push(j.rooms + (Number(j.rooms) === 1 ? ' room' : ' rooms'));
+                        if (j.property_size) detailBits.push(j.property_size);
+                        var detail = detailBits.join(' · ');
                         return '<div class="today-job-row" onclick="openJobDetail(\'' + j.id + '\')">' +
-                            '<div><strong>' + (j.client || 'Customer') + '</strong>' +
-                            '<div class="tj-meta">' + svc + (amt ? ' · ' + amt : '') + '</div></div>' +
-                            '<span class="status-pill" style="align-self:center;font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;background:#F1F5F9;">' + st + '</span></div>';
+                            '<div class="tj-top"><strong>' + (j.client || 'Customer') + '</strong>' +
+                            '<span class="status-pill" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;background:#F1F5F9;">' + stLabel + '</span></div>' +
+                            '<div class="tj-service">' + svc + '</div>' +
+                            '<div class="tj-bottom">' +
+                            '<span class="tj-meta">' + (detail || (j.phone || '')) + '</span>' +
+                            (amt ? '<span class="tj-amt">' + amt + '</span>' : '') +
+                            '</div></div>';
                     }).join('');
                 }
             }
