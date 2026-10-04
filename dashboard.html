@@ -4038,36 +4038,54 @@
     
         /* ===== MOBILE OVERVIEW POLISH (focused, desktop untouched) ===== */
         @media (max-width: 640px) {
-            /* Header: tighter, no email */
+            /* Header: two rows so mode switch never disappears
+               Row 1: menu + Cleaning/Laundry
+               Row 2: free jobs + credits (email hidden) */
             .top-bar-redesign {
                 padding: 8px 12px !important;
                 gap: 8px !important;
-                flex-wrap: nowrap !important;
+                flex-wrap: wrap !important;
                 align-items: center !important;
+                overflow: visible !important;
             }
             .top-bar-redesign .mobile-menu-btn {
+                order: 1 !important;
                 padding: 7px !important;
                 border-radius: 10px !important;
-                flex-shrink: 0;
+                flex-shrink: 0 !important;
+                display: inline-flex !important;
             }
             .top-bar-redesign .mode-switch-wrap {
-                flex: 1 1 auto;
-                min-width: 0;
+                order: 2 !important;
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                flex: 1 1 auto !important;
+                min-width: 140px !important;
+                max-width: calc(100% - 56px) !important;
+                justify-content: flex-start !important;
             }
             .top-bar-redesign .mode-label { display: none !important; }
             .top-bar-redesign .service-toggle {
-                width: 100%;
-                max-width: 220px;
+                display: flex !important;
+                width: 100% !important;
+                max-width: 260px !important;
             }
             .top-bar-redesign .service-toggle button {
+                display: flex !important;
+                flex: 1 1 auto !important;
                 padding: 7px 10px !important;
                 font-size: 12px !important;
                 gap: 4px;
+                min-height: 36px;
             }
             .top-bar-redesign .user-stats {
+                order: 3 !important;
+                flex: 1 1 100% !important;
+                width: 100% !important;
                 gap: 6px !important;
                 flex-wrap: nowrap !important;
-                flex-shrink: 0;
+                justify-content: flex-start !important;
             }
             .top-bar-redesign #userEmail,
             .top-bar-redesign .user-email,
