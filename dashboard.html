@@ -8915,7 +8915,6 @@ async function shareInvoiceWhatsApp(id) {
                 return modeOk && locOk;
             });
             var modeLabel = currentServiceType === 'laundry' ? 'laundry' : 'cleaning';
-            var modeIcon = currentServiceType === 'laundry' ? '👕' : '🧹';
 
             if (filter !== 'all') {
                 filtered = filtered.filter(function(j) {
@@ -8978,6 +8977,8 @@ async function shareInvoiceWhatsApp(id) {
 
             function shortService(svc) {
                 var s = String(svc || 'N/A');
+                // Strip decorative broom/laundry emojis from labels (not mode switcher)
+                s = s.replace(/^🧹\s*/, '').replace(/^👕\s*/, '').replace(/^🧺\s*/, '').replace(/^🧼\s*/, '');
                 s = s.replace(/,?\s*totalling\s+[\d,.]+\s*naira\.?/i, '');
                 s = s.replace(/,?\s*totalling\s+[\d,.]+/i, '');
                 s = s.replace(/\s+/g, ' ').trim();
@@ -9010,7 +9011,7 @@ async function shareInvoiceWhatsApp(id) {
                         '<td>' + (i + 1) + '</td>' +
                         '<td><strong>' + j.client + '</strong>' + noteIcon +
                         '<br><span style="font-size:11px;color:var(--slate);">' + (j.phone || '') + '</span></td>' +
-                        '<td>' + modeIcon + ' ' + shortService(j.service) +
+                        '<td>' + shortService(j.service) +
                         (detail ? '<br><span style="font-size:11px;color:var(--slate);">' + detail + '</span>' : '') +
                         '</td>' +
                         '<td>' + (j.date || 'N/A') + '</td>' +
@@ -9044,7 +9045,7 @@ async function shareInvoiceWhatsApp(id) {
                         '</div>' +
                         '<span class="' + statusCls + '">' + statusTxt + '</span>' +
                         '</div>' +
-                        '<div class="job-card-service">' + modeIcon + ' ' + shortService(j.service) + '</div>' +
+                        '<div class="job-card-service">' + shortService(j.service) + '</div>' +
                         (detail ? '<div class="job-card-detail">' + detail + '</div>' : '') +
                         '<div class="job-card-meta">' +
                         '<span class="job-card-date">' + (j.date || '—') + '</span>' +
