@@ -3660,16 +3660,56 @@
             bottom: 12px;
             z-index: 20;
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
             gap: 10px;
             margin-top: 16px;
             padding: 12px 14px;
-            background: rgba(255,255,255,0.92);
+            background: rgba(255,255,255,0.96);
             backdrop-filter: blur(10px);
             border: 1px solid var(--border);
             border-radius: 14px;
             box-shadow: var(--shadow-md);
         }
+        .settings-sticky-save .settings-save-status {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--slate);
+        }
+        .settings-sticky-save.is-dirty .settings-save-status { color: #B45309; }
+        .settings-sticky-save.is-saved .settings-save-status { color: #047857; }
+        .settings-sticky-save .settings-save-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .billing-usage-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin: 12px 0 16px;
+        }
+        @media (min-width: 600px) {
+            .billing-usage-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        }
+        .billing-usage-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 14px;
+        }
+        .billing-usage-card .bu-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--slate);
+            margin-bottom: 4px;
+        }
+        .billing-usage-card .bu-value {
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--ink);
+        }
+        .billing-usage-card .bu-sub { font-size: 12px; color: var(--slate); margin-top: 2px; }
         .settings-section-title {
             font-size: 15px;
             font-weight: 800;
@@ -4469,7 +4509,7 @@
                     </div>
                 </div>
                 <div class="user-stats">
-                    <span id="freeJobsBadge" class="credit-badge" style="background:#D1FAE5;color:#065F46;border-color:#A7F3D0;">Free jobs: —</span>
+                    <span id="freeJobsBadge" class="credit-badge" style="background:#D1FAE5;color:#065F46;border-color:#A7F3D0;cursor:pointer;" onclick="switchTab('settings');setTimeout(function(){switchSettingsPanel('billing');},80);" title="Billing & usage">Free jobs: —</span>
                     <span id="creditBadge" class="credit-badge" onclick="goToCredits()">Credits: 0</span>
                     <span class="email" id="userEmail" style="font-size:12px;color:var(--slate);"></span>
                 </div>
@@ -5082,6 +5122,7 @@
                     <button type="button" class="active" data-settings-panel="business" onclick="switchSettingsPanel('business')">Business</button>
                     <button type="button" data-settings-panel="public" onclick="switchSettingsPanel('public')">Public page</button>
                     <button type="button" data-settings-panel="payments" onclick="switchSettingsPanel('payments')">Payments &amp; invoices</button>
+                    <button type="button" data-settings-panel="billing" onclick="switchSettingsPanel('billing')">Billing &amp; usage</button>
                     <button type="button" data-settings-panel="locations" onclick="switchSettingsPanel('locations')">Locations</button>
                     <button type="button" data-settings-panel="preferences" onclick="switchSettingsPanel('preferences')">Preferences</button>
                 </nav>
@@ -5126,6 +5167,70 @@
                                         <input type="email" id="settingsEmail" placeholder="e.g. hello@yourbusiness.com" />
                                     </div>
                                 </div>
+                                <div class="form-group full-width">
+                                    <label>Business description (optional)</label>
+                                    <textarea id="settingsBusinessDesc" rows="2" maxlength="280" placeholder="e.g. Professional home and office cleaning in Abuja"></textarea>
+                                    <p class="logo-upload-hint">Can appear on your public page and invoices.</p>
+                                </div>
+                            </div>
+                            <div class="card" style="margin-top:14px;">
+                                <p class="settings-section-title">Business location</p>
+                                <p class="settings-section-desc">Sets currency on jobs, invoices, and credit packs. Change this if you operate outside Nigeria.</p>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Country</label>
+                                        <select id="settingsCountryBiz" onchange="setUserCountry(this.value); var s=document.getElementById('settingsCountry'); if(s)s.value=this.value; markSettingsDirty();">
+                                            <option value="NG">Nigeria</option>
+                                            <option value="GH">Ghana</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Currency</label>
+                                        <input type="text" id="settingsCurrencyLabel" readonly value="₦ Nigerian Naira" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Time zone</label>
+                                    <select id="settingsTimezone" onchange="markSettingsDirty()">
+                                        <option value="Africa/Lagos">Africa/Lagos (WAT)</option>
+                                        <option value="Africa/Accra">Africa/Accra (GMT)</option>
+                                    </select>
+                                    <p class="logo-upload-hint">Used for “today’s jobs” and dates on your dashboard.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-panel" id="settingsPanel-billing">
+                            <div class="card">
+                                <p class="settings-section-title">Billing &amp; usage</p>
+                                <p class="settings-section-desc">How you use CleanCrew — free jobs, credits, and unlimited plans.</p>
+                                <div class="billing-usage-grid">
+                                    <div class="billing-usage-card">
+                                        <div class="bu-label">Free jobs left</div>
+                                        <div class="bu-value" id="billingFreeJobs">—</div>
+                                        <div class="bu-sub">Lifetime of 25 lifetime</div>
+                                    </div>
+                                    <div class="billing-usage-card">
+                                        <div class="bu-label">Paid credits</div>
+                                        <div class="bu-value" id="billingCredits">—</div>
+                                        <div class="bu-sub">1 credit = 1 job</div>
+                                    </div>
+                                    <div class="billing-usage-card">
+                                        <div class="bu-label">Plan</div>
+                                        <div class="bu-value" id="billingPlan" style="font-size:1rem;">Free</div>
+                                        <div class="bu-sub" id="billingPlanSub">Pay as you go</div>
+                                    </div>
+                                    <div class="billing-usage-card">
+                                        <div class="bu-label">Country</div>
+                                        <div class="bu-value" id="billingCountry" style="font-size:1rem;">—</div>
+                                        <div class="bu-sub" id="billingCurrencySub">—</div>
+                                    </div>
+                                </div>
+                                <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="goToCredits(true)">Buy credits</button>
+                                    <button type="button" class="btn btn-outline btn-sm" onclick="goToCredits(true)">View packs &amp; unlimited</button>
+                                </div>
+                                <p class="logo-upload-hint" style="margin-top:12px;">Credits never expire. Free jobs are lifetime for your account — not monthly.</p>
                             </div>
                         </div>
 
@@ -5342,9 +5447,13 @@
                         </div>
 
                         <div class="settings-sticky-save" id="settingsSaveBar">
-                            <button type="submit" class="btn btn-primary">
-                                <svg class="icon"><use href="#ic-check"/></svg> Save changes
-                            </button>
+                            <span class="settings-save-status" id="settingsSaveStatus">All changes saved</span>
+                            <div class="settings-save-actions">
+                                <button type="button" class="btn btn-outline btn-sm" id="settingsDiscardBtn" onclick="discardSettingsChanges()" style="display:none;">Discard</button>
+                                <button type="submit" class="btn btn-primary" id="settingsSaveBtn">
+                                    <svg class="icon"><use href="#ic-check"/></svg> Save changes
+                                </button>
+                            </div>
                         </div>
                     </form>
 
@@ -5547,16 +5656,130 @@
             localStorage.setItem('cleancrew_country', USER_COUNTRY);
             var sel = document.getElementById('settingsCountry');
             if (sel) sel.value = USER_COUNTRY;
+            var selBiz = document.getElementById('settingsCountryBiz');
+            if (selBiz) selBiz.value = USER_COUNTRY;
+            var curLab = document.getElementById('settingsCurrencyLabel');
+            if (curLab) curLab.value = USER_COUNTRY === 'GH' ? 'GH₵ Ghana Cedi' : '₦ Nigerian Naira';
+            var tz = document.getElementById('settingsTimezone');
+            if (tz && !tz.dataset.userSet) {
+                tz.value = USER_COUNTRY === 'GH' ? 'Africa/Accra' : 'Africa/Lagos';
+            }
             document.querySelectorAll('.currency-symbol').forEach(function(el) {
                 el.textContent = moneySymbol();
             });
             var qcLab = document.getElementById('qcAmountLabel');
             if (qcLab) qcLab.innerHTML = 'Amount (' + moneySymbol() + ') optional';
             if (typeof renderCreditPacksUI === 'function') renderCreditPacksUI();
+            if (typeof refreshBillingUsagePanel === 'function') refreshBillingUsagePanel();
             if (typeof renderAll === 'function') renderAll();
             if (typeof showToast === 'function') {
                 showToast(USER_COUNTRY === 'GH' ? 'Currency: Ghana Cedis (GH₵)' : 'Currency: Naira (₦)', 'success');
             }
+        }
+
+        var _settingsSnapshot = '';
+        function getSettingsFormSnapshot() {
+            var form = document.getElementById('invoiceSettingsForm');
+            if (!form) return '';
+            var parts = [];
+            try {
+                var els = form.querySelectorAll('input, select, textarea');
+                for (var i = 0; i < els.length; i++) {
+                    var el = els[i];
+                    if (!el.id || el.type === 'file' || el.type === 'submit' || el.type === 'button') continue;
+                    if (el.type === 'checkbox' || el.type === 'radio') parts.push(el.id + '=' + (el.checked ? '1' : '0'));
+                    else parts.push(el.id + '=' + String(el.value || ''));
+                }
+            } catch (e) {}
+            return parts.join('&');
+        }
+        function markSettingsDirty() {
+            var bar = document.getElementById('settingsSaveBar');
+            var st = document.getElementById('settingsSaveStatus');
+            var disc = document.getElementById('settingsDiscardBtn');
+            if (bar) { bar.classList.add('is-dirty'); bar.classList.remove('is-saved'); }
+            if (st) st.textContent = 'Unsaved changes';
+            if (disc) disc.style.display = '';
+        }
+        function markSettingsClean(msg) {
+            _settingsSnapshot = getSettingsFormSnapshot();
+            var bar = document.getElementById('settingsSaveBar');
+            var st = document.getElementById('settingsSaveStatus');
+            var disc = document.getElementById('settingsDiscardBtn');
+            if (bar) { bar.classList.remove('is-dirty'); bar.classList.add('is-saved'); }
+            if (st) st.textContent = msg || 'All changes saved';
+            if (disc) disc.style.display = 'none';
+            setTimeout(function() {
+                if (bar && !bar.classList.contains('is-dirty')) {
+                    bar.classList.remove('is-saved');
+                    if (st) st.textContent = 'All changes saved';
+                }
+            }, 2500);
+        }
+        function discardSettingsChanges() {
+            try {
+                if (typeof loadInvoiceSettings === 'function') loadInvoiceSettings();
+            } catch (e) {}
+            try {
+                var c = getUserCountry();
+                var selBiz = document.getElementById('settingsCountryBiz');
+                if (selBiz) selBiz.value = c;
+                var curLab = document.getElementById('settingsCurrencyLabel');
+                if (curLab) curLab.value = c === 'GH' ? 'GH₵ Ghana Cedi' : '₦ Nigerian Naira';
+                var tz = localStorage.getItem('cleancrew_timezone');
+                var tzEl = document.getElementById('settingsTimezone');
+                if (tzEl) tzEl.value = tz || (c === 'GH' ? 'Africa/Accra' : 'Africa/Lagos');
+            } catch (e2) {}
+            markSettingsClean('Changes discarded');
+            if (typeof showToast === 'function') showToast('Changes discarded', '');
+        }
+        function bindSettingsDirtyTracking() {
+            var form = document.getElementById('invoiceSettingsForm');
+            if (!form || form.dataset.dirtyBound === '1') return;
+            form.dataset.dirtyBound = '1';
+            form.addEventListener('input', function() { markSettingsDirty(); });
+            form.addEventListener('change', function() { markSettingsDirty(); });
+            setTimeout(function() { _settingsSnapshot = getSettingsFormSnapshot(); markSettingsClean(); }, 400);
+        }
+        function refreshBillingUsagePanel() {
+            var freeEl = document.getElementById('billingFreeJobs');
+            var credEl = document.getElementById('billingCredits');
+            var planEl = document.getElementById('billingPlan');
+            var planSub = document.getElementById('billingPlanSub');
+            var ctryEl = document.getElementById('billingCountry');
+            var curSub = document.getElementById('billingCurrencySub');
+            var free = 0, cred = 0, unlimited = false;
+            try {
+                if (typeof freeJobsRemaining === 'number') free = freeJobsRemaining;
+                else {
+                    var b = document.getElementById('freeJobsBadge');
+                    if (b) {
+                        var m = String(b.textContent || '').match(/(\d+)/);
+                        if (m) free = parseInt(m[1], 10);
+                    }
+                }
+            } catch (e) {}
+            try {
+                if (typeof creditBalance === 'number') cred = creditBalance;
+                else if (typeof window.creditsBalance === 'number') cred = window.creditsBalance;
+                else {
+                    var cb = document.getElementById('creditBadge');
+                    if (cb) {
+                        var m2 = String(cb.textContent || '').match(/(\d+)/);
+                        if (m2) cred = parseInt(m2[1], 10);
+                    }
+                }
+            } catch (e2) {}
+            try {
+                unlimited = !!(window.isUnlimited || window.subscriptionActive || localStorage.getItem('cleancrew_unlimited') === '1');
+            } catch (e3) {}
+            if (freeEl) freeEl.textContent = String(free);
+            if (credEl) credEl.textContent = String(cred);
+            if (planEl) planEl.textContent = unlimited ? 'Unlimited' : 'Free';
+            if (planSub) planSub.textContent = unlimited ? 'All jobs included' : 'Pay as you go';
+            var c = getUserCountry();
+            if (ctryEl) ctryEl.textContent = c === 'GH' ? 'Ghana' : 'Nigeria';
+            if (curSub) curSub.textContent = c === 'GH' ? 'GH₵' : '₦';
         }
         function moneySymbol() {
             return getUserCountry() === 'GH' ? 'GH₵' : '₦';
@@ -5770,6 +5993,7 @@
                 if (cl) cl.textContent = String(creditBalance);
             }
             try { updateOutOfJobsBanner(left, typeof credits === 'number' ? credits : creditBalance); } catch (e) {}
+            try { if (typeof refreshBillingUsagePanel === 'function') refreshBillingUsagePanel(); } catch (eB) {}
         }
 
         function refreshFreeJobs() {
@@ -6141,6 +6365,10 @@
         // ─── ──────────────────────────────────────────────────────
 
         function switchSettingsPanel(id) {
+            try {
+                if (id === 'billing' && typeof refreshBillingUsagePanel === 'function') refreshBillingUsagePanel();
+                if (typeof bindSettingsDirtyTracking === 'function') bindSettingsDirtyTracking();
+            } catch (eSw) {}
             id = id || 'business';
             document.querySelectorAll('.settings-panel').forEach(function(p) {
                 p.classList.toggle('active', p.id === 'settingsPanel-' + id);
@@ -7907,6 +8135,19 @@
                         if (el) el.value = val || '';
                     };
                     set('settingsBusinessName', name);
+                    try {
+                        var desc = localStorage.getItem('cleancrew_business_desc') || '';
+                        var dEl = document.getElementById('settingsBusinessDesc');
+                        if (dEl) dEl.value = desc;
+                        var tz = localStorage.getItem('cleancrew_timezone') || (getUserCountry() === 'GH' ? 'Africa/Accra' : 'Africa/Lagos');
+                        var tzEl = document.getElementById('settingsTimezone');
+                        if (tzEl) tzEl.value = tz;
+                        var selBiz = document.getElementById('settingsCountryBiz');
+                        if (selBiz) selBiz.value = getUserCountry();
+                        var curLab = document.getElementById('settingsCurrencyLabel');
+                        if (curLab) curLab.value = getUserCountry() === 'GH' ? 'GH₵ Ghana Cedi' : '₦ Nigerian Naira';
+                        setTimeout(function() { try { markSettingsClean(); bindSettingsDirtyTracking(); refreshBillingUsagePanel(); } catch (e0) {} }, 300);
+                    } catch (eLd) {}
                     set('settingsBusinessAddress', data.business_address);
                     set('settingsPhone', data.phone);
                     set('settingsEmail', data.email);
@@ -8009,6 +8250,13 @@
                     try { localStorage.setItem('cleancrew_invoice_options', JSON.stringify(payload.invoice_options || {})); } catch (eOp) {}
                     try { refreshInvoicePreview(); } catch (eR) {}
                     showToast('Business profile saved', 'success');
+                    try {
+                        var tzEl = document.getElementById('settingsTimezone');
+                        if (tzEl && tzEl.value) localStorage.setItem('cleancrew_timezone', tzEl.value);
+                        var descEl = document.getElementById('settingsBusinessDesc');
+                        if (descEl) localStorage.setItem('cleancrew_business_desc', descEl.value || '');
+                    } catch (eTz) {}
+                    try { markSettingsClean('✓ Changes saved'); } catch (eMs) {}
                 } else {
                     var err = (data && data.error) || 'Failed to save settings';
                     if (/logo_url|column/i.test(err)) {
