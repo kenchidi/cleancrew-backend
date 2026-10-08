@@ -4081,16 +4081,23 @@
         .cc-tour-overlay {
             position: fixed;
             inset: 0;
-            z-index: 200;
+            z-index: 10050;
+            pointer-events: none;
+            display: none;
+        }
+        .cc-tour-overlay.is-active {
+            display: block;
             pointer-events: none;
         }
-        .cc-tour-overlay.is-active { pointer-events: auto; }
         .cc-tour-dim {
             position: absolute;
             inset: 0;
             background: rgba(15, 23, 42, 0.55);
             opacity: 0;
             transition: opacity 0.2s ease;
+            pointer-events: auto;
+            z-index: 0;
+            cursor: pointer;
         }
         .cc-tour-overlay.is-active .cc-tour-dim { opacity: 1; }
         .cc-tour-spotlight {
@@ -4104,15 +4111,21 @@
             z-index: 1;
         }
         .cc-tour-tip {
-            position: absolute;
-            z-index: 2;
+            position: fixed;
+            z-index: 10051;
             width: min(320px, calc(100vw - 24px));
             background: #fff;
             border-radius: 14px;
             padding: 14px 16px;
-            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.2);
+            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.25);
             border: 1px solid var(--border);
             pointer-events: auto;
+            max-height: min(70vh, 360px);
+            overflow: auto;
+        }
+        .cc-tour-tip .btn {
+            pointer-events: auto;
+            cursor: pointer;
         }
         .cc-tour-tip h4 {
             margin: 0 0 6px;
@@ -4144,12 +4157,13 @@
         .cc-tour-welcome {
             position: fixed;
             inset: 0;
-            z-index: 210;
+            z-index: 10060;
             display: none;
             align-items: center;
             justify-content: center;
             padding: 20px;
             background: rgba(15, 23, 42, 0.5);
+            pointer-events: auto;
         }
         .cc-tour-welcome.is-open { display: flex; }
         .cc-tour-welcome-card {
@@ -4159,6 +4173,9 @@
             padding: 24px 22px;
             box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
             text-align: center;
+            pointer-events: auto;
+            position: relative;
+            z-index: 1;
         }
         .cc-tour-welcome-card h3 {
             margin: 0 0 8px;
@@ -4178,9 +4195,7 @@
             gap: 8px;
         }
         .cc-tour-welcome-card .btn-row .btn { width: 100%; justify-content: center; }
-        .onboarding-card .ob-progress-wrap {
-            margin: 0 0 12px;
-        }
+        .onboarding-card .ob-progress-wrap { margin: 0 0 12px; }
         .onboarding-card .ob-progress-bar {
             height: 6px;
             border-radius: 99px;
@@ -4219,7 +4234,7 @@
         [data-tab].tour-highlight,
         .sidebar nav button.tour-highlight {
             position: relative;
-            z-index: 201 !important;
+            z-index: 10052 !important;
             background: #fff !important;
             box-shadow: 0 0 0 3px #3B82F6;
         }
@@ -9263,6 +9278,7 @@ async function shareInvoiceWhatsApp(id) {
             try { localStorage.setItem('cleancrew_tour_welcome_seen', '1'); } catch (e) {}
         }
         function maybeShowProductTourWelcome(jobs) {
+            try { bindTourControls(); } catch (eB2) {}
             if (isTourWelcomeSeen()) return;
             if (jobs && jobs.length > 0) {
                 markTourWelcomeSeen();
@@ -9277,12 +9293,75 @@ async function shareInvoiceWhatsApp(id) {
             if (w) w.classList.remove('is-open');
             startProductTour(false);
         }
-        function skipProductTour() {
+        
+        
+        function skipProductTour(e) {
+            try { if (e && e.preventDefault) e.preventDefault(); if (e && e.stopPropagation) e.stopPropagation(); } catch (e0) {}
             markTourWelcomeSeen();
             var w = document.getElementById('ccTourWelcome');
             if (w) w.classList.remove('is-open');
+            endProductTour(e);
+            return false;
         }
+
+        
+        function bindTourControls() {
+            function onSkip(ev) {
+                try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+                if (typeof window.endProductTour === 'function') window.endProductTour(ev);
+                else endProductTour(ev);
+            }
+            function wire(id, handler) {
+                var el = document.getElementById(id);
+                if (!el || el.dataset.ccTourWired === '1') return el;
+                el.dataset.ccTourWired = '1';
+                el.addEventListener('click', handler);
+                return el;
+            }
+            wire('ccTourSkipBtn', onSkip);
+            wire('ccTourDim', onSkip);
+            wire('ccTourNext', function(ev) {
+                try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+                productTourNext();
+            });
+            wire('ccTourBack', function(ev) {
+                try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+                productTourBack();
+            });
+            wire('ccTourWelcomeSkip', function(ev) {
+                try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+                skipProductTour(ev);
+            });
+            wire('ccTourWelcomeStart', function(ev) {
+                try { ev.preventDefault(); ev.stopPropagation(); } catch (e) {}
+                acceptProductTour();
+            });
+            // Fallback if ids missing on welcome buttons
+            var w = document.getElementById('ccTourWelcome');
+            if (w && w.dataset.ccTourWired !== '1') {
+                var outline = w.querySelector('.btn-outline');
+                var primary = w.querySelector('.btn-primary');
+                if (outline && !outline.id) {
+                    outline.id = 'ccTourWelcomeSkip';
+                    wire('ccTourWelcomeSkip', function(ev) { skipProductTour(ev); });
+                }
+                if (primary && !primary.id) {
+                    primary.id = 'ccTourWelcomeStart';
+                    wire('ccTourWelcomeStart', function(ev) { acceptProductTour(); });
+                }
+                w.dataset.ccTourWired = '1';
+            }
+            if (!window._ccTourEscBound) {
+                window._ccTourEscBound = true;
+                document.addEventListener('keydown', function(ev) {
+                    if (typeof _tourActive !== 'undefined' && _tourActive && ev.key === 'Escape') endProductTour(ev);
+                });
+            }
+        }
+
         function startProductTour(fromHelp) {
+            try { bindTourControls(); } catch (eB) {}
+
             markTourWelcomeSeen();
             var w = document.getElementById('ccTourWelcome');
             if (w) w.classList.remove('is-open');
@@ -9297,8 +9376,10 @@ async function shareInvoiceWhatsApp(id) {
             } catch (e) {}
             showProductTourStep();
         }
-        function endProductTour() {
+        function endProductTour(e) {
+            try { if (e && e.preventDefault) e.preventDefault(); if (e && e.stopPropagation) e.stopPropagation(); } catch (e0) {}
             _tourActive = false;
+            _tourIndex = 0;
             var ov = document.getElementById('ccTourOverlay');
             if (ov) {
                 ov.classList.remove('is-active');
@@ -9307,10 +9388,17 @@ async function shareInvoiceWhatsApp(id) {
             document.querySelectorAll('.tour-highlight').forEach(function(el) {
                 el.classList.remove('tour-highlight');
             });
-            try {
-                if (typeof switchTab === 'function') switchTab('overview');
-            } catch (e) {}
+            try { if (typeof switchTab === 'function') switchTab('overview'); } catch (err) {}
+            return false;
         }
+        try {
+            window.endProductTour = endProductTour;
+            window.skipProductTour = skipProductTour;
+            window.acceptProductTour = acceptProductTour;
+            window.startProductTour = startProductTour;
+            window.productTourNext = productTourNext;
+            window.productTourBack = productTourBack;
+        } catch (eW) {}
         function productTourBack() {
             if (_tourIndex > 0) {
                 _tourIndex--;
@@ -9359,6 +9447,7 @@ async function shareInvoiceWhatsApp(id) {
             if (nextBtn) nextBtn.textContent = (_tourIndex >= CC_TOUR_STEPS.length - 1) ? 'Create first job →' : 'Next';
             if (backBtn) backBtn.style.display = _tourIndex === 0 ? 'none' : '';
 
+            try { bindTourControls(); } catch (eBindStep) {}
             setTimeout(function() { positionTourChrome(target); }, 80);
             setTimeout(function() { positionTourChrome(target); }, 250);
         }
@@ -12366,27 +12455,42 @@ async function shareInvoiceWhatsApp(id) {
             <h3 id="ccTourWelcomeTitle">Welcome to CleanCrew</h3>
             <p>Let's take about a minute to show you around — then create your first job.</p>
             <div class="btn-row">
-                <button type="button" class="btn btn-primary" onclick="acceptProductTour()">Take the tour</button>
-                <button type="button" class="btn btn-outline" onclick="skipProductTour()">I'll explore myself</button>
+                <button type="button" class="btn btn-primary" id="ccTourWelcomeStart">Take the tour</button>
+                <button type="button" class="btn btn-outline" id="ccTourWelcomeSkip">I'll explore myself</button>
             </div>
         </div>
     </div>
     <div class="cc-tour-overlay" id="ccTourOverlay" aria-hidden="true">
-        <div class="cc-tour-dim"></div>
+        <div class="cc-tour-dim" id="ccTourDim" title="Click to skip tour"></div>
         <div class="cc-tour-spotlight" id="ccTourSpotlight"></div>
         <div class="cc-tour-tip" id="ccTourTip" role="dialog" aria-live="polite">
             <div class="tour-meta" id="ccTourStepMeta">1 of 5</div>
             <h4 id="ccTourTitle">Title</h4>
             <p id="ccTourBody">Body</p>
             <div class="tour-actions">
-                <button type="button" class="btn btn-outline btn-sm" onclick="endProductTour()">Skip</button>
+                <button type="button" class="btn btn-outline btn-sm" id="ccTourSkipBtn">Skip</button>
                 <div class="tour-actions-right">
-                    <button type="button" class="btn btn-outline btn-sm" id="ccTourBack" onclick="productTourBack()">Back</button>
-                    <button type="button" class="btn btn-primary btn-sm" id="ccTourNext" onclick="productTourNext()">Next</button>
+                    <button type="button" class="btn btn-outline btn-sm" id="ccTourBack">Back</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="ccTourNext">Next</button>
                 </div>
             </div>
         </div>
     </div>
 
+<script>
+(function(){
+  function ready(){
+    try {
+      if (typeof bindTourControls === 'function') bindTourControls();
+      if (typeof window !== 'undefined') {
+        window.endProductTour = typeof endProductTour === 'function' ? endProductTour : window.endProductTour;
+        window.skipProductTour = typeof skipProductTour === 'function' ? skipProductTour : window.skipProductTour;
+      }
+    } catch (e) {}
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready);
+  else ready();
+})();
+</script>
 </body>
 </html>
