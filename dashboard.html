@@ -4076,6 +4076,154 @@
         }
 
     
+
+        /* ===== PRODUCT TOUR + SETUP CHECKLIST ===== */
+        .cc-tour-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            pointer-events: none;
+        }
+        .cc-tour-overlay.is-active { pointer-events: auto; }
+        .cc-tour-dim {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.55);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .cc-tour-overlay.is-active .cc-tour-dim { opacity: 1; }
+        .cc-tour-spotlight {
+            position: absolute;
+            border-radius: 12px;
+            box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.55);
+            outline: 2px solid #3B82F6;
+            outline-offset: 3px;
+            transition: top 0.2s ease, left 0.2s ease, width 0.2s ease, height 0.2s ease;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .cc-tour-tip {
+            position: absolute;
+            z-index: 2;
+            width: min(320px, calc(100vw - 24px));
+            background: #fff;
+            border-radius: 14px;
+            padding: 14px 16px;
+            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.2);
+            border: 1px solid var(--border);
+            pointer-events: auto;
+        }
+        .cc-tour-tip h4 {
+            margin: 0 0 6px;
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--ink);
+            letter-spacing: -0.02em;
+        }
+        .cc-tour-tip p {
+            margin: 0 0 12px;
+            font-size: 13px;
+            color: var(--slate);
+            line-height: 1.45;
+        }
+        .cc-tour-tip .tour-meta {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--slate);
+            margin-bottom: 10px;
+        }
+        .cc-tour-tip .tour-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .cc-tour-tip .tour-actions-right { display: flex; gap: 8px; }
+        .cc-tour-welcome {
+            position: fixed;
+            inset: 0;
+            z-index: 210;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(15, 23, 42, 0.5);
+        }
+        .cc-tour-welcome.is-open { display: flex; }
+        .cc-tour-welcome-card {
+            width: min(400px, 100%);
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px 22px;
+            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+            text-align: center;
+        }
+        .cc-tour-welcome-card h3 {
+            margin: 0 0 8px;
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+        .cc-tour-welcome-card p {
+            margin: 0 0 18px;
+            font-size: 14px;
+            color: var(--slate);
+            line-height: 1.45;
+        }
+        .cc-tour-welcome-card .btn-row {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .cc-tour-welcome-card .btn-row .btn { width: 100%; justify-content: center; }
+        .onboarding-card .ob-progress-wrap {
+            margin: 0 0 12px;
+        }
+        .onboarding-card .ob-progress-bar {
+            height: 6px;
+            border-radius: 99px;
+            background: #E2E8F0;
+            overflow: hidden;
+        }
+        .onboarding-card .ob-progress-bar > i {
+            display: block;
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--blue), #38BDF8);
+            border-radius: 99px;
+            transition: width 0.3s ease;
+        }
+        .onboarding-card .ob-progress-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--slate);
+            margin-top: 6px;
+        }
+        .sidebar-tour-btn {
+            width: 100%;
+            margin-bottom: 8px;
+            border: 1px solid var(--border);
+            background: var(--white);
+            color: var(--ink);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 10px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: left;
+        }
+        .sidebar-tour-btn:hover { background: var(--blue-mist); color: var(--blue); border-color: #BFDBFE; }
+        [data-tab].tour-highlight,
+        .sidebar nav button.tour-highlight {
+            position: relative;
+            z-index: 201 !important;
+            background: #fff !important;
+            box-shadow: 0 0 0 3px #3B82F6;
+        }
+
         /* ===== MOBILE OVERVIEW POLISH (focused, desktop untouched) ===== */
         @media (max-width: 640px) {
             /* Header: two rows so mode switch never disappears
@@ -4486,6 +4634,7 @@
                 </button>
             </nav>
             <div class="sidebar-footer">
+                <button type="button" class="sidebar-tour-btn" onclick="startProductTour(true)">Take a tour</button>
                 <a class="sidebar-support-link" id="sidebarSupportLink" href="https://wa.me/2347057295546?text=Hi%20CleanCrew%20support%2C%20I%20need%20help%20with%20my%20account." target="_blank" rel="noopener noreferrer">
                     WhatsApp support
                 </a>
@@ -4588,24 +4737,34 @@
                 <img class="cc-mascot sm" src="mascot.png" alt="" width="40" height="40" />
                 <h3>Let's get your business running</h3>
             </div>
-            <p>Complete these steps to start tracking work and money.</p>
+            <p>A short setup so CleanCrew matches how you work.</p>
+            <div class="ob-progress-wrap">
+                <div class="ob-progress-bar"><i id="obProgressFill"></i></div>
+                <div class="ob-progress-label" id="obProgressLabel">0% complete</div>
+            </div>
             <ul class="onboarding-steps">
+                <li id="obStepBusiness">
+                    <span class="ob-check" aria-hidden="true"></span>
+                    <span>Add your business name</span>
+                    <span class="ob-action"><button type="button" class="btn btn-outline btn-sm" onclick="switchTab('settings');setTimeout(function(){switchSettingsPanel('business');},80);">Settings</button></span>
+                </li>
+                <li id="obStepLogo">
+                    <span class="ob-check" aria-hidden="true"></span>
+                    <span>Upload your logo <span style="font-weight:500;color:var(--slate);">(optional)</span></span>
+                    <span class="ob-action"><button type="button" class="btn btn-outline btn-sm" onclick="switchTab('settings');setTimeout(function(){switchSettingsPanel('business');},80);">Logo</button></span>
+                </li>
+                <li id="obStepClient">
+                    <span class="ob-check" aria-hidden="true"></span>
+                    <span>Add your first client</span>
+                    <span class="ob-action"><button type="button" class="btn btn-outline btn-sm" onclick="openModal('client')">Add client</button></span>
+                </li>
                 <li id="obStepJob">
                     <span class="ob-check" aria-hidden="true"></span>
                     <span>Create your first job</span>
                     <span class="ob-action"><button type="button" class="btn btn-primary btn-sm" onclick="openModal('job')">New Job</button></span>
                 </li>
-                <li id="obStepStatus">
-                    <span class="ob-check" aria-hidden="true"></span>
-                    <span>Update a job status</span>
-                    <span class="ob-action"><button type="button" class="btn btn-outline btn-sm" onclick="switchTab('jobs')">Open jobs</button></span>
-                </li>
-                <li id="obStepClient">
-                    <span class="ob-check" aria-hidden="true"></span>
-                    <span>Save a client <span style="font-weight:500;color:var(--slate);">(optional)</span></span>
-                    <span class="ob-action"><button type="button" class="btn btn-outline btn-sm" onclick="openModal('client')">Add client</button></span>
-                </li>
             </ul>
+            <button type="button" class="ob-dismiss" onclick="dismissOnboarding()">Hide checklist</button>
         </div>
 
 <div class="community-card" id="communityCard" hidden>
@@ -6975,6 +7134,12 @@
             }
         }
 
+        function openSidebar() {
+            var sb = document.querySelector('.sidebar');
+            var bd = document.querySelector('.sidebar-backdrop');
+            if (sb) sb.classList.add('open');
+            if (bd) bd.classList.add('show');
+        }
         function toggleSidebar() {
             var sb = document.getElementById('sidebar');
             var bd = document.getElementById('sidebarBackdrop');
@@ -9008,6 +9173,7 @@ async function shareInvoiceWhatsApp(id) {
             return true;
         }
 
+        
         function isOnboardingDismissed() {
             try { return localStorage.getItem('cleancrew_onboarding_done') === '1'; } catch (e) { return false; }
         }
@@ -9016,20 +9182,49 @@ async function shareInvoiceWhatsApp(id) {
             var card = document.getElementById('onboardingCard');
             if (card) card.hidden = true;
         }
+        function hasBusinessNameSet() {
+            try {
+                var el = document.getElementById('settingsBusinessName');
+                var n = (el && el.value) || localStorage.getItem('cleancrew_business_name') || '';
+                n = String(n).trim();
+                if (!n) return false;
+                var low = n.toLowerCase();
+                if (low === 'cleancrew' || low === 'your business') return false;
+                return true;
+            } catch (e) { return false; }
+        }
+        function hasLogoSet() {
+            try {
+                var url = (document.getElementById('settingsLogoUrl') && document.getElementById('settingsLogoUrl').value) ||
+                    localStorage.getItem('cleancrew_business_logo') || '';
+                return !!(url && String(url).trim());
+            } catch (e) { return false; }
+        }
         function updateOnboardingUI(jobs, clients) {
             var card = document.getElementById('onboardingCard');
-            var hero = document.getElementById('firstRunHero');
             if (!card) return;
 
             jobs = jobs || [];
             clients = clients || [];
             var hasJob = jobs.length > 0;
-            var hasProgress = jobs.some(function(j) {
-                var s = (j.status || '').toLowerCase();
-                return s === 'in-progress' || s === 'completed' || s === 'collected' || s === 'delivered' || s === 'cancelled';
-            });
             var hasClient = clients.length > 0;
-            var allDone = hasJob && hasProgress && hasClient;
+            var hasBiz = hasBusinessNameSet();
+            var hasLogo = hasLogoSet();
+
+            var steps = [
+                { id: 'obStepBusiness', done: hasBiz },
+                { id: 'obStepLogo', done: hasLogo },
+                { id: 'obStepClient', done: hasClient },
+                { id: 'obStepJob', done: hasJob }
+            ];
+            var doneCount = steps.filter(function(s) { return s.done; }).length;
+            var pct = Math.round((doneCount / steps.length) * 100);
+            var allDone = doneCount === steps.length;
+
+            var fill = document.getElementById('obProgressFill');
+            var lab = document.getElementById('obProgressLabel');
+            if (fill) fill.style.width = pct + '%';
+            if (lab) lab.textContent = pct + '% complete';
 
             if (isOnboardingDismissed() || allDone) {
                 card.hidden = true;
@@ -9038,37 +9233,162 @@ async function shareInvoiceWhatsApp(id) {
                 }
             } else {
                 card.hidden = false;
-                var stepJob = document.getElementById('obStepJob');
-                var stepStatus = document.getElementById('obStepStatus');
-                var stepClient = document.getElementById('obStepClient');
-                if (stepJob) stepJob.classList.toggle('done', hasJob);
-                if (stepStatus) stepStatus.classList.toggle('done', hasProgress);
-                if (stepClient) stepClient.classList.toggle('done', hasClient);
-                // Hide action buttons on completed steps
-                if (stepJob) {
-                    var a = stepJob.querySelector('.ob-action');
-                    if (a) a.style.display = hasJob ? 'none' : '';
-                }
-                if (stepStatus) {
-                    var a2 = stepStatus.querySelector('.ob-action');
-                    if (a2) a2.style.display = hasProgress ? 'none' : '';
-                }
-                if (stepClient) {
-                    var a3 = stepClient.querySelector('.ob-action');
-                    if (a3) a3.style.display = hasClient ? 'none' : '';
-                }
+                steps.forEach(function(s) {
+                    var el = document.getElementById(s.id);
+                    if (!el) return;
+                    el.classList.toggle('done', s.done);
+                    var a = el.querySelector('.ob-action');
+                    if (a) a.style.display = s.done ? 'none' : '';
+                });
             }
 
-            if (hero) {
-                hero.hidden = hasJob;
-            }
+            try { maybeShowProductTourWelcome(jobs); } catch (eT) {}
+        }
 
-            // Soft-hide profit until they have at least one job (less overwhelm)
-            var profit = document.getElementById('profitReport');
-            if (profit) {
-                profit.style.display = hasJob ? '' : 'none';
+        /* ─── Spotlight product tour ─── */
+        var CC_TOUR_STEPS = [
+            { tab: 'overview', title: 'Your business at a glance', body: 'See today’s jobs, pending work, revenue and what still needs attention — from one place.' },
+            { tab: 'jobs', title: 'Manage every job', body: 'Create jobs, track status, assign staff and move work from pending to done.' },
+            { tab: 'clients', title: 'Keep clients organized', body: 'Save customer details so you don’t dig through WhatsApp when you need a number.' },
+            { tab: 'invoices', title: 'Get paid and track it', body: 'Create invoices, record payments and see what’s still outstanding.' },
+            { tab: 'settings', title: 'Make CleanCrew yours', body: 'Add your business name, logo, country, and payment details so invoices look professional.' }
+        ];
+        var _tourIndex = 0;
+        var _tourActive = false;
+
+        function isTourWelcomeSeen() {
+            try { return localStorage.getItem('cleancrew_tour_welcome_seen') === '1'; } catch (e) { return true; }
+        }
+        function markTourWelcomeSeen() {
+            try { localStorage.setItem('cleancrew_tour_welcome_seen', '1'); } catch (e) {}
+        }
+        function maybeShowProductTourWelcome(jobs) {
+            if (isTourWelcomeSeen()) return;
+            if (jobs && jobs.length > 0) {
+                markTourWelcomeSeen();
+                return;
+            }
+            var w = document.getElementById('ccTourWelcome');
+            if (w) w.classList.add('is-open');
+        }
+        function acceptProductTour() {
+            markTourWelcomeSeen();
+            var w = document.getElementById('ccTourWelcome');
+            if (w) w.classList.remove('is-open');
+            startProductTour(false);
+        }
+        function skipProductTour() {
+            markTourWelcomeSeen();
+            var w = document.getElementById('ccTourWelcome');
+            if (w) w.classList.remove('is-open');
+        }
+        function startProductTour(fromHelp) {
+            markTourWelcomeSeen();
+            var w = document.getElementById('ccTourWelcome');
+            if (w) w.classList.remove('is-open');
+            _tourIndex = 0;
+            _tourActive = true;
+            try {
+                if (window.innerWidth < 900 && typeof openSidebar === 'function') openSidebar();
+                else if (window.innerWidth < 900) {
+                    var sb = document.querySelector('.sidebar');
+                    if (sb) sb.classList.add('open');
+                }
+            } catch (e) {}
+            showProductTourStep();
+        }
+        function endProductTour() {
+            _tourActive = false;
+            var ov = document.getElementById('ccTourOverlay');
+            if (ov) {
+                ov.classList.remove('is-active');
+                ov.setAttribute('aria-hidden', 'true');
+            }
+            document.querySelectorAll('.tour-highlight').forEach(function(el) {
+                el.classList.remove('tour-highlight');
+            });
+            try {
+                if (typeof switchTab === 'function') switchTab('overview');
+            } catch (e) {}
+        }
+        function productTourBack() {
+            if (_tourIndex > 0) {
+                _tourIndex--;
+                showProductTourStep();
             }
         }
+        function productTourNext() {
+            if (_tourIndex >= CC_TOUR_STEPS.length - 1) {
+                endProductTour();
+                try {
+                    if (typeof switchTab === 'function') switchTab('overview');
+                    if (typeof openModal === 'function') openModal('job');
+                    if (typeof showToast === 'function') showToast('You are ready — create your first job', 'success');
+                } catch (e) {}
+                return;
+            }
+            _tourIndex++;
+            showProductTourStep();
+        }
+        function showProductTourStep() {
+            var step = CC_TOUR_STEPS[_tourIndex];
+            if (!step) return;
+            var ov = document.getElementById('ccTourOverlay');
+            if (ov) {
+                ov.classList.add('is-active');
+                ov.setAttribute('aria-hidden', 'false');
+            }
+            try {
+                if (typeof switchTab === 'function') switchTab(step.tab);
+            } catch (e) {}
+            document.querySelectorAll('.tour-highlight').forEach(function(el) {
+                el.classList.remove('tour-highlight');
+            });
+            var target = document.querySelector('.sidebar nav button[data-tab="' + step.tab + '"]') ||
+                document.querySelector('button[data-tab="' + step.tab + '"]');
+            if (target) target.classList.add('tour-highlight');
+
+            var meta = document.getElementById('ccTourStepMeta');
+            var title = document.getElementById('ccTourTitle');
+            var body = document.getElementById('ccTourBody');
+            var nextBtn = document.getElementById('ccTourNext');
+            var backBtn = document.getElementById('ccTourBack');
+            if (meta) meta.textContent = (_tourIndex + 1) + ' of ' + CC_TOUR_STEPS.length;
+            if (title) title.textContent = step.title;
+            if (body) body.textContent = step.body;
+            if (nextBtn) nextBtn.textContent = (_tourIndex >= CC_TOUR_STEPS.length - 1) ? 'Create first job →' : 'Next';
+            if (backBtn) backBtn.style.display = _tourIndex === 0 ? 'none' : '';
+
+            setTimeout(function() { positionTourChrome(target); }, 80);
+            setTimeout(function() { positionTourChrome(target); }, 250);
+        }
+        function positionTourChrome(target) {
+            var spot = document.getElementById('ccTourSpotlight');
+            var tip = document.getElementById('ccTourTip');
+            if (!spot || !tip) return;
+            if (target && target.getBoundingClientRect) {
+                var r = target.getBoundingClientRect();
+                var pad = 6;
+                spot.style.display = 'block';
+                spot.style.top = Math.max(8, r.top - pad) + 'px';
+                spot.style.left = Math.max(8, r.left - pad) + 'px';
+                spot.style.width = Math.max(40, r.width + pad * 2) + 'px';
+                spot.style.height = Math.max(32, r.height + pad * 2) + 'px';
+                var tipW = Math.min(320, window.innerWidth - 24);
+                var left = r.right + 12;
+                if (left + tipW > window.innerWidth - 12) left = Math.max(12, r.left);
+                var top = r.top;
+                if (top + 180 > window.innerHeight) top = Math.max(12, window.innerHeight - 200);
+                tip.style.top = top + 'px';
+                tip.style.left = left + 'px';
+            } else {
+                spot.style.display = 'none';
+                tip.style.top = '20%';
+                tip.style.left = '50%';
+                tip.style.transform = 'translateX(-50%)';
+            }
+        }
+
 
         function renderOverview(jobs, clients) {
             jobs = jobs || [];
@@ -9211,6 +9531,10 @@ async function shareInvoiceWhatsApp(id) {
             }
         }
 
+
+        function updateOnboarding(jobs, clients) {
+            return updateOnboardingUI(jobs, clients);
+        }
 
         function findJobById(id) {
             if (!id) return null;
@@ -12032,6 +12356,35 @@ async function shareInvoiceWhatsApp(id) {
             <p class="sub" id="staffJobsSub">Jobs this staff member is on</p>
             <div id="staffJobsList"></div>
             <button type="button" class="btn btn-outline btn-sm" style="width:100%;margin-top:14px;" onclick="closeStaffJobs()">Close</button>
+        </div>
+    </div>
+
+
+    <!-- Product tour -->
+    <div class="cc-tour-welcome" id="ccTourWelcome" role="dialog" aria-modal="true" aria-labelledby="ccTourWelcomeTitle">
+        <div class="cc-tour-welcome-card">
+            <h3 id="ccTourWelcomeTitle">Welcome to CleanCrew</h3>
+            <p>Let's take about a minute to show you around — then create your first job.</p>
+            <div class="btn-row">
+                <button type="button" class="btn btn-primary" onclick="acceptProductTour()">Take the tour</button>
+                <button type="button" class="btn btn-outline" onclick="skipProductTour()">I'll explore myself</button>
+            </div>
+        </div>
+    </div>
+    <div class="cc-tour-overlay" id="ccTourOverlay" aria-hidden="true">
+        <div class="cc-tour-dim"></div>
+        <div class="cc-tour-spotlight" id="ccTourSpotlight"></div>
+        <div class="cc-tour-tip" id="ccTourTip" role="dialog" aria-live="polite">
+            <div class="tour-meta" id="ccTourStepMeta">1 of 5</div>
+            <h4 id="ccTourTitle">Title</h4>
+            <p id="ccTourBody">Body</p>
+            <div class="tour-actions">
+                <button type="button" class="btn btn-outline btn-sm" onclick="endProductTour()">Skip</button>
+                <div class="tour-actions-right">
+                    <button type="button" class="btn btn-outline btn-sm" id="ccTourBack" onclick="productTourBack()">Back</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="ccTourNext" onclick="productTourNext()">Next</button>
+                </div>
+            </div>
         </div>
     </div>
 
