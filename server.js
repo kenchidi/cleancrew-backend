@@ -1784,28 +1784,41 @@ app.post(
                 const userId =
                     req.user.id;
 
-                const plan =
-                    data.data.metadata?.plan ||
-                    'professional';
+                const meta = data.data.metadata || {};
+                const plan = meta.plan;
+                const payType = meta.type;
 
-                await supabase
-                    .from('subscriptions')
-                    .upsert({
-                        user_id:
-                            userId,
-
-                        status:
-                            'active',
-
-                        plan,
-
-                        trial_end:
-                            new Date(
-                                Date.now() +
-                                365 *
-                                86400000
-                            ).toISOString()
+                // Credit purchases must not activate Unlimited
+                if (payType === 'credit_purchase') {
+                    await supabase
+                        .from('transactions')
+                        .update({ status: 'completed' })
+                        .eq('reference', reference);
+                    return res.json({
+                        success: true,
+                        message: 'Credit purchase recorded',
+                        type: 'credit_purchase'
                     });
+                }
+
+                if (
+                    plan &&
+                    (plan === 'starter' ||
+                        plan === 'professional' ||
+                        plan === 'enterprise' ||
+                        plan === 'unlimited')
+                ) {
+                    await supabase
+                        .from('subscriptions')
+                        .upsert({
+                            user_id: userId,
+                            status: 'active',
+                            plan,
+                            trial_end: new Date(
+                                Date.now() + 365 * 86400000
+                            ).toISOString()
+                        });
+                }
 
                 await supabase
                     .from('transactions')
@@ -1971,40 +1984,40 @@ app.post(
                     }
                 }
 
-                // ─── SUBSCRIPTION ───────────────────
-
-                if (plan && user_id) {
+                // ─── SUBSCRIPTION (never on credit packs) ───
+                // Credit metadata uses pack names like "starter" for the ₦5k pack —
+                // that must NOT activate Unlimited. Only explicit subscription payments.
+                if (
+                    user_id &&
+                    plan &&
+                    type !== 'credit_purchase' &&
+                    (plan === 'starter' ||
+                        plan === 'professional' ||
+                        plan === 'enterprise' ||
+                        plan === 'unlimited')
+                ) {
                     await supabase
                         .from('subscriptions')
                         .upsert({
                             user_id,
-
-                            status:
-                                'active',
-
+                            status: 'active',
                             plan,
-
-                            trial_end:
-                                new Date(
-                                    Date.now() +
-                                    365 *
-                                    86400000
-                                ).toISOString()
+                            trial_end: new Date(
+                                Date.now() + 365 * 86400000
+                            ).toISOString()
                         });
 
                     await supabase
                         .from('transactions')
-                        .update({
-                            status:
-                                'completed'
-                        })
-                        .eq(
-                            'reference',
-                            reference
-                        );
+                        .update({ status: 'completed' })
+                        .eq('reference', reference);
 
                     console.log(
                         `✅ Subscription activated for user ${user_id} (${plan})`
+                    );
+                } else if (type === 'credit_purchase') {
+                    console.log(
+                        `ℹ️ Credit purchase only — subscription unchanged (${reference})`
                     );
                 }
             }

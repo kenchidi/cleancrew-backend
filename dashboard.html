@@ -5945,11 +5945,7 @@
                 }
             } catch (e2) {}
             try {
-                unlimited = !!(window.isUnlimited || window.subscriptionActive ||
-                    localStorage.getItem('cleancrew_unlimited') === '1' ||
-                    localStorage.getItem('cleancrew_plan') === 'starter' ||
-                    localStorage.getItem('cleancrew_plan') === 'professional' ||
-                    localStorage.getItem('cleancrew_plan') === 'enterprise');
+                unlimited = !!(window.isUnlimited === true || window.subscriptionActive === true);
             } catch (e3) {}
             if (freeEl) freeEl.textContent = String(free);
             if (credEl) credEl.textContent = String(cred);
@@ -6160,7 +6156,7 @@
             var el = document.getElementById('freeJobsLabel');
             var badge = document.getElementById('freeJobsBadge');
             var badgeOld = document.getElementById('freeJobsBadgeOld');
-            var unlim = !!(window.isUnlimited || window.subscriptionActive || localStorage.getItem('cleancrew_unlimited') === '1');
+            var unlim = (window.isUnlimited === true || window.subscriptionActive === true);
             if (unlim) {
                 if (el) el.textContent = 'Unlimited';
                 if (badge) badge.textContent = 'Unlimited';
@@ -6208,10 +6204,22 @@
                 })
                 .then(function(q) {
                     if (q) {
-                        if (q.unlimited || q.plan === 'starter' || q.plan === 'professional' || q.plan === 'enterprise') {
+                        // Only trust explicit unlimited from quota API (active paid sub)
+                        if (q.unlimited === true) {
                             window.isUnlimited = true;
                             window.subscriptionActive = true;
-                            try { localStorage.setItem('cleancrew_unlimited', '1'); localStorage.setItem('cleancrew_plan', q.plan || 'starter'); } catch (eU) {}
+                            try {
+                                localStorage.setItem('cleancrew_unlimited', '1');
+                                localStorage.setItem('cleancrew_plan', q.plan || 'starter');
+                            } catch (eU) {}
+                        } else {
+                            window.isUnlimited = false;
+                            window.subscriptionActive = false;
+                            try {
+                                localStorage.removeItem('cleancrew_unlimited');
+                                if (q.plan) localStorage.setItem('cleancrew_plan', q.plan);
+                                else localStorage.setItem('cleancrew_plan', 'free');
+                            } catch (eU2) {}
                         }
                         var left = Number(q.free_jobs_remaining);
                         if (isNaN(left)) left = Math.max(0, 25 - Number(q.jobs_used || q.used || 0));
@@ -12160,20 +12168,25 @@ async function shareInvoiceWhatsApp(id) {
 
                     if (data.status === 'active') {
                         try {
-                            var p = (data.plan || '').toLowerCase();
-                            window.subscriptionActive = true;
-                            window.isUnlimited = (p === 'starter' || p === 'professional' || p === 'enterprise' || p === 'unlimited');
-                            localStorage.setItem('cleancrew_plan', p || 'free');
-                            if (window.isUnlimited) localStorage.setItem('cleancrew_unlimited', '1');
-                            if (typeof applyFeatureRestrictions === 'function') applyFeatureRestrictions(p || 'free');
-                            if (typeof refreshBillingUsagePanel === 'function') refreshBillingUsagePanel();
-                            // Soften free-jobs badge when unlimited
-                            var fj = document.getElementById('freeJobsBadge');
-                            if (fj && window.isUnlimited) {
-                                fj.textContent = 'Unlimited';
-                                fj.style.background = '#D1FAE5';
-                                fj.style.color = '#065F46';
+                            var p = (data.plan || 'free').toLowerCase();
+                            var paidUnlimited = (p === 'starter' || p === 'professional' || p === 'enterprise' || p === 'unlimited');
+                            window.isUnlimited = paidUnlimited;
+                            window.subscriptionActive = paidUnlimited; // free rows are status=active too
+                            localStorage.setItem('cleancrew_plan', p);
+                            if (paidUnlimited) {
+                                localStorage.setItem('cleancrew_unlimited', '1');
+                            } else {
+                                localStorage.removeItem('cleancrew_unlimited');
                             }
+                            if (typeof applyFeatureRestrictions === 'function') applyFeatureRestrictions(p);
+                            if (typeof refreshBillingUsagePanel === 'function') refreshBillingUsagePanel();
+                            var fj = document.getElementById('freeJobsBadge');
+                            var fjOld = document.getElementById('freeJobsBadgeOld');
+                            if (paidUnlimited) {
+                                if (fj) { fj.textContent = 'Unlimited'; fj.style.background = '#D1FAE5'; fj.style.color = '#065F46'; }
+                                if (fjOld) fjOld.textContent = 'Unlimited';
+                            }
+                            // If free: leave badge to refreshFreeJobs / applyFreeJobsUI (do not force Unlimited)
                         } catch (eSub) {}
 
                         container.innerHTML = '<div class="status-box active">' +
