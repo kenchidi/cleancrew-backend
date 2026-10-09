@@ -911,10 +911,14 @@ async function canCreateJob(userId) {
         creditBalance
     });
 
-    // 1) Unlimited plans ONLY when active professional/enterprise
+    // 1) Unlimited plans: starter (₦12,500 "Unlimited"), professional, enterprise
+    // Frontend sells subscribeToPlan('starter') as Unlimited — must unlock fully.
     if (
         active &&
-        (plan === 'professional' || plan === 'enterprise')
+        (plan === 'starter' ||
+            plan === 'professional' ||
+            plan === 'enterprise' ||
+            plan === 'unlimited')
     ) {
         return {
             allowed: true,
@@ -922,38 +926,8 @@ async function canCreateJob(userId) {
             plan,
             used: usedLifetime,
             free_remaining: freeLeft,
-            credits: creditBalance
-        };
-    }
-
-    // 2) Starter subscription — monthly included jobs, then credits
-    if (active && plan === 'starter') {
-        const starter = await getStarterJobsRemainingThisMonth(userId);
-        if (starter.remaining > 0) {
-            return {
-                allowed: true,
-                source: 'starter',
-                plan: 'starter',
-                remaining: starter.remaining,
-                limit: starter.limit,
-                used: starter.used,
-                credits: creditBalance
-            };
-        }
-        if (creditBalance > 0) {
-            return {
-                allowed: true,
-                source: 'credit',
-                balance: creditBalance,
-                plan: 'starter'
-            };
-        }
-        return {
-            allowed: false,
-            source: 'none',
-            plan: 'starter',
-            message:
-                "You've used all 50 Starter jobs this month and have no credits left. Buy credits or go Unlimited."
+            credits: creditBalance,
+            unlimited: true
         };
     }
 
@@ -1617,18 +1591,36 @@ app.get(
     async (req, res) => {
         try {
             const userId = req.user.id;
-            // Keep this endpoint light — badge should not wait on canCreateJob + extra queries
-            const [used, credits] = await Promise.all([
+            const [used, credits, subResult] = await Promise.all([
                 getLifetimeJobsUsed(userId),
-                getCreditBalance(userId).catch(() => 0)
+                getCreditBalance(userId).catch(() => 0),
+                supabase
+                    .from('subscriptions')
+                    .select('plan, status')
+                    .eq('user_id', userId)
+                    .maybeSingle()
             ]);
             const freeLeft = Math.max(0, LIFETIME_FREE_JOBS - used);
+            const sub = subResult && subResult.data;
+            let plan = 'free';
+            if (sub && sub.plan && PLANS[sub.plan]) plan = sub.plan;
+            const status = (sub && sub.status) ? String(sub.status).toLowerCase() : '';
+            const active = status === 'active' || status === 'trial';
+            const unlimited =
+                active &&
+                (plan === 'starter' ||
+                    plan === 'professional' ||
+                    plan === 'enterprise' ||
+                    plan === 'unlimited');
 
             res.json({
                 lifetime_free_limit: LIFETIME_FREE_JOBS,
                 jobs_used: used,
-                free_jobs_remaining: freeLeft,
-                credits: Number(credits) || 0
+                free_jobs_remaining: unlimited ? null : freeLeft,
+                credits: Number(credits) || 0,
+                plan,
+                status: status || 'free',
+                unlimited: !!unlimited
             });
         } catch (error) {
             console.error('quota error:', error);

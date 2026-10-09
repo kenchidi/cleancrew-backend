@@ -5945,7 +5945,11 @@
                 }
             } catch (e2) {}
             try {
-                unlimited = !!(window.isUnlimited || window.subscriptionActive || localStorage.getItem('cleancrew_unlimited') === '1');
+                unlimited = !!(window.isUnlimited || window.subscriptionActive ||
+                    localStorage.getItem('cleancrew_unlimited') === '1' ||
+                    localStorage.getItem('cleancrew_plan') === 'starter' ||
+                    localStorage.getItem('cleancrew_plan') === 'professional' ||
+                    localStorage.getItem('cleancrew_plan') === 'enterprise');
             } catch (e3) {}
             if (freeEl) freeEl.textContent = String(free);
             if (credEl) credEl.textContent = String(cred);
@@ -6156,9 +6160,16 @@
             var el = document.getElementById('freeJobsLabel');
             var badge = document.getElementById('freeJobsBadge');
             var badgeOld = document.getElementById('freeJobsBadgeOld');
-            if (el) el.textContent = String(left);
-            if (badge) badge.textContent = 'Free jobs: ' + left;
-            if (badgeOld) badgeOld.textContent = 'Free jobs: ' + left;
+            var unlim = !!(window.isUnlimited || window.subscriptionActive || localStorage.getItem('cleancrew_unlimited') === '1');
+            if (unlim) {
+                if (el) el.textContent = 'Unlimited';
+                if (badge) badge.textContent = 'Unlimited';
+                if (badgeOld) badgeOld.textContent = 'Unlimited';
+            } else {
+                if (el) el.textContent = String(left);
+                if (badge) badge.textContent = 'Free jobs: ' + left;
+                if (badgeOld) badgeOld.textContent = 'Free jobs: ' + left;
+            }
             if (typeof credits === 'number') {
                 creditBalance = credits;
                 var cb = document.getElementById('creditBadge');
@@ -6197,6 +6208,11 @@
                 })
                 .then(function(q) {
                     if (q) {
+                        if (q.unlimited || q.plan === 'starter' || q.plan === 'professional' || q.plan === 'enterprise') {
+                            window.isUnlimited = true;
+                            window.subscriptionActive = true;
+                            try { localStorage.setItem('cleancrew_unlimited', '1'); localStorage.setItem('cleancrew_plan', q.plan || 'starter'); } catch (eU) {}
+                        }
                         var left = Number(q.free_jobs_remaining);
                         if (isNaN(left)) left = Math.max(0, 25 - Number(q.jobs_used || q.used || 0));
                         applyFreeJobsUI(left, typeof q.credits === 'number' ? q.credits : undefined);
@@ -10896,7 +10912,7 @@ async function shareInvoiceWhatsApp(id) {
         // ─── ──────────────────────────────────────────────────────
         function applyFeatureRestrictions(plan) {
             plan = plan || 'free';
-            var isUnlimited = plan === 'professional' || plan === 'enterprise';
+            var isUnlimited = plan === 'starter' || plan === 'professional' || plan === 'enterprise' || plan === 'unlimited';
             var isFree = plan === 'free';
             var isStarter = plan === 'starter';
 
@@ -12143,6 +12159,23 @@ async function shareInvoiceWhatsApp(id) {
                     if (badge) badge.style.display = 'inline-block';
 
                     if (data.status === 'active') {
+                        try {
+                            var p = (data.plan || '').toLowerCase();
+                            window.subscriptionActive = true;
+                            window.isUnlimited = (p === 'starter' || p === 'professional' || p === 'enterprise' || p === 'unlimited');
+                            localStorage.setItem('cleancrew_plan', p || 'free');
+                            if (window.isUnlimited) localStorage.setItem('cleancrew_unlimited', '1');
+                            if (typeof applyFeatureRestrictions === 'function') applyFeatureRestrictions(p || 'free');
+                            if (typeof refreshBillingUsagePanel === 'function') refreshBillingUsagePanel();
+                            // Soften free-jobs badge when unlimited
+                            var fj = document.getElementById('freeJobsBadge');
+                            if (fj && window.isUnlimited) {
+                                fj.textContent = 'Unlimited';
+                                fj.style.background = '#D1FAE5';
+                                fj.style.color = '#065F46';
+                            }
+                        } catch (eSub) {}
+
                         container.innerHTML = '<div class="status-box active">' +
                             '<svg class="icon"><use href="#ic-check"/></svg>' +
                             '<div><p>Active — ' + data.plan.charAt(0).toUpperCase() + data.plan.slice(1) + ' Plan</p>' +
