@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="canonical" href="https://www.cleancrewapp.com/" />
     <meta name="robots" content="index, follow" />
-    <meta name="theme-color" content="#F5F0E8" />
+    <meta name="theme-color" content="#FFFFFF" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="CleanCrew" />
     <title>CleanCrew — Run your cleaning business from one place</title>
-    <meta name="description" content="Capture jobs, manage customers and staff, send invoices, and see what you actually keep after costs. Start free — 25 jobs included. No card required." />
-    <meta property="og:title" content="CleanCrew — For cleaning &amp; laundry businesses" />
-    <meta property="og:description" content="From the counter to end-of-day profit. Free to start." />
+    <meta name="description" content="Jobs, clients, invoices, and what you actually keep after costs. Start free with 25 jobs. No card required. Built for cleaning and laundry businesses in Nigeria and Ghana." />
+    <meta property="og:title" content="CleanCrew — For cleaning and laundry businesses" />
+    <meta property="og:description" content="From the counter to end-of-day profit. Free to start. No card required." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.cleancrewapp.com/" />
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
@@ -22,655 +22,606 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <style>
         :root {
-            --cream: #F5F0E8;
-            --ink: #14120F;
-            --ink-soft: #3F3A34;
-            --muted: #7A736A;
-            --line: rgba(20, 18, 15, 0.08);
+            --ink: #0F172A;
+            --ink-soft: #334155;
+            --muted: #64748B;
+            --line: #E2E8F0;
             --white: #FFFFFF;
+            --surface: #F8FAFC;
             --blue: #1A6DDB;
-            --green: #0D9F6E;
-            --shadow: 0 24px 60px rgba(20, 18, 15, 0.08);
-            --shadow-sm: 0 8px 24px rgba(20, 18, 15, 0.06);
-            --radius: 18px;
+            --blue-dark: #1557B0;
+            --blue-soft: #EFF6FF;
+            --green: #059669;
+            --green-soft: #ECFDF5;
+            --shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+            --shadow-sm: 0 8px 24px rgba(15, 23, 42, 0.06);
+            --radius: 16px;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
         body {
             font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
             color: var(--ink);
-            background: var(--cream);
+            background: var(--white);
             line-height: 1.55;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
         }
         a { color: inherit; text-decoration: none; }
-        .wrap { width: min(1080px, calc(100% - 40px)); margin: 0 auto; }
+        img { max-width: 100%; display: block; }
+        .wrap { width: min(1100px, calc(100% - 32px)); margin: 0 auto; }
 
-        .nav-shell {
+        .avail {
+            background: var(--surface);
+            border-bottom: 1px solid var(--line);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ink-soft);
+            text-align: center;
+            padding: 8px 16px;
+        }
+        .avail span { color: var(--muted); font-weight: 500; }
+
+        .nav {
             position: sticky;
             top: 0;
             z-index: 50;
-            padding: 16px 20px 0;
-            background: linear-gradient(to bottom, var(--cream) 60%, transparent);
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--line);
         }
-        .nav {
-            width: min(960px, 100%);
-            margin: 0 auto;
+        .nav-inner {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 16px;
-            padding: 10px 12px 10px 18px;
-            background: rgba(255, 255, 255, 0.82);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.9);
-            border-radius: 999px;
-            box-shadow: 0 8px 32px rgba(20, 18, 15, 0.06);
+            gap: 12px;
+            padding: 12px 0;
         }
         .nav-brand {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             font-weight: 800;
-            font-size: 1.05rem;
+            font-size: 17px;
             letter-spacing: -0.03em;
         }
-        .nav-brand img { width: 32px; height: 32px; object-fit: contain; }
-        .nav-brand span span { color: var(--blue); }
-        .nav-links { display: flex; align-items: center; gap: 6px; }
+        .nav-brand img { width: 32px; height: 32px; }
+        .nav-links { display: flex; align-items: center; gap: 8px; }
         .nav-links a {
-            font-size: 0.9rem;
+            font-size: 14px;
             font-weight: 600;
             color: var(--ink-soft);
-            padding: 8px 14px;
-            border-radius: 999px;
-            transition: background 0.15s, color 0.15s;
+            padding: 8px 10px;
+            border-radius: 10px;
         }
-        .nav-links a:hover { background: rgba(20, 18, 15, 0.05); color: var(--ink); }
-        .nav-cta {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 10px 18px;
-            border-radius: 999px;
-            background: var(--blue);
-            color: #fff !important;
-            font-weight: 700;
-            font-size: 0.9rem;
-            box-shadow: 0 4px 14px rgba(26, 109, 219, 0.35);
-            transition: transform 0.15s, filter 0.15s;
-        }
-        .nav-cta:hover { filter: brightness(1.06); transform: translateY(-1px); }
-
-        .hero {
-            padding: 72px 0 48px;
-            text-align: center;
-            position: relative;
-        }
-        .hero::before {
-            content: '';
-            position: absolute;
-            inset: -20% 10% auto;
-            height: 420px;
-            background: radial-gradient(ellipse at center, rgba(26, 109, 219, 0.09) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: 0;
-        }
-        .hero > * { position: relative; z-index: 1; }
-        .hero-mascot {
-            width: 88px;
-            height: 88px;
-            object-fit: contain;
-            margin: 0 auto 20px;
-            display: block;
-            filter: drop-shadow(0 12px 24px rgba(26, 109, 219, 0.2));
-        }
-        .hero-eyebrow {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            color: var(--muted);
-            margin-bottom: 20px;
-        }
-        .hero-eyebrow span {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--blue);
-            opacity: 0.6;
-        }
-        .hero h1 {
-            font-size: clamp(2.4rem, 6.5vw, 3.75rem);
-            font-weight: 800;
-            letter-spacing: -0.045em;
-            line-height: 1.08;
-            max-width: 16ch;
-            margin: 0 auto 20px;
-        }
-        .hero-sub {
-            font-size: clamp(1.05rem, 2.2vw, 1.2rem);
-            color: var(--ink-soft);
-            max-width: 36em;
-            margin: 0 auto 32px;
-            line-height: 1.55;
-            font-weight: 500;
-        }
-        .hero-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 16px;
-        }
+        .nav-links a:hover { color: var(--blue); background: var(--blue-soft); }
         .btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            padding: 14px 24px;
-            border-radius: 999px;
-            font-weight: 700;
-            font-size: 0.95rem;
-            border: none;
-            cursor: pointer;
-            transition: transform 0.15s, filter 0.15s, background 0.15s;
-            font-family: inherit;
-        }
-        .btn:hover { transform: translateY(-1px); }
-        .btn-primary {
-            background: var(--blue);
-            color: #fff;
-            box-shadow: 0 8px 28px rgba(26, 109, 219, 0.32);
-        }
-        .btn-primary:hover { filter: brightness(1.05); }
-        .btn-ghost {
-            background: rgba(255, 255, 255, 0.7);
-            color: var(--ink);
-            border: 1px solid var(--line);
-        }
-        .btn-ghost:hover { background: #fff; }
-        .btn-lg { padding: 16px 28px; font-size: 1rem; }
-        .hero-note {
-            font-size: 0.88rem;
-            color: var(--muted);
-            font-weight: 500;
-        }
-
-        .product-stage {
-            padding: 24px 0 64px;
-            display: flex;
-            justify-content: center;
-        }
-        .phone {
-            width: min(300px, 86vw);
-            background: #1a1f2e;
-            border-radius: 36px;
-            padding: 12px;
-            box-shadow: var(--shadow), 0 0 0 1px rgba(255,255,255,0.06);
-        }
-        .phone-notch {
-            width: 96px;
-            height: 22px;
-            background: #0d111a;
-            border-radius: 0 0 14px 14px;
-            margin: 0 auto 10px;
-        }
-        .phone-screen {
-            background: #f8fafc;
-            border-radius: 26px;
-            overflow: hidden;
-            min-height: 420px;
-            padding: 16px;
-        }
-        .ps-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 14px;
-            font-size: 0.72rem;
-            font-weight: 700;
-            color: #64748b;
-        }
-        .ps-modes {
-            display: flex;
             gap: 6px;
-            background: #e2e8f0;
-            padding: 3px;
-            border-radius: 999px;
-        }
-        .ps-modes span {
-            padding: 5px 12px;
-            border-radius: 999px;
-            font-size: 0.7rem;
+            font-family: inherit;
             font-weight: 700;
+            font-size: 14px;
+            border-radius: 12px;
+            border: 1.5px solid transparent;
+            padding: 11px 18px;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, transform 0.1s;
         }
-        .ps-modes .on { background: var(--blue); color: #fff; }
-        .ps-profit {
-            background: linear-gradient(135deg, #0f4fa8, #1a6ddb);
-            color: #fff;
-            border-radius: 14px;
-            padding: 14px 16px;
-            margin-bottom: 12px;
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: var(--blue); color: #fff; border-color: var(--blue); }
+        .btn-primary:hover { background: var(--blue-dark); border-color: var(--blue-dark); }
+        .btn-outline { background: var(--white); color: var(--ink); border-color: var(--line); }
+        .btn-outline:hover { border-color: #CBD5E1; background: var(--surface); }
+        .btn-lg { padding: 14px 22px; font-size: 15px; border-radius: 14px; }
+        .hide-sm { display: none; }
+        @media (min-width: 768px) {
+            .hide-sm { display: inline-flex; }
+            .wrap { width: min(1100px, calc(100% - 48px)); }
         }
-        .ps-profit .lbl { font-size: 0.65rem; opacity: 0.85; font-weight: 600; letter-spacing: 0.04em; }
-        .ps-profit .val { font-size: 1.45rem; font-weight: 800; letter-spacing: -0.03em; margin-top: 2px; }
-        .ps-profit .sub { font-size: 0.68rem; opacity: 0.8; margin-top: 2px; }
-        .ps-jobs {
-            background: #fff;
-            border-radius: 14px;
-            border: 1px solid #e2e8f0;
-            overflow: hidden;
-        }
-        .ps-jobs .head {
-            padding: 10px 12px;
-            font-size: 0.68rem;
-            font-weight: 700;
-            color: #64748b;
-            letter-spacing: 0.04em;
-            border-bottom: 1px solid #f1f5f9;
-        }
-        .ps-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 11px 12px;
-            border-bottom: 1px solid #f1f5f9;
-            font-size: 0.78rem;
-        }
-        .ps-row:last-child { border-bottom: none; }
-        .ps-row strong { font-weight: 700; color: #0f172a; display: block; }
-        .ps-row small { color: #94a3b8; font-size: 0.7rem; }
-        .badge {
-            font-size: 0.65rem;
-            font-weight: 700;
-            padding: 3px 8px;
-            border-radius: 999px;
-        }
-        .badge.green { background: #d1fae5; color: #065f46; }
-        .badge.amber { background: #fef3c7; color: #92400e; }
-        .badge.blue { background: #dbeafe; color: #1e40af; }
 
-        section.block { padding: 72px 0; }
-        section.block.alt {
-            background: rgba(255, 255, 255, 0.45);
-            border-top: 1px solid var(--line);
-            border-bottom: 1px solid var(--line);
+        .hero { padding: 36px 0 48px; }
+        .hero-grid { display: grid; gap: 32px; align-items: center; }
+        @media (min-width: 900px) {
+            .hero-grid { grid-template-columns: 1fr 1.05fr; gap: 48px; padding: 24px 0 56px; }
         }
-        .block-label {
-            font-size: 0.75rem;
-            font-weight: 700;
+        .eyebrow {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 800;
             letter-spacing: 0.08em;
             text-transform: uppercase;
-            color: var(--muted);
-            margin-bottom: 12px;
-        }
-        .block h2 {
-            font-size: clamp(1.75rem, 4vw, 2.5rem);
-            font-weight: 800;
-            letter-spacing: -0.035em;
-            line-height: 1.15;
-            margin-bottom: 14px;
-            max-width: 16ch;
-        }
-        .block-lead {
-            font-size: 1.1rem;
-            color: var(--ink-soft);
-            max-width: 36em;
-            margin-bottom: 40px;
-            font-weight: 500;
-        }
-        .split {
-            display: grid;
-            gap: 40px;
-            align-items: center;
-        }
-        @media (min-width: 800px) {
-            .split { grid-template-columns: 1fr 1fr; gap: 56px; }
-        }
-        .pain-list { display: grid; gap: 12px; }
-        .pain-item {
-            display: flex;
-            gap: 14px;
-            align-items: flex-start;
-            padding: 16px 18px;
-            background: rgba(255, 255, 255, 0.65);
-            border: 1px solid var(--line);
-            border-radius: 14px;
-        }
-        .pain-item .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #c4b5a5;
-            margin-top: 7px;
-            flex-shrink: 0;
-        }
-        .pain-item p {
-            font-size: 0.95rem;
-            color: var(--ink-soft);
-            font-weight: 500;
-        }
-        .pain-item strong { color: var(--ink); font-weight: 700; }
-
-        .steps { display: grid; gap: 20px; }
-        @media (min-width: 700px) {
-            .steps { grid-template-columns: repeat(3, 1fr); gap: 24px; }
-        }
-        .step {
-            padding: 24px;
-            background: rgba(255, 255, 255, 0.7);
-            border: 1px solid var(--line);
-            border-radius: var(--radius);
-        }
-        .step-num {
-            font-size: 0.75rem;
-            font-weight: 800;
             color: var(--blue);
-            letter-spacing: 0.06em;
-            margin-bottom: 10px;
+            background: var(--blue-soft);
+            padding: 6px 10px;
+            border-radius: 99px;
+            margin-bottom: 14px;
         }
-        .step h3 {
-            font-size: 1.1rem;
+        .hero h1 {
+            font-size: clamp(1.85rem, 5vw, 2.75rem);
             font-weight: 800;
-            letter-spacing: -0.02em;
-            margin-bottom: 8px;
+            letter-spacing: -0.04em;
+            line-height: 1.12;
+            margin-bottom: 14px;
         }
-        .step p {
-            font-size: 0.92rem;
+        .hero-lead {
+            font-size: 16px;
             color: var(--ink-soft);
-            font-weight: 500;
+            max-width: 34em;
+            margin-bottom: 22px;
         }
-        .pillars {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 8px;
-        }
-        .pillar {
-            padding: 10px 18px;
-            background: #fff;
-            border: 1px solid var(--line);
-            border-radius: 999px;
-            font-size: 0.88rem;
-            font-weight: 700;
-            color: var(--ink-soft);
-        }
+        .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+        .hero-note { font-size: 13px; color: var(--muted); font-weight: 500; }
 
-        .price-card {
-            max-width: 480px;
-            margin: 0 auto;
-            background: #fff;
+        .product-frame {
+            background: var(--white);
             border: 1px solid var(--line);
-            border-radius: 24px;
-            padding: 32px 28px;
-            box-shadow: var(--shadow-sm);
-            text-align: center;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
         }
-        .price-card h3 {
-            font-size: 1.35rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            margin-bottom: 8px;
-        }
-        .price-card .price-lead {
-            color: var(--ink-soft);
-            font-size: 0.95rem;
-            margin-bottom: 20px;
-            font-weight: 500;
-        }
-        .price-card ul { list-style: none; text-align: left; margin: 0 0 24px; }
-        .price-card li {
-            padding: 8px 0;
-            font-size: 0.92rem;
-            color: var(--ink-soft);
-            font-weight: 500;
+        .product-chrome {
             display: flex;
-            gap: 10px;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 14px;
+            background: var(--surface);
             border-bottom: 1px solid var(--line);
         }
-        .price-card li:last-child { border-bottom: none; }
-        .price-card li span { color: var(--green); font-weight: 800; }
-
-        .cta-band {
-            padding: 80px 0;
-            text-align: center;
-            background: linear-gradient(180deg, transparent, rgba(255,255,255,0.5));
+        .product-chrome i {
+            width: 8px; height: 8px; border-radius: 50%; background: #CBD5E1;
         }
-        .cta-band h2 {
-            font-size: clamp(1.85rem, 4vw, 2.6rem);
+        .product-chrome span {
+            margin-left: 8px; font-size: 11px; font-weight: 600; color: var(--muted);
+        }
+        .product-body { padding: 14px 14px 16px; }
+        .product-head {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
+        }
+        .product-head strong { font-size: 14px; font-weight: 800; }
+        .pill {
+            font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 99px;
+            background: var(--blue-soft); color: var(--blue);
+        }
+        .job-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 4px 12px;
+            padding: 12px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+        .job-row:last-child { margin-bottom: 0; }
+        .job-row .client { font-size: 13px; font-weight: 700; }
+        .job-row .meta { font-size: 12px; color: var(--muted); grid-column: 1; }
+        .job-row .amt { font-size: 13px; font-weight: 800; text-align: right; }
+        .job-row .status {
+            grid-column: 2; justify-self: end; align-self: end;
+            font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 99px;
+            background: #F1F5F9; color: var(--ink-soft);
+        }
+        .job-row .status.done { background: var(--green-soft); color: var(--green); }
+        .job-row .status.pending { background: #FFF7ED; color: #C2410C; }
+        .product-foot {
+            margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line);
+            display: flex; justify-content: space-between;
+            font-size: 12px; color: var(--muted); font-weight: 600;
+        }
+        .product-foot strong { color: var(--green); font-weight: 800; }
+
+        section { padding: 56px 0; }
+        .section-title {
+            font-size: clamp(1.35rem, 3vw, 1.75rem);
             font-weight: 800;
-            letter-spacing: -0.035em;
-            line-height: 1.15;
-            margin-bottom: 14px;
-            max-width: 14ch;
-            margin-left: auto;
-            margin-right: auto;
+            letter-spacing: -0.03em;
+            margin-bottom: 10px;
+            line-height: 1.2;
         }
-        .cta-band p {
-            color: var(--ink-soft);
-            font-size: 1.1rem;
-            max-width: 32em;
-            margin: 0 auto 28px;
-            font-weight: 500;
+        .section-lead {
+            font-size: 15px; color: var(--ink-soft); max-width: 36em; margin-bottom: 28px;
         }
-        .cta-band .hero-actions { margin-bottom: 12px; }
+        .center { text-align: center; }
+        .center .section-lead { margin-left: auto; margin-right: auto; }
 
-        footer {
-            padding: 28px 0 40px;
-            border-top: 1px solid var(--line);
+        .problem { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+        .problem-grid { display: grid; gap: 12px; }
+        @media (min-width: 720px) {
+            .problem-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
         }
-        .foot-inner {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 16px;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.88rem;
-            color: var(--muted);
-            font-weight: 500;
+        .problem-card {
+            background: var(--white); border: 1px solid var(--line); border-radius: var(--radius);
+            padding: 18px; box-shadow: var(--shadow-sm);
         }
-        .foot-links { display: flex; gap: 18px; }
-        .foot-links a:hover { color: var(--ink); }
+        .problem-card h3 { font-size: 15px; font-weight: 800; margin-bottom: 6px; }
+        .problem-card p { font-size: 13px; color: var(--ink-soft); }
+        .problem-close {
+            margin-top: 22px; font-size: 14px; font-weight: 600; color: var(--ink-soft); text-align: center;
+        }
 
-        @media (max-width: 720px) {
-            .nav-links .hide-sm { display: none; }
-            .hero { padding: 48px 0 32px; }
-            .nav-shell { padding-top: 12px; }
-            section.block { padding: 56px 0; }
+        .steps { display: grid; gap: 14px; }
+        @media (min-width: 800px) { .steps { grid-template-columns: repeat(2, 1fr); } }
+        .step {
+            display: flex; gap: 14px; padding: 18px;
+            border: 1px solid var(--line); border-radius: var(--radius); background: var(--white);
         }
+        .step-num {
+            flex-shrink: 0; width: 32px; height: 32px; border-radius: 10px;
+            background: var(--blue-soft); color: var(--blue);
+            font-weight: 800; font-size: 14px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .step h3 { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
+        .step p { font-size: 13px; color: var(--ink-soft); }
+        .how-cta { margin-top: 28px; text-align: center; }
+
+        .profit { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+        .math-card {
+            max-width: 420px; margin: 0 auto; background: var(--white);
+            border: 1px solid var(--line); border-radius: 18px; padding: 22px 20px;
+            box-shadow: var(--shadow-sm);
+        }
+        .math-card h3 { font-size: 14px; font-weight: 800; margin-bottom: 14px; }
+        .math-line {
+            display: flex; justify-content: space-between; gap: 12px;
+            font-size: 14px; padding: 8px 0; color: var(--ink-soft);
+        }
+        .math-line strong { color: var(--ink); font-weight: 800; }
+        .math-line.total {
+            border-top: 1px solid var(--line); margin-top: 6px; padding-top: 12px;
+            font-size: 15px; color: var(--ink); font-weight: 700;
+        }
+        .math-line.total strong { color: var(--green); font-size: 1.15rem; }
+        .math-note {
+            margin: 20px auto 0; max-width: 36em; text-align: center;
+            font-size: 14px; color: var(--ink-soft);
+        }
+        .math-caption { margin-top: 10px; text-align: center; font-size: 12px; color: var(--muted); }
+
+        .feat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (min-width: 800px) { .feat-grid { grid-template-columns: repeat(4, 1fr); } }
+        .feat {
+            border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; background: var(--white);
+        }
+        .feat h3 { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
+        .feat p { font-size: 13px; color: var(--ink-soft); }
+
+        .quotes { display: grid; gap: 14px; }
+        @media (min-width: 800px) { .quotes { grid-template-columns: repeat(3, 1fr); } }
+        .quote {
+            background: var(--white); border: 1px solid var(--line); border-radius: var(--radius);
+            padding: 20px 18px; box-shadow: var(--shadow-sm);
+            display: flex; flex-direction: column;
+        }
+        .quote blockquote {
+            font-size: 14px; color: var(--ink-soft); line-height: 1.55; margin-bottom: 16px; flex: 1;
+        }
+        .quote .who { font-size: 13px; font-weight: 800; }
+        .quote .biz, .quote .city { font-size: 12px; color: var(--muted); }
+
+        .pricing { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+        .price-grid { display: grid; gap: 14px; }
+        @media (min-width: 800px) { .price-grid { grid-template-columns: repeat(3, 1fr); } }
+        .price-card {
+            background: var(--white); border: 1px solid var(--line); border-radius: 18px;
+            padding: 22px 20px; display: flex; flex-direction: column;
+        }
+        .price-card.featured {
+            border-color: #BFDBFE;
+            box-shadow: 0 0 0 1px rgba(26, 109, 219, 0.12), var(--shadow-sm);
+        }
+        .price-card h3 { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+        .price-card .price { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; margin: 10px 0 6px; }
+        .price-card .price span { font-size: 13px; font-weight: 600; color: var(--muted); }
+        .price-card ul { list-style: none; margin: 12px 0 18px; flex: 1; }
+        .price-card li {
+            font-size: 13px; color: var(--ink-soft); padding: 5px 0 5px 18px; position: relative;
+        }
+        .price-card li::before {
+            content: ''; position: absolute; left: 0; top: 11px;
+            width: 8px; height: 8px; border-radius: 50%; background: var(--green); opacity: 0.85;
+        }
+        .price-card .btn { width: 100%; }
+        .ghana-note {
+            margin-top: 20px; text-align: center; font-size: 13px; color: var(--ink-soft);
+            background: var(--white); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px;
+        }
+        .price-foot { margin-top: 14px; text-align: center; font-size: 13px; color: var(--muted); }
+
+        .final { padding: 64px 0; text-align: center; }
+        .final h2 {
+            font-size: clamp(1.4rem, 3.5vw, 1.9rem); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 10px;
+        }
+        .final p { font-size: 15px; color: var(--ink-soft); max-width: 28em; margin: 0 auto 22px; }
+        .final-wa { margin-top: 16px; font-size: 13px; color: var(--muted); }
+        .final-wa a { color: var(--blue); font-weight: 700; }
+
+        footer { border-top: 1px solid var(--line); padding: 28px 0 36px; font-size: 13px; color: var(--muted); }
+        .footer-inner {
+            display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between;
+        }
+        .footer-links { display: flex; flex-wrap: wrap; gap: 8px 14px; }
+        .footer-links a { font-weight: 600; color: var(--ink-soft); }
+        .footer-links a:hover { color: var(--blue); }
+        .footer-tag { margin-top: 16px; font-size: 12px; }
     </style>
 </head>
 <body>
-    <div class="nav-shell">
-        <nav class="nav" id="nav">
+
+    <div class="avail">
+        Nigeria and Ghana · ₦ and GH₵ in the app · <span>No card needed to start</span>
+    </div>
+
+    <header class="nav">
+        <div class="wrap nav-inner">
             <a href="index.html" class="nav-brand">
                 <img src="mascot.png" alt="" width="32" height="32" />
-                <span>Clean<span>Crew</span></span>
+                CleanCrew
             </a>
             <div class="nav-links">
                 <a class="hide-sm" href="#how">How it works</a>
                 <a class="hide-sm" href="#pricing">Pricing</a>
                 <a class="hide-sm" href="login.html">Log in</a>
-                <a class="nav-cta" href="signup.html">Start free <span aria-hidden="true">→</span></a>
+                <a class="btn btn-primary" href="signup.html">Start free</a>
             </div>
-        </nav>
-    </div>
-
-    <header class="hero">
-        <div class="wrap">
-            <img class="hero-mascot" src="mascot.png" alt="CleanCrew mascot" width="88" height="88" />
-            <div class="hero-eyebrow">Cleaning <span></span> Laundry <span></span> One place</div>
-            <h1>Run your cleaning business from one place.</h1>
-            <p class="hero-sub">
-                Jobs, customers, staff, invoices, and the profit you actually keep —
-                without chasing WhatsApp chats and notebooks.
-            </p>
-            <div class="hero-actions">
-                <a class="btn btn-primary btn-lg" href="signup.html">Start free — 25 jobs</a>
-            </div>
-            <p class="hero-note">No card required · Set up in minutes · Works on your phone</p>
         </div>
     </header>
 
-    <div class="product-stage">
-        <div class="phone" aria-hidden="true">
-            <div class="phone-notch"></div>
-            <div class="phone-screen">
-                <div class="ps-top">
-                    <span>Today</span>
-                    <div class="ps-modes">
-                        <span class="on">Cleaning</span>
-                        <span>Laundry</span>
+    <main>
+        <section class="hero">
+            <div class="wrap hero-grid">
+                <div>
+                    <span class="eyebrow">Cleaning · Laundry · One place</span>
+                    <h1>Run your cleaning business from one place</h1>
+                    <p class="hero-lead">
+                        Jobs, clients, invoices, and what you actually keep after costs. Not scattered across WhatsApp, notebooks, and your head.
+                    </p>
+                    <div class="hero-actions">
+                        <a class="btn btn-primary btn-lg" href="signup.html">Start free · 25 jobs</a>
+                        <a class="btn btn-outline btn-lg" href="#how">See how it works</a>
+                    </div>
+                    <p class="hero-note">No card required · Set up on your phone in minutes</p>
+                </div>
+
+                <div class="hero-visual">
+                    <div class="product-frame" role="img" aria-label="CleanCrew dashboard showing a list of cleaning jobs with client names, amounts, and status">
+                        <div class="product-chrome">
+                            <i></i><i></i><i></i>
+                            <span>CleanCrew · Today&apos;s jobs</span>
+                        </div>
+                        <div class="product-body">
+                            <div class="product-head">
+                                <strong>Jobs</strong>
+                                <span class="pill">Cleaning</span>
+                            </div>
+                            <div class="job-row">
+                                <span class="client">Mrs Okonkwo</span>
+                                <span class="amt">₦45,000</span>
+                                <span class="meta">3-bedroom · Deep clean</span>
+                                <span class="status done">Completed</span>
+                            </div>
+                            <div class="job-row">
+                                <span class="client">James Ade</span>
+                                <span class="amt">₦28,000</span>
+                                <span class="meta">Office · Standard</span>
+                                <span class="status pending">Pending</span>
+                            </div>
+                            <div class="job-row">
+                                <span class="client">FreshFold weekly</span>
+                                <span class="amt">₦18,500</span>
+                                <span class="meta">Laundry · 24 items</span>
+                                <span class="status">In progress</span>
+                            </div>
+                            <div class="product-foot">
+                                <span>This job profit</span>
+                                <strong>₦12,400 kept</strong>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="ps-profit">
-                    <div class="lbl">THIS MONTH · PROFIT</div>
-                    <div class="val">₦485,000</div>
-                    <div class="sub">Revenue − staff − materials</div>
-                </div>
-                <div class="ps-jobs">
-                    <div class="head">LIVE JOBS</div>
-                    <div class="ps-row">
-                        <div><strong>Home clean · 3-bed</strong><small>In progress</small></div>
-                        <span class="badge blue">Active</span>
+            </div>
+        </section>
+
+        <section class="problem" id="problem">
+            <div class="wrap">
+                <h2 class="section-title center">Your business shouldn&apos;t live in five different places</h2>
+                <p class="section-lead center">When work is split across chats and paper, money and follow-ups slip through.</p>
+                <div class="problem-grid">
+                    <div class="problem-card">
+                        <h3>WhatsApp</h3>
+                        <p>Bookings, reminders, and “how much do I owe you?” mixed into the same chats.</p>
                     </div>
-                    <div class="ps-row">
-                        <div><strong>Wash &amp; fold · 12 items</strong><small>Ready for pickup</small></div>
-                        <span class="badge green">Ready</span>
+                    <div class="problem-card">
+                        <h3>Notebook</h3>
+                        <p>Jobs written down. Numbers guessed later. Hard to see what is still unpaid.</p>
                     </div>
-                    <div class="ps-row">
-                        <div><strong>Office clean · ABC Ltd</strong><small>Starts 2:00 PM</small></div>
-                        <span class="badge amber">Pending</span>
+                    <div class="problem-card">
+                        <h3>End of month</h3>
+                        <p>Busy week. Unclear profit. You worked hard and still cannot say what you kept.</p>
                     </div>
                 </div>
+                <p class="problem-close">CleanCrew puts the day in one place so you can run the work, not chase it.</p>
             </div>
-        </div>
-    </div>
+        </section>
 
-    <section class="block alt" id="problem">
-        <div class="wrap split">
-            <div>
-                <div class="block-label">The mess</div>
-                <h2>Your business shouldn’t live in five different places.</h2>
-                <p class="block-lead">Most cleaning and laundry shops don’t fail at cleaning. They struggle because the business side is scattered.</p>
+        <section id="how">
+            <div class="wrap">
+                <h2 class="section-title center">From booking to profit, in one flow</h2>
+                <p class="section-lead center">A simple path from the counter to knowing what you kept.</p>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div>
+                            <h3>Capture the job</h3>
+                            <p>Client, service, date, amount. Cleaning or laundry. On your phone at the counter or on site.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div>
+                            <h3>Run the work</h3>
+                            <p>Status, staff, notes. Everyone knows what is pending, in progress, or done.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <div>
+                            <h3>Invoice and get paid</h3>
+                            <p>Send a clear invoice. Track unpaid and partial payments without digging through chats.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">4</div>
+                        <div>
+                            <h3>See what you kept</h3>
+                            <p>Log staff, supplies, and transport on the job. See profit on that job, not a vague monthly guess.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="how-cta">
+                    <a class="btn btn-primary btn-lg" href="signup.html">Start free · 25 jobs</a>
+                </div>
             </div>
-            <div class="pain-list">
-                <div class="pain-item">
-                    <span class="dot"></span>
-                    <p><strong>Jobs in WhatsApp</strong> — addresses, “I’ll pay later,” and schedules get lost in chats.</p>
-                </div>
-                <div class="pain-item">
-                    <span class="dot"></span>
-                    <p><strong>Prices are guessed</strong> — labour, supplies, and transport never fully enter the quote.</p>
-                </div>
-                <div class="pain-item">
-                    <span class="dot"></span>
-                    <p><strong>Money isn’t clear</strong> — who paid, who owes, and what you actually kept after costs.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+        </section>
 
-    <section class="block" id="how">
-        <div class="wrap">
-            <div class="block-label">How it works</div>
-            <h2>One calm system for the whole day.</h2>
-            <p class="block-lead">From the counter to end-of-day numbers — without rebuilding how you already work.</p>
-            <div class="steps">
-                <div class="step">
-                    <div class="step-num">01</div>
-                    <h3>Capture the job</h3>
-                    <p>Cleaning or laundry. Quick note when the customer is in a hurry — finish details when it’s calm.</p>
+        <section class="profit" id="profit">
+            <div class="wrap">
+                <h2 class="section-title center">Busy does not always mean profitable</h2>
+                <p class="section-lead center">
+                    Most owners can tell you they were busy. Fewer can tell you which jobs actually made money after staff, supplies, and transport.
+                </p>
+                <div class="math-card">
+                    <h3>A normal month for a small team (2–3 people)</h3>
+                    <div class="math-line"><span>18 jobs · avg ₦45,000 each</span></div>
+                    <div class="math-line"><span>Revenue</span><strong>₦810,000</strong></div>
+                    <div class="math-line"><span>Staff, supplies, transport, fuel</span><strong>₦510,000</strong></div>
+                    <div class="math-line total"><span>Actual profit</span><strong>₦300,000</strong></div>
                 </div>
-                <div class="step">
-                    <div class="step-num">02</div>
-                    <h3>Run the work</h3>
-                    <p>Assign staff, track status, keep inventory by mode. Everything stays on one dashboard.</p>
-                </div>
-                <div class="step">
-                    <div class="step-num">03</div>
-                    <h3>Invoice &amp; know profit</h3>
-                    <p>Professional PDFs, WhatsApp-friendly links, and job-level profit so busy doesn’t mean broke.</p>
-                </div>
+                <p class="math-note">
+                    Without tracking, it is easy to guess that number and be wrong. CleanCrew shows profit per job, so you can see which work is worth repeating and which only looks good on the surface.
+                </p>
+                <p class="math-caption">Example only. Your numbers will differ.</p>
             </div>
-            <div class="pillars" style="margin-top:40px;">
-                <span class="pillar">Jobs</span>
-                <span class="pillar">Customers</span>
-                <span class="pillar">Staff</span>
-                <span class="pillar">Invoices</span>
-                <span class="pillar">Pricing Coach</span>
-                <span class="pillar">Profit</span>
-            </div>
-        </div>
-    </section>
+        </section>
 
-    <section class="block alt" id="pricing">
-        <div class="wrap">
-            <div style="text-align:center;margin-bottom:36px;">
-                <div class="block-label" style="text-align:center;">Pricing</div>
-                <h2 style="margin-left:auto;margin-right:auto;max-width:14ch;">Start free. Grow when you’re ready.</h2>
-                <p class="block-lead" style="margin-left:auto;margin-right:auto;margin-bottom:0;">25 free jobs for the life of your account. Add credits from ₦1,000 — or go unlimited.</p>
+        <section id="features">
+            <div class="wrap">
+                <h2 class="section-title center">What you get in one app</h2>
+                <p class="section-lead center">Built for real shops, not spreadsheets for their own sake.</p>
+                <div class="feat-grid">
+                    <div class="feat"><h3>Jobs</h3><p>Create, assign, and track every booking.</p></div>
+                    <div class="feat"><h3>Clients</h3><p>Names, numbers, and history in one list.</p></div>
+                    <div class="feat"><h3>Invoices</h3><p>Professional invoices and payment status.</p></div>
+                    <div class="feat"><h3>Profit</h3><p>Costs on the job. See what you actually kept.</p></div>
+                </div>
             </div>
-            <div class="price-card">
-                <h3>Free to start</h3>
-                <p class="price-lead">Enough to run a real small operation before you pay anything.</p>
-                <ul>
-                    <li><span>✓</span> 25 free jobs (lifetime)</li>
-                    <li><span>✓</span> Jobs, clients, invoices, inventory</li>
-                    <li><span>✓</span> Cleaning + laundry modes</li>
-                    <li><span>✓</span> PDF invoices &amp; WhatsApp share</li>
-                    <li><span>✓</span> Credits from ₦1,000 when you need more</li>
-                </ul>
-                <a class="btn btn-primary btn-lg" href="signup.html" style="width:100%;">Start free — 25 jobs</a>
-                <p class="hero-note" style="margin-top:14px;">Unlimited from ₦12,500/month · Ghana: same idea in GH₵ in-app</p>
-            </div>
-        </div>
-    </section>
+        </section>
 
-    <section class="cta-band">
-        <div class="wrap">
-            <img src="mascot.png" alt="" width="64" height="64" style="margin:0 auto 16px;display:block;opacity:0.95;" />
-            <h2>Every job has a home.</h2>
-            <p>Put the day in one place — so you can focus on the work, not the chase.</p>
-            <div class="hero-actions">
-                <a class="btn btn-primary btn-lg" href="signup.html">Start free — 25 jobs</a>
-                <a class="btn btn-ghost btn-lg" href="login.html">Log in</a>
+        <section id="stories">
+            <div class="wrap">
+                <h2 class="section-title center">Owners who wanted less chaos</h2>
+                <p class="section-lead center">Real shop problems. Clearer days.</p>
+                <div class="quotes">
+                    <article class="quote">
+                        <blockquote>“I used to lose track of jobs in WhatsApp. Now every booking, invoice, and payment is in one place. It took me one afternoon to switch.”</blockquote>
+                        <div class="who">Adaeze O.</div>
+                        <div class="biz">Sparklean Services</div>
+                        <div class="city">Lagos</div>
+                    </article>
+                    <article class="quote">
+                        <blockquote>“I finally know which jobs actually make money. Some jobs I thought were good were barely covering transport.”</blockquote>
+                        <div class="who">Kwame A.</div>
+                        <div class="biz">FreshFold Laundry</div>
+                        <div class="city">Accra</div>
+                    </article>
+                    <article class="quote">
+                        <blockquote>“My clients take me more seriously now. The invoices look professional and payments come faster.”</blockquote>
+                        <div class="who">Blessing E.</div>
+                        <div class="biz">CleanSpace Homes</div>
+                        <div class="city">Abuja</div>
+                    </article>
+                </div>
             </div>
-            <p class="hero-note">Questions? <a href="https://wa.me/2347057295546" target="_blank" rel="noopener" style="color:var(--blue);font-weight:700;">Chat on WhatsApp</a></p>
-        </div>
-    </section>
+        </section>
+
+        <section class="pricing" id="pricing">
+            <div class="wrap">
+                <h2 class="section-title center">Start free. Pay when the volume is real.</h2>
+                <p class="section-lead center">No card to start. Upgrade only when free jobs or credits are not enough.</p>
+                <div class="price-grid">
+                    <div class="price-card">
+                        <h3>Free</h3>
+                        <div class="price">₦0</div>
+                        <ul>
+                            <li>25 jobs for the life of your account</li>
+                            <li>Track jobs, clients, and the basics</li>
+                            <li>No card required</li>
+                        </ul>
+                        <a class="btn btn-primary" href="signup.html">Start free</a>
+                    </div>
+                    <div class="price-card">
+                        <h3>Credits</h3>
+                        <div class="price">From ₦1,000</div>
+                        <ul>
+                            <li>Buy more jobs when you need them</li>
+                            <li>Pay only for what you use</li>
+                            <li>Credits do not expire</li>
+                        </ul>
+                        <a class="btn btn-outline" href="signup.html">Start free, then buy in-app</a>
+                    </div>
+                    <div class="price-card featured">
+                        <h3>Unlimited</h3>
+                        <div class="price">₦12,500 <span>/ month</span></div>
+                        <ul>
+                            <li>Unlimited jobs for busy shops</li>
+                            <li>Full access to the product</li>
+                            <li>Activate in the app after you sign up</li>
+                        </ul>
+                        <a class="btn btn-primary" href="signup.html">Go unlimited</a>
+                    </div>
+                </div>
+                <p class="ghana-note">
+                    In Ghana, amounts show in GH₵ inside the app. Same product. Local payment options where available.
+                </p>
+                <p class="price-foot">Nigeria-first pricing shown. Ghana uses GH₵ in-app.</p>
+            </div>
+        </section>
+
+        <section class="final">
+            <div class="wrap">
+                <h2>Give every job a proper home</h2>
+                <p>Stop running the business from chat threads and rough estimates. Start free on your phone.</p>
+                <a class="btn btn-primary btn-lg" href="signup.html">Start free · 25 jobs</a>
+                <p class="final-wa">
+                    Questions?
+                    <a href="https://wa.me/2347057295546" target="_blank" rel="noopener">Message us on WhatsApp · 0705 729 5546</a>
+                </p>
+            </div>
+        </section>
+    </main>
 
     <footer>
-        <div class="wrap foot-inner">
-            <div>© <span id="y"></span> CleanCrew · cleancrewapp.com</div>
-            <div class="foot-links">
-                <a href="signup.html">Sign up</a>
-                <a href="login.html">Log in</a>
-                <a href="https://wa.me/2347057295546" target="_blank" rel="noopener">WhatsApp</a>
+        <div class="wrap">
+            <div class="footer-inner">
+                <div>
+                    <strong style="color:var(--ink);font-weight:800;">CleanCrew</strong>
+                    <div style="margin-top:4px;">For cleaning and laundry businesses in Nigeria and Ghana</div>
+                </div>
+                <div class="footer-links">
+                    <a href="#how">How it works</a>
+                    <a href="#pricing">Pricing</a>
+                    <a href="login.html">Log in</a>
+                    <a href="signup.html">Sign up</a>
+                    <a href="https://wa.me/2347057295546" target="_blank" rel="noopener">WhatsApp</a>
+                </div>
             </div>
+            <p class="footer-tag">Built for real shops, not spreadsheets for their own sake. · © <span id="y"></span> cleancrewapp.com</p>
         </div>
     </footer>
 
     <script>
         document.getElementById('y').textContent = new Date().getFullYear();
-    </script>
-    <script>
-    (function(){
-      if (!('serviceWorker' in navigator)) return;
-      window.addEventListener('load', function(){
-        navigator.serviceWorker.register('/sw.js').then(function(reg){
-          try { reg.update(); } catch(e) {}
-        }).catch(function(){});
-      });
-    })();
     </script>
 </body>
 </html>
