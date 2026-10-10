@@ -175,11 +175,15 @@
         .product-chrome span {
             margin-left: 8px; font-size: 11px; font-weight: 600; color: var(--muted);
         }
-        .product-body { padding: 14px 14px 16px; }
-        .product-head {
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
+        .product-frame { font-size: 15px; }
+        @media (min-width: 900px) {
+            .product-frame { transform: scale(1.02); transform-origin: top center; }
         }
-        .product-head strong { font-size: 14px; font-weight: 800; }
+        .product-body { padding: 18px 16px 18px; }
+        .product-head {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;
+        }
+        .product-head strong { font-size: 16px; font-weight: 800; }
         .pill {
             font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 99px;
             background: var(--blue-soft); color: var(--blue);
@@ -194,12 +198,12 @@
             margin-bottom: 8px;
         }
         .job-row:last-child { margin-bottom: 0; }
-        .job-row .client { font-size: 13px; font-weight: 700; }
-        .job-row .meta { font-size: 12px; color: var(--muted); grid-column: 1; }
-        .job-row .amt { font-size: 13px; font-weight: 800; text-align: right; }
+        .job-row .client { font-size: 15px; font-weight: 700; }
+        .job-row .meta { font-size: 13px; color: var(--muted); grid-column: 1; }
+        .job-row .amt { font-size: 15px; font-weight: 800; text-align: right; }
         .job-row .status {
             grid-column: 2; justify-self: end; align-self: end;
-            font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 99px;
+            font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 99px;
             background: #F1F5F9; color: var(--ink-soft);
         }
         .job-row .status.done { background: var(--green-soft); color: var(--green); }
@@ -307,11 +311,41 @@
             background: var(--white); border: 1px solid var(--line); border-radius: 18px;
             padding: 22px 20px; display: flex; flex-direction: column;
         }
-        .price-card.featured {
-            border-color: #BFDBFE;
-            box-shadow: 0 0 0 1px rgba(26, 109, 219, 0.12), var(--shadow-sm);
-        }
+        /* featured style set for credits prominence */
         .price-card h3 { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+        .price-for {
+            font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 4px; line-height: 1.4;
+        }
+        .price-card.featured {
+            border-color: #A7F3D0;
+            box-shadow: 0 0 0 1px rgba(5, 150, 105, 0.15), var(--shadow-sm);
+        }
+        .price-card.featured .btn-primary {
+            background: var(--green);
+            border-color: var(--green);
+        }
+        .price-card.featured .btn-primary:hover {
+            background: #047857;
+            border-color: #047857;
+        }
+        .price-badge {
+            display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: 0.04em;
+            text-transform: uppercase; color: var(--green); background: var(--green-soft);
+            padding: 4px 8px; border-radius: 99px; margin-bottom: 8px;
+        }
+        .stories-note {
+            text-align: center; font-size: 12px; color: var(--muted); margin-top: 14px;
+        }
+        .mode-split {
+            display: grid; gap: 12px; margin-top: 8px;
+        }
+        @media (min-width: 700px) { .mode-split { grid-template-columns: 1fr 1fr; gap: 16px; } }
+        .mode-card {
+            border: 1px solid var(--line); border-radius: var(--radius); padding: 18px;
+            background: var(--white);
+        }
+        .mode-card h3 { font-size: 15px; font-weight: 800; margin-bottom: 6px; }
+        .mode-card p { font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
         .price-card .price { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; margin: 10px 0 6px; }
         .price-card .price span { font-size: 13px; font-weight: 600; color: var(--muted); }
         .price-card ul { list-style: none; margin: 12px 0 18px; flex: 1; }
@@ -350,7 +384,7 @@
 <body>
 
     <div class="avail">
-        Nigeria and Ghana · ₦ and GH₵ in the app · <span>No card needed to start</span>
+        Available in Nigeria and Ghana · Local currency support in the app
     </div>
 
     <header class="nav">
@@ -378,10 +412,10 @@
                         Jobs, clients, invoices, and what you actually keep after costs. Not scattered across WhatsApp, notebooks, and your head.
                     </p>
                     <div class="hero-actions">
-                        <a class="btn btn-primary btn-lg" href="signup.html">Start free · 25 jobs</a>
+                        <a class="btn btn-primary btn-lg" href="signup.html">Start free</a>
                         <a class="btn btn-outline btn-lg" href="#how">See how it works</a>
                     </div>
-                    <p class="hero-note">No card required · Set up on your phone in minutes</p>
+                    <p class="hero-note">25 free jobs for the life of your account · No card required</p>
                 </div>
 
                 <div class="hero-visual">
@@ -480,7 +514,8 @@
                     </div>
                 </div>
                 <div class="how-cta">
-                    <a class="btn btn-primary btn-lg" href="signup.html">Start free · 25 jobs</a>
+                    <a class="btn btn-primary btn-lg" href="signup.html">Start free</a>
+                    <p class="hero-note" style="margin-top:12px;">25 free jobs · No card required</p>
                 </div>
             </div>
         </section>
@@ -505,6 +540,24 @@
             </div>
         </section>
 
+
+        <section id="modes">
+            <div class="wrap">
+                <h2 class="section-title center">Built for cleaning and laundry</h2>
+                <p class="section-lead center">Same dashboard. Switch mode for the work you do today.</p>
+                <div class="mode-split">
+                    <div class="mode-card">
+                        <h3>Cleaning</h3>
+                        <p>Home, office, deep cleans, and fumigation-style jobs. Track rooms, staff, invoices, and profit per job.</p>
+                    </div>
+                    <div class="mode-card">
+                        <h3>Laundry</h3>
+                        <p>Item counts, intake to ready for collection, and clear job status for walk-in customers in a hurry.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section id="features">
             <div class="wrap">
                 <h2 class="section-title center">What you get in one app</h2>
@@ -521,7 +574,7 @@
         <section id="stories">
             <div class="wrap">
                 <h2 class="section-title center">Owners who wanted less chaos</h2>
-                <p class="section-lead center">Real shop problems. Clearer days.</p>
+                <p class="section-lead center">Examples of the problems CleanCrew is built to solve. We will replace these with verified customer stories as they come in.</p>
                 <div class="quotes">
                     <article class="quote">
                         <blockquote>“I used to lose track of jobs in WhatsApp. Now every booking, invoice, and payment is in one place. It took me one afternoon to switch.”</blockquote>
@@ -542,49 +595,56 @@
                         <div class="city">Abuja</div>
                     </article>
                 </div>
+                <p class="stories-note">Illustrative examples for layout. Not verified customer testimonials yet.</p>
             </div>
         </section>
 
         <section class="pricing" id="pricing">
             <div class="wrap">
                 <h2 class="section-title center">Start free. Pay when the volume is real.</h2>
-                <p class="section-lead center">No card to start. Upgrade only when free jobs or credits are not enough.</p>
+                <p class="section-lead center">No card to start. When your 25 free jobs are used, buy credits or go unlimited. You choose.</p>
                 <div class="price-grid">
                     <div class="price-card">
                         <h3>Free</h3>
+                        <p class="price-for">For businesses getting started</p>
                         <div class="price">₦0</div>
                         <ul>
                             <li>25 jobs for the life of your account</li>
                             <li>Track jobs, clients, and the basics</li>
                             <li>No card required</li>
+                            <li>When free jobs run out, buy credits or unlimited</li>
+                        </ul>
+                        <a class="btn btn-outline" href="signup.html">Start free</a>
+                    </div>
+                    <div class="price-card featured">
+                        <span class="price-badge">Most flexible</span>
+                        <h3>Credits</h3>
+                        <p class="price-for">For occasional or fluctuating jobs</p>
+                        <div class="price">From ₦1,000</div>
+                        <ul>
+                            <li>Buy more jobs only when you need them</li>
+                            <li>Pay as you go · packs from ₦1,000</li>
+                            <li>Credits do not expire</li>
+                            <li>Best next step after free jobs</li>
                         </ul>
                         <a class="btn btn-primary" href="signup.html">Start free</a>
                     </div>
                     <div class="price-card">
-                        <h3>Credits</h3>
-                        <div class="price">From ₦1,000</div>
-                        <ul>
-                            <li>Buy more jobs when you need them</li>
-                            <li>Pay only for what you use</li>
-                            <li>Credits do not expire</li>
-                        </ul>
-                        <a class="btn btn-outline" href="signup.html">Start free, then buy in-app</a>
-                    </div>
-                    <div class="price-card featured">
                         <h3>Unlimited</h3>
+                        <p class="price-for">For consistently high volume</p>
                         <div class="price">₦12,500 <span>/ month</span></div>
                         <ul>
                             <li>Unlimited jobs for busy shops</li>
-                            <li>Full access to the product</li>
+                            <li>Full access while the plan is active</li>
                             <li>Activate in the app after you sign up</li>
                         </ul>
-                        <a class="btn btn-primary" href="signup.html">Go unlimited</a>
+                        <a class="btn btn-outline" href="signup.html">Go unlimited</a>
                     </div>
                 </div>
                 <p class="ghana-note">
-                    In Ghana, amounts show in GH₵ inside the app. Same product. Local payment options where available.
+                    Available in Nigeria and Ghana. Amounts show in local currency (NGN or GHS) inside the app. Local payment options where available.
                 </p>
-                <p class="price-foot">Nigeria-first pricing shown. Ghana uses GH₵ in-app.</p>
+                <p class="price-foot">Prices on this page are in naira. Ghanaian users see GHS in the app.</p>
             </div>
         </section>
 
@@ -592,7 +652,8 @@
             <div class="wrap">
                 <h2>Give every job a proper home</h2>
                 <p>Stop running the business from chat threads and rough estimates. Start free on your phone.</p>
-                <a class="btn btn-primary btn-lg" href="signup.html">Start free · 25 jobs</a>
+                <a class="btn btn-primary btn-lg" href="signup.html">Start free</a>
+                <p class="hero-note" style="margin-top:12px;">25 free jobs for the life of your account</p>
                 <p class="final-wa">
                     Questions?
                     <a href="https://wa.me/2347057295546" target="_blank" rel="noopener">Message us on WhatsApp · 0705 729 5546</a>
