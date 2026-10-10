@@ -220,14 +220,26 @@
             font-size: clamp(1.35rem, 3vw, 1.75rem);
             font-weight: 800;
             letter-spacing: -0.03em;
-            margin-bottom: 10px;
-            line-height: 1.2;
+            margin: 0 auto 12px;
+            line-height: 1.25;
+            max-width: 18em;
+            text-wrap: balance;
         }
         .section-lead {
-            font-size: 15px; color: var(--ink-soft); max-width: 36em; margin-bottom: 28px;
+            font-size: 15px;
+            color: var(--ink-soft);
+            max-width: 32em;
+            margin: 0 auto 28px;
+            line-height: 1.55;
+            text-wrap: pretty;
+            text-align: center;
         }
         .center { text-align: center; }
-        .center .section-lead { margin-left: auto; margin-right: auto; }
+        .center .section-title,
+        .center .section-lead {
+            margin-left: auto;
+            margin-right: auto;
+        }
 
         .problem { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
         .problem-grid { display: grid; gap: 12px; }
@@ -460,7 +472,7 @@
         <section class="problem" id="problem">
             <div class="wrap">
                 <h2 class="section-title center">Your business shouldn&apos;t live in five different places</h2>
-                <p class="section-lead center">When work is split across chats and paper, money and follow-ups slip through.</p>
+                <p class="section-lead center">When work is split across chats and paper, money and follow-ups slip away.</p>
                 <div class="problem-grid">
                     <div class="problem-card">
                         <h3>WhatsApp</h3>
@@ -482,7 +494,7 @@
         <section id="how">
             <div class="wrap">
                 <h2 class="section-title center">From booking to profit, in one flow</h2>
-                <p class="section-lead center">A simple path from the counter to knowing what you kept.</p>
+                <p class="section-lead center">From the counter to knowing what you kept.</p>
                 <div class="steps">
                     <div class="step">
                         <div class="step-num">1</div>
@@ -524,7 +536,7 @@
             <div class="wrap">
                 <h2 class="section-title center">Busy does not always mean profitable</h2>
                 <p class="section-lead center">
-                    Most owners can tell you they were busy. Fewer can tell you which jobs actually made money after staff, supplies, and transport.
+                    Most owners know they were busy. Fewer know which jobs made money after staff, supplies, and transport.
                 </p>
                 <div class="math-card">
                     <h3>A normal month for a small team (2–3 people)</h3>
@@ -544,7 +556,7 @@
         <section id="modes">
             <div class="wrap">
                 <h2 class="section-title center">Built for cleaning and laundry</h2>
-                <p class="section-lead center">Same dashboard. Switch mode for the work you do today.</p>
+                <p class="section-lead center">Same dashboard. Switch mode for cleaning or laundry.</p>
                 <div class="mode-split">
                     <div class="mode-card">
                         <h3>Cleaning</h3>
@@ -561,7 +573,7 @@
         <section id="features">
             <div class="wrap">
                 <h2 class="section-title center">What you get in one app</h2>
-                <p class="section-lead center">Built for real shops, not spreadsheets for their own sake.</p>
+                <p class="section-lead center">Built for real shops, not extra spreadsheets.</p>
                 <div class="feat-grid">
                     <div class="feat"><h3>Jobs</h3><p>Create, assign, and track every booking.</p></div>
                     <div class="feat"><h3>Clients</h3><p>Names, numbers, and history in one list.</p></div>
@@ -574,7 +586,7 @@
         <section id="stories">
             <div class="wrap">
                 <h2 class="section-title center">Owners who wanted less chaos</h2>
-                <p class="section-lead center">Examples of the problems CleanCrew is built to solve. We will replace these with verified customer stories as they come in.</p>
+                <p class="section-lead center">Examples of problems CleanCrew is built to solve. We will swap in verified customer stories as they come in.</p>
                 <div class="quotes">
                     <article class="quote">
                         <blockquote>“I used to lose track of jobs in WhatsApp. Now every booking, invoice, and payment is in one place. It took me one afternoon to switch.”</blockquote>
@@ -602,7 +614,7 @@
         <section class="pricing" id="pricing">
             <div class="wrap">
                 <h2 class="section-title center">Start free. Pay when the volume is real.</h2>
-                <p class="section-lead center">No card to start. When your 25 free jobs are used, buy credits or go unlimited. You choose.</p>
+                <p class="section-lead center">No card to start. When free jobs run out, buy credits or go unlimited.</p>
                 <div class="price-grid">
                     <div class="price-card">
                         <h3>Free</h3>
@@ -677,7 +689,7 @@
                     <a href="https://wa.me/2347057295546" target="_blank" rel="noopener">WhatsApp</a>
                 </div>
             </div>
-            <p class="footer-tag">Built for real shops, not spreadsheets for their own sake. · © <span id="y"></span> cleancrewapp.com</p>
+            <p class="footer-tag">Built for real shops, not extra spreadsheets. · © <span id="y"></span> cleancrewapp.com</p>
         </div>
     </footer>
 
