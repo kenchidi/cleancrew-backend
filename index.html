@@ -296,42 +296,80 @@
             font-size: 11px;
         }
 
-        section { padding: 56px 0; }
-        .section-title {
-            font-size: clamp(1.35rem, 3vw, 1.75rem);
-            font-weight: 800;
-            letter-spacing: -0.03em;
-            margin: 0 auto 12px;
-            line-height: 1.25;
-            max-width: 18em;
-            text-wrap: balance;
+        section { padding: 64px 0; }
+        .section-head {
+            margin-bottom: 28px;
+            max-width: 36em;
+        }
+        .section-head.center {
+            margin-left: auto;
+            margin-right: auto;
             text-align: center;
         }
+        .section-kicker {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--blue);
+            margin-bottom: 10px;
+        }
+        .section-title {
+            font-size: clamp(1.45rem, 3.2vw, 2rem);
+            font-weight: 800;
+            letter-spacing: -0.035em;
+            margin: 0 0 12px;
+            line-height: 1.2;
+            text-wrap: balance;
+            text-align: left;
+        }
         .section-lead {
-            font-size: 15px;
+            font-size: 16px;
             color: var(--ink-soft);
-            max-width: 32em;
-            margin: 0 auto 28px;
+            max-width: 36em;
+            margin: 0;
             line-height: 1.55;
-            text-align: center;
+            text-align: left;
             text-wrap: pretty;
+        }
+        .section-head.center .section-title,
+        .section-head.center .section-lead {
+            text-align: center;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .problem { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+        .problem-layout {
+            display: grid;
+            gap: 28px;
+            align-items: start;
+        }
+        @media (min-width: 900px) {
+            .problem-layout {
+                grid-template-columns: minmax(240px, 0.9fr) 1.2fr;
+                gap: 40px;
+            }
+        }
         .problem-grid { display: grid; gap: 12px; }
-        @media (min-width: 720px) { .problem-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; } }
+        @media (min-width: 560px) { .problem-grid { grid-template-columns: 1fr 1fr; } }
+        @media (min-width: 900px) { .problem-grid { grid-template-columns: 1fr; } }
+        @media (min-width: 1100px) { .problem-grid { grid-template-columns: 1fr 1fr 1fr; } }
         .problem-card {
             background: var(--white);
             border: 1px solid var(--line);
             border-radius: var(--radius);
             padding: 20px 18px;
             box-shadow: var(--shadow-sm);
+            text-align: left;
         }
         .problem-card h3 { font-size: 15px; font-weight: 800; margin-bottom: 6px; }
         .problem-card p { font-size: 13px; color: var(--ink-soft); }
         .problem-close {
-            margin-top: 22px; font-size: 14px; font-weight: 600;
-            color: var(--ink-soft); text-align: center;
+            margin-top: 18px; font-size: 14px; font-weight: 600;
+            color: var(--ink-soft); text-align: left;
+            max-width: 28em;
         }
 
         .steps { display: grid; gap: 14px; }
@@ -480,7 +518,15 @@
         .st-run { background: #EFF6FF; color: #1A6DDB; }
         .st-wait { background: #FFF7ED; color: #C2410C; }
 
-        .how-cta { margin-top: 28px; text-align: center; }
+        .how-cta {
+            margin-top: 28px;
+            text-align: left;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px 16px;
+        }
+        .how-cta p { margin: 0; }
 
         .mode-split { display: grid; gap: 14px; }
         @media (min-width: 700px) { .mode-split { grid-template-columns: 1fr 1fr; } }
@@ -507,12 +553,23 @@
         .mode-card p { font-size: 13px; color: var(--ink-soft); }
 
         .profit { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+        .profit-layout {
+            display: grid;
+            gap: 28px;
+            align-items: center;
+        }
+        @media (min-width: 880px) {
+            .profit-layout {
+                grid-template-columns: 1fr minmax(300px, 400px);
+                gap: 48px;
+            }
+        }
         .math-card {
-            max-width: 420px; margin: 0 auto; background: var(--white);
-            border: 1px solid var(--line); border-radius: 18px; padding: 22px 20px;
+            max-width: none; margin: 0; background: var(--white);
+            border: 1px solid var(--line); border-radius: 18px; padding: 24px 22px;
             box-shadow: var(--shadow-sm);
         }
-        .math-card h3 { font-size: 14px; font-weight: 800; margin-bottom: 14px; }
+        .math-card h3 { font-size: 14px; font-weight: 800; margin-bottom: 14px; text-align: left; }
         .math-line {
             display: flex; justify-content: space-between; gap: 12px;
             font-size: 14px; padding: 8px 0; color: var(--ink-soft);
@@ -522,25 +579,25 @@
             border-top: 1px solid var(--line); margin-top: 6px; padding-top: 12px;
             font-size: 15px; color: var(--ink); font-weight: 700;
         }
-        .math-line.total strong { color: var(--green); font-size: 1.15rem; }
+        .math-line.total strong { color: var(--green); font-size: 1.2rem; }
         .math-note {
-            margin: 20px auto 0; max-width: 36em; text-align: center;
-            font-size: 14px; color: var(--ink-soft);
+            margin: 16px 0 0; max-width: 36em; text-align: left;
+            font-size: 15px; color: var(--ink-soft); line-height: 1.55;
         }
-        .math-caption { margin-top: 10px; text-align: center; font-size: 12px; color: var(--muted); }
+        .math-caption { margin-top: 10px; text-align: left; font-size: 12px; color: var(--muted); }
 
         .feat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         @media (min-width: 800px) { .feat-grid { grid-template-columns: repeat(4, 1fr); } }
         .feat {
             border: 1px solid var(--line); border-radius: var(--radius-sm);
-            padding: 16px; background: var(--white);
+            padding: 18px 16px; background: var(--white); text-align: left;
         }
         .feat h3 { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
         .feat p { font-size: 13px; color: var(--ink-soft); }
 
         .pricing { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-        .price-grid { display: grid; gap: 14px; max-width: 720px; margin: 0 auto; }
-        @media (min-width: 700px) { .price-grid { grid-template-columns: 1fr 1fr; } }
+        .price-grid { display: grid; gap: 14px; max-width: 780px; margin: 0; }
+        @media (min-width: 700px) { .price-grid { grid-template-columns: 1fr 1.15fr; } }
         .price-card {
             background: var(--white); border: 1px solid var(--line); border-radius: 20px;
             padding: 22px 20px; display: flex; flex-direction: column;
@@ -572,17 +629,42 @@
         }
         .price-card.featured .btn-primary:hover { background: #047857; border-color: #047857; }
         .ghana-note {
-            margin: 20px auto 0; max-width: 520px; text-align: center; font-size: 13px; color: var(--ink-soft);
+            margin: 20px 0 0; max-width: 560px; text-align: left; font-size: 13px; color: var(--ink-soft);
             background: var(--white); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px;
         }
-        .price-foot { margin-top: 14px; text-align: center; font-size: 13px; color: var(--muted); }
+        .price-foot { margin-top: 14px; text-align: left; font-size: 13px; color: var(--muted); }
 
-        .final { padding: 64px 0; text-align: center; }
-        .final h2 {
-            font-size: clamp(1.4rem, 3.5vw, 1.9rem); font-weight: 800;
-            letter-spacing: -0.03em; margin-bottom: 10px;
+        .final {
+            padding: 72px 0;
+            text-align: left;
+            background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
         }
-        .final p { font-size: 15px; color: var(--ink-soft); max-width: 28em; margin: 0 auto 22px; }
+        .final-inner {
+            display: grid;
+            gap: 24px;
+            align-items: center;
+        }
+        @media (min-width: 800px) {
+            .final-inner {
+                grid-template-columns: 1.2fr 0.8fr;
+                gap: 40px;
+            }
+        }
+        .final h2 {
+            font-size: clamp(1.5rem, 3.5vw, 2.1rem); font-weight: 800;
+            letter-spacing: -0.035em; margin-bottom: 12px; text-align: left;
+        }
+        .final p { font-size: 16px; color: var(--ink-soft); max-width: 30em; margin: 0 0 20px; text-align: left; }
+        .final-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+        .final-panel {
+            background: var(--white);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 22px 20px;
+            box-shadow: var(--shadow-sm);
+        }
+        .final-panel strong { display: block; font-size: 14px; margin-bottom: 8px; }
+        .final-panel p { font-size: 13px; margin: 0 0 12px; color: var(--ink-soft); }
         .final-wa { margin-top: 16px; font-size: 13px; color: var(--muted); }
         .final-wa a { color: var(--blue); font-weight: 700; }
 
@@ -650,30 +732,38 @@
 
         <section class="problem" id="problem">
             <div class="wrap">
-                <h2 class="section-title">Your business shouldn&apos;t live in five different places</h2>
-                <p class="section-lead">When work is split across chats and paper, money and follow-ups slip away.</p>
-                <div class="problem-grid">
-                    <div class="problem-card">
-                        <h3>WhatsApp</h3>
-                        <p>Bookings, reminders, and “how much do I owe you?” mixed into the same chats.</p>
+                <div class="problem-layout">
+                    <div class="section-head">
+                        <span class="section-kicker">The problem</span>
+                        <h2 class="section-title">Your business shouldn&apos;t live in five different places</h2>
+                        <p class="section-lead">When work is split across chats and paper, money and follow-ups slip away.</p>
+                        <p class="problem-close">CleanCrew puts the day in one place so you can run the work, not chase it.</p>
                     </div>
-                    <div class="problem-card">
-                        <h3>Notebook</h3>
-                        <p>Jobs written down. Numbers guessed later. Hard to see what is still unpaid.</p>
-                    </div>
-                    <div class="problem-card">
-                        <h3>End of month</h3>
-                        <p>Busy week. Unclear profit. You worked hard and still cannot say what you kept.</p>
+                    <div class="problem-grid">
+                        <div class="problem-card">
+                            <h3>WhatsApp</h3>
+                            <p>Bookings, reminders, and “how much do I owe you?” mixed into the same chats.</p>
+                        </div>
+                        <div class="problem-card">
+                            <h3>Notebook</h3>
+                            <p>Jobs written down. Numbers guessed later. Hard to see what is still unpaid.</p>
+                        </div>
+                        <div class="problem-card">
+                            <h3>End of month</h3>
+                            <p>Busy week. Unclear profit. You worked hard and still cannot say what you kept.</p>
+                        </div>
                     </div>
                 </div>
-                <p class="problem-close">CleanCrew puts the day in one place so you can run the work, not chase it.</p>
             </div>
         </section>
 
         <section id="how">
             <div class="wrap">
-                <h2 class="section-title">From booking to profit, in one flow</h2>
-                <p class="section-lead">From the counter to knowing what you kept.</p>
+                <div class="section-head">
+                    <span class="section-kicker">How it works</span>
+                    <h2 class="section-title">From booking to profit, in one flow</h2>
+                    <p class="section-lead">From the counter to knowing what you kept — one path, not five apps.</p>
+                </div>
                 <div class="how-grid">
                     <div class="how-visual how-dash" aria-label="CleanCrew dashboard preview">
                         <div class="dash-frame">
@@ -772,8 +862,11 @@
 
         <section id="modes">
             <div class="wrap">
-                <h2 class="section-title">Built for cleaning and laundry</h2>
-                <p class="section-lead">Same dashboard. Switch mode for the work you do today.</p>
+                <div class="section-head">
+                    <span class="section-kicker">Who it is for</span>
+                    <h2 class="section-title">Built for cleaning and laundry</h2>
+                    <p class="section-lead">Same dashboard. Switch mode for the work you do today.</p>
+                </div>
                 <div class="mode-split">
                     <article class="mode-card cleaning">
                         <div class="pic" role="img" aria-label="Home cleaning"></div>
@@ -795,28 +888,38 @@
 
         <section class="profit" id="profit">
             <div class="wrap">
-                <h2 class="section-title">Busy does not always mean profitable</h2>
-                <p class="section-lead">
-                    Most owners know they were busy. Fewer know which jobs made money after staff, supplies, and transport.
-                </p>
-                <div class="math-card">
-                    <h3>A normal month for a small team (2–3 people)</h3>
-                    <div class="math-line"><span>18 jobs · avg ₦45,000 each</span></div>
-                    <div class="math-line"><span>Revenue</span><strong>₦810,000</strong></div>
-                    <div class="math-line"><span>Staff, supplies, transport, fuel</span><strong>₦510,000</strong></div>
-                    <div class="math-line total"><span>Actual profit</span><strong>₦300,000</strong></div>
+                <div class="profit-layout">
+                    <div>
+                        <div class="section-head">
+                            <span class="section-kicker">Profit clarity</span>
+                            <h2 class="section-title">Busy does not always mean profitable</h2>
+                            <p class="section-lead">
+                                Most owners know they were busy. Fewer know which jobs made money after staff, supplies, and transport.
+                            </p>
+                        </div>
+                        <p class="math-note">
+                            Without tracking, it is easy to guess that number and be wrong. CleanCrew shows profit per job, so you can see which work is worth repeating.
+                        </p>
+                        <p class="math-caption">Example only. Your numbers will differ.</p>
+                    </div>
+                    <div class="math-card">
+                        <h3>A normal month for a small team (2–3 people)</h3>
+                        <div class="math-line"><span>18 jobs · avg ₦45,000 each</span></div>
+                        <div class="math-line"><span>Revenue</span><strong>₦810,000</strong></div>
+                        <div class="math-line"><span>Staff, supplies, transport, fuel</span><strong>₦510,000</strong></div>
+                        <div class="math-line total"><span>Actual profit</span><strong>₦300,000</strong></div>
+                    </div>
                 </div>
-                <p class="math-note">
-                    Without tracking, it is easy to guess that number and be wrong. CleanCrew shows profit per job, so you can see which work is worth repeating.
-                </p>
-                <p class="math-caption">Example only. Your numbers will differ.</p>
             </div>
         </section>
 
         <section id="features">
             <div class="wrap">
-                <h2 class="section-title">What you get in one app</h2>
-                <p class="section-lead">Built for real shops, not extra spreadsheets.</p>
+                <div class="section-head">
+                    <span class="section-kicker">Features</span>
+                    <h2 class="section-title">What you get in one app</h2>
+                    <p class="section-lead">Built for real shops, not extra spreadsheets.</p>
+                </div>
                 <div class="feat-grid">
                     <div class="feat"><h3>Jobs</h3><p>Create, assign, and track every booking.</p></div>
                     <div class="feat"><h3>Clients</h3><p>Names, numbers, and history in one list.</p></div>
@@ -828,8 +931,11 @@
 
         <section class="pricing" id="pricing">
             <div class="wrap">
-                <h2 class="section-title">Start free. Pay only when you need more jobs.</h2>
-                <p class="section-lead">No card to start. When free jobs run out, top up from ₦1,000.</p>
+                <div class="section-head">
+                    <span class="section-kicker">Pricing</span>
+                    <h2 class="section-title">Start free. Pay only when you need more jobs.</h2>
+                    <p class="section-lead">No card to start. When free jobs run out, top up from ₦1,000.</p>
+                </div>
                 <div class="price-grid">
                     <div class="price-card">
                         <h3>Free</h3>
@@ -865,14 +971,22 @@
 
         <section class="final">
             <div class="wrap">
-                <h2>Give every job a proper home</h2>
-                <p>Stop running the business from chat threads and rough estimates. Start free on your phone.</p>
-                <a class="btn btn-primary btn-lg" href="signup.html">Start free</a>
-                <p class="hero-note" style="color:var(--muted);margin-top:12px;">25 free jobs · Top up from ₦1,000 when you need more</p>
-                <p class="final-wa">
-                    Questions?
-                    <a href="https://wa.me/2347057295546" target="_blank" rel="noopener">Message us on WhatsApp · 0705 729 5546</a>
-                </p>
+                <div class="final-inner">
+                    <div>
+                        <h2>Give every job a proper home</h2>
+                        <p>Stop running the business from chat threads and rough estimates. Start free on your phone.</p>
+                        <div class="final-actions">
+                            <a class="btn btn-primary btn-lg" href="signup.html">Start free</a>
+                            <a class="btn btn-outline-dark btn-lg" href="login.html">Log in</a>
+                        </div>
+                        <p style="color:var(--muted);margin-top:14px;font-size:14px;">25 free jobs · Top up from ₦1,000 when you need more</p>
+                    </div>
+                    <div class="final-panel">
+                        <strong>Need a hand?</strong>
+                        <p>Questions about setup, pricing, or whether CleanCrew fits your shop — message us directly.</p>
+                        <a class="btn btn-primary" href="https://wa.me/2347057295546" target="_blank" rel="noopener">WhatsApp · 0705 729 5546</a>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
