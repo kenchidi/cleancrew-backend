@@ -6,13 +6,10 @@
     <link rel="canonical" href="https://www.cleancrewapp.com/" />
     <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#FFFFFF" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="CleanCrew" />
     <title>CleanCrew — Run your cleaning business from one place</title>
-    <meta name="description" content="Jobs, clients, invoices, and what you actually keep after costs. Start free with 25 jobs. No card required. Built for cleaning and laundry businesses in Nigeria and Ghana." />
+    <meta name="description" content="Jobs, clients, invoices, and what you actually keep after costs. Start free with 25 jobs. Need more? From ₦1,000. No card required." />
     <meta property="og:title" content="CleanCrew — For cleaning and laundry businesses" />
-    <meta property="og:description" content="From the counter to end-of-day profit. Free to start. No card required." />
+    <meta property="og:description" content="From the counter to end-of-day profit. Start free. Top up from ₦1,000." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.cleancrewapp.com/" />
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
@@ -35,7 +32,8 @@
             --green-soft: #ECFDF5;
             --shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
             --shadow-sm: 0 8px 24px rgba(15, 23, 42, 0.06);
-            --radius: 16px;
+            --radius: 20px;
+            --radius-sm: 14px;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
@@ -60,13 +58,12 @@
             text-align: center;
             padding: 8px 16px;
         }
-        .avail span { color: var(--muted); font-weight: 500; }
 
         .nav {
             position: sticky;
             top: 0;
             z-index: 50;
-            background: rgba(255,255,255,0.92);
+            background: rgba(255,255,255,0.94);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--line);
         }
@@ -85,8 +82,8 @@
             font-size: 17px;
             letter-spacing: -0.03em;
         }
-        .nav-brand img { width: 32px; height: 32px; }
-        .nav-links { display: flex; align-items: center; gap: 8px; }
+        .nav-brand img { width: 32px; height: 32px; border-radius: 8px; }
+        .nav-links { display: flex; align-items: center; gap: 6px; }
         .nav-links a {
             font-size: 14px;
             font-weight: 600;
@@ -103,117 +100,196 @@
             font-family: inherit;
             font-weight: 700;
             font-size: 14px;
-            border-radius: 12px;
+            border-radius: 999px;
             border: 1.5px solid transparent;
-            padding: 11px 18px;
+            padding: 11px 20px;
             cursor: pointer;
             transition: background 0.15s, border-color 0.15s, transform 0.1s;
         }
         .btn:active { transform: scale(0.98); }
-        .btn-primary { background: var(--blue); color: #fff; border-color: var(--blue); }
-        .btn-primary:hover { background: var(--blue-dark); border-color: var(--blue-dark); }
-        .btn-outline { background: var(--white); color: var(--ink); border-color: var(--line); }
-        .btn-outline:hover { border-color: #CBD5E1; background: var(--surface); }
-        .btn-lg { padding: 14px 22px; font-size: 15px; border-radius: 14px; }
+        .btn-primary {
+            background: var(--blue);
+            color: #ffffff !important;
+            border-color: var(--blue);
+            -webkit-text-fill-color: #ffffff;
+        }
+        .btn-primary:hover { color: #ffffff !important; -webkit-text-fill-color: #ffffff; }
+        a.btn-primary, a.btn-primary:visited, a.btn-primary:hover {
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff;
+        }
+        .btn-primary:hover { background: var(--blue-dark); }
+        .btn-outline {
+            background: rgba(255,255,255,0.14);
+            color: #fff;
+            border-color: rgba(255,255,255,0.45);
+            backdrop-filter: blur(8px);
+        }
+        .btn-outline:hover { background: rgba(255,255,255,0.22); }
+        .btn-outline-dark {
+            background: var(--white);
+            color: var(--ink);
+            border-color: var(--line);
+        }
+        .btn-outline-dark:hover { border-color: #CBD5E1; background: var(--surface); }
+        .btn-lg { padding: 14px 24px; font-size: 15px; }
         .hide-sm { display: none; }
         @media (min-width: 768px) {
             .hide-sm { display: inline-flex; }
             .wrap { width: min(1100px, calc(100% - 48px)); }
         }
 
-        .hero { padding: 36px 0 48px; }
-        .hero-grid { display: grid; gap: 32px; align-items: center; }
+        /* ── Hero slider ── */
+        .hero-shell {
+            padding: 0;
+            width: 100%;
+        }
+        .hero {
+            position: relative;
+            border-radius: 0 0 20px 20px;
+            overflow: hidden;
+            min-height: min(88vh, 640px);
+            width: 100%;
+            max-width: none;
+            box-shadow: none;
+        }
+        @media (min-width: 640px) {
+            .hero {
+                width: calc(100% - 24px);
+                margin: 0 auto;
+                border-radius: 20px;
+                min-height: min(88vh, 640px);
+            }
+        }
         @media (min-width: 900px) {
-            .hero-grid { grid-template-columns: 1fr 1.05fr; gap: 48px; padding: 24px 0 56px; }
+            .hero {
+                width: calc(100% - 40px);
+                border-radius: 24px;
+                min-height: 640px;
+            }
+        }
+        .hero-slides {
+            position: absolute;
+            inset: 0;
+        }
+        .hero-slide {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+        .hero-slide.active { opacity: 1; }
+        .hero-slide.cleaning {
+            background-image: linear-gradient(105deg, rgba(15,23,42,0.72) 0%, rgba(15,23,42,0.45) 48%, rgba(15,23,42,0.25) 100%),
+                url('hero-cleaning.png');
+        }
+        .hero-slide.laundry {
+            background-image: linear-gradient(105deg, rgba(15,23,42,0.72) 0%, rgba(15,23,42,0.45) 48%, rgba(15,23,42,0.28) 100%),
+                url('hero-laundry.jpg');
+        }
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            min-height: min(88vh, 640px);
+            padding: 28px 22px 56px;
+            color: #fff;
+            width: min(1100px, calc(100% - 32px));
+            margin: 0 auto;
+        }
+        @media (min-width: 900px) {
+            .hero-content {
+                min-height: 640px;
+                padding: 48px 24px 72px;
+                justify-content: center;
+                max-width: 1100px;
+                width: min(1100px, calc(100% - 48px));
+            }
+            .hero-content-inner { max-width: 560px; }
         }
         .eyebrow {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             font-size: 11px;
             font-weight: 800;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.07em;
             text-transform: uppercase;
-            color: var(--blue);
-            background: var(--blue-soft);
-            padding: 6px 10px;
+            color: #fff;
+            background: rgba(255,255,255,0.14);
+            border: 1px solid rgba(255,255,255,0.22);
+            padding: 7px 12px;
             border-radius: 99px;
-            margin-bottom: 14px;
+            margin-bottom: 16px;
+            width: fit-content;
+            backdrop-filter: blur(8px);
+        }
+        .eyebrow i {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: #34D399;
+            box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.25);
         }
         .hero h1 {
-            font-size: clamp(1.85rem, 5vw, 2.75rem);
+            font-size: clamp(1.85rem, 5.2vw, 3.1rem);
             font-weight: 800;
             letter-spacing: -0.04em;
-            line-height: 1.12;
+            line-height: 1.08;
+            margin-bottom: 14px;
+            text-wrap: balance;
+        }
+        .hero h1 .soft { color: #BFDBFE; }
+        .hero-lead {
+            font-size: 15px;
+            color: rgba(255,255,255,0.88);
+            max-width: 32em;
+            margin-bottom: 22px;
+            line-height: 1.55;
+        }
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
             margin-bottom: 14px;
         }
-        .hero-lead {
-            font-size: 16px;
-            color: var(--ink-soft);
-            max-width: 34em;
-            margin-bottom: 22px;
+        .hero-note {
+            font-size: 13px;
+            color: rgba(255,255,255,0.78);
+            font-weight: 500;
         }
-        .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
-        .hero-note { font-size: 13px; color: var(--muted); font-weight: 500; }
-
-        .product-frame {
-            background: var(--white);
-            border: 1px solid var(--line);
-            border-radius: 20px;
-            box-shadow: var(--shadow);
-            overflow: hidden;
-        }
-        .product-chrome {
+        .hero-note strong { color: #fff; font-weight: 700; }
+        .hero-controls {
+            position: absolute;
+            z-index: 3;
+            left: max(22px, calc((100% - min(1100px, calc(100% - 32px))) / 2 + 0px));
+            bottom: 18px;
             display: flex;
             align-items: center;
-            gap: 6px;
-            padding: 10px 14px;
-            background: var(--surface);
-            border-bottom: 1px solid var(--line);
+            gap: 10px;
         }
-        .product-chrome i {
-            width: 8px; height: 8px; border-radius: 50%; background: #CBD5E1;
-        }
-        .product-chrome span {
-            margin-left: 8px; font-size: 11px; font-weight: 600; color: var(--muted);
-        }
-        .product-frame { font-size: 15px; }
         @media (min-width: 900px) {
-            .product-frame { transform: scale(1.02); transform-origin: top center; }
+            .hero-controls {
+                left: max(24px, calc((100% - min(1100px, calc(100% - 48px))) / 2));
+                bottom: 28px;
+            }
         }
-        .product-body { padding: 18px 16px 18px; }
-        .product-head {
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;
+        .hero-dots { display: flex; gap: 6px; }
+        .hero-dots button {
+            width: 28px; height: 3px; border: 0; border-radius: 99px;
+            background: rgba(255,255,255,0.35); cursor: pointer; padding: 0;
         }
-        .product-head strong { font-size: 16px; font-weight: 800; }
-        .pill {
-            font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 99px;
-            background: var(--blue-soft); color: var(--blue);
+        .hero-dots button.active { background: #fff; }
+        .hero-pause {
+            width: 32px; height: 32px; border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.4);
+            background: rgba(15,23,42,0.35);
+            color: #fff; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px;
         }
-        .job-row {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 4px 12px;
-            padding: 12px;
-            border: 1px solid var(--line);
-            border-radius: 12px;
-            margin-bottom: 8px;
-        }
-        .job-row:last-child { margin-bottom: 0; }
-        .job-row .client { font-size: 15px; font-weight: 700; }
-        .job-row .meta { font-size: 13px; color: var(--muted); grid-column: 1; }
-        .job-row .amt { font-size: 15px; font-weight: 800; text-align: right; }
-        .job-row .status {
-            grid-column: 2; justify-self: end; align-self: end;
-            font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 99px;
-            background: #F1F5F9; color: var(--ink-soft);
-        }
-        .job-row .status.done { background: var(--green-soft); color: var(--green); }
-        .job-row .status.pending { background: #FFF7ED; color: #C2410C; }
-        .product-foot {
-            margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line);
-            display: flex; justify-content: space-between;
-            font-size: 12px; color: var(--muted); font-weight: 600;
-        }
-        .product-foot strong { color: var(--green); font-weight: 800; }
 
         section { padding: 56px 0; }
         .section-title {
@@ -224,6 +300,7 @@
             line-height: 1.25;
             max-width: 18em;
             text-wrap: balance;
+            text-align: center;
         }
         .section-lead {
             font-size: 15px;
@@ -231,29 +308,25 @@
             max-width: 32em;
             margin: 0 auto 28px;
             line-height: 1.55;
-            text-wrap: pretty;
             text-align: center;
-        }
-        .center { text-align: center; }
-        .center .section-title,
-        .center .section-lead {
-            margin-left: auto;
-            margin-right: auto;
+            text-wrap: pretty;
         }
 
         .problem { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
         .problem-grid { display: grid; gap: 12px; }
-        @media (min-width: 720px) {
-            .problem-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
-        }
+        @media (min-width: 720px) { .problem-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; } }
         .problem-card {
-            background: var(--white); border: 1px solid var(--line); border-radius: var(--radius);
-            padding: 18px; box-shadow: var(--shadow-sm);
+            background: var(--white);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 20px 18px;
+            box-shadow: var(--shadow-sm);
         }
         .problem-card h3 { font-size: 15px; font-weight: 800; margin-bottom: 6px; }
         .problem-card p { font-size: 13px; color: var(--ink-soft); }
         .problem-close {
-            margin-top: 22px; font-size: 14px; font-weight: 600; color: var(--ink-soft); text-align: center;
+            margin-top: 22px; font-size: 14px; font-weight: 600;
+            color: var(--ink-soft); text-align: center;
         }
 
         .steps { display: grid; gap: 14px; }
@@ -270,7 +343,163 @@
         }
         .step h3 { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
         .step p { font-size: 13px; color: var(--ink-soft); }
+
+        .how-grid {
+            display: grid;
+            gap: 20px;
+            align-items: center;
+        }
+        @media (min-width: 900px) {
+            .how-grid {
+                grid-template-columns: 1fr 1.05fr;
+                gap: 28px;
+            }
+            .steps { grid-template-columns: 1fr; }
+        }
+        .how-visual {
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow-sm);
+            background: linear-gradient(165deg, #F1F5F9 0%, #E2E8F0 100%);
+            padding: 16px;
+        }
+        .how-dash .dash-frame {
+            background: var(--white);
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            overflow: hidden;
+            box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+        }
+        .dash-top {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: #F8FAFC;
+            border-bottom: 1px solid var(--line);
+        }
+        .dash-dots { display: flex; gap: 5px; }
+        .dash-dots span {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #CBD5E1;
+        }
+        .dash-dots span:nth-child(1) { background: #FCA5A5; }
+        .dash-dots span:nth-child(2) { background: #FCD34D; }
+        .dash-dots span:nth-child(3) { background: #86EFAC; }
+        .dash-url {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+            letter-spacing: -0.01em;
+        }
+        .dash-body { padding: 14px 14px 16px; }
+        .dash-greet {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .dash-hi { font-size: 15px; font-weight: 800; letter-spacing: -0.02em; }
+        .dash-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+        .dash-cta {
+            font-size: 11px;
+            font-weight: 700;
+            color: #fff;
+            background: var(--blue);
+            padding: 8px 12px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+        .dash-kpis {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        @media (min-width: 480px) {
+            .dash-kpis { grid-template-columns: repeat(4, 1fr); }
+        }
+        .dash-kpi {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px 8px;
+            text-align: center;
+        }
+        .dash-kpi .k-label {
+            display: block;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+        .dash-kpi .k-val {
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--ink);
+        }
+        .dash-table-head {
+            font-size: 12px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: var(--ink);
+        }
+        .dash-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 0;
+            border-top: 1px solid var(--line);
+        }
+        .dash-row strong {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .dash-row span {
+            font-size: 11px;
+            color: var(--muted);
+        }
+        .dash-row .st {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 99px;
+            white-space: nowrap;
+        }
+        .st-done { background: #ECFDF5; color: #059669; }
+        .st-run { background: #EFF6FF; color: #1A6DDB; }
+        .st-wait { background: #FFF7ED; color: #C2410C; }
+
         .how-cta { margin-top: 28px; text-align: center; }
+
+        .mode-split { display: grid; gap: 14px; }
+        @media (min-width: 700px) { .mode-split { grid-template-columns: 1fr 1fr; } }
+        .mode-card {
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--line);
+            background: var(--white);
+            box-shadow: var(--shadow-sm);
+        }
+        .mode-card .pic {
+            height: 160px;
+            background-size: cover;
+            background-position: center;
+        }
+        .mode-card.cleaning .pic {
+            background-image: linear-gradient(to top, rgba(15,23,42,0.15), transparent), url('hero-cleaning.png');
+        }
+        .mode-card.laundry .pic {
+            background-image: linear-gradient(to top, rgba(15,23,42,0.15), transparent), url('hero-laundry.jpg');
+        }
+        .mode-card .body { padding: 18px; }
+        .mode-card h3 { font-size: 16px; font-weight: 800; margin-bottom: 6px; }
+        .mode-card p { font-size: 13px; color: var(--ink-soft); }
 
         .profit { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
         .math-card {
@@ -298,66 +527,30 @@
         .feat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         @media (min-width: 800px) { .feat-grid { grid-template-columns: repeat(4, 1fr); } }
         .feat {
-            border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; background: var(--white);
+            border: 1px solid var(--line); border-radius: var(--radius-sm);
+            padding: 16px; background: var(--white);
         }
         .feat h3 { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
         .feat p { font-size: 13px; color: var(--ink-soft); }
 
-        .quotes { display: grid; gap: 14px; }
-        @media (min-width: 800px) { .quotes { grid-template-columns: repeat(3, 1fr); } }
-        .quote {
-            background: var(--white); border: 1px solid var(--line); border-radius: var(--radius);
-            padding: 20px 18px; box-shadow: var(--shadow-sm);
-            display: flex; flex-direction: column;
-        }
-        .quote blockquote {
-            font-size: 14px; color: var(--ink-soft); line-height: 1.55; margin-bottom: 16px; flex: 1;
-        }
-        .quote .who { font-size: 13px; font-weight: 800; }
-        .quote .biz, .quote .city { font-size: 12px; color: var(--muted); }
-
         .pricing { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-        .price-grid { display: grid; gap: 14px; }
-        @media (min-width: 800px) { .price-grid { grid-template-columns: repeat(3, 1fr); } }
+        .price-grid { display: grid; gap: 14px; max-width: 720px; margin: 0 auto; }
+        @media (min-width: 700px) { .price-grid { grid-template-columns: 1fr 1fr; } }
         .price-card {
-            background: var(--white); border: 1px solid var(--line); border-radius: 18px;
+            background: var(--white); border: 1px solid var(--line); border-radius: 20px;
             padding: 22px 20px; display: flex; flex-direction: column;
-        }
-        /* featured style set for credits prominence */
-        .price-card h3 { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
-        .price-for {
-            font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 4px; line-height: 1.4;
         }
         .price-card.featured {
             border-color: #A7F3D0;
-            box-shadow: 0 0 0 1px rgba(5, 150, 105, 0.15), var(--shadow-sm);
-        }
-        .price-card.featured .btn-primary {
-            background: var(--green);
-            border-color: var(--green);
-        }
-        .price-card.featured .btn-primary:hover {
-            background: #047857;
-            border-color: #047857;
+            box-shadow: 0 0 0 1px rgba(5, 150, 105, 0.12), var(--shadow-sm);
         }
         .price-badge {
             display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: 0.04em;
             text-transform: uppercase; color: var(--green); background: var(--green-soft);
-            padding: 4px 8px; border-radius: 99px; margin-bottom: 8px;
+            padding: 4px 8px; border-radius: 99px; margin-bottom: 8px; width: fit-content;
         }
-        .stories-note {
-            text-align: center; font-size: 12px; color: var(--muted); margin-top: 14px;
-        }
-        .mode-split {
-            display: grid; gap: 12px; margin-top: 8px;
-        }
-        @media (min-width: 700px) { .mode-split { grid-template-columns: 1fr 1fr; gap: 16px; } }
-        .mode-card {
-            border: 1px solid var(--line); border-radius: var(--radius); padding: 18px;
-            background: var(--white);
-        }
-        .mode-card h3 { font-size: 15px; font-weight: 800; margin-bottom: 6px; }
-        .mode-card p { font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
+        .price-card h3 { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+        .price-for { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
         .price-card .price { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; margin: 10px 0 6px; }
         .price-card .price span { font-size: 13px; font-weight: 600; color: var(--muted); }
         .price-card ul { list-style: none; margin: 12px 0 18px; flex: 1; }
@@ -368,16 +561,21 @@
             content: ''; position: absolute; left: 0; top: 11px;
             width: 8px; height: 8px; border-radius: 50%; background: var(--green); opacity: 0.85;
         }
-        .price-card .btn { width: 100%; }
+        .price-card .btn { width: 100%; border-radius: 12px; }
+        .price-card.featured .btn-primary {
+            background: var(--green); border-color: var(--green);
+        }
+        .price-card.featured .btn-primary:hover { background: #047857; border-color: #047857; }
         .ghana-note {
-            margin-top: 20px; text-align: center; font-size: 13px; color: var(--ink-soft);
+            margin: 20px auto 0; max-width: 520px; text-align: center; font-size: 13px; color: var(--ink-soft);
             background: var(--white); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px;
         }
         .price-foot { margin-top: 14px; text-align: center; font-size: 13px; color: var(--muted); }
 
         .final { padding: 64px 0; text-align: center; }
         .final h2 {
-            font-size: clamp(1.4rem, 3.5vw, 1.9rem); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 10px;
+            font-size: clamp(1.4rem, 3.5vw, 1.9rem); font-weight: 800;
+            letter-spacing: -0.03em; margin-bottom: 10px;
         }
         .final p { font-size: 15px; color: var(--ink-soft); max-width: 28em; margin: 0 auto 22px; }
         .final-wa { margin-top: 16px; font-size: 13px; color: var(--muted); }
@@ -402,7 +600,7 @@
     <header class="nav">
         <div class="wrap nav-inner">
             <a href="index.html" class="nav-brand">
-                <img src="mascot.png" alt="" width="32" height="32" />
+                <img src="mascot.png" alt="" width="32" height="32" onerror="this.style.display='none'" />
                 CleanCrew
             </a>
             <div class="nav-links">
@@ -415,64 +613,40 @@
     </header>
 
     <main>
-        <section class="hero">
-            <div class="wrap hero-grid">
-                <div>
-                    <span class="eyebrow">Cleaning · Laundry · One place</span>
-                    <h1>Run your cleaning business from one place</h1>
-                    <p class="hero-lead">
-                        Jobs, clients, invoices, and what you actually keep after costs. Not scattered across WhatsApp, notebooks, and your head.
-                    </p>
-                    <div class="hero-actions">
-                        <a class="btn btn-primary btn-lg" href="signup.html">Start free</a>
-                        <a class="btn btn-outline btn-lg" href="#how">See how it works</a>
+        <div class="hero-shell">
+                <section class="hero" aria-label="CleanCrew hero">
+                    <div class="hero-slides">
+                        <div class="hero-slide cleaning active" role="img" aria-label="Cleaning professional at work in a home"></div>
+                        <div class="hero-slide laundry" role="img" aria-label="Laundry handover at the counter"></div>
                     </div>
-                    <p class="hero-note">25 free jobs for the life of your account · No card required</p>
-                </div>
-
-                <div class="hero-visual">
-                    <div class="product-frame" role="img" aria-label="CleanCrew dashboard showing a list of cleaning jobs with client names, amounts, and status">
-                        <div class="product-chrome">
-                            <i></i><i></i><i></i>
-                            <span>CleanCrew · Today&apos;s jobs</span>
+                    <div class="hero-content">
+                        <div class="hero-content-inner">
+                        <span class="eyebrow"><i></i> Cleaning · Laundry · One place</span>
+                        <h1>Run your cleaning business <span class="soft">from one place</span></h1>
+                        <p class="hero-lead">
+                            Jobs, clients, invoices, and what you actually keep after costs. Not scattered across WhatsApp, notebooks, and your head.
+                        </p>
+                        <div class="hero-actions">
+                            <a class="btn btn-primary btn-lg" href="signup.html">Start free →</a>
+                            <a class="btn btn-outline btn-lg" href="#how">See how it works</a>
                         </div>
-                        <div class="product-body">
-                            <div class="product-head">
-                                <strong>Jobs</strong>
-                                <span class="pill">Cleaning</span>
-                            </div>
-                            <div class="job-row">
-                                <span class="client">Mrs Okonkwo</span>
-                                <span class="amt">₦45,000</span>
-                                <span class="meta">3-bedroom · Deep clean</span>
-                                <span class="status done">Completed</span>
-                            </div>
-                            <div class="job-row">
-                                <span class="client">James Ade</span>
-                                <span class="amt">₦28,000</span>
-                                <span class="meta">Office · Standard</span>
-                                <span class="status pending">Pending</span>
-                            </div>
-                            <div class="job-row">
-                                <span class="client">FreshFold weekly</span>
-                                <span class="amt">₦18,500</span>
-                                <span class="meta">Laundry · 24 items</span>
-                                <span class="status">In progress</span>
-                            </div>
-                            <div class="product-foot">
-                                <span>This job profit</span>
-                                <strong>₦12,400 kept</strong>
-                            </div>
+                        <p class="hero-note"><strong>25 free jobs</strong> for the life of your account · No card required</p>
                         </div>
                     </div>
-                </div>
-            </div>
-        </section>
+                    <div class="hero-controls">
+                        <div class="hero-dots" role="tablist" aria-label="Hero slides">
+                            <button type="button" class="active" data-slide="0" aria-label="Cleaning slide"></button>
+                            <button type="button" data-slide="1" aria-label="Laundry slide"></button>
+                        </div>
+                        <button type="button" class="hero-pause" id="heroPause" aria-label="Pause slideshow">❚❚</button>
+                    </div>
+                </section>
+        </div>
 
         <section class="problem" id="problem">
             <div class="wrap">
-                <h2 class="section-title center">Your business shouldn&apos;t live in five different places</h2>
-                <p class="section-lead center">When work is split across chats and paper, money and follow-ups slip away.</p>
+                <h2 class="section-title">Your business shouldn&apos;t live in five different places</h2>
+                <p class="section-lead">When work is split across chats and paper, money and follow-ups slip away.</p>
                 <div class="problem-grid">
                     <div class="problem-card">
                         <h3>WhatsApp</h3>
@@ -493,49 +667,131 @@
 
         <section id="how">
             <div class="wrap">
-                <h2 class="section-title center">From booking to profit, in one flow</h2>
-                <p class="section-lead center">From the counter to knowing what you kept.</p>
-                <div class="steps">
-                    <div class="step">
-                        <div class="step-num">1</div>
-                        <div>
-                            <h3>Capture the job</h3>
-                            <p>Client, service, date, amount. Cleaning or laundry. On your phone at the counter or on site.</p>
+                <h2 class="section-title">From booking to profit, in one flow</h2>
+                <p class="section-lead">From the counter to knowing what you kept.</p>
+                <div class="how-grid">
+                    <div class="how-visual how-dash" aria-label="CleanCrew dashboard preview">
+                        <div class="dash-frame">
+                            <div class="dash-top">
+                                <div class="dash-dots"><span></span><span></span><span></span></div>
+                                <div class="dash-url">app.cleancrew · Overview</div>
+                            </div>
+                            <div class="dash-body">
+                                <div class="dash-greet">
+                                    <div>
+                                        <div class="dash-hi">Good morning</div>
+                                        <div class="dash-sub">Here is today&apos;s work</div>
+                                    </div>
+                                    <div class="dash-cta">+ New Job</div>
+                                </div>
+                                <div class="dash-kpis">
+                                    <div class="dash-kpi">
+                                        <span class="k-label">Jobs today</span>
+                                        <span class="k-val">4</span>
+                                    </div>
+                                    <div class="dash-kpi">
+                                        <span class="k-label">Pending</span>
+                                        <span class="k-val">2</span>
+                                    </div>
+                                    <div class="dash-kpi">
+                                        <span class="k-label">Revenue</span>
+                                        <span class="k-val">₦185k</span>
+                                    </div>
+                                    <div class="dash-kpi">
+                                        <span class="k-label">Outstanding</span>
+                                        <span class="k-val">₦42k</span>
+                                    </div>
+                                </div>
+                                <div class="dash-table-head">Today&apos;s jobs</div>
+                                <div class="dash-row">
+                                    <div>
+                                        <strong>Mrs Okeke</strong>
+                                        <span>Deep clean · 9:00 AM</span>
+                                    </div>
+                                    <span class="st st-done">Done</span>
+                                </div>
+                                <div class="dash-row">
+                                    <div>
+                                        <strong>FreshFold drop-off</strong>
+                                        <span>Laundry · 12 items</span>
+                                    </div>
+                                    <span class="st st-run">In progress</span>
+                                </div>
+                                <div class="dash-row">
+                                    <div>
+                                        <strong>Office suite</strong>
+                                        <span>Cleaning · 2:00 PM</span>
+                                    </div>
+                                    <span class="st st-wait">Pending</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="step">
-                        <div class="step-num">2</div>
-                        <div>
-                            <h3>Run the work</h3>
-                            <p>Status, staff, notes. Everyone knows what is pending, in progress, or done.</p>
+                    <div class="steps">
+                        <div class="step">
+                            <div class="step-num">1</div>
+                            <div>
+                                <h3>Capture the job</h3>
+                                <p>Client, service, date, amount. Cleaning or laundry. On your phone at the counter or on site.</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="step">
-                        <div class="step-num">3</div>
-                        <div>
-                            <h3>Invoice and get paid</h3>
-                            <p>Send a clear invoice. Track unpaid and partial payments without digging through chats.</p>
+                        <div class="step">
+                            <div class="step-num">2</div>
+                            <div>
+                                <h3>Run the work</h3>
+                                <p>Status, staff, notes. Everyone knows what is pending, in progress, or done.</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="step">
-                        <div class="step-num">4</div>
-                        <div>
-                            <h3>See what you kept</h3>
-                            <p>Log staff, supplies, and transport on the job. See profit on that job, not a vague monthly guess.</p>
+                        <div class="step">
+                            <div class="step-num">3</div>
+                            <div>
+                                <h3>Invoice and get paid</h3>
+                                <p>Send a clear invoice. Track unpaid and partial payments without digging through chats.</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="step-num">4</div>
+                            <div>
+                                <h3>See what you kept</h3>
+                                <p>Log staff, supplies, and transport on the job. See profit on that job, not a vague monthly guess.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="how-cta">
                     <a class="btn btn-primary btn-lg" href="signup.html">Start free</a>
-                    <p class="hero-note" style="margin-top:12px;">25 free jobs · No card required</p>
+                    <p style="color:var(--muted);margin-top:12px;font-size:13px;">25 free jobs · No card required</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="modes">
+            <div class="wrap">
+                <h2 class="section-title">Built for cleaning and laundry</h2>
+                <p class="section-lead">Same dashboard. Switch mode for the work you do today.</p>
+                <div class="mode-split">
+                    <article class="mode-card cleaning">
+                        <div class="pic" role="img" aria-label="Home cleaning"></div>
+                        <div class="body">
+                            <h3>Cleaning</h3>
+                            <p>Home, office, deep cleans, and more. Track jobs, staff, invoices, and profit per job.</p>
+                        </div>
+                    </article>
+                    <article class="mode-card laundry">
+                        <div class="pic" role="img" aria-label="Laundry counter"></div>
+                        <div class="body">
+                            <h3>Laundry</h3>
+                            <p>Item counts, intake to ready for collection, and clear status when customers are in a hurry.</p>
+                        </div>
+                    </article>
                 </div>
             </div>
         </section>
 
         <section class="profit" id="profit">
             <div class="wrap">
-                <h2 class="section-title center">Busy does not always mean profitable</h2>
-                <p class="section-lead center">
+                <h2 class="section-title">Busy does not always mean profitable</h2>
+                <p class="section-lead">
                     Most owners know they were busy. Fewer know which jobs made money after staff, supplies, and transport.
                 </p>
                 <div class="math-card">
@@ -546,34 +802,16 @@
                     <div class="math-line total"><span>Actual profit</span><strong>₦300,000</strong></div>
                 </div>
                 <p class="math-note">
-                    Without tracking, it is easy to guess that number and be wrong. CleanCrew shows profit per job, so you can see which work is worth repeating and which only looks good on the surface.
+                    Without tracking, it is easy to guess that number and be wrong. CleanCrew shows profit per job, so you can see which work is worth repeating.
                 </p>
                 <p class="math-caption">Example only. Your numbers will differ.</p>
             </div>
         </section>
 
-
-        <section id="modes">
-            <div class="wrap">
-                <h2 class="section-title center">Built for cleaning and laundry</h2>
-                <p class="section-lead center">Same dashboard. Switch mode for cleaning or laundry.</p>
-                <div class="mode-split">
-                    <div class="mode-card">
-                        <h3>Cleaning</h3>
-                        <p>Home, office, deep cleans, and fumigation-style jobs. Track rooms, staff, invoices, and profit per job.</p>
-                    </div>
-                    <div class="mode-card">
-                        <h3>Laundry</h3>
-                        <p>Item counts, intake to ready for collection, and clear job status for walk-in customers in a hurry.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
         <section id="features">
             <div class="wrap">
-                <h2 class="section-title center">What you get in one app</h2>
-                <p class="section-lead center">Built for real shops, not extra spreadsheets.</p>
+                <h2 class="section-title">What you get in one app</h2>
+                <p class="section-lead">Built for real shops, not extra spreadsheets.</p>
                 <div class="feat-grid">
                     <div class="feat"><h3>Jobs</h3><p>Create, assign, and track every booking.</p></div>
                     <div class="feat"><h3>Clients</h3><p>Names, numbers, and history in one list.</p></div>
@@ -583,38 +821,10 @@
             </div>
         </section>
 
-        <section id="stories">
-            <div class="wrap">
-                <h2 class="section-title center">Owners who wanted less chaos</h2>
-                <p class="section-lead center">Examples of problems CleanCrew is built to solve. We will swap in verified customer stories as they come in.</p>
-                <div class="quotes">
-                    <article class="quote">
-                        <blockquote>“I used to lose track of jobs in WhatsApp. Now every booking, invoice, and payment is in one place. It took me one afternoon to switch.”</blockquote>
-                        <div class="who">Adaeze O.</div>
-                        <div class="biz">Sparklean Services</div>
-                        <div class="city">Lagos</div>
-                    </article>
-                    <article class="quote">
-                        <blockquote>“I finally know which jobs actually make money. Some jobs I thought were good were barely covering transport.”</blockquote>
-                        <div class="who">Kwame A.</div>
-                        <div class="biz">FreshFold Laundry</div>
-                        <div class="city">Accra</div>
-                    </article>
-                    <article class="quote">
-                        <blockquote>“My clients take me more seriously now. The invoices look professional and payments come faster.”</blockquote>
-                        <div class="who">Blessing E.</div>
-                        <div class="biz">CleanSpace Homes</div>
-                        <div class="city">Abuja</div>
-                    </article>
-                </div>
-                <p class="stories-note">Illustrative examples for layout. Not verified customer testimonials yet.</p>
-            </div>
-        </section>
-
         <section class="pricing" id="pricing">
             <div class="wrap">
-                <h2 class="section-title center">Start free. Pay when the volume is real.</h2>
-                <p class="section-lead center">No card to start. When free jobs run out, buy credits or go unlimited.</p>
+                <h2 class="section-title">Start free. Pay only when you need more jobs.</h2>
+                <p class="section-lead">No card to start. When free jobs run out, top up from ₦1,000.</p>
                 <div class="price-grid">
                     <div class="price-card">
                         <h3>Free</h3>
@@ -622,39 +832,27 @@
                         <div class="price">₦0</div>
                         <ul>
                             <li>25 jobs for the life of your account</li>
-                            <li>Track jobs, clients, and the basics</li>
+                            <li>Jobs, clients, invoices, and the basics</li>
                             <li>No card required</li>
-                            <li>When free jobs run out, buy credits or unlimited</li>
                         </ul>
-                        <a class="btn btn-outline" href="signup.html">Start free</a>
+                        <a class="btn btn-outline-dark" href="signup.html">Start free</a>
                     </div>
                     <div class="price-card featured">
-                        <span class="price-badge">Most flexible</span>
-                        <h3>Credits</h3>
-                        <p class="price-for">For occasional or fluctuating jobs</p>
+                        <span class="price-badge">When you need more</span>
+                        <h3>Job credits</h3>
+                        <p class="price-for">Pay only for the jobs you create</p>
                         <div class="price">From ₦1,000</div>
                         <ul>
-                            <li>Buy more jobs only when you need them</li>
-                            <li>Pay as you go · packs from ₦1,000</li>
+                            <li>Small top-ups when free jobs run out</li>
                             <li>Credits do not expire</li>
-                            <li>Best next step after free jobs</li>
+                            <li>Buy in the app when you are ready</li>
+                            <li>No monthly lock-in required</li>
                         </ul>
                         <a class="btn btn-primary" href="signup.html">Start free</a>
                     </div>
-                    <div class="price-card">
-                        <h3>Unlimited</h3>
-                        <p class="price-for">For consistently high volume</p>
-                        <div class="price">₦12,500 <span>/ month</span></div>
-                        <ul>
-                            <li>Unlimited jobs for busy shops</li>
-                            <li>Full access while the plan is active</li>
-                            <li>Activate in the app after you sign up</li>
-                        </ul>
-                        <a class="btn btn-outline" href="signup.html">Go unlimited</a>
-                    </div>
                 </div>
                 <p class="ghana-note">
-                    Available in Nigeria and Ghana. Amounts show in local currency (NGN or GHS) inside the app. Local payment options where available.
+                    Available in Nigeria and Ghana. Amounts show in local currency (NGN or GHS) inside the app.
                 </p>
                 <p class="price-foot">Prices on this page are in naira. Ghanaian users see GHS in the app.</p>
             </div>
@@ -665,7 +863,7 @@
                 <h2>Give every job a proper home</h2>
                 <p>Stop running the business from chat threads and rough estimates. Start free on your phone.</p>
                 <a class="btn btn-primary btn-lg" href="signup.html">Start free</a>
-                <p class="hero-note" style="margin-top:12px;">25 free jobs for the life of your account</p>
+                <p class="hero-note" style="color:var(--muted);margin-top:12px;">25 free jobs · Top up from ₦1,000 when you need more</p>
                 <p class="final-wa">
                     Questions?
                     <a href="https://wa.me/2347057295546" target="_blank" rel="noopener">Message us on WhatsApp · 0705 729 5546</a>
@@ -689,12 +887,53 @@
                     <a href="https://wa.me/2347057295546" target="_blank" rel="noopener">WhatsApp</a>
                 </div>
             </div>
-            <p class="footer-tag">Built for real shops, not extra spreadsheets. · © <span id="y"></span> cleancrewapp.com</p>
+            <p class="footer-tag">Built for real shops. · © <span id="y"></span> cleancrewapp.com</p>
         </div>
     </footer>
 
     <script>
         document.getElementById('y').textContent = new Date().getFullYear();
+
+        (function heroSlider() {
+            var slides = document.querySelectorAll('.hero-slide');
+            var dots = document.querySelectorAll('.hero-dots button');
+            var pauseBtn = document.getElementById('heroPause');
+            var i = 0;
+            var paused = false;
+            var timer = null;
+
+            function show(n) {
+                i = (n + slides.length) % slides.length;
+                slides.forEach(function(s, idx) { s.classList.toggle('active', idx === i); });
+                dots.forEach(function(d, idx) { d.classList.toggle('active', idx === i); });
+            }
+            function next() { if (!paused) show(i + 1); }
+            function start() {
+                stop();
+                timer = setInterval(next, 5500);
+            }
+            function stop() {
+                if (timer) clearInterval(timer);
+                timer = null;
+            }
+
+            dots.forEach(function(d) {
+                d.addEventListener('click', function() {
+                    show(parseInt(d.getAttribute('data-slide'), 10));
+                    start();
+                });
+            });
+            if (pauseBtn) {
+                pauseBtn.addEventListener('click', function() {
+                    paused = !paused;
+                    pauseBtn.textContent = paused ? '▶' : '❚❚';
+                    pauseBtn.setAttribute('aria-label', paused ? 'Play slideshow' : 'Pause slideshow');
+                    if (!paused) start();
+                    else stop();
+                });
+            }
+            start();
+        })();
     </script>
 </body>
 </html>
