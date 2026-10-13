@@ -209,22 +209,22 @@
                 max-width: 1100px;
                 width: min(1100px, calc(100% - 48px));
             }
-            .hero-content-inner { max-width: 560px; }
+            .hero-content-inner { max-width: 640px; }
         }
         .eyebrow {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 800;
             letter-spacing: 0.07em;
             text-transform: uppercase;
             color: #fff;
-            background: rgba(255,255,255,0.14);
-            border: 1px solid rgba(255,255,255,0.22);
-            padding: 7px 12px;
+            background: rgba(255,255,255,0.16);
+            border: 1px solid rgba(255,255,255,0.28);
+            padding: 9px 14px;
             border-radius: 99px;
-            margin-bottom: 16px;
+            margin-bottom: 18px;
             width: fit-content;
             backdrop-filter: blur(8px);
         }
@@ -234,30 +234,35 @@
             box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.25);
         }
         .hero h1 {
-            font-size: clamp(1.85rem, 5.2vw, 3.1rem);
+            font-size: clamp(2.15rem, 6.2vw, 3.75rem);
             font-weight: 800;
-            letter-spacing: -0.04em;
-            line-height: 1.08;
-            margin-bottom: 14px;
+            letter-spacing: -0.045em;
+            line-height: 1.05;
+            margin-bottom: 18px;
             text-wrap: balance;
         }
         .hero h1 .soft { color: #BFDBFE; }
         .hero-lead {
-            font-size: 15px;
-            color: rgba(255,255,255,0.88);
-            max-width: 32em;
-            margin-bottom: 22px;
+            font-size: clamp(1rem, 2.2vw, 1.2rem);
+            color: rgba(255,255,255,0.92);
+            max-width: 28em;
+            margin-bottom: 26px;
             line-height: 1.55;
+            font-weight: 500;
         }
         .hero-actions {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 14px;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .hero .btn-lg {
+            padding: 16px 28px;
+            font-size: 16px;
         }
         .hero-note {
-            font-size: 13px;
-            color: rgba(255,255,255,0.78);
+            font-size: 15px;
+            color: rgba(255,255,255,0.85);
             font-weight: 500;
         }
         .hero-note strong { color: #fff; font-weight: 700; }
