@@ -6,8 +6,8 @@
     <link rel="canonical" href="https://www.cleancrewapp.com/" />
     <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#FFFFFF" />
-    <title>CleanCrew — Run your cleaning business from one place</title>
-    <meta name="description" content="Jobs, clients, invoices, and what you actually keep after costs. Start free with 25 jobs. Need more? From ₦1,000. No card required." />
+    <title>CleanCrew — Cleaning, laundry & auto detailing in one place</title>
+    <meta name="description" content="For cleaning, laundry, and auto detailing businesses. Jobs, clients, invoices, and profit in one place. Start free — 25 jobs. Top up from ₦1,000." />
     <meta property="og:title" content="CleanCrew — For cleaning and laundry businesses" />
     <meta property="og:description" content="From the counter to end-of-day profit. Start free. Top up from ₦1,000." />
     <meta property="og:type" content="website" />
@@ -189,6 +189,10 @@
             background-image: linear-gradient(105deg, rgba(15,23,42,0.72) 0%, rgba(15,23,42,0.45) 48%, rgba(15,23,42,0.28) 100%),
                 url('hero-laundry.jpg');
         }
+        .hero-slide.auto {
+            background-image: linear-gradient(105deg, rgba(15,23,42,0.72) 0%, rgba(15,23,42,0.45) 48%, rgba(15,23,42,0.28) 100%),
+                url('hero-auto.jpg');
+        }
         .hero-content {
             position: relative;
             z-index: 2;
@@ -212,27 +216,79 @@
             .hero-content-inner { max-width: 640px; }
         }
         .eyebrow {
+            display: none;
+        }
+        .v-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+        .v-chip {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             font-size: 12px;
             font-weight: 800;
-            letter-spacing: 0.07em;
+            letter-spacing: 0.04em;
             text-transform: uppercase;
             color: #fff;
-            background: rgba(255,255,255,0.16);
+            background: rgba(255,255,255,0.14);
             border: 1px solid rgba(255,255,255,0.28);
-            padding: 9px 14px;
+            padding: 8px 12px;
             border-radius: 99px;
-            margin-bottom: 18px;
-            width: fit-content;
             backdrop-filter: blur(8px);
         }
-        .eyebrow i {
+        .v-chip .dot {
             width: 7px; height: 7px; border-radius: 50%;
-            background: #34D399;
-            box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.25);
+            flex-shrink: 0;
         }
+        .v-chip.cleaning .dot { background: #60A5FA; box-shadow: 0 0 0 3px rgba(96,165,250,0.25); }
+        .v-chip.laundry .dot { background: #34D399; box-shadow: 0 0 0 3px rgba(52,211,153,0.25); }
+        .v-chip.auto .dot { background: #FB923C; box-shadow: 0 0 0 3px rgba(251,146,60,0.25); }
+        .hero h1 .hl-clean { color: #93C5FD; }
+        .hero h1 .hl-laundry { color: #6EE7B7; }
+        .hero h1 .hl-auto { color: #FDBA74; }
+        .pillars {
+            display: grid;
+            gap: 10px;
+            margin: -8px 0 8px;
+        }
+        @media (min-width: 720px) {
+            .pillars { grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: -12px; }
+        }
+        .pillar {
+            background: var(--white);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 16px 16px 14px;
+            box-shadow: var(--shadow-sm);
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+        .pillar::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 4px;
+        }
+        .pillar.cleaning::before { background: #1A6DDB; }
+        .pillar.laundry::before { background: #059669; }
+        .pillar.auto::before { background: #EA580C; }
+        .pillar h3 {
+            font-size: 15px;
+            font-weight: 800;
+            margin: 0 0 4px;
+            letter-spacing: -0.02em;
+        }
+        .pillar p {
+            font-size: 13px;
+            color: var(--ink-soft);
+            margin: 0;
+            line-height: 1.45;
+        }
+
         .hero h1 {
             font-size: clamp(2.15rem, 6.2vw, 3.75rem);
             font-weight: 800;
@@ -548,6 +604,12 @@
         .mode-card.laundry .pic {
             background-image: linear-gradient(to top, rgba(15,23,42,0.15), transparent), url('hero-laundry.jpg');
         }
+        .mode-card.auto .pic {
+            background-image: linear-gradient(to top, rgba(15,23,42,0.15), transparent), url('hero-auto.jpg');
+        }
+        @media (min-width: 700px) {
+            .mode-split { grid-template-columns: repeat(3, 1fr); }
+        }
         .mode-card .body { padding: 18px; }
         .mode-card h3 { font-size: 16px; font-weight: 800; margin-bottom: 6px; }
         .mode-card p { font-size: 13px; color: var(--ink-soft); }
@@ -686,10 +748,7 @@
 
     <header class="nav">
         <div class="wrap nav-inner">
-            <a href="index.html" class="nav-brand">
-                <img src="mascot.png" alt="" width="32" height="32" onerror="this.style.display='none'" />
-                CleanCrew
-            </a>
+            <a href="index.html" class="nav-brand">CleanCrew</a>
             <div class="nav-links">
                 <a class="hide-sm" href="#how">How it works</a>
                 <a class="hide-sm" href="#pricing">Pricing</a>
@@ -705,13 +764,18 @@
                     <div class="hero-slides">
                         <div class="hero-slide cleaning active" role="img" aria-label="Cleaning professional at work in a home"></div>
                         <div class="hero-slide laundry" role="img" aria-label="Laundry handover at the counter"></div>
+                        <div class="hero-slide auto" role="img" aria-label="Car detailing professional polishing a vehicle"></div>
                     </div>
                     <div class="hero-content">
                         <div class="hero-content-inner">
-                        <span class="eyebrow"><i></i> Cleaning · Laundry · One place</span>
-                        <h1>Run your cleaning business <span class="soft">from one place</span></h1>
+                        <div class="v-chips" aria-label="Who CleanCrew is for">
+                            <span class="v-chip cleaning"><span class="dot" aria-hidden="true"></span> Cleaning</span>
+                            <span class="v-chip laundry"><span class="dot" aria-hidden="true"></span> Laundry</span>
+                            <span class="v-chip auto"><span class="dot" aria-hidden="true"></span> Auto</span>
+                        </div>
+                        <h1>One place for <span class="hl-clean">cleaning</span>, <span class="hl-laundry">laundry</span> &amp; <span class="hl-auto">auto</span></h1>
                         <p class="hero-lead">
-                            Jobs, clients, invoices, and what you actually keep after costs. Not scattered across WhatsApp, notebooks, and your head.
+                            Capture jobs, send invoices, and see what you actually keep after costs — whether you clean homes, run a laundry counter, or detail cars.
                         </p>
                         <div class="hero-actions">
                             <a class="btn btn-primary btn-lg" href="signup.html">Start free →</a>
@@ -724,11 +788,29 @@
                         <div class="hero-dots" role="tablist" aria-label="Hero slides">
                             <button type="button" class="active" data-slide="0" aria-label="Cleaning slide"></button>
                             <button type="button" data-slide="1" aria-label="Laundry slide"></button>
+                            <button type="button" data-slide="2" aria-label="Auto detailing slide"></button>
                         </div>
                         <button type="button" class="hero-pause" id="heroPause" aria-label="Pause slideshow">❚❚</button>
                     </div>
                 </section>
         </div>
+
+        <section class="wrap" style="padding: 28px 0 8px;" aria-label="Three service modes">
+            <div class="pillars">
+                <div class="pillar cleaning">
+                    <h3>Cleaning</h3>
+                    <p>Homes, offices, deep cleans, fumigation — rooms, staff, and profit per job.</p>
+                </div>
+                <div class="pillar laundry">
+                    <h3>Laundry</h3>
+                    <p>Item counts, intake to ready, and clear status when the counter is busy.</p>
+                </div>
+                <div class="pillar auto">
+                    <h3>Auto / detailing</h3>
+                    <p>Plate, vehicle, package, and wash status — same invoices and payments.</p>
+                </div>
+            </div>
+        </section>
 
         <section class="problem" id="problem">
             <div class="wrap">
@@ -864,8 +946,8 @@
             <div class="wrap">
                 <div class="section-head">
                     <span class="section-kicker">Who it is for</span>
-                    <h2 class="section-title">Built for cleaning and laundry</h2>
-                    <p class="section-lead">Same dashboard. Switch mode for the work you do today.</p>
+                    <h2 class="section-title">Three modes. One dashboard.</h2>
+                    <p class="section-lead">Switch between Cleaning, Laundry, and Auto without leaving the app.</p>
                 </div>
                 <div class="mode-split">
                     <article class="mode-card cleaning">
@@ -880,6 +962,13 @@
                         <div class="body">
                             <h3>Laundry</h3>
                             <p>Item counts, intake to ready for collection, and clear status when customers are in a hurry.</p>
+                        </div>
+                    </article>
+                    <article class="mode-card auto">
+                        <div class="pic" role="img" aria-label="Car detailing"></div>
+                        <div class="body">
+                            <h3>Auto / detailing</h3>
+                            <p>Washes and details by vehicle, plate, and package — same jobs, invoices, and profit tracking.</p>
                         </div>
                     </article>
                 </div>
@@ -974,7 +1063,7 @@
                 <div class="final-inner">
                     <div>
                         <h2>Give every job a proper home</h2>
-                        <p>Stop running the business from chat threads and rough estimates. Start free on your phone.</p>
+                        <p>Whether you clean, wash clothes, or detail cars — stop running it from WhatsApp alone. Start free on your phone.</p>
                         <div class="final-actions">
                             <a class="btn btn-primary btn-lg" href="signup.html">Start free</a>
                             <a class="btn btn-outline-dark btn-lg" href="login.html">Log in</a>
@@ -996,7 +1085,7 @@
             <div class="footer-inner">
                 <div>
                     <strong style="color:var(--ink);font-weight:800;">CleanCrew</strong>
-                    <div style="margin-top:4px;">For cleaning and laundry businesses in Nigeria and Ghana</div>
+                    <div style="margin-top:4px;">For cleaning, laundry, and auto detailing businesses in Nigeria and Ghana</div>
                 </div>
                 <div class="footer-links">
                     <a href="#how">How it works</a>

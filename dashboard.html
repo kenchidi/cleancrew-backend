@@ -4774,7 +4774,7 @@
         <div class="tab-content active" id="tab-overview">
 <div class="dash-greeting" id="dashGreeting">
             <div class="greet-left">
-                <img class="cc-mascot md" src="mascot.png" alt="" width="64" height="64" />
+                
                 <div class="greet-text">
                     <h2 id="dashGreetingTitle">Good day</h2>
                     <p id="dashGreetingSub">Here's what's happening with your business today.</p>
@@ -4791,7 +4791,6 @@
 
 <div class="onboarding-card" id="onboardingCard" hidden>
             <div class="ob-mascot-row">
-                <img class="cc-mascot sm" src="mascot.png" alt="" width="40" height="40" />
                 <h3>Let's get your business running</h3>
             </div>
             <p>A short setup so CleanCrew matches how you work.</p>
@@ -5047,7 +5046,7 @@
                     <h3 id="recentJobsTitle" style="margin:0;font-size:15px;">Recent activity</h3>
                     <button class="btn btn-outline btn-sm" onclick="switchTab('jobs')">All jobs</button>
                 </div>
-                <div id="recentJobs"><div class="empty-state with-mascot" style="padding:12px;"><img class="cc-mascot sm" src="mascot.png" alt="" /><strong>No jobs yet</strong><span>Create your first job to see it here.</span></div></div>
+                <div id="recentJobs"><div class="empty-state" style="padding:12px;"><strong>No jobs yet</strong><span>Create your first job to see it here.</span></div></div>
             </div>
 
             <!-- Subscription status (no rate cards) -->
@@ -5909,11 +5908,8 @@
         // ─── CONFIG ──────────────────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
         const API_URL = 'https://cleancrew-backend.onrender.com/api';
-        var MASCOT_SRC = 'mascot.png';
-        function mascotHtml(size) {
-            size = size || 'md';
-            return '<img class="cc-mascot ' + size + '" src="' + MASCOT_SRC + '" alt="" width="64" height="64" loading="lazy" />';
-        }
+        var MASCOT_SRC = '';
+        function mascotHtml(size) { return ''; }
 
         var creditBalance = 0;
 
@@ -8857,7 +8853,7 @@ async function shareInvoiceWhatsApp(id) {
                             (cat !== 'laundry' && cat.indexOf('laundry') === -1 && cat !== 'auto' && cat.indexOf('auto') === -1);
                     });
                     if (filtered.length === 0) {
-                        list.innerHTML = '<div class="empty-state with-mascot">' + mascotHtml('sm') + '<strong>No inventory items</strong><span>Track supplies for this service mode so you never run short mid-job.</span><button type="button" class="btn btn-primary btn-sm" onclick="openModal(\'inventory\')">+ Add item</button></div>';
+                        list.innerHTML = '<div class="empty-state">' + mascotHtml('sm') + '<strong>No inventory items</strong><span>Track supplies for this service mode so you never run short mid-job.</span><button type="button" class="btn btn-primary btn-sm" onclick="openModal(\'inventory\')">+ Add item</button></div>';
                         return;
                     }
                     var rows = filtered.map(function(it, i) {
@@ -9723,7 +9719,7 @@ async function shareInvoiceWhatsApp(id) {
             if (todayEl) {
                 if (!todayJobs.length) {
                     if (!filteredJobs.length) {
-                        todayEl.innerHTML = '<div class="empty-state with-mascot" style="padding:20px 8px;text-align:center;">' +
+                        todayEl.innerHTML = '<div class="empty-state" style="padding:20px 8px;text-align:center;">' +
                             mascotHtml('md') +
                             '<strong style="display:block;margin-bottom:6px;">You\'re all caught up</strong>' +
                             '<span style="font-size:13px;color:var(--slate);">No jobs scheduled for today. Create a job or share your booking page.</span>' +
