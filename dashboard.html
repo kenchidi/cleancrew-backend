@@ -3426,6 +3426,44 @@
             box-shadow: none !important;
         }
 
+        /* Auto mode accents (orange) — must come after laundry/cleaning so they win */
+        body.mode-auto {
+            --mode-accent: #EA580C;
+            --mode-accent-dark: #C2410C;
+            --mode-accent-soft: #FFF7ED;
+            --mode-accent-shadow: rgba(234, 88, 12, 0.28);
+        }
+        body.mode-auto .btn-primary,
+        body.mode-auto .btn.btn-primary {
+            background: var(--mode-accent) !important;
+            border-color: var(--mode-accent) !important;
+            color: #fff !important;
+            box-shadow: 0 1px 2px var(--mode-accent-shadow) !important;
+        }
+        body.mode-auto .btn-primary:hover {
+            background: var(--mode-accent-dark) !important;
+            box-shadow: 0 6px 16px var(--mode-accent-shadow) !important;
+        }
+        body.mode-auto .sidebar .nav-links button.active {
+            background: var(--mode-accent-soft) !important;
+            color: var(--mode-accent-dark) !important;
+        }
+        body.mode-auto .modal-box .modal-header h3 .icon {
+            color: var(--mode-accent) !important;
+        }
+        body.mode-auto .stat-card.primary {
+            background: linear-gradient(160deg, #FFF7ED 0%, #FFFFFF 55%) !important;
+        }
+        body.mode-auto .stat-card.primary::before {
+            background: #EA580C !important;
+        }
+        body.mode-auto .service-toggle button.auto.active {
+            background: #FFF7ED !important;
+            color: #C2410C !important;
+            border-color: #FDBA74 !important;
+            box-shadow: none !important;
+        }
+
         /* Mobile modals: full-width sheet so dropdowns aren't cramped */
         @media (max-width: 640px) {
             .modal-overlay.active {
@@ -3920,6 +3958,34 @@
             background: #0F9F6E !important;
             color: #fff !important;
             border-color: #0F9F6E !important;
+        }
+        body.mode-auto .btn-primary,
+        body.mode-auto .btn.btn-primary {
+            background: #FFF7ED !important;
+            color: #C2410C !important;
+            border: 1px solid #FDBA74 !important;
+            box-shadow: none !important;
+        }
+        body.mode-auto .btn-primary:hover {
+            background: #FFEDD5 !important;
+            box-shadow: none !important;
+        }
+        body.mode-auto .btn-primary.btn-solid,
+        body.mode-auto .app-toolbar .btn-primary,
+        body.mode-auto .dash-greeting .btn-primary,
+        body.mode-auto #tab-overview .btn-primary,
+        body.mode-auto .hero-actions .btn-primary {
+            background: #EA580C !important;
+            color: #fff !important;
+            border-color: #EA580C !important;
+        }
+        body.mode-auto .btn-primary.btn-solid:hover,
+        body.mode-auto .app-toolbar .btn-primary:hover,
+        body.mode-auto .dash-greeting .btn-primary:hover,
+        body.mode-auto #tab-overview .btn-primary:hover,
+        body.mode-auto .hero-actions .btn-primary:hover {
+            background: #C2410C !important;
+            border-color: #C2410C !important;
         }
         .btn-success {
             background: #ECFDF5 !important;
