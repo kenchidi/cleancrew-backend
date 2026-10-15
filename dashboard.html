@@ -362,6 +362,37 @@
             color: var(--ink);
             background: rgba(255,255,255,.6);
         }
+
+        .service-toggle button.auto.active,
+        body.mode-auto .service-toggle button.auto.active {
+            background: #FFF7ED;
+            color: #C2410C;
+            border-color: #FDBA74;
+            box-shadow: 0 1px 2px rgba(194, 65, 12, 0.15);
+        }
+        body.mode-auto {
+            --mode-accent: #EA580C;
+            --mode-accent-dark: #C2410C;
+            --mode-accent-soft: #FFF7ED;
+            --mode-accent-shadow: rgba(234, 88, 12, 0.28);
+        }
+        body.mode-auto .btn-primary,
+        body.mode-auto .btn.btn-primary {
+            background: var(--mode-accent) !important;
+            border-color: var(--mode-accent) !important;
+            box-shadow: 0 1px 2px var(--mode-accent-shadow) !important;
+        }
+        body.mode-auto .btn-primary:hover {
+            background: var(--mode-accent-dark) !important;
+        }
+        body.mode-auto .sidebar .nav-links button.active {
+            background: var(--mode-accent-soft) !important;
+            color: var(--mode-accent-dark) !important;
+        }
+        body.mode-auto .stat-card.primary {
+            background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%);
+        }
+
         .service-toggle button.active {
             background: var(--white);
             color: #5B6B85;
@@ -4547,10 +4578,11 @@
     (function(){
       try {
         var m = localStorage.getItem('cleancrew_service_type') || localStorage.getItem('cleancrew_mode') || 'cleaning';
+        if (m !== 'cleaning' && m !== 'laundry' && m !== 'auto') m = 'cleaning';
         if (m !== 'laundry' && m !== 'cleaning') m = 'cleaning';
         document.documentElement.classList.add('mode-' + m);
         document.addEventListener('DOMContentLoaded', function(){
-          document.body.classList.remove('mode-cleaning','mode-laundry');
+          document.body.classList.remove('mode-cleaning','mode-laundry','mode-auto');
           document.body.classList.add('mode-' + m);
         });
       } catch(e) {}
@@ -4623,6 +4655,10 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                     Jobs
                 </button>
+                <button type="button" data-tab="standards" onclick="switchTab('standards')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    Standards
+                </button>
                 <button type="button" data-tab="clients" onclick="switchTab('clients')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
                     Clients
@@ -4670,6 +4706,9 @@
                         <button type="button" class="laundry" id="modeLaundry" onclick="setServiceType('laundry')" aria-pressed="false">
                             <span aria-hidden="true">👕</span> Laundry
                         </button>
+                        <button type="button" class="auto" id="modeAuto" onclick="setServiceType('auto')" aria-pressed="false">
+                            <span aria-hidden="true">🚗</span> Auto
+                        </button>
                     </div>
                 </div>
                 <div class="user-stats">
@@ -4707,6 +4746,9 @@
                         </button>
                         <button type="button" class="laundry" id="modeLaundryOld" onclick="setServiceType('laundry')" aria-pressed="false">
                             <span aria-hidden="true">👕</span> Laundry
+                        </button>
+                        <button type="button" class="auto" id="modeAutoOld" onclick="setServiceType('auto')" aria-pressed="false">
+                            <span aria-hidden="true">🚗</span> Auto
                         </button>
                     </div>
                 </div>
@@ -5148,6 +5190,87 @@
         </div>
 
         <!-- ════ STAFF TAB ════ -->
+
+        <!-- ════ STANDARDS TAB ════ -->
+        <div class="tab-content" id="tab-standards" hidden>
+            <div class="card" style="margin-bottom:14px;">
+                <div class="card-header" style="flex-wrap:wrap;gap:8px;">
+                    <h3>CleanCrew Standards</h3>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <button type="button" class="btn btn-outline btn-sm" onclick="stdShowPanel('overview')">Overview</button>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="stdShowPanel('templates')">Templates</button>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="stdShowPanel('checklists')">Checklists</button>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="stdShowPanel('inspections')">Inspections</button>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="stdShowPanel('reports')">Reports</button>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="stdOpenTemplateEditor()">+ Template</button>
+                    </div>
+                </div>
+                <p class="sub-text" style="margin:0 16px 12px;font-size:13px;color:var(--ink-soft);">
+                    Define how work should be done, attach checklists to jobs, and record inspections.
+                    Starter templates are editable guidance for your shop — not certified industry standards.
+                </p>
+            </div>
+            <div id="stdPanelOverview">
+                <div class="stats-grid" id="stdStatsGrid" style="margin-bottom:14px;">
+                    <div class="stat-card"><div class="stat-label">Templates</div><div class="stat-value" id="stdStatTemplates">—</div></div>
+                    <div class="stat-card"><div class="stat-label">Active checklists</div><div class="stat-value" id="stdStatActive">—</div></div>
+                    <div class="stat-card"><div class="stat-label">Incomplete</div><div class="stat-value" id="stdStatIncomplete">—</div></div>
+                    <div class="stat-card"><div class="stat-label">Awaiting inspection</div><div class="stat-value" id="stdStatAwait">—</div></div>
+                    <div class="stat-card"><div class="stat-label">Failed inspections</div><div class="stat-value" id="stdStatFailed">—</div></div>
+                    <div class="stat-card"><div class="stat-label">Open corrective</div><div class="stat-value" id="stdStatCorrective">—</div></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h3>Getting started</h3></div>
+                    <div id="stdEmptyOverview" style="padding:16px;display:none;">
+                        <p style="margin-bottom:12px;color:var(--ink-soft);font-size:14px;">
+                            No standards yet. Open Templates to load starters or create your own, then attach a standard to a job.
+                        </p>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="stdShowPanel('templates');stdLoadTemplates();">View templates</button>
+                    </div>
+                    <div id="stdRecentWrap" style="padding:12px 16px 16px;">
+                        <p style="font-size:13px;font-weight:700;margin-bottom:8px;">Recent templates</p>
+                        <div id="stdRecentTemplates" style="font-size:13px;color:var(--ink-soft);"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="stdPanelTemplates" style="display:none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Template library</h3>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="stdOpenTemplateEditor()">+ New template</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Name</th><th>Type</th><th>Steps</th><th>Status</th><th>Action</th></tr></thead>
+                            <tbody id="stdTemplatesTable"></tbody>
+                        </table>
+                    </div>
+                    <p id="stdTemplatesEmpty" style="display:none;padding:16px;color:var(--ink-soft);font-size:14px;"></p>
+                </div>
+            </div>
+            <div id="stdPanelChecklists" style="display:none;">
+                <div class="card">
+                    <div class="card-header"><h3>Job checklists</h3></div>
+                    <p style="padding:12px 16px;font-size:13px;color:var(--ink-soft);">
+                        From Jobs, use <strong>Standard</strong> on a job (or call Attach standard). Checklist steps are snapshotted from the template version at attach time.
+                    </p>
+                </div>
+            </div>
+            <div id="stdPanelInspections" style="display:none;">
+                <div class="card">
+                    <div class="card-header"><h3>Quality inspections</h3></div>
+                    <p style="padding:16px;font-size:13px;color:var(--ink-soft);">Open a job checklist to Pass or Fail when supervisor approval is required. Failed results stay on record.</p>
+                    <div id="stdInspectionsList" style="padding:0 16px 16px;font-size:13px;"></div>
+                </div>
+            </div>
+            <div id="stdPanelReports" style="display:none;">
+                <div class="card">
+                    <div class="card-header"><h3>Standards reports</h3></div>
+                    <div id="stdReportsBody" style="padding:16px;font-size:14px;color:var(--ink-soft);"></div>
+                </div>
+            </div>
+        </div>
+
         <div class="tab-content" id="tab-staff">
             <div class="card">
                 <div class="card-header">
@@ -6476,19 +6599,28 @@
             return (job && (job.mode || job.service_type)) || 'cleaning';
         }
 
+        function modeLabel(type) {
+            if (type === 'laundry') return 'Laundry';
+            if (type === 'auto') return 'Auto';
+            return 'Cleaning';
+        }
+
+        function isValidMode(type) {
+            return type === 'cleaning' || type === 'laundry' || type === 'auto';
+        }
+
         function syncServiceTypeUI(type) {
+            if (!isValidMode(type)) type = 'cleaning';
             try {
-                document.body.classList.remove('mode-cleaning', 'mode-laundry');
-                document.body.classList.add(type === 'laundry' ? 'mode-laundry' : 'mode-cleaning');
+                document.body.classList.remove('mode-cleaning', 'mode-laundry', 'mode-auto');
+                document.body.classList.add('mode-' + type);
             } catch (e) {}
 
-            if (type !== 'cleaning' && type !== 'laundry') type = 'cleaning';
             document.querySelectorAll('.service-toggle button').forEach(function(btn) {
                 var isMatch = btn.classList.contains(type);
                 btn.classList.toggle('active', isMatch);
                 btn.setAttribute('aria-pressed', isMatch ? 'true' : 'false');
             });
-            // Explicit IDs (top bar + any legacy toggle)
             ['modeCleaning', 'modeCleaningOld'].forEach(function(id) {
                 var el = document.getElementById(id);
                 if (el) {
@@ -6503,7 +6635,14 @@
                     el.setAttribute('aria-pressed', type === 'laundry' ? 'true' : 'false');
                 }
             });
-            var label = type === 'laundry' ? 'Laundry' : 'Cleaning';
+            ['modeAuto', 'modeAutoOld'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) {
+                    el.classList.toggle('active', type === 'auto');
+                    el.setAttribute('aria-pressed', type === 'auto' ? 'true' : 'false');
+                }
+            });
+            var label = modeLabel(type);
             var recentEl = document.getElementById('recentJobsTitle');
             var jobsEl = document.getElementById('jobsTitle');
             var invEl = document.getElementById('inventoryTitle');
@@ -6513,23 +6652,21 @@
         }
 
         function getActiveServiceType() {
-            // Prefer in-memory mode; fall back to the button the user sees as active
-            if (currentServiceType === 'laundry' || currentServiceType === 'cleaning') {
-                return currentServiceType;
-            }
+            if (isValidMode(currentServiceType)) return currentServiceType;
             var active = document.querySelector('.service-toggle button.active');
+            if (active && active.classList.contains('auto')) return 'auto';
             if (active && active.classList.contains('laundry')) return 'laundry';
             if (active && active.classList.contains('cleaning')) return 'cleaning';
             try {
                 var saved = localStorage.getItem('cleancrew_mode');
-                if (saved === 'laundry' || saved === 'cleaning') return saved;
+                if (isValidMode(saved)) return saved;
             } catch (e) {}
             return 'cleaning';
         }
 
         function setServiceType(type, opts) {
             opts = opts || {};
-            if (type !== 'cleaning' && type !== 'laundry') type = 'cleaning';
+            if (!isValidMode(type)) type = 'cleaning';
             var prev = currentServiceType;
             currentServiceType = type;
             try { localStorage.setItem('cleancrew_mode', type); } catch (e) {}
@@ -7156,6 +7293,9 @@
                 if (tab === 'inventory') {
                     try { if (typeof renderInventory === 'function') renderInventory(); } catch (eI) { console.error(eI); }
                 }
+                if (tab === 'standards') {
+                    try { if (typeof stdInit === 'function') stdInit(); } catch (eStd) { console.error(eStd); }
+                }
                 if (tab === 'staff') {
                     try { if (typeof renderStaff === 'function') renderStaff(); } catch (eSt) { console.error(eSt); }
                 }
@@ -7301,6 +7441,11 @@
             if (job.rooms) payload.rooms = job.rooms;
             if (job.property_size) payload.property_size = job.property_size;
             if (job.location_id) payload.location_id = job.location_id;
+            if (job.vehicle_plate) payload.vehicle_plate = job.vehicle_plate;
+            if (job.vehicle_type) payload.vehicle_type = job.vehicle_type;
+            if (job.vehicle_make) payload.vehicle_make = job.vehicle_make;
+            if (job.vehicle_colour) payload.vehicle_colour = job.vehicle_colour;
+            if (job.service_location) payload.service_location = job.service_location;
 
             return apiFetch('/jobs', {
                     method: 'POST',
@@ -8703,10 +8848,13 @@ async function shareInvoiceWhatsApp(id) {
                         if (currentServiceType === 'laundry') {
                             return cat === 'laundry' || cat.indexOf('laundry') !== -1;
                         }
+                        if (currentServiceType === 'auto') {
+                            return cat === 'auto' || cat.indexOf('auto') !== -1 || cat.indexOf('detail') !== -1 || cat.indexOf('car') !== -1 || cat.indexOf('wash') !== -1;
+                        }
                         // Cleaning mode: cleaning + fumigation supplies
                         return cat === 'cleaning' || cat === 'fumigation' ||
                             cat.indexOf('clean') !== -1 || cat.indexOf('fumig') !== -1 ||
-                            (cat !== 'laundry' && cat.indexOf('laundry') === -1);
+                            (cat !== 'laundry' && cat.indexOf('laundry') === -1 && cat !== 'auto' && cat.indexOf('auto') === -1);
                     });
                     if (filtered.length === 0) {
                         list.innerHTML = '<div class="empty-state with-mascot">' + mascotHtml('sm') + '<strong>No inventory items</strong><span>Track supplies for this service mode so you never run short mid-job.</span><button type="button" class="btn btn-primary btn-sm" onclick="openModal(\'inventory\')">+ Add item</button></div>';
@@ -9149,7 +9297,7 @@ async function shareInvoiceWhatsApp(id) {
             set('prMonthJobs', String(ms.done));
             set('prMonthWithCosts', String(ms.withCosts));
 
-            var modeLabel = currentServiceType === 'laundry' ? 'laundry' : 'cleaning';
+            var modeLabel = currentServiceType === 'laundry' ? 'laundry' : (currentServiceType === 'auto' ? 'auto' : 'cleaning');
             var monthNote = document.getElementById('prMonthNote');
             var yearNote = document.getElementById('prYearNote');
             var chartSub = document.getElementById('revChartSub');
@@ -9513,7 +9661,7 @@ async function shareInvoiceWhatsApp(id) {
             if (typeof jobMatchesLocationFilter === 'function') {
                 filteredJobs = filteredJobs.filter(jobMatchesLocationFilter);
             }
-            var modeLabel = currentServiceType === 'laundry' ? 'laundry' : 'cleaning';
+            var modeLabel = currentServiceType === 'laundry' ? 'laundry' : (currentServiceType === 'auto' ? 'auto' : 'cleaning');
 
             var todayStr = new Date().toISOString().slice(0, 10);
             function jobDate(j) {
@@ -9913,7 +10061,7 @@ async function shareInvoiceWhatsApp(id) {
                 var locOk = typeof jobMatchesLocationFilter === 'function' ? jobMatchesLocationFilter(j) : true;
                 return modeOk && locOk;
             });
-            var modeLabel = currentServiceType === 'laundry' ? 'laundry' : 'cleaning';
+            var modeLabel = currentServiceType === 'laundry' ? 'laundry' : (currentServiceType === 'auto' ? 'auto' : 'cleaning');
 
             if (filter !== 'all') {
                 filtered = filtered.filter(function(j) {
@@ -9966,6 +10114,8 @@ async function shareInvoiceWhatsApp(id) {
                 var clientEsc = typeof escJsAttr === 'function' ? escJsAttr(j.client || '') : String(j.client || '').replace(/'/g, "\\'");
                 var moreItems = '';
                 moreItems += '<button type="button" onclick="event.stopPropagation();openJobDetail(\'' + j.id + '\')">View details</button>';
+                moreItems += '<button type="button" onclick="event.stopPropagation();stdAttachToJob(\'' + j.id + '\')">Attach standard</button>';
+                moreItems += '<button type="button" onclick="event.stopPropagation();stdOpenJobChecklist(\'' + j.id + '\')">Job checklist</button>';
                 moreItems += '<button type="button" onclick="event.stopPropagation();sendSingleWhatsApp(\'' + clientEsc + '\', \'' + phoneEsc + '\')">WhatsApp</button>';
                 if (j.status === 'draft' || j.status === 'pending' || j.status === 'in-progress') {
                     moreItems += '<button type="button" class="danger" onclick="event.stopPropagation();updateJobStatus(\'' + j.id + '\', \'cancelled\')">Cancel job</button>';
@@ -11343,16 +11493,29 @@ async function shareInvoiceWhatsApp(id) {
 
             try {
             if (type === 'job' || type === 'editJob') {
-                var modeLabel = cur === 'laundry' ? 'Laundry' : 'Cleaning';
+                var modeLabelText = (cur === 'laundry' ? 'Laundry' : cur === 'auto' ? 'Auto' : 'Cleaning');
+                var modeLabel = modeLabelText;
                 if (titleEl) titleEl.innerHTML = '<svg class="icon"><use href="#ic-plus"/></svg> New ' + modeLabel + ' Job';
 
                 var serviceOptions = cur === 'laundry'
                     ? '<option>Wash & Fold</option><option>Wash & Iron</option><option>Dry Cleaning</option><option>Iron Only</option><option>Commercial Laundry</option>'
+                    : (cur === 'auto'
+                    ? '<option>Basic Wash</option><option>Full Wash</option><option>Interior Detail</option><option>Full Detail</option><option>Engine Wash</option><option>Custom Package</option>'
                     : '<optgroup label="Cleaning"><option>Home Cleaning</option><option>Office Cleaning</option><option>Deep Cleaning</option><option>Post-Construction</option><option>Move In/Out</option></optgroup>' +
-                      '<optgroup label="Fumigation"><option>Residential fumigation</option><option>Office / commercial fumigation</option><option>Bed bug treatment</option><option>Termite treatment</option><option>General pest control</option><option>Fogging</option></optgroup>';
+                      '<optgroup label="Fumigation"><option>Residential fumigation</option><option>Office / commercial fumigation</option><option>Bed bug treatment</option><option>Termite treatment</option><option>General pest control</option><option>Fogging</option></optgroup>');
 
                 var modeExtra = '';
-                if (cur === 'cleaning') {
+                if (cur === 'auto') {
+                    modeExtra =
+                        '<div class="form-group"><label>Plate number</label><input type="text" id="jPlate" placeholder="e.g. ABC-123-XY" autocomplete="off" /></div>' +
+                        '<div class="form-group"><label>Vehicle type</label><select id="jVehicleType">' +
+                        '<option value="Sedan">Sedan</option><option value="SUV">SUV</option><option value="Hatchback">Hatchback</option>' +
+                        '<option value="Truck">Truck</option><option value="Van">Van</option><option value="Bus">Bus</option><option value="Bike">Bike</option><option value="Other">Other</option></select></div>' +
+                        '<div class="form-group"><label>Make / model</label><input type="text" id="jVehicleMake" placeholder="e.g. Toyota Camry" autocomplete="off" /></div>' +
+                        '<div class="form-group"><label>Colour</label><input type="text" id="jVehicleColour" placeholder="Optional" autocomplete="off" /></div>' +
+                        '<div class="form-group"><label>Service location</label><select id="jServiceLoc">' +
+                        '<option value="shop">At our shop</option><option value="client">At client location</option></select></div>';
+                } else if (cur === 'cleaning') {
                     modeExtra =
                         '<div id="cleaningSizeFields">' +
                         '<div class="form-group"><label>Rooms</label><input type="number" id="jRooms" min="1" placeholder="e.g. 3" /></div>' +
@@ -11413,7 +11576,9 @@ async function shareInvoiceWhatsApp(id) {
             } else if (type === 'inventory') {
                 var catOptions = cur === 'laundry'
                     ? '<option value="laundry" selected>Laundry</option>'
-                    : '<option value="cleaning" selected>Cleaning</option><option value="fumigation">Fumigation</option>';
+                    : (cur === 'auto'
+                    ? '<option value="auto" selected>Auto / detailing</option>'
+                    : '<option value="cleaning" selected>Cleaning</option><option value="fumigation">Fumigation</option>');
                 f.innerHTML =
                     '<div class="form-group"><label>Item Name *</label><input type="text" id="invName" required /></div>' +
                     '<div class="form-group"><label>Category</label><select id="invCategory">' + catOptions + '</select></div>' +
@@ -11520,6 +11685,34 @@ async function shareInvoiceWhatsApp(id) {
                     if (jobData.items.length === 0) {
                         showToast('Add at least one laundry item', 'error');
                         return;
+                    }
+                } else if (currentServiceType === 'auto') {
+                    var plateEl = document.getElementById('jPlate');
+                    var vTypeEl = document.getElementById('jVehicleType');
+                    var vMakeEl = document.getElementById('jVehicleMake');
+                    var vColEl = document.getElementById('jVehicleColour');
+                    var vLocEl = document.getElementById('jServiceLoc');
+                    var plate = plateEl ? plateEl.value.trim() : '';
+                    var vType = vTypeEl ? vTypeEl.value : '';
+                    var vMake = vMakeEl ? vMakeEl.value.trim() : '';
+                    var vCol = vColEl ? vColEl.value.trim() : '';
+                    var vLoc = vLocEl ? vLocEl.value : 'shop';
+                    jobData.vehicle_plate = plate || null;
+                    jobData.vehicle_type = vType || null;
+                    jobData.vehicle_make = vMake || null;
+                    jobData.vehicle_colour = vCol || null;
+                    jobData.service_location = vLoc || 'shop';
+                    var autoBits = [];
+                    if (plate) autoBits.push('Plate: ' + plate);
+                    if (vType) autoBits.push(vType);
+                    if (vMake) autoBits.push(vMake);
+                    if (vCol) autoBits.push(vCol);
+                    autoBits.push(vLoc === 'client' ? 'At client' : 'At shop');
+                    var autoLine = autoBits.join(' · ');
+                    if (notes && notes !== 'None') {
+                        jobData.notes = autoLine + (notes ? '\n' + notes : '');
+                    } else {
+                        jobData.notes = autoLine || 'None';
                     }
                 } else {
                     var serviceName = service;
@@ -12285,6 +12478,281 @@ async function shareInvoiceWhatsApp(id) {
         // ─── ──────────────────────────────────────────────────────
         // ─── INIT ────────────────────────────────────────────────
         // ─── ──────────────────────────────────────────────────────
+
+        // ─── CLEANCREW STANDARDS ───────────────────────────────
+        var stdTemplatesCache = [];
+        var stdPanel = 'overview';
+
+        function stdShowPanel(name) {
+            stdPanel = name || 'overview';
+            var map = { overview: 'stdPanelOverview', templates: 'stdPanelTemplates', checklists: 'stdPanelChecklists', inspections: 'stdPanelInspections', reports: 'stdPanelReports' };
+            Object.keys(map).forEach(function(n) {
+                var el = document.getElementById(map[n]);
+                if (el) el.style.display = (n === stdPanel) ? 'block' : 'none';
+            });
+            if (stdPanel === 'overview') stdLoadOverview();
+            if (stdPanel === 'templates') stdLoadTemplates();
+            if (stdPanel === 'reports') stdLoadReports();
+            if (stdPanel === 'inspections') stdLoadOverview();
+        }
+        function stdInit() { stdShowPanel(stdPanel || 'overview'); }
+
+        function stdLoadOverview() {
+            fetch(API_URL + '/standards/overview', { headers: getHeaders() })
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    if (d.error) throw new Error(d.error);
+                    function set(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; }
+                    set('stdStatTemplates', d.total_templates);
+                    set('stdStatActive', d.active_checklists);
+                    set('stdStatIncomplete', d.jobs_incomplete_checklists);
+                    set('stdStatAwait', d.inspections_awaiting);
+                    set('stdStatFailed', d.failed_inspections);
+                    set('stdStatCorrective', d.outstanding_corrective_actions);
+                    var empty = document.getElementById('stdEmptyOverview');
+                    var recent = document.getElementById('stdRecentTemplates');
+                    if ((d.total_templates || 0) === 0) {
+                        if (empty) empty.style.display = 'block';
+                        if (recent) recent.innerHTML = '';
+                    } else {
+                        if (empty) empty.style.display = 'none';
+                        if (recent) {
+                            recent.innerHTML = (d.recent_templates || []).map(function(t) {
+                                return '<div style="padding:6px 0;border-bottom:1px solid var(--border);">' + (t.name || 'Template') + '</div>';
+                            }).join('') || '—';
+                        }
+                    }
+                    var il = document.getElementById('stdInspectionsList');
+                    if (il) {
+                        var ri = d.recent_inspections || [];
+                        il.innerHTML = ri.length ? ri.map(function(i) {
+                            return '<div style="padding:8px 0;border-bottom:1px solid var(--border);">' + (i.result === 'passed' ? 'Passed' : 'Failed') + '</div>';
+                        }).join('') : '<p style="color:var(--muted);">No inspections yet.</p>';
+                    }
+                })
+                .catch(function(e) { console.error(e); if (typeof showToast === 'function') showToast(e.message || 'Standards overview failed', 'error'); });
+        }
+
+        function stdLoadTemplates() {
+            fetch(API_URL + '/standards/templates', { headers: getHeaders() })
+                .then(function(r) { return r.json(); })
+                .then(function(rows) {
+                    if (rows && rows.error) throw new Error(rows.error);
+                    stdTemplatesCache = Array.isArray(rows) ? rows : [];
+                    var tb = document.getElementById('stdTemplatesTable');
+                    var empty = document.getElementById('stdTemplatesEmpty');
+                    if (!tb) return;
+                    if (!stdTemplatesCache.length) {
+                        tb.innerHTML = '';
+                        if (empty) { empty.style.display = 'block'; empty.textContent = 'No templates yet. Refresh once to load starters, or create your own.'; }
+                        return;
+                    }
+                    if (empty) empty.style.display = 'none';
+                    tb.innerHTML = stdTemplatesCache.map(function(t) {
+                        var steps = (t.steps && t.steps.length) || 0;
+                        var badge = t.is_starter ? ' <span style="font-size:11px;color:var(--muted);">starter</span>' : '';
+                        return '<tr><td><strong>' + (t.name || '') + '</strong>' + badge + '</td><td>' + (t.business_type || '') + '</td><td>' + steps + '</td><td>' + (t.status || '') + '</td><td style="white-space:nowrap;">' +
+                            '<button type="button" class="btn btn-outline btn-sm" onclick="stdOpenTemplateEditor(\'' + t.id + '\')">Edit</button> ' +
+                            '<button type="button" class="btn btn-outline btn-sm" onclick="stdDuplicateTemplate(\'' + t.id + '\')">Copy</button> ' +
+                            '<button type="button" class="btn btn-outline btn-sm" onclick="stdArchiveTemplate(\'' + t.id + '\')">Archive</button></td></tr>';
+                    }).join('');
+                })
+                .catch(function(e) { if (typeof showToast === 'function') showToast(e.message || 'Templates failed', 'error'); });
+        }
+
+        function stdLoadReports() {
+            fetch(API_URL + '/standards/reports', { headers: getHeaders() })
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    var el = document.getElementById('stdReportsBody');
+                    if (!el) return;
+                    if (!d.checklists_total) {
+                        el.innerHTML = '<p>No checklist data yet. Attach a standard to a job to see rates.</p>';
+                        return;
+                    }
+                    el.innerHTML = '<p><strong>Checklist completion:</strong> ' + (d.checklist_completion_rate != null ? d.checklist_completion_rate + '%' : '—') +
+                        ' (' + d.checklists_completed + '/' + d.checklists_total + ')</p>' +
+                        '<p><strong>First-pass inspection rate:</strong> ' + (d.first_pass_inspection_rate != null ? d.first_pass_inspection_rate + '%' : '—') + '</p>' +
+                        '<p><strong>Failed inspections:</strong> ' + d.failed_inspections + '</p>' +
+                        '<p><strong>Open corrective actions:</strong> ' + d.outstanding_corrective_actions + '</p>' +
+                        '<p style="font-size:12px;color:var(--muted);margin-top:12px;">First-pass uses the first inspection only.</p>';
+                })
+                .catch(function(e) { if (typeof showToast === 'function') showToast(e.message, 'error'); });
+        }
+
+        function stdOpenTemplateEditor(id) {
+            var existing = id ? stdTemplatesCache.find(function(x) { return x.id === id; }) : null;
+            var name = existing ? existing.name : '';
+            var desc = existing ? (existing.description || '') : '';
+            var btype = existing ? (existing.business_type || 'both') : 'both';
+            var steps = existing && existing.steps ? existing.steps : [{ title: 'Confirm scope', instruction: '', is_mandatory: true }];
+            var stepsText = steps.map(function(s) { return (s.title || '') + (s.instruction ? ' | ' + s.instruction : ''); }).join('\n');
+            var html = '<div style="display:grid;gap:10px;text-align:left;">' +
+                '<label>Name<br><input id="stdEdName" class="form-input" style="width:100%;" value="' + String(name).replace(/"/g, '&quot;') + '"/></label>' +
+                '<label>Business type<br><select id="stdEdType" class="form-input" style="width:100%;"><option value="cleaning">Cleaning</option><option value="laundry">Laundry</option><option value="auto">Auto / detailing</option><option value="both">Both</option></select></label>' +
+                '<label>Description<br><textarea id="stdEdDesc" class="form-input" style="width:100%;" rows="2"></textarea></label>' +
+                '<label>Steps (one per line: Title | instruction)<br><textarea id="stdEdSteps" class="form-input" style="width:100%;" rows="6"></textarea></label>' +
+                '<label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="stdEdSup"/> Requires supervisor approval</label>' +
+                '<p style="font-size:12px;color:var(--muted);">Follow product labels, care labels, and your training. CleanCrew does not certify compliance.</p></div>';
+            openGenericModal(existing ? 'Edit template' : 'New template', html, function() { stdSaveTemplate(id); });
+            setTimeout(function() {
+                var sel = document.getElementById('stdEdType'); if (sel) sel.value = btype;
+                var d = document.getElementById('stdEdDesc'); if (d) d.value = desc;
+                var s = document.getElementById('stdEdSteps'); if (s) s.value = stepsText;
+                var c = document.getElementById('stdEdSup'); if (c) c.checked = !!(existing && existing.requires_supervisor_approval);
+            }, 30);
+        }
+
+        function stdParseSteps(text) {
+            return String(text || '').split('\n').map(function(line) {
+                line = line.trim(); if (!line) return null;
+                var parts = line.split('|');
+                return { title: (parts[0] || '').trim() || 'Step', instruction: (parts[1] || '').trim() || null, is_mandatory: true };
+            }).filter(Boolean);
+        }
+
+        function stdSaveTemplate(id) {
+            var nameEl = document.getElementById('stdEdName');
+            var name = nameEl ? nameEl.value.trim() : '';
+            if (!name) { if (typeof showToast === 'function') showToast('Name is required', 'error'); return; }
+            var payload = {
+                name: name,
+                description: (document.getElementById('stdEdDesc') || {}).value || '',
+                business_type: (document.getElementById('stdEdType') || {}).value || 'both',
+                requires_supervisor_approval: !!(document.getElementById('stdEdSup') || {}).checked,
+                steps: stdParseSteps((document.getElementById('stdEdSteps') || {}).value || '')
+            };
+            fetch(API_URL + '/standards/templates' + (id ? '/' + id : ''), {
+                method: id ? 'PUT' : 'POST', headers: getHeaders(), body: JSON.stringify(payload)
+            }).then(function(r) { return r.json().then(function(b) { return { ok: r.ok, b: b }; }); })
+            .then(function(x) {
+                if (!x.ok) throw new Error(x.b.error || 'Save failed');
+                if (typeof showToast === 'function') showToast('Template saved', 'success');
+                closeGenericModal(); stdLoadTemplates(); stdLoadOverview();
+            }).catch(function(e) { if (typeof showToast === 'function') showToast(e.message, 'error'); });
+        }
+
+        function stdDuplicateTemplate(id) {
+            fetch(API_URL + '/standards/templates/' + id + '/duplicate', { method: 'POST', headers: getHeaders() })
+                .then(function(r) { return r.json(); })
+                .then(function(d) { if (d.error) throw new Error(d.error); if (typeof showToast === 'function') showToast('Copy created', 'success'); stdLoadTemplates(); })
+                .catch(function(e) { if (typeof showToast === 'function') showToast(e.message, 'error'); });
+        }
+        function stdArchiveTemplate(id) {
+            if (!confirm('Archive this template? Job checklists already created stay as they are.')) return;
+            fetch(API_URL + '/standards/templates/' + id, { method: 'DELETE', headers: getHeaders() })
+                .then(function(r) { return r.json(); })
+                .then(function(d) { if (d.error) throw new Error(d.error); if (typeof showToast === 'function') showToast('Archived', 'success'); stdLoadTemplates(); })
+                .catch(function(e) { if (typeof showToast === 'function') showToast(e.message, 'error'); });
+        }
+
+        function stdAttachToJob(jobId) {
+            if (!jobId) return;
+            function pick(list) {
+                list = (list || []).filter(function(t) { return t.status === 'active'; });
+                if (!list.length) { if (typeof showToast === 'function') showToast('Create a template in Standards first', 'error'); switchTab('standards'); return; }
+                var names = list.map(function(t, i) { return (i + 1) + '. ' + t.name; }).join('\n');
+                var pickN = prompt('Attach which template? Enter number:\n' + names, '1');
+                if (pickN == null) return;
+                var idx = parseInt(pickN, 10) - 1;
+                if (isNaN(idx) || !list[idx]) { if (typeof showToast === 'function') showToast('Invalid selection', 'error'); return; }
+                fetch(API_URL + '/standards/jobs/' + jobId + '/checklist', {
+                    method: 'POST', headers: getHeaders(), body: JSON.stringify({ template_id: list[idx].id })
+                }).then(function(r) { return r.json().then(function(b) { return { ok: r.ok, status: r.status, b: b }; }); })
+                .then(function(x) {
+                    if (x.status === 409) { if (typeof showToast === 'function') showToast('Job already has a checklist', 'error'); stdOpenJobChecklist(jobId); return; }
+                    if (!x.ok) throw new Error(x.b.error || 'Could not attach');
+                    if (typeof showToast === 'function') showToast('Standard attached', 'success');
+                    stdOpenJobChecklist(jobId);
+                }).catch(function(e) { if (typeof showToast === 'function') showToast(e.message, 'error'); });
+            }
+            if (stdTemplatesCache.length) pick(stdTemplatesCache);
+            else fetch(API_URL + '/standards/templates', { headers: getHeaders() }).then(function(r) { return r.json(); })
+                .then(function(rows) { stdTemplatesCache = Array.isArray(rows) ? rows : []; pick(stdTemplatesCache); });
+        }
+
+        function stdOpenJobChecklist(jobId) {
+            fetch(API_URL + '/standards/jobs/' + jobId + '/checklist', { headers: getHeaders() })
+                .then(function(r) { return r.json(); })
+                .then(function(cl) {
+                    if (!cl) { if (confirm('No checklist on this job. Attach a standard now?')) stdAttachToJob(jobId); return; }
+                    var steps = cl.steps || [];
+                    var html = '<div style="text-align:left;max-height:60vh;overflow:auto;"><p style="font-size:13px;margin-bottom:10px;"><strong>' + (cl.template_name || 'Checklist') + '</strong> · ' + (cl.status || '') + '</p>';
+                    steps.forEach(function(s) {
+                        html += '<label style="display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;">' +
+                            '<input type="checkbox" ' + (s.status === 'done' ? 'checked' : '') + ' onchange="stdToggleStep(\'' + s.id + '\', this.checked)"/>' +
+                            '<span><strong>' + (s.title || '') + '</strong>' + (s.is_mandatory ? ' <span style="color:#b45309;font-size:11px;">required</span>' : '') +
+                            (s.instruction ? '<br><span style="color:var(--muted);">' + s.instruction + '</span>' : '') + '</span></label>';
+                    });
+                    html += '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;">' +
+                        '<button type="button" class="btn btn-primary btn-sm" onclick="stdSubmitChecklist(\'' + cl.id + '\',\'' + jobId + '\')">Submit checklist</button>';
+                    if (cl.requires_supervisor_approval || cl.status === 'awaiting_inspection' || cl.status === 'requires_corrective_action') {
+                        html += '<button type="button" class="btn btn-outline btn-sm" onclick="stdInspect(\'' + cl.id + '\',\'passed\',\'' + jobId + '\')">Pass</button>' +
+                            '<button type="button" class="btn btn-outline btn-sm" onclick="stdInspect(\'' + cl.id + '\',\'failed\',\'' + jobId + '\')">Fail</button>';
+                    }
+                    html += '</div></div>';
+                    openGenericModal('Job checklist', html, null);
+                }).catch(function(e) { if (typeof showToast === 'function') showToast(e.message || 'Could not open checklist', 'error'); });
+        }
+
+        function stdToggleStep(stepId, checked) {
+            fetch(API_URL + '/standards/checklist-steps/' + stepId, {
+                method: 'PATCH', headers: getHeaders(), body: JSON.stringify({ status: checked ? 'done' : 'pending' })
+            }).then(function(r) { return r.json(); }).then(function(d) {
+                if (d.error) throw new Error(d.error);
+            }).catch(function(e) { if (typeof showToast === 'function') showToast(e.message, 'error'); });
+        }
+        function stdSubmitChecklist(clId, jobId) {
+            fetch(API_URL + '/standards/checklists/' + clId + '/submit', { method: 'POST', headers: getHeaders() })
+                .then(function(r) { return r.json().then(function(b) { return { ok: r.ok, b: b }; }); })
+                .then(function(x) {
+                    if (!x.ok) throw new Error(x.b.error || 'Submit failed');
+                    if (typeof showToast === 'function') showToast('Checklist submitted', 'success');
+                    stdOpenJobChecklist(jobId);
+                }).catch(function(e) { if (typeof showToast === 'function') showToast(e.message, 'error'); });
+        }
+        function stdInspect(clId, result, jobId) {
+            var notes = prompt(result === 'failed' ? 'Failure notes:' : 'Inspection notes (optional):', '');
+            if (result === 'failed' && notes == null) return;
+            var payload = { result: result, notes: notes || null };
+            if (result === 'failed') {
+                var corr = prompt('Corrective action:', notes || '');
+                if (corr) payload.corrective_description = corr;
+            }
+            fetch(API_URL + '/standards/checklists/' + clId + '/inspect', {
+                method: 'POST', headers: getHeaders(), body: JSON.stringify(payload)
+            }).then(function(r) { return r.json().then(function(b) { return { ok: r.ok, b: b }; }); })
+            .then(function(x) {
+                if (!x.ok) throw new Error(x.b.error || 'Inspection failed');
+                if (typeof showToast === 'function') showToast(result === 'passed' ? 'Passed' : 'Failed and recorded', 'success');
+                stdOpenJobChecklist(jobId);
+            }).catch(function(e) { if (typeof showToast === 'function') showToast(e.message, 'error'); });
+        }
+
+        function openGenericModal(title, bodyHtml, onSave) {
+            var old = document.getElementById('stdGenericModal');
+            if (old) old.remove();
+            var wrap = document.createElement('div');
+            wrap.id = 'stdGenericModal';
+            wrap.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.45);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
+            wrap.innerHTML = '<div style="background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:90vh;overflow:auto;padding:20px;">' +
+                '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><strong style="font-size:16px;">' + title + '</strong>' +
+                '<button type="button" class="btn btn-outline btn-sm" onclick="closeGenericModal()">Close</button></div>' +
+                '<div>' + bodyHtml + '</div>' +
+                (onSave ? '<div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end;"><button type="button" class="btn btn-primary btn-sm" id="stdGenericSave">Save</button></div>' : '') +
+                '</div>';
+            document.body.appendChild(wrap);
+            wrap.addEventListener('click', function(e) { if (e.target === wrap) closeGenericModal(); });
+            var saveBtn = document.getElementById('stdGenericSave');
+            if (saveBtn && onSave) saveBtn.onclick = function() { onSave(); };
+        }
+        function closeGenericModal() {
+            var old = document.getElementById('stdGenericModal');
+            if (old) old.remove();
+        }
+        window.stdAttachToJob = stdAttachToJob;
+        window.stdOpenJobChecklist = stdOpenJobChecklist;
+
         function init() {
             try {
                 // Normalize tabs: only Overview visible at start

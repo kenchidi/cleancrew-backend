@@ -2242,6 +2242,25 @@ app.post(
 
             // Only columns the jobs table expects — never spread req.body
             // (unknown fields + wrong client can trigger RLS / schema errors)
+            // Auto detailing: keep vehicle facts in notes if dedicated columns are missing
+            let notes = req.body.notes || null;
+            if (mode === 'auto') {
+                const bits = [];
+                if (req.body.vehicle_plate) bits.push('Plate: ' + String(req.body.vehicle_plate).trim());
+                if (req.body.vehicle_type) bits.push(String(req.body.vehicle_type).trim());
+                if (req.body.vehicle_make) bits.push(String(req.body.vehicle_make).trim());
+                if (req.body.vehicle_colour) bits.push(String(req.body.vehicle_colour).trim());
+                if (req.body.service_location) {
+                    bits.push(req.body.service_location === 'client' ? 'At client' : 'At shop');
+                }
+                if (bits.length) {
+                    const line = bits.join(' · ');
+                    notes = notes && String(notes).trim() && String(notes).trim() !== 'None'
+                        ? line + '\n' + String(notes).trim()
+                        : line;
+                }
+            }
+
             const job = {
                 user_id: userId,
                 client: req.body.client || '',
@@ -2250,7 +2269,7 @@ app.post(
                 amount: req.body.amount != null ? Number(req.body.amount) : 0,
                 date: req.body.date || null,
                 status: req.body.status || 'pending',
-                notes: req.body.notes || null,
+                notes: notes,
                 mode,
                 service_type: mode,
                 items: req.body.items || req.body.laundry_items || [],
@@ -2945,6 +2964,24 @@ app.put(
                     patch[key] = req.body[key];
                 }
             });
+            // Auto jobs: fold vehicle facts into notes (no schema change required)
+            const mode = patch.mode || req.body.mode || req.body.service_type;
+            if (mode === 'auto' || req.body.vehicle_plate || req.body.vehicle_type || req.body.vehicle_make) {
+                const bits = [];
+                if (req.body.vehicle_plate) bits.push('Plate: ' + String(req.body.vehicle_plate).trim());
+                if (req.body.vehicle_type) bits.push(String(req.body.vehicle_type).trim());
+                if (req.body.vehicle_make) bits.push(String(req.body.vehicle_make).trim());
+                if (req.body.vehicle_colour) bits.push(String(req.body.vehicle_colour).trim());
+                if (req.body.service_location) {
+                    bits.push(req.body.service_location === 'client' ? 'At client' : 'At shop');
+                }
+                if (bits.length) {
+                    const line = bits.join(' · ');
+                    const existing = patch.notes != null ? String(patch.notes) : (req.body.notes || '');
+                    const cleaned = existing.replace(/^Plate:.*?(\n|$)/, '').trim();
+                    patch.notes = cleaned && cleaned !== 'None' ? line + '\n' + cleaned : line;
+                }
+            }
 
             if (Object.keys(patch).length === 0) {
                 return res.status(400).json({
@@ -6071,6 +6108,728 @@ app.get(
         }
     }
 );
+
+
+
+// ─── CLEANCREW STANDARDS ─────────────────────────────────────
+// Guidance only — not certified industry standards. Owners customise for their shop.
+
+const STARTER_TEMPLATES = [
+  {
+    name: 'Residential routine cleaning',
+    business_type: 'cleaning',
+    service_category: 'Residential',
+    description: 'Editable starter for regular home cleans. Adjust steps to match your team and site rules.',
+    outcome: 'Home cleaned to your shop standard; nothing critical left unfinished.',
+    safety_notes: 'Follow product labels and site rules. Use PPE as required. Do not mix chemicals. Confirm power and water access with the client.',
+    equipment: 'Cloths, vacuum, approved cleaners, gloves',
+    requires_supervisor_approval: false,
+    steps: [
+      { title: 'Confirm scope with client', instruction: 'Walk through rooms and note special requests before starting.', is_mandatory: true },
+      { title: 'Protect floors and surfaces', instruction: 'Place mats or covers where needed.', is_mandatory: true },
+      { title: 'Dust and surfaces', instruction: 'Work top to bottom. Check product labels before use.', is_mandatory: true },
+      { title: 'Floors', instruction: 'Vacuum or mop per floor type.', is_mandatory: true },
+      { title: 'Bathrooms and kitchen', instruction: 'Clean high-touch areas. Do not mix cleaners.', is_mandatory: true },
+      { title: 'Final walkthrough', instruction: 'Check against client scope. Note anything incomplete.', is_mandatory: true, quality_criterion: 'No visible debris in scoped rooms; wet floors signed if needed.' }
+    ]
+  },
+  {
+    name: 'Deep cleaning',
+    business_type: 'cleaning',
+    service_category: 'Deep clean',
+    description: 'Editable starter for deeper residential or commercial cleans.',
+    outcome: 'Detailed clean completed per agreed scope.',
+    safety_notes: 'Follow labels and training. Escalate unknown stains or damaged surfaces to the owner.',
+    requires_supervisor_approval: true,
+    steps: [
+      { title: 'Confirm deep-clean scope', instruction: 'List rooms and special tasks with the client.', is_mandatory: true },
+      { title: 'Appliances and detailed areas', instruction: 'Only use methods approved by your shop for each surface.', is_mandatory: true },
+      { title: 'Quality check', instruction: 'Supervisor or lead reviews against quality criteria.', is_mandatory: true, quality_criterion: 'Agreed detail areas completed; no chemical residue left on food surfaces.' }
+    ]
+  },
+  {
+    name: 'Office cleaning',
+    business_type: 'cleaning',
+    service_category: 'Commercial',
+    description: 'Editable starter for offices and small commercial spaces.',
+    outcome: 'Work areas ready for the next business day.',
+    safety_notes: 'Respect access rules. Do not move confidential documents. Follow site H&S rules.',
+    steps: [
+      { title: 'Secure access and alarms', instruction: 'Follow client entry procedure.', is_mandatory: true },
+      { title: 'Desks and common areas', instruction: 'Clean without disturbing papers marked do-not-touch.', is_mandatory: true },
+      { title: 'Washrooms and kitchenette', instruction: 'Restock only items the client supplies.', is_mandatory: true },
+      { title: 'Lock-up checklist', instruction: 'Lights, bins, doors per client brief.', is_mandatory: true }
+    ]
+  },
+  {
+    name: 'Garment intake and item counting',
+    business_type: 'laundry',
+    service_category: 'Intake',
+    description: 'Editable starter for receiving laundry orders at the counter.',
+    outcome: 'Accurate count and ticket before processing.',
+    safety_notes: 'Check care labels. Flag delicate or unknown stains for assessment. Do not promise results on damaged items.',
+    steps: [
+      { title: 'Count items with customer present when possible', instruction: 'Record count on the job.', is_mandatory: true },
+      { title: 'Note stains and damage', instruction: 'Photograph only if your policy allows and customer agrees.', is_mandatory: true },
+      { title: 'Care-label review', instruction: 'Separate items that need special handling.', is_mandatory: true },
+      { title: 'Issue ticket / job reference', instruction: 'Customer has a clear collection reference.', is_mandatory: true }
+    ]
+  },
+  {
+    name: 'Washing and drying workflow',
+    business_type: 'laundry',
+    service_category: 'Process',
+    description: 'Editable starter for wash and dry stages.',
+    outcome: 'Loads processed per care guidance and machine instructions.',
+    safety_notes: 'Follow machine manuals and detergent labels. Never overload. Separate colours as trained.',
+    steps: [
+      { title: 'Sort by care and colour', instruction: 'Per shop training and care labels.', is_mandatory: true },
+      { title: 'Select cycle and detergent', instruction: 'Match care label; do not exceed product doses.', is_mandatory: true },
+      { title: 'Dry per fabric', instruction: 'Use correct heat or air-dry when required.', is_mandatory: true },
+      { title: 'Inspect before finishing', instruction: 'Recheck stains; flag for re-treatment if needed.', is_mandatory: true }
+    ]
+  },
+  {
+    name: 'Laundry order quality inspection',
+    business_type: 'laundry',
+    service_category: 'Quality',
+    description: 'Editable starter before packaging and handover.',
+    outcome: 'Order matches ticket and is ready for collection.',
+    safety_notes: 'Do not release orders with unresolved damage disputes without owner approval.',
+    requires_supervisor_approval: true,
+    steps: [
+      { title: 'Count matches ticket', instruction: 'Reconcile items to intake count.', is_mandatory: true },
+      { title: 'Finish quality', instruction: 'Check for dampness, odour, visible soil.', is_mandatory: true, quality_criterion: 'Items dry, folded/hung per order type, no obvious soil.' },
+      { title: 'Package and label', instruction: 'Customer name and ticket visible.', is_mandatory: true }
+    ]
+  }
+];
+
+async function seedStarterTemplatesIfEmpty(userId) {
+    const { count, error } = await supabase
+        .from('standards_templates')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId);
+    if (error) throw error;
+    if (count && count > 0) return;
+
+    for (const t of STARTER_TEMPLATES) {
+        const { data: tmpl, error: e1 } = await supabase
+            .from('standards_templates')
+            .insert({
+                user_id: userId,
+                name: t.name,
+                description: t.description,
+                outcome: t.outcome,
+                service_category: t.service_category || null,
+                business_type: t.business_type,
+                equipment: t.equipment || null,
+                safety_notes: t.safety_notes || null,
+                requires_supervisor_approval: !!t.requires_supervisor_approval,
+                is_starter: true,
+                status: 'active',
+                version: 1
+            })
+            .select()
+            .single();
+        if (e1) {
+            console.error('seed template', e1);
+            continue;
+        }
+        const steps = (t.steps || []).map((st, i) => ({
+            template_id: tmpl.id,
+            user_id: userId,
+            sort_order: i,
+            title: st.title,
+            instruction: st.instruction || null,
+            is_mandatory: st.is_mandatory !== false,
+            requires_photo: !!st.requires_photo,
+            quality_criterion: st.quality_criterion || null
+        }));
+        if (steps.length) {
+            const { error: e2 } = await supabase.from('standards_template_steps').insert(steps);
+            if (e2) console.error('seed steps', e2);
+        }
+    }
+}
+
+app.get('/api/standards/overview', authenticate, async (req, res) => {
+    try {
+        const uid = req.user.id;
+        const [
+            templates,
+            checklists,
+            inspections,
+            actions
+        ] = await Promise.all([
+            supabase.from('standards_templates').select('id, status, updated_at, name').eq('user_id', uid),
+            supabase.from('job_checklists').select('id, status, updated_at, template_name, job_id').eq('user_id', uid),
+            supabase.from('quality_inspections').select('id, result, inspected_at, job_id').eq('user_id', uid).order('inspected_at', { ascending: false }).limit(20),
+            supabase.from('corrective_actions').select('id, status').eq('user_id', uid)
+        ]);
+
+        if (templates.error) throw templates.error;
+        if (checklists.error) throw checklists.error;
+
+        const tmpls = templates.data || [];
+        const cls = checklists.data || [];
+        const insp = inspections.data || [];
+        const acts = actions.data || [];
+
+        const incomplete = cls.filter(c => !['completed'].includes(c.status)).length;
+        const awaiting = cls.filter(c => c.status === 'awaiting_inspection').length;
+        const failedInsp = insp.filter(i => i.result === 'failed').length;
+        const openActions = acts.filter(a => a.status !== 'done').length;
+
+        res.json({
+            total_templates: tmpls.filter(t => t.status === 'active').length,
+            active_checklists: cls.filter(c => ['not_started', 'in_progress', 'awaiting_inspection', 'requires_corrective_action'].includes(c.status)).length,
+            jobs_incomplete_checklists: incomplete,
+            inspections_awaiting: awaiting,
+            failed_inspections: failedInsp,
+            outstanding_corrective_actions: openActions,
+            recent_templates: tmpls
+                .slice()
+                .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+                .slice(0, 5),
+            recent_inspections: insp.slice(0, 5)
+        });
+    } catch (error) {
+        console.error('standards overview', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/standards/templates', authenticate, async (req, res) => {
+    try {
+        const uid = req.user.id;
+        await seedStarterTemplatesIfEmpty(uid);
+        const status = req.query.status || 'active';
+        let q = supabase
+            .from('standards_templates')
+            .select('*, standards_template_steps(*)')
+            .eq('user_id', uid)
+            .order('updated_at', { ascending: false });
+        if (status !== 'all') q = q.eq('status', status);
+        const { data, error } = await q;
+        if (error) throw error;
+        const rows = (data || []).map(row => {
+            const steps = (row.standards_template_steps || []).slice().sort((a, b) => a.sort_order - b.sort_order);
+            delete row.standards_template_steps;
+            return { ...row, steps };
+        });
+        res.json(rows);
+    } catch (error) {
+        console.error('list templates', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/standards/templates/:id', authenticate, async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('standards_templates')
+            .select('*, standards_template_steps(*)')
+            .eq('id', req.params.id)
+            .eq('user_id', req.user.id)
+            .single();
+        if (error) throw error;
+        const steps = (data.standards_template_steps || []).slice().sort((a, b) => a.sort_order - b.sort_order);
+        delete data.standards_template_steps;
+        res.json({ ...data, steps });
+    } catch (error) {
+        res.status(404).json({ error: error.message || 'Not found' });
+    }
+});
+
+app.post('/api/standards/templates', authenticate, async (req, res) => {
+    try {
+        const uid = req.user.id;
+        const b = req.body || {};
+        if (!b.name || !String(b.name).trim()) {
+            return res.status(400).json({ error: 'Template name is required' });
+        }
+        const { data: tmpl, error } = await supabase
+            .from('standards_templates')
+            .insert({
+                user_id: uid,
+                name: String(b.name).trim(),
+                description: b.description || null,
+                outcome: b.outcome || null,
+                service_category: b.service_category || null,
+                business_type: ['cleaning', 'laundry', 'both'].includes(b.business_type) ? b.business_type : 'both',
+                estimated_minutes: b.estimated_minutes ? Number(b.estimated_minutes) : null,
+                equipment: b.equipment || null,
+                safety_notes: b.safety_notes || null,
+                requires_supervisor_approval: !!b.requires_supervisor_approval,
+                is_starter: false,
+                status: 'active',
+                version: 1
+            })
+            .select()
+            .single();
+        if (error) throw error;
+        const stepsIn = Array.isArray(b.steps) ? b.steps : [];
+        if (stepsIn.length) {
+            const steps = stepsIn.map((st, i) => ({
+                template_id: tmpl.id,
+                user_id: uid,
+                sort_order: i,
+                title: st.title || `Step ${i + 1}`,
+                instruction: st.instruction || null,
+                is_mandatory: st.is_mandatory !== false,
+                requires_photo: !!st.requires_photo,
+                quality_criterion: st.quality_criterion || null
+            }));
+            const { error: e2 } = await supabase.from('standards_template_steps').insert(steps);
+            if (e2) throw e2;
+        }
+        res.status(201).json(tmpl);
+    } catch (error) {
+        console.error('create template', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.put('/api/standards/templates/:id', authenticate, async (req, res) => {
+    try {
+        const uid = req.user.id;
+        const id = req.params.id;
+        const b = req.body || {};
+        const { data: existing, error: e0 } = await supabase
+            .from('standards_templates')
+            .select('*')
+            .eq('id', id)
+            .eq('user_id', uid)
+            .single();
+        if (e0 || !existing) return res.status(404).json({ error: 'Template not found' });
+
+        const patch = {
+            updated_at: new Date().toISOString(),
+            version: (existing.version || 1) + 1
+        };
+        ['name', 'description', 'outcome', 'service_category', 'equipment', 'safety_notes'].forEach(k => {
+            if (b[k] !== undefined) patch[k] = b[k];
+        });
+        if (b.business_type && ['cleaning', 'laundry', 'both'].includes(b.business_type)) {
+            patch.business_type = b.business_type;
+        }
+        if (b.estimated_minutes !== undefined) {
+            patch.estimated_minutes = b.estimated_minutes ? Number(b.estimated_minutes) : null;
+        }
+        if (b.requires_supervisor_approval !== undefined) {
+            patch.requires_supervisor_approval = !!b.requires_supervisor_approval;
+        }
+        if (b.status && ['active', 'archived'].includes(b.status)) patch.status = b.status;
+
+        const { data: tmpl, error } = await supabase
+            .from('standards_templates')
+            .update(patch)
+            .eq('id', id)
+            .eq('user_id', uid)
+            .select()
+            .single();
+        if (error) throw error;
+
+        if (Array.isArray(b.steps)) {
+            await supabase.from('standards_template_steps').delete().eq('template_id', id).eq('user_id', uid);
+            if (b.steps.length) {
+                const steps = b.steps.map((st, i) => ({
+                    template_id: id,
+                    user_id: uid,
+                    sort_order: i,
+                    title: st.title || `Step ${i + 1}`,
+                    instruction: st.instruction || null,
+                    is_mandatory: st.is_mandatory !== false,
+                    requires_photo: !!st.requires_photo,
+                    quality_criterion: st.quality_criterion || null
+                }));
+                const { error: e2 } = await supabase.from('standards_template_steps').insert(steps);
+                if (e2) throw e2;
+            }
+        }
+        res.json(tmpl);
+    } catch (error) {
+        console.error('update template', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/standards/templates/:id/duplicate', authenticate, async (req, res) => {
+    try {
+        const uid = req.user.id;
+        const { data: src, error } = await supabase
+            .from('standards_templates')
+            .select('*, standards_template_steps(*)')
+            .eq('id', req.params.id)
+            .eq('user_id', uid)
+            .single();
+        if (error || !src) return res.status(404).json({ error: 'Not found' });
+        const { data: copy, error: e1 } = await supabase
+            .from('standards_templates')
+            .insert({
+                user_id: uid,
+                name: (src.name || 'Template') + ' (copy)',
+                description: src.description,
+                outcome: src.outcome,
+                service_category: src.service_category,
+                business_type: src.business_type,
+                estimated_minutes: src.estimated_minutes,
+                equipment: src.equipment,
+                safety_notes: src.safety_notes,
+                requires_supervisor_approval: src.requires_supervisor_approval,
+                is_starter: false,
+                status: 'active',
+                version: 1
+            })
+            .select()
+            .single();
+        if (e1) throw e1;
+        const steps = (src.standards_template_steps || []).map((st, i) => ({
+            template_id: copy.id,
+            user_id: uid,
+            sort_order: st.sort_order != null ? st.sort_order : i,
+            title: st.title,
+            instruction: st.instruction,
+            is_mandatory: st.is_mandatory,
+            requires_photo: st.requires_photo,
+            quality_criterion: st.quality_criterion
+        }));
+        if (steps.length) {
+            await supabase.from('standards_template_steps').insert(steps);
+        }
+        res.status(201).json(copy);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.delete('/api/standards/templates/:id', authenticate, async (req, res) => {
+    try {
+        // Soft-archive by default to preserve history links
+        const { data, error } = await supabase
+            .from('standards_templates')
+            .update({ status: 'archived', updated_at: new Date().toISOString() })
+            .eq('id', req.params.id)
+            .eq('user_id', req.user.id)
+            .select()
+            .single();
+        if (error) throw error;
+        res.json(data);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/standards/jobs/:jobId/checklist', authenticate, async (req, res) => {
+    try {
+        const uid = req.user.id;
+        const jobId = req.params.jobId;
+        const { data: cl, error } = await supabase
+            .from('job_checklists')
+            .select('*')
+            .eq('job_id', jobId)
+            .eq('user_id', uid)
+            .maybeSingle();
+        if (error) throw error;
+        if (!cl) return res.json(null);
+        const { data: steps, error: e2 } = await supabase
+            .from('job_checklist_steps')
+            .select('*')
+            .eq('checklist_id', cl.id)
+            .eq('user_id', uid)
+            .order('sort_order');
+        if (e2) throw e2;
+        res.json({ ...cl, steps: steps || [] });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/standards/jobs/:jobId/checklist', authenticate, async (req, res) => {
+    try {
+        const uid = req.user.id;
+        const jobId = req.params.jobId;
+        const templateId = req.body && req.body.template_id;
+        if (!templateId) return res.status(400).json({ error: 'template_id is required' });
+
+        // Prevent duplicate
+        const { data: existing } = await supabase
+            .from('job_checklists')
+            .select('id')
+            .eq('job_id', jobId)
+            .eq('user_id', uid)
+            .maybeSingle();
+        if (existing) {
+            return res.status(409).json({ error: 'This job already has a checklist', checklist_id: existing.id });
+        }
+
+        const { data: job, error: jErr } = await supabase
+            .from('jobs')
+            .select('id')
+            .eq('id', jobId)
+            .eq('user_id', uid)
+            .single();
+        if (jErr || !job) return res.status(404).json({ error: 'Job not found' });
+
+        const { data: tmpl, error: tErr } = await supabase
+            .from('standards_templates')
+            .select('*, standards_template_steps(*)')
+            .eq('id', templateId)
+            .eq('user_id', uid)
+            .single();
+        if (tErr || !tmpl) return res.status(404).json({ error: 'Template not found' });
+
+        const { data: cl, error: cErr } = await supabase
+            .from('job_checklists')
+            .insert({
+                user_id: uid,
+                job_id: jobId,
+                template_id: tmpl.id,
+                template_name: tmpl.name,
+                template_version: tmpl.version || 1,
+                status: 'not_started',
+                requires_supervisor_approval: !!tmpl.requires_supervisor_approval
+            })
+            .select()
+            .single();
+        if (cErr) {
+            if (String(cErr.message || '').includes('duplicate') || cErr.code === '23505') {
+                return res.status(409).json({ error: 'This job already has a checklist' });
+            }
+            throw cErr;
+        }
+
+        const srcSteps = (tmpl.standards_template_steps || []).slice().sort((a, b) => a.sort_order - b.sort_order);
+        if (srcSteps.length) {
+            const steps = srcSteps.map((st, i) => ({
+                checklist_id: cl.id,
+                user_id: uid,
+                sort_order: i,
+                title: st.title,
+                instruction: st.instruction,
+                is_mandatory: st.is_mandatory,
+                requires_photo: st.requires_photo,
+                quality_criterion: st.quality_criterion,
+                status: 'pending'
+            }));
+            const { error: sErr } = await supabase.from('job_checklist_steps').insert(steps);
+            if (sErr) throw sErr;
+        }
+
+        const { data: stepsOut } = await supabase
+            .from('job_checklist_steps')
+            .select('*')
+            .eq('checklist_id', cl.id)
+            .order('sort_order');
+        res.status(201).json({ ...cl, steps: stepsOut || [] });
+    } catch (error) {
+        console.error('attach checklist', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.patch('/api/standards/checklist-steps/:stepId', authenticate, async (req, res) => {
+    try {
+        const uid = req.user.id;
+        const b = req.body || {};
+        const status = b.status;
+        if (status && !['pending', 'done', 'skipped', 'failed'].includes(status)) {
+            return res.status(400).json({ error: 'Invalid status' });
+        }
+        const patch = {};
+        if (status) {
+            patch.status = status;
+            if (status === 'done' || status === 'failed') {
+                patch.completed_at = new Date().toISOString();
+                patch.completed_by = uid;
+            }
+            if (status === 'pending') {
+                patch.completed_at = null;
+                patch.completed_by = null;
+            }
+        }
+        if (b.notes !== undefined) patch.notes = b.notes;
+
+        const { data: step, error } = await supabase
+            .from('job_checklist_steps')
+            .update(patch)
+            .eq('id', req.params.stepId)
+            .eq('user_id', uid)
+            .select()
+            .single();
+        if (error) throw error;
+
+        // Refresh parent checklist status
+        const { data: allSteps } = await supabase
+            .from('job_checklist_steps')
+            .select('status, is_mandatory')
+            .eq('checklist_id', step.checklist_id)
+            .eq('user_id', uid);
+        const steps = allSteps || [];
+        const anyDone = steps.some(s => s.status === 'done' || s.status === 'failed');
+        const mandatoryLeft = steps.some(s => s.is_mandatory && s.status !== 'done');
+        let clStatus = 'not_started';
+        if (anyDone && mandatoryLeft) clStatus = 'in_progress';
+        else if (!mandatoryLeft && steps.length) clStatus = 'in_progress';
+        await supabase
+            .from('job_checklists')
+            .update({ status: clStatus, updated_at: new Date().toISOString() })
+            .eq('id', step.checklist_id)
+            .eq('user_id', uid);
+
+        res.json(step);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/standards/checklists/:id/submit', authenticate, async (req, res) => {
+    try {
+        const uid = req.user.id;
+        const { data: cl, error } = await supabase
+            .from('job_checklists')
+            .select('*')
+            .eq('id', req.params.id)
+            .eq('user_id', uid)
+            .single();
+        if (error || !cl) return res.status(404).json({ error: 'Checklist not found' });
+
+        const { data: steps } = await supabase
+            .from('job_checklist_steps')
+            .select('*')
+            .eq('checklist_id', cl.id)
+            .eq('user_id', uid);
+        const mandatoryOpen = (steps || []).filter(s => s.is_mandatory && s.status !== 'done');
+        if (mandatoryOpen.length) {
+            return res.status(400).json({
+                error: 'Complete all mandatory steps before submitting',
+                incomplete: mandatoryOpen.map(s => s.title)
+            });
+        }
+
+        const nextStatus = cl.requires_supervisor_approval ? 'awaiting_inspection' : 'completed';
+        const { data: updated, error: e2 } = await supabase
+            .from('job_checklists')
+            .update({
+                status: nextStatus,
+                submitted_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                ...(nextStatus === 'completed' && !cl.requires_supervisor_approval
+                    ? { supervisor_approved_at: new Date().toISOString(), supervisor_approved_by: uid }
+                    : {})
+            })
+            .eq('id', cl.id)
+            .eq('user_id', uid)
+            .select()
+            .single();
+        if (e2) throw e2;
+        res.json(updated);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/standards/checklists/:id/inspect', authenticate, async (req, res) => {
+    try {
+        const uid = req.user.id;
+        const result = req.body && req.body.result;
+        if (!['passed', 'failed'].includes(result)) {
+            return res.status(400).json({ error: 'result must be passed or failed' });
+        }
+        const { data: cl, error } = await supabase
+            .from('job_checklists')
+            .select('*')
+            .eq('id', req.params.id)
+            .eq('user_id', uid)
+            .single();
+        if (error || !cl) return res.status(404).json({ error: 'Checklist not found' });
+
+        const { count } = await supabase
+            .from('quality_inspections')
+            .select('id', { count: 'exact', head: true })
+            .eq('checklist_id', cl.id)
+            .eq('user_id', uid);
+
+        const { data: insp, error: iErr } = await supabase
+            .from('quality_inspections')
+            .insert({
+                user_id: uid,
+                job_id: cl.job_id,
+                checklist_id: cl.id,
+                result,
+                notes: (req.body && req.body.notes) || null,
+                inspected_by: uid,
+                is_first_pass: !(count && count > 0)
+            })
+            .select()
+            .single();
+        if (iErr) throw iErr;
+
+        if (result === 'passed') {
+            await supabase
+                .from('job_checklists')
+                .update({
+                    status: 'completed',
+                    supervisor_approved_at: new Date().toISOString(),
+                    supervisor_approved_by: uid,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', cl.id)
+                .eq('user_id', uid);
+        } else {
+            await supabase
+                .from('job_checklists')
+                .update({
+                    status: 'requires_corrective_action',
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', cl.id)
+                .eq('user_id', uid);
+            if (req.body && req.body.corrective_description) {
+                await supabase.from('corrective_actions').insert({
+                    user_id: uid,
+                    job_id: cl.job_id,
+                    inspection_id: insp.id,
+                    description: req.body.corrective_description,
+                    status: 'open'
+                });
+            }
+        }
+        res.status(201).json(insp);
+    } catch (error) {
+        console.error('inspect', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/standards/reports', authenticate, async (req, res) => {
+    try {
+        const uid = req.user.id;
+        const { data: cls } = await supabase.from('job_checklists').select('id, status').eq('user_id', uid);
+        const { data: insps } = await supabase.from('quality_inspections').select('id, result, is_first_pass').eq('user_id', uid);
+        const { data: acts } = await supabase.from('corrective_actions').select('id, status').eq('user_id', uid);
+        const list = cls || [];
+        const completed = list.filter(c => c.status === 'completed').length;
+        const total = list.length;
+        const firstPass = (insps || []).filter(i => i.is_first_pass && i.result === 'passed').length;
+        const firstTotal = (insps || []).filter(i => i.is_first_pass).length;
+        res.json({
+            checklist_completion_rate: total ? Math.round((completed / total) * 100) : null,
+            checklists_total: total,
+            checklists_completed: completed,
+            first_pass_inspection_rate: firstTotal ? Math.round((firstPass / firstTotal) * 100) : null,
+            failed_inspections: (insps || []).filter(i => i.result === 'failed').length,
+            outstanding_corrective_actions: (acts || []).filter(a => a.status !== 'done').length,
+            definitions: {
+                checklist_completion_rate: 'Completed checklists / all job checklists',
+                first_pass_inspection_rate: 'Passed first inspections / all first inspections (not re-inspections)'
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
 
 // ─── START SERVER ────────────────────────────────────────────
