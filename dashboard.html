@@ -4654,6 +4654,76 @@
       } catch(e) {}
     })();
     </script>
+<script>/* CleanCrew theme: apply saved/system theme before first paint */
+(function(){try{var t=localStorage.getItem("cc-theme");if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.setAttribute("data-theme",t)}catch(e){}})();
+</script>
+<style id="cc-theme-layer">
+/* ===== CleanCrew theme layer: appended last, changes look & motion only, no markup or logic ===== */
+:root{--cc-ease:cubic-bezier(.22,.8,.3,1);--navy:#0F1F40}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;-webkit-tap-highlight-color:transparent}
+::selection{background:rgba(26,109,219,.22)}
+*{scrollbar-width:thin;scrollbar-color:var(--slate-light) transparent}
+:where(button,a,input,select,textarea,[tabindex]):focus-visible{outline:3px solid rgba(26,109,219,.55);outline-offset:2px}
+/* readability: lift the smallest text and strengthen secondary colour */
+:root{--slate:#4F6079}
+.stat-label,.sub-text,.muted,.ps-label,.bu-label,.job-detail-label{font-size:max(12.5px,1em);letter-spacing:.01em}
+.sub-text,.muted{color:var(--slate)}
+table td,table th{font-size:14px}
+/* numbers: big, tight, aligned */
+.stat-value{font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
+@media(min-width:700px){.stat-value{font-size:clamp(1.7rem,2.6vw,2.2rem)}}
+/* surfaces */
+body{background:var(--surface)!important}
+.card,.stat-card,.billing-usage-card,.settings-panel{border-radius:18px;transition:box-shadow .25s var(--cc-ease),transform .25s var(--cc-ease),border-color .25s}
+.stat-card{position:relative;overflow:hidden}
+.stat-card::after{content:"";position:absolute;right:-18px;top:-18px;width:84px;height:84px;border-radius:50%;background:radial-gradient(closest-side,var(--mode-accent-soft,#EFF6FF),transparent);pointer-events:none}
+@media(hover:hover){.stat-card:hover,.qa-btn:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);border-color:var(--mode-accent,#1A6DDB)}}
+/* buttons: tactile press */
+.btn,.qa-btn,.modal-close,.job-more{transition:transform .15s var(--cc-ease),box-shadow .2s,background-color .2s,filter .2s}
+.btn:active,.qa-btn:active{transform:scale(.96)}
+@media(hover:hover){.btn:hover{filter:brightness(1.05)}}
+.btn:disabled,.btn[disabled]{opacity:.55;cursor:not-allowed;transform:none}
+.nav-links button{transition:background-color .2s,color .2s,transform .15s var(--cc-ease)}
+.nav-links button:active{transform:scale(.97)}
+.nav-links button.active{box-shadow:inset 3px 0 0 var(--mode-accent,#1A6DDB)}
+.status-badge{letter-spacing:.04em}
+/* motion: views, cards, modals */
+@keyframes ccRise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes ccFade{from{opacity:0}to{opacity:1}}
+@keyframes ccPop{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes ccPulse{0%{box-shadow:0 0 0 0 rgba(26,109,219,.35)}100%{box-shadow:0 0 0 14px rgba(26,109,219,0)}}
+.tab-content.active{animation:ccFade .3s ease both}
+.tab-content.active>.card,.tab-content.active .stat-card,.tab-content.active>div>.card{animation:ccRise .45s var(--cc-ease) both}
+.tab-content.active .stat-card:nth-child(2){animation-delay:.05s}
+.tab-content.active .stat-card:nth-child(3){animation-delay:.1s}
+.tab-content.active .stat-card:nth-child(4){animation-delay:.15s}
+.tab-content.active>.card:nth-of-type(2){animation-delay:.06s}
+.tab-content.active>.card:nth-of-type(3){animation-delay:.12s}
+.modal-overlay{animation:ccFade .2s ease both}
+.modal-box{animation:ccPop .32s var(--cc-ease) both}
+.empty-state{animation:ccFade .5s ease both}
+.sidebar{transition:transform .3s var(--cc-ease)}
+.btn-primary.cc-nudge{animation:ccPulse 1.6s ease-out 2}
+#ccThemeBtn{width:100%;justify-content:center;margin-bottom:8px}
+/* ===== dark mode ===== */
+html[data-theme="dark"]{color-scheme:dark;
+ --white:#14252d;--surface:#0e1b21;--border:#26383f;--ink:#e8f0f2;--ink-soft:#c5d3d8;--slate:#9db2b9;--slate-light:#6e848c;
+ --blue-light:#16293d;--blue-mist:#12212c;--blue-glow:#12212c;
+ --shadow-sm:0 1px 2px rgba(0,0,0,.4);--shadow-md:0 8px 24px rgba(0,0,0,.4);--shadow-lg:0 20px 50px rgba(0,0,0,.55)}
+html[data-theme="dark"] body{background:var(--surface)!important;color:var(--ink)}
+html[data-theme="dark"] body.mode-cleaning{--mode-accent:#4b93f0;--mode-accent-dark:#9cc6f7;--mode-accent-soft:#16293d}
+html[data-theme="dark"] body.mode-laundry{--mode-accent:#2fb596;--mode-accent-dark:#7fe0c6;--mode-accent-soft:#11332a}
+html[data-theme="dark"] body.mode-auto{--mode-accent:#f08a4b;--mode-accent-dark:#fdba74;--mode-accent-soft:#3a2412}
+html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="dark"] textarea{background:var(--surface);color:var(--ink);border-color:var(--border)}
+html[data-theme="dark"] ::placeholder{color:var(--slate-light)}
+html[data-theme="dark"] .status-badge{filter:invert(1) hue-rotate(180deg) brightness(.95)}
+html[data-theme="dark"] .modal-overlay{background:rgba(3,9,12,.7)}
+html[data-theme="dark"] .stat-card::after{opacity:.6}
+html[data-theme="dark"] table tr:hover td{background:rgba(255,255,255,.03)}
+html[data-theme="dark"] img.logo,html[data-theme="dark"] .sidebar-brand img{filter:none}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+</style>
 </head>
 <body class="mode-cleaning">
     <div class="pwa-install-banner" id="pwaInstallBanner" role="dialog" aria-label="Install app">
@@ -13066,6 +13136,43 @@ async function shareInvoiceWhatsApp(id) {
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready);
   else ready();
+})();
+</script>
+<script>
+/* CleanCrew theme layer: UI polish only. Reads the DOM, never calls app functions or APIs. */
+(function(){
+"use strict";
+function setTheme(t){try{document.documentElement.setAttribute("data-theme",t);localStorage.setItem("cc-theme",t)}catch(e){}
+ var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",t==="dark"?"#0e1b21":"#1A6DDB");label()}
+function cur(){return document.documentElement.getAttribute("data-theme")==="dark"?"dark":"light"}
+function label(){var b=document.getElementById("ccThemeBtn");if(b)b.textContent=cur()==="dark"?"Switch to light":"Switch to dark"}
+function addToggle(){
+ if(document.getElementById("ccThemeBtn"))return;
+ var b=document.createElement("button");b.type="button";b.id="ccThemeBtn";b.className="btn btn-outline btn-sm";b.setAttribute("aria-label","Toggle dark mode");
+ b.addEventListener("click",function(){setTheme(cur()==="dark"?"light":"dark")});
+ var f=document.querySelector(".sidebar-footer");
+ if(f)f.insertBefore(b,f.firstChild);else{b.style.cssText="position:fixed;left:12px;bottom:12px;z-index:60";document.body.appendChild(b)}
+ label()}
+try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",function(e){if(!localStorage.getItem("cc-theme"))setTheme(e.matches?"dark":"light")})}catch(e){}
+/* count-up on money/number stat cards; always ends on the exact text the app wrote, skips masked values */
+var reduce=false;try{reduce=matchMedia("(prefers-reduced-motion: reduce)").matches}catch(e){}
+var RX=/^([^\d\-]*)(\d[\d,]*)(\s?.*)$/;
+function animate(el){
+ if(reduce||el.__ccBusy)return;var t=el.textContent.trim();
+ if(el.__ccLast===t)return;var m=RX.exec(t);
+ if(!m||t.indexOf("•")>-1){el.__ccLast=t;return}
+ var end=parseInt(m[2].replace(/,/g,""),10);if(!isFinite(end)||end<2){el.__ccLast=t;return}
+ el.__ccLast=t;el.__ccBusy=true;var t0=performance.now(),D=750;
+ (function step(now){var p=Math.min(1,(now-t0)/D),e=1-Math.pow(1-p,3);
+  if(el.textContent.trim()!==t&&p>0&&el.__ccTxt&&el.textContent!==el.__ccTxt){el.__ccBusy=false;return}
+  var txt=p<1?m[1]+Math.round(end*e).toLocaleString("en")+m[3]:t;el.__ccTxt=txt;el.textContent=txt;
+  if(p<1)requestAnimationFrame(step);else el.__ccBusy=false})(t0)}
+function scan(){document.querySelectorAll(".stat-value").forEach(function(el){if(el.offsetParent!==null)animate(el)})}
+var timer;function soon(){clearTimeout(timer);timer=setTimeout(scan,60)}
+function init(){addToggle();scan();
+ try{new MutationObserver(function(muts){for(var i=0;i<muts.length;i++){var n=muts[i].target;if(n.nodeType===3)n=n.parentNode;if(n&&n.classList&&n.classList.contains("stat-value")&&n.__ccBusy)continue;soon();return}})
+  .observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["class"]})}catch(e){}}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
 })();
 </script>
 </body>
