@@ -4724,6 +4724,68 @@ html[data-theme="dark"] table tr:hover td{background:rgba(255,255,255,.03)}
 html[data-theme="dark"] img.logo,html[data-theme="dark"] .sidebar-brand img{filter:none}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 </style>
+<style id="cc-dark-fixes">
+/* ===== CleanCrew dark-mode corrections (appended last; visual only) ===== */
+/* header bar: slimmer, blurred, themed in both modes */
+.top-bar-redesign,.header,.topbar{backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);border-bottom:1px solid var(--border)}
+html[data-theme="dark"] :is(.top-bar-redesign,.header,.topbar){background:rgba(14,27,33,.88)!important;border-bottom-color:var(--border)!important;box-shadow:none!important}
+html[data-theme="dark"] .service-toggle{background:var(--white)!important;border:1px solid var(--border)!important;box-shadow:none!important}
+html[data-theme="dark"] .service-toggle button{color:var(--slate)!important;background:transparent!important}
+html[data-theme="dark"] body.mode-cleaning .service-toggle button.cleaning.active{background:#16293d!important;color:#9cc6f7!important;border-color:#2b4a6b!important}
+html[data-theme="dark"] body.mode-laundry .service-toggle button.laundry.active{background:#11332a!important;color:#7fe0c6!important;border-color:#1f5a49!important}
+html[data-theme="dark"] body.mode-auto .service-toggle button.auto.active{background:#3a2412!important;color:#fdba74!important;border-color:#6b4222!important}
+html[data-theme="dark"] .top-bar-redesign :is(.muted,small,span.email,.user-email){color:var(--slate)!important}
+/* sidebar */
+html[data-theme="dark"] .sidebar .nav-links button:hover{background:rgba(255,255,255,.05)!important;color:var(--ink)!important}
+html[data-theme="dark"] body.mode-cleaning .sidebar .nav-links button.active,html[data-theme="dark"] .sidebar .nav-links button.active{background:#16293d!important;color:#9cc6f7!important}
+html[data-theme="dark"] body.mode-laundry .sidebar .nav-links button.active{background:#11332a!important;color:#7fe0c6!important}
+html[data-theme="dark"] body.mode-auto .sidebar .nav-links button.active{background:#3a2412!important;color:#fdba74!important}
+html[data-theme="dark"] .sidebar-footer .btn-logout{background:rgba(239,68,68,.14)!important;color:#ff9b93!important;border-color:rgba(239,68,68,.25)!important}
+/* pastel action buttons become dark tints */
+html[data-theme="dark"] :is(.btn-success,.btn-whatsapp){background:rgba(37,211,102,.14)!important;color:#6ee7a8!important}
+html[data-theme="dark"] :is(.btn-success,.btn-whatsapp):hover{background:rgba(37,211,102,.24)!important}
+html[data-theme="dark"] .btn-danger{background:rgba(239,68,68,.14)!important;color:#ff9b93!important}
+html[data-theme="dark"] .btn-danger:hover{background:rgba(239,68,68,.25)!important}
+html[data-theme="dark"] body.mode-laundry :is(.btn-primary,.btn.btn-primary){background:rgba(15,159,110,.2)!important;color:#7fe0c6!important}
+html[data-theme="dark"] body.mode-auto :is(.btn-primary,.btn.btn-primary){background:rgba(240,138,75,.2)!important;color:#fdba74!important}
+html[data-theme="dark"] :is(.btn-secondary,.btn-outline):hover{background:rgba(255,255,255,.06)!important}
+html[data-theme="dark"] :is(.btn-outline,.btn-secondary){border-color:var(--border)!important}
+/* tables */
+html[data-theme="dark"] :is(th,.card table thead th){background:var(--surface)!important;color:var(--slate)!important;border-bottom:1px solid var(--border)!important}
+html[data-theme="dark"] tr.job-row:hover td{background:rgba(255,255,255,.04)!important}
+html[data-theme="dark"] :is(td,tr){border-color:var(--border)}
+html[data-theme="dark"] .today-job-row{background:var(--white)!important}
+/* status colours: dark tints, same meaning everywhere */
+html[data-theme="dark"] :is(.status-badge,.status-pill,.plan-badge,.status-box,.invoice-pdf-status){filter:none!important}
+html[data-theme="dark"] :is(.status-badge.completed,.status-badge.ready,.status-badge.delivered,.status-badge.sent,.status-badge.paid,.status-pill.status-completed,.status-pill.status-collected,.status-pill.status-paid,.user-info .plan-badge.active,.status-box.active,.invoice-pdf-status.generated){background:rgba(34,197,94,.16)!important;color:#6ee7a0!important}
+html[data-theme="dark"] :is(.status-badge.pending,.status-badge.partial,.status-pill.status-pending,.status-pill.status-draft,.status-pill.status-partial,.user-info .plan-badge.trial,.status-box.trial,.invoice-pdf-status.not-generated){background:rgba(245,158,11,.16)!important;color:#fbbf24!important}
+html[data-theme="dark"] :is(.status-badge.in-progress,.status-pill.status-in-progress){background:rgba(59,130,246,.18)!important;color:#93c5fd!important}
+html[data-theme="dark"] :is(.status-badge.collected,.status-badge.washed,.status-badge.dried){background:rgba(139,92,246,.18)!important;color:#c4b5fd!important}
+html[data-theme="dark"] .status-badge.folded{background:rgba(236,72,153,.16)!important;color:#f9a8d4!important}
+html[data-theme="dark"] :is(.status-badge.cancelled,.status-badge.unpaid,.status-pill.status-cancelled,.status-pill.status-unpaid,.user-info .plan-badge.expired,.status-box.expired){background:rgba(239,68,68,.16)!important;color:#fca5a5!important}
+html[data-theme="dark"] .status-badge.draft{background:rgba(148,163,184,.16)!important;color:#cbd5e1!important}
+html[data-theme="dark"] :is(.credit-badge,.note-pill,.loc-badge,.inv-category-badge.cleaning,.plan-card.popular .badge,.credit-pack .pack-badge){background:rgba(75,147,240,.16)!important;color:#9cc6f7!important}
+html[data-theme="dark"] .credit-badge:hover{background:rgba(75,147,240,.26)!important}
+html[data-theme="dark"] .inv-category-badge.laundry{background:rgba(37,211,102,.14)!important;color:#6ee7a8!important}
+/* cards and panels with hard-coded light backgrounds */
+html[data-theme="dark"] .onboarding-card{background:linear-gradient(180deg,#12263a 0%,var(--white) 100%)!important;border-color:var(--border)!important}
+html[data-theme="dark"] .onboarding-card .ob-progress-bar{background:#26383f!important}
+html[data-theme="dark"] .onboarding-steps li{background:var(--surface)!important;border-color:var(--border)!important}
+html[data-theme="dark"] .community-card{background:linear-gradient(135deg,#0f2a24 0%,#112a2a 55%,var(--white) 100%)!important;border-color:rgba(37,211,102,.25)!important;color:#bdf0d8}
+html[data-theme="dark"] .community-card :is(h1,h2,h3,h4,p){color:#bdf0d8!important}
+html[data-theme="dark"] .recipient-list{background:var(--surface)!important;border:1px solid var(--border)!important;color:var(--ink)}
+html[data-theme="dark"] .recipient-list :is(label,div,span){color:var(--ink);border-color:var(--border)!important}
+html[data-theme="dark"] .recipient-list input[type=checkbox]{accent-color:#4b93f0}
+html[data-theme="dark"] body :is(.demo-strip){background:linear-gradient(160deg,#14252d,#112029)!important;color:var(--ink)!important}
+html[data-theme="dark"] body.mode-laundry .stat-card.primary{background:linear-gradient(160deg,#0f2f27 0%,var(--white) 60%)!important}
+html[data-theme="dark"] body.mode-auto .stat-card.primary{background:linear-gradient(160deg,#33200f 0%,var(--white) 60%)!important}
+html[data-theme="dark"] :is(.job-more summary,.job-more-menu,.job-card,.credit-pack,.quick-actions .qa-btn){background:var(--white)!important;color:var(--ink);border-color:var(--border)!important}
+html[data-theme="dark"] .job-more[open] summary,html[data-theme="dark"] .quick-actions .qa-btn:hover{background:var(--blue-mist)!important}
+html[data-theme="dark"] .job-more-menu{box-shadow:var(--shadow-lg)}
+html[data-theme="dark"] .job-more-menu button:hover{background:rgba(255,255,255,.06)!important}
+html[data-theme="dark"] .job-more-menu button.danger:hover{background:rgba(239,68,68,.15)!important}
+html[data-theme="dark"] :is(.job-notes-box,.job-cost-box){background:var(--surface)!important;color:var(--ink)}
+</style>
 </head>
 <body class="mode-cleaning">
     <div class="pwa-install-banner" id="pwaInstallBanner" role="dialog" aria-label="Install app">
