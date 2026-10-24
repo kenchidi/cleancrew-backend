@@ -4786,6 +4786,340 @@ html[data-theme="dark"] .job-more-menu button:hover{background:rgba(255,255,255,
 html[data-theme="dark"] .job-more-menu button.danger:hover{background:rgba(239,68,68,.15)!important}
 html[data-theme="dark"] :is(.job-notes-box,.job-cost-box){background:var(--surface)!important;color:var(--ink)}
 </style>
+
+<style id="cc-dark-contrast-v2">
+/* ===== Dark mode contrast v2 (deploy) — visual only ===== */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --surface: #0B1419;
+  --white: #15242C;
+  --elevated: #1C3039;
+  --border: #2A404A;
+  --ink: #EEF3F5;
+  --ink-soft: #C5D4DA;
+  --slate: #9AADB5;
+  --slate-light: #7A9099;
+  --blue: #5BA3F5;
+  --blue-dark: #3B82E0;
+  --blue-light: #1A3344;
+  --blue-mist: #1A3344;
+  --blue-glow: #122430;
+  --green: #34D399;
+  --red: #F87171;
+  --amber: #FBBF24;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.45);
+  --shadow-md: 0 10px 28px rgba(0,0,0,.45);
+  --shadow-lg: 0 22px 56px rgba(0,0,0,.55);
+  --shadow-blue: 0 12px 28px rgba(59,130,224,.28);
+}
+html[data-theme="dark"] body {
+  background: var(--surface) !important;
+  color: var(--ink) !important;
+}
+/* Cards / panels */
+html[data-theme="dark"] :is(.card, .stat-card, .modal-box, .billing-usage-card, .settings-panel, .sidebar, .credits-manager-panel, .staff-jobs-sheet) {
+  background: var(--white) !important;
+  color: var(--ink) !important;
+  border-color: var(--border) !important;
+}
+html[data-theme="dark"] :is(h1,h2,h3,h4,h5, .stat-value, .job-card-client, .job-card-amount, strong) {
+  color: var(--ink) !important;
+}
+html[data-theme="dark"] :is(.stat-label, .muted, .sub-text, .ps-label, .bu-label, .job-detail-label, .job-card-phone, .job-card-date, .job-card-detail, .settings-section-desc) {
+  color: var(--slate) !important;
+}
+/* Forms — elevated above page */
+html[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]),
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea {
+  background: var(--elevated) !important;
+  color: var(--ink) !important;
+  border: 1.5px solid var(--border) !important;
+}
+html[data-theme="dark"] input:focus,
+html[data-theme="dark"] select:focus,
+html[data-theme="dark"] textarea:focus {
+  border-color: var(--blue) !important;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(91,163,245,.25) !important;
+}
+html[data-theme="dark"] ::placeholder {
+  color: var(--slate-light) !important;
+  opacity: 1;
+}
+/* Primary CTAs — solid + white text */
+html[data-theme="dark"] .btn-primary,
+html[data-theme="dark"] .btn.btn-primary,
+html[data-theme="dark"] body.mode-cleaning .btn-primary,
+html[data-theme="dark"] body.mode-laundry .btn-primary,
+html[data-theme="dark"] body.mode-auto .btn-primary {
+  background: linear-gradient(135deg, #5BA3F5 0%, #3B82E0 100%) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+  box-shadow: var(--shadow-blue) !important;
+}
+html[data-theme="dark"] body.mode-laundry .btn-primary {
+  background: linear-gradient(135deg, #34D399 0%, #059669 100%) !important;
+}
+html[data-theme="dark"] body.mode-auto .btn-primary {
+  background: linear-gradient(135deg, #FB923C 0%, #EA580C 100%) !important;
+}
+html[data-theme="dark"] .btn-outline,
+html[data-theme="dark"] .btn-secondary {
+  background: transparent !important;
+  color: var(--ink-soft) !important;
+  border: 1.5px solid var(--border) !important;
+}
+html[data-theme="dark"] .btn-outline:hover,
+html[data-theme="dark"] .btn-secondary:hover {
+  background: var(--elevated) !important;
+  color: var(--ink) !important;
+  border-color: var(--slate-light) !important;
+}
+html[data-theme="dark"] .btn-success {
+  background: rgba(16,185,129,.2) !important;
+  color: #6EE7B7 !important;
+  border: 1px solid rgba(16,185,129,.35) !important;
+}
+html[data-theme="dark"] .btn-danger {
+  background: rgba(248,113,113,.15) !important;
+  color: #FCA5A5 !important;
+  border: 1px solid rgba(248,113,113,.3) !important;
+}
+/* Status pills — no invert filter */
+html[data-theme="dark"] .status-badge,
+html[data-theme="dark"] .status-pill {
+  filter: none !important;
+  border: 1px solid transparent;
+  font-weight: 700;
+}
+html[data-theme="dark"] :is(.status-badge, .status-pill).pending,
+html[data-theme="dark"] :is(.status-badge, .status-pill)[data-status="pending"],
+html[data-theme="dark"] .status-pending {
+  background: rgba(251,191,36,.16) !important;
+  color: #FCD34D !important;
+  border-color: rgba(251,191,36,.35) !important;
+}
+html[data-theme="dark"] :is(.status-badge, .status-pill).completed,
+html[data-theme="dark"] :is(.status-badge, .status-pill).paid,
+html[data-theme="dark"] :is(.status-badge, .status-pill)[data-status="completed"],
+html[data-theme="dark"] :is(.status-badge, .status-pill)[data-status="paid"],
+html[data-theme="dark"] .status-completed,
+html[data-theme="dark"] .status-paid {
+  background: rgba(52,211,153,.16) !important;
+  color: #6EE7B7 !important;
+  border-color: rgba(52,211,153,.35) !important;
+}
+html[data-theme="dark"] :is(.status-badge, .status-pill).in-progress,
+html[data-theme="dark"] :is(.status-badge, .status-pill)[data-status="in-progress"],
+html[data-theme="dark"] .status-in-progress {
+  background: rgba(91,163,245,.16) !important;
+  color: #93C5FD !important;
+  border-color: rgba(91,163,245,.35) !important;
+}
+html[data-theme="dark"] :is(.status-badge, .status-pill).cancelled,
+html[data-theme="dark"] :is(.status-badge, .status-pill).unpaid,
+html[data-theme="dark"] :is(.status-badge, .status-pill)[data-status="cancelled"],
+html[data-theme="dark"] .status-cancelled {
+  background: rgba(248,113,113,.14) !important;
+  color: #FCA5A5 !important;
+  border-color: rgba(248,113,113,.3) !important;
+}
+/* Generic status text colors when class is the status name */
+html[data-theme="dark"] span.status-badge,
+html[data-theme="dark"] span.status-pill {
+  background: rgba(255,255,255,.08) !important;
+  color: var(--ink-soft) !important;
+}
+/* Tables */
+html[data-theme="dark"] table thead th {
+  background: var(--elevated) !important;
+  color: var(--slate) !important;
+  border-color: var(--border) !important;
+}
+html[data-theme="dark"] table td {
+  border-color: var(--border) !important;
+  color: var(--ink) !important;
+}
+html[data-theme="dark"] table tr:hover td {
+  background: rgba(255,255,255,.06) !important;
+}
+/* Sidebar nav */
+html[data-theme="dark"] .sidebar .nav-links button {
+  color: var(--slate) !important;
+}
+html[data-theme="dark"] .sidebar .nav-links button:hover {
+  background: var(--elevated) !important;
+  color: var(--ink) !important;
+}
+html[data-theme="dark"] .sidebar .nav-links button.active {
+  background: var(--blue-mist) !important;
+  color: #93C5FD !important;
+}
+html[data-theme="dark"] body.mode-laundry .sidebar .nav-links button.active {
+  background: #11332a !important;
+  color: #6EE7B7 !important;
+}
+html[data-theme="dark"] body.mode-auto .sidebar .nav-links button.active {
+  background: #3a2412 !important;
+  color: #FDBA74 !important;
+}
+/* Mode toggle inactive */
+html[data-theme="dark"] .service-toggle button {
+  color: var(--slate) !important;
+}
+html[data-theme="dark"] .service-toggle button:not(.active):hover {
+  color: var(--ink) !important;
+  background: rgba(255,255,255,.06) !important;
+}
+/* Credit badges / free jobs chips */
+html[data-theme="dark"] .credit-badge {
+  background: rgba(91,163,245,.14) !important;
+  color: #93C5FD !important;
+  border-color: rgba(91,163,245,.3) !important;
+}
+html[data-theme="dark"] #freeJobsBadge,
+html[data-theme="dark"] .credit-badge[style*="D1FAE5"] {
+  background: rgba(52,211,153,.14) !important;
+  color: #6EE7B7 !important;
+  border-color: rgba(52,211,153,.3) !important;
+}
+/* Empty states */
+html[data-theme="dark"] .empty-state {
+  color: var(--slate) !important;
+}
+html[data-theme="dark"] .empty-state strong {
+  color: var(--ink) !important;
+}
+/* Pricing coach / PC dark surfaces */
+html[data-theme="dark"] .pc-shell,
+html[data-theme="dark"] [class*="pc-"] {
+  border-color: var(--border);
+}
+/* Community */
+html[data-theme="dark"] .community-card {
+  background: linear-gradient(145deg, #0d2822 0%, #14352c 50%, #15242C 100%) !important;
+  color: #D1FAE5 !important;
+  border-color: rgba(52,211,153,.28) !important;
+}
+html[data-theme="dark"] .community-card :is(h1,h2,h3,h4,p,span,li) {
+  color: #D1FAE5 !important;
+}
+/* Onboarding */
+html[data-theme="dark"] .onboarding-card {
+  background: linear-gradient(180deg, #12263a 0%, var(--white) 70%) !important;
+  border-color: var(--border) !important;
+  color: var(--ink) !important;
+}
+/* Tour */
+html[data-theme="dark"] .cc-tour-tip,
+html[data-theme="dark"] .cc-tour-welcome-card {
+  background: var(--white) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--border);
+}
+/* Modals */
+html[data-theme="dark"] .modal-overlay {
+  background: rgba(0,0,0,.72) !important;
+}
+html[data-theme="dark"] .modal-header h3 {
+  color: var(--ink) !important;
+}
+/* Links */
+html[data-theme="dark"] a {
+  color: #7DB8F8;
+}
+/* Selection */
+html[data-theme="dark"] ::selection {
+  background: rgba(91,163,245,.35);
+  color: #fff;
+}
+/* Scrollbars */
+html[data-theme="dark"] * {
+  scrollbar-color: #3A5560 transparent;
+}
+/* Soft primary leftovers (laundry soft greens etc.) forced readable */
+html[data-theme="dark"] body.mode-laundry .btn-primary:not(.btn-solid) {
+  color: #fff !important;
+}
+html[data-theme="dark"] body.mode-auto .btn-primary:not(.btn-solid) {
+  color: #fff !important;
+}
+
+/* Status classes as used in dashboard (badge + pill) */
+html[data-theme="dark"] .status-badge.pending,
+html[data-theme="dark"] .status-badge.draft,
+html[data-theme="dark"] .status-pill.status-pending,
+html[data-theme="dark"] .status-pill.status-draft {
+  background: rgba(251,191,36,.16) !important;
+  color: #FCD34D !important;
+  border-color: rgba(251,191,36,.35) !important;
+}
+html[data-theme="dark"] .status-badge.in-progress,
+html[data-theme="dark"] .status-pill.status-in-progress,
+html[data-theme="dark"] .status-badge.sent {
+  background: rgba(91,163,245,.16) !important;
+  color: #93C5FD !important;
+  border-color: rgba(91,163,245,.35) !important;
+}
+html[data-theme="dark"] .status-badge.completed,
+html[data-theme="dark"] .status-badge.collected,
+html[data-theme="dark"] .status-badge.washed,
+html[data-theme="dark"] .status-badge.dried,
+html[data-theme="dark"] .status-badge.folded,
+html[data-theme="dark"] .status-badge.ready,
+html[data-theme="dark"] .status-badge.delivered,
+html[data-theme="dark"] .status-pill.status-completed,
+html[data-theme="dark"] .status-pill.status-collected,
+html[data-theme="dark"] .status-pill.status-paid {
+  background: rgba(52,211,153,.16) !important;
+  color: #6EE7B7 !important;
+  border-color: rgba(52,211,153,.35) !important;
+}
+html[data-theme="dark"] .status-badge.cancelled,
+html[data-theme="dark"] .status-pill.status-cancelled,
+html[data-theme="dark"] .status-pill.status-unpaid {
+  background: rgba(248,113,113,.14) !important;
+  color: #FCA5A5 !important;
+  border-color: rgba(248,113,113,.3) !important;
+}
+html[data-theme="dark"] .status-pill.status-partial {
+  background: rgba(251,191,36,.14) !important;
+  color: #FCD34D !important;
+  border-color: rgba(251,191,36,.3) !important;
+}
+html[data-theme="dark"] .plan-badge.active {
+  background: rgba(52,211,153,.16) !important;
+  color: #6EE7B7 !important;
+}
+html[data-theme="dark"] .plan-badge.trial {
+  background: rgba(251,191,36,.16) !important;
+  color: #FCD34D !important;
+}
+html[data-theme="dark"] .plan-badge.expired {
+  background: rgba(248,113,113,.14) !important;
+  color: #FCA5A5 !important;
+}
+html[data-theme="dark"] .out-of-jobs-banner {
+  background: rgba(251,191,36,.1) !important;
+  border-color: rgba(251,191,36,.3) !important;
+  color: var(--ink) !important;
+}
+html[data-theme="dark"] .nav-tabs {
+  background: var(--white) !important;
+  border-color: var(--border) !important;
+}
+html[data-theme="dark"] .nav-tabs button {
+  color: var(--slate) !important;
+}
+html[data-theme="dark"] .nav-tabs button.active {
+  background: var(--blue) !important;
+  color: #fff !important;
+}
+html[data-theme="dark"] .logo .word { color: var(--ink) !important; }
+html[data-theme="dark"] .user-info .email { color: var(--slate) !important; }
+</style>
+
 </head>
 <body class="mode-cleaning">
     <div class="pwa-install-banner" id="pwaInstallBanner" role="dialog" aria-label="Install app">
