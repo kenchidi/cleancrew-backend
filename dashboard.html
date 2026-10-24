@@ -5192,6 +5192,45 @@ html[data-theme="dark"] #tab-inventory .app-toolbar {
 }
 </style>
 
+
+<style id="cc-website-booking-rows">
+.website-booking-row {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: var(--white);
+  color: var(--ink);
+}
+.website-booking-row-inner {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.website-booking-name { color: var(--ink); font-weight: 700; }
+.website-booking-meta { font-size: 12px; color: var(--slate); }
+.website-booking-converted { font-size: 11px; color: #065F46; font-weight: 600; }
+html[data-theme="dark"] .website-booking-row {
+  background: var(--elevated, #1C3039) !important;
+  border-color: var(--border) !important;
+  color: var(--ink) !important;
+}
+html[data-theme="dark"] .website-booking-name {
+  color: var(--ink) !important;
+}
+html[data-theme="dark"] .website-booking-meta {
+  color: var(--slate) !important;
+}
+html[data-theme="dark"] .website-booking-converted {
+  color: #6EE7B7 !important;
+}
+html[data-theme="dark"] #websiteCardHeading,
+html[data-theme="dark"] #websiteBookingsBox p {
+  color: var(--ink-soft, var(--slate)) !important;
+}
+</style>
+
 </head>
 <body class="mode-cleaning">
     <div class="pwa-install-banner" id="pwaInstallBanner" role="dialog" aria-label="Install app">
@@ -9023,12 +9062,12 @@ html[data-theme="dark"] #tab-inventory .app-toolbar {
                 el.innerHTML = list.slice(0, 8).map(function(b) {
                     var when = b.booking_date || (b.created_at ? String(b.created_at).slice(0, 10) : '');
                     var converted = b.converted_to_job_id
-                        ? '<span style="font-size:11px;color:#065F46;">→ Job created</span>'
+                        ? '<span class="website-booking-converted">→ Job created</span>'
                         : '<button type="button" class="btn btn-primary btn-sm" onclick="convertWebsiteBooking(\'' + b.id + '\')">Convert to job</button>';
-                    return '<div style="border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:#fff;">' +
-                        '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;">' +
-                        '<div><strong>' + (b.client_name || '') + '</strong> · ' + (b.service_type || '') +
-                        '<br><span style="font-size:12px;color:var(--slate);">' + (b.client_phone || '') +
+                    return '<div class="website-booking-row">' +
+                        '<div class="website-booking-row-inner">' +
+                        '<div><strong class="website-booking-name">' + (b.client_name || '') + '</strong> · ' + (b.service_type || '') +
+                        '<br><span class="website-booking-meta">' + (b.client_phone || '') +
                         (when ? ' · ' + when : '') + ' · ' + (b.status || 'pending') + '</span></div>' +
                         '<div>' + converted + '</div></div></div>';
                 }).join('');
