@@ -5120,6 +5120,78 @@ html[data-theme="dark"] .logo .word { color: var(--ink) !important; }
 html[data-theme="dark"] .user-info .email { color: var(--slate) !important; }
 </style>
 
+
+<style id="cc-dark-jobs-fix">
+/* Jobs / lists dark contrast — overrides hard-coded light toolbar & table */
+html[data-theme="dark"] .app-toolbar {
+  background: var(--white) !important;
+  border-bottom-color: var(--border) !important;
+}
+html[data-theme="dark"] .app-toolbar .toolbar-search,
+html[data-theme="dark"] .app-toolbar select {
+  background: var(--elevated, #1C3039) !important;
+  color: var(--ink) !important;
+  border-color: var(--border) !important;
+}
+html[data-theme="dark"] .app-toolbar .toolbar-search::placeholder {
+  color: var(--slate-light, #7A9099) !important;
+}
+html[data-theme="dark"] .card-header,
+html[data-theme="dark"] .jobs-card .card-header {
+  background: var(--white) !important;
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--ink) !important;
+}
+html[data-theme="dark"] .card-header h3,
+html[data-theme="dark"] .jobs-card .card-header h3 {
+  color: var(--ink) !important;
+}
+html[data-theme="dark"] .card table thead th {
+  background: var(--elevated, #1C3039) !important;
+  color: var(--slate) !important;
+  border-bottom-color: var(--border) !important;
+}
+html[data-theme="dark"] .card table tbody td {
+  background: var(--white) !important;
+  color: var(--ink) !important;
+  border-bottom-color: var(--border) !important;
+}
+html[data-theme="dark"] .card table tbody tr:hover,
+html[data-theme="dark"] .card table tbody tr:hover td {
+  background: rgba(255,255,255,.07) !important;
+}
+html[data-theme="dark"] .card table tbody td strong,
+html[data-theme="dark"] .card table tbody td a {
+  color: var(--ink) !important;
+}
+html[data-theme="dark"] .table-wrap {
+  background: var(--white) !important;
+}
+/* Mobile job cards */
+html[data-theme="dark"] .job-card {
+  background: var(--white) !important;
+  border-color: var(--border) !important;
+  color: var(--ink) !important;
+}
+html[data-theme="dark"] .job-card-client,
+html[data-theme="dark"] .job-card-service,
+html[data-theme="dark"] .job-card-amount {
+  color: var(--ink) !important;
+}
+html[data-theme="dark"] .job-card-phone,
+html[data-theme="dark"] .job-card-date,
+html[data-theme="dark"] .job-card-detail {
+  color: var(--slate) !important;
+}
+/* Same fixes for clients / invoices / staff tables */
+html[data-theme="dark"] #tab-clients .app-toolbar,
+html[data-theme="dark"] #tab-invoices .app-toolbar,
+html[data-theme="dark"] #tab-staff .app-toolbar,
+html[data-theme="dark"] #tab-inventory .app-toolbar {
+  background: var(--white) !important;
+}
+</style>
+
 </head>
 <body class="mode-cleaning">
     <div class="pwa-install-banner" id="pwaInstallBanner" role="dialog" aria-label="Install app">
