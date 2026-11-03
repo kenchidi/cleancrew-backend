@@ -5567,7 +5567,7 @@ html[data-theme="dark"] #websiteBookingsBox p {
                     <h3 style="margin:0;font-size:15px;">Today's jobs</h3>
                     <button type="button" class="btn btn-outline btn-sm" onclick="switchTab('jobs')">View all</button>
                 </div>
-                <div id="todayJobsList"><p style="color:var(--slate);font-size:13px;">Loading…</p></div>
+                <div id="todayJobsList"><div class="cc-skel"><i></i><i></i><i></i></div></div>
             </div>
             <div class="card">
                 <div class="card-header">
@@ -5958,7 +5958,7 @@ html[data-theme="dark"] #websiteBookingsBox p {
                 <p style="font-size:15px;font-weight:800;margin:0 0 4px;">Recipients</p>
                 <p style="font-size:13px;color:var(--slate);margin:0 0 12px;">Choose who should get this message. Prefer small batches.</p>
                 <div id="msgRecipients" class="recipient-list">
-                    <p style="color:var(--slate);font-size:13px;margin:0;">Loading clients…</p>
+                    <div class="cc-skel"><i></i><i></i><i></i></div>
                 </div>
             </div>
 
@@ -6368,7 +6368,7 @@ html[data-theme="dark"] #websiteBookingsBox p {
                                 </div>
                                 <button type="button" class="btn btn-primary btn-sm" onclick="openLocationForm()">+ Add location</button>
                             </div>
-                            <div id="locationsList"><p style="color:var(--slate);font-size:13px;">Loading…</p></div>
+                            <div id="locationsList"><div class="cc-skel"><i></i><i></i><i></i></div></div>
                             <div id="locationForm" class="location-form" hidden>
                                 <div class="form-grid" style="margin-top:12px;">
                                     <div class="form-group"><label>Name</label><input type="text" id="locName" placeholder="e.g. Katampe branch" /></div>
@@ -8455,7 +8455,7 @@ html[data-theme="dark"] #websiteBookingsBox p {
         function syncLocationSelects() {
             var opts = '<option value="all">All locations</option>';
             locationsData.forEach(function(loc) {
-                opts += '<option value="' + loc.id + '">' + (loc.name || 'Location') +
+                opts += '<option value="' + loc.id + '">' + escHtml(loc.name || 'Location') +
                     (loc.is_default ? ' (default)' : '') + '</option>';
             });
             ['locationFilter', 'overviewLocationFilter'].forEach(function(id) {
@@ -8530,10 +8530,10 @@ html[data-theme="dark"] #websiteBookingsBox p {
             }
             list.innerHTML = locationsData.map(function(loc) {
                 return '<div class="loc-list-item" data-id="' + loc.id + '">' +
-                    '<div><strong>' + (loc.name || '') + '</strong>' +
+                    '<div><strong>' + escHtml(loc.name || '') + '</strong>' +
                     (loc.is_default ? '<span class="loc-badge">Default</span>' : '') +
-                    (loc.address ? '<div style="color:var(--slate);font-size:12px;margin-top:2px;">' + loc.address + '</div>' : '') +
-                    (loc.phone ? '<div style="color:var(--slate);font-size:12px;">' + loc.phone + '</div>' : '') +
+                    (loc.address ? '<div style="color:var(--slate);font-size:12px;margin-top:2px;">' + escHtml(loc.address) + '</div>' : '') +
+                    (loc.phone ? '<div style="color:var(--slate);font-size:12px;">' + escHtml(loc.phone) + '</div>' : '') +
                     '</div>' +
                     '<div style="display:flex;gap:6px;">' +
                     '<button type="button" class="btn btn-outline btn-sm" onclick="editLocation(\'' + loc.id + '\')">Edit</button>' +
@@ -9029,8 +9029,8 @@ html[data-theme="dark"] #websiteBookingsBox p {
                         : '<button type="button" class="btn btn-primary btn-sm" onclick="convertWebsiteBooking(\'' + b.id + '\')">Convert to job</button>';
                     return '<div class="website-booking-row">' +
                         '<div class="website-booking-row-inner">' +
-                        '<div><strong class="website-booking-name">' + (b.client_name || '') + '</strong> · ' + (b.service_type || '') +
-                        '<br><span class="website-booking-meta">' + (b.client_phone || '') +
+                        '<div><strong class="website-booking-name">' + escHtml(b.client_name || '') + '</strong> · ' + escHtml(b.service_type || '') +
+                        '<br><span class="website-booking-meta">' + escHtml(b.client_phone || '') +
                         (when ? ' · ' + when : '') + ' · ' + (b.status || 'pending') + '</span></div>' +
                         '<div>' + converted + '</div></div></div>';
                 }).join('');
@@ -9441,7 +9441,7 @@ async function shareInvoiceWhatsApp(id) {
         function renderInventory() {
             var list = document.getElementById('inventoryList');
             if (!list) return;
-            list.innerHTML = '<p style="color:var(--slate);">Loading inventory...</p>';
+            list.innerHTML = '<div class="cc-skel"><i></i><i></i><i></i></div>';
             getInventory()
                 .then(function(items) {
                     inventoryData = items || [];
@@ -9468,7 +9468,7 @@ async function shareInvoiceWhatsApp(id) {
                         var low = qty <= min;
                         return '<tr data-id="' + it.id + '">' +
                             '<td>' + (i + 1) + '</td>' +
-                            '<td><strong>' + (it.name || 'Item') + '</strong>' +
+                            '<td><strong>' + escHtml(it.name || 'Item') + '</strong>' +
                             (low ? ' <span style="color:var(--red);font-size:11px;">Low stock</span>' : '') +
                             '</td>' +
                             '<td>' + (it.category || '—') + '</td>' +
@@ -9522,7 +9522,7 @@ async function shareInvoiceWhatsApp(id) {
 
             try {
                 var tj = document.getElementById('todayJobsList');
-                if (tj) tj.innerHTML = '<p style="color:var(--slate);font-size:13px;">Loading jobs…</p>';
+                if (tj) tj.innerHTML = '<div class="cc-skel"><i></i><i></i><i></i></div>';
             } catch (eL) {}
 
             // Ensure token is current before first request
@@ -9816,7 +9816,7 @@ async function shareInvoiceWhatsApp(id) {
                             return String(a.client || '').localeCompare(String(b.client || ''));
                         }).map(function(j) {
                             var amt = typeof formatMoney === 'function' ? formatMoney(j.amount || 0) : (j.amount || 0);
-                            return '<div class="wcd-item"><span><strong>' + (j.client || 'Job') + '</strong> · ' + (j.status || '') + '</span><span>' + amt + '</span></div>';
+                            return '<div class="wcd-item"><span><strong>' + escHtml(j.client || 'Job') + '</strong> · ' + (j.status || '') + '</span><span>' + amt + '</span></div>';
                         }).join('');
                         detail.innerHTML = '<div class="wcd-title">' + label + ' · ' + list.length + ' job' + (list.length > 1 ? 's' : '') + '</div>' + rows;
                     }
@@ -10346,7 +10346,7 @@ async function shareInvoiceWhatsApp(id) {
                         if (j.property_size) detailBits.push(j.property_size);
                         var detail = detailBits.join(' · ');
                         return '<div class="today-job-row" onclick="openJobDetail(\'' + j.id + '\')">' +
-                            '<div class="tj-top"><strong>' + (j.client || 'Customer') + '</strong>' +
+                            '<div class="tj-top"><strong>' + escHtml(j.client || 'Customer') + '</strong>' +
                             '<span class="status-pill" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;background:#F1F5F9;">' + stLabel + '</span></div>' +
                             '<div class="tj-service">' + svc + '</div>' +
                             '<div class="tj-bottom">' +
@@ -10368,8 +10368,8 @@ async function shareInvoiceWhatsApp(id) {
                 } else {
                     container.innerHTML = recent.map(function(j) {
                         return '<div class="today-job-row" onclick="openJobDetail(\'' + j.id + '\')">' +
-                            '<div><strong>' + (j.client || 'Customer') + '</strong>' +
-                            '<div class="tj-meta">' + (j.service || '') + ' · ' + (j.status || '') + '</div></div>' +
+                            '<div><strong>' + escHtml(j.client || 'Customer') + '</strong>' +
+                            '<div class="tj-meta">' + escHtml(j.service || '') + ' · ' + (j.status || '') + '</div></div>' +
                             '<span class="tj-meta">' + String(j.date || '').slice(0, 10) + '</span></div>';
                     }).join('');
                 }
@@ -10584,9 +10584,9 @@ async function shareInvoiceWhatsApp(id) {
                 var costHtml = buildJobCostSectionHtml(j);
                 body.innerHTML =
                     '<div class="job-detail-grid">' +
-                    '<div><div class="job-detail-label">Client</div><div class="job-detail-value">' + (j.client || '—') + '</div></div>' +
-                    '<div><div class="job-detail-label">Phone</div><div class="job-detail-value">' + (j.phone || '—') + '</div></div>' +
-                    '<div><div class="job-detail-label">Service</div><div class="job-detail-value">' + (j.service || '—') + '</div></div>' +
+                    '<div><div class="job-detail-label">Client</div><div class="job-detail-value">' + escHtml(j.client || '—') + '</div></div>' +
+                    '<div><div class="job-detail-label">Phone</div><div class="job-detail-value">' + escHtml(j.phone || '—') + '</div></div>' +
+                    '<div><div class="job-detail-label">Service</div><div class="job-detail-value">' + escHtml(j.service || '—') + '</div></div>' +
                     '<div><div class="job-detail-label">Status</div><div class="job-detail-value"><span class="status-badge ' + (j.status || '') + '">' + (j.status || '—') + '</span></div></div>' +
                     '<div><div class="job-detail-label">Date</div><div class="job-detail-value">' + (j.date || '—') + '</div></div>' +
                     '<div><div class="job-detail-label">Amount</div><div class="job-detail-value">' + formatMoney(j.amount) + '</div></div>' +
@@ -10760,8 +10760,8 @@ async function shareInvoiceWhatsApp(id) {
                     var moreItems = jobMoreMenu(j);
                     return '<tr class="job-row" onclick="openJobDetail(\'' + j.id + '\')">' +
                         '<td>' + (i + 1) + '</td>' +
-                        '<td><strong>' + j.client + '</strong>' + noteIcon +
-                        '<br><span style="font-size:11px;color:var(--slate);">' + (j.phone || '') + '</span></td>' +
+                        '<td><strong>' + escHtml(j.client) + '</strong>' + noteIcon +
+                        '<br><span style="font-size:11px;color:var(--slate);">' + escHtml(j.phone || '') + '</span></td>' +
                         '<td>' + shortService(j.service) +
                         (detail ? '<br><span style="font-size:11px;color:var(--slate);">' + detail + '</span>' : '') +
                         '</td>' +
@@ -10791,8 +10791,8 @@ async function shareInvoiceWhatsApp(id) {
                     var statusTxt = String(j.status || '').replace(/-/g, ' ');
                     return '<div class="job-card" onclick="openJobDetail(\'' + j.id + '\')">' +
                         '<div class="job-card-top">' +
-                        '<div><div class="job-card-client">' + (j.client || 'Client') + noteIcon + '</div>' +
-                        (j.phone ? '<div class="job-card-phone">' + j.phone + '</div>' : '') +
+                        '<div><div class="job-card-client">' + escHtml(j.client || 'Client') + noteIcon + '</div>' +
+                        (j.phone ? '<div class="job-card-phone">' + escHtml(j.phone) + '</div>' : '') +
                         '</div>' +
                         '<span class="' + statusCls + '">' + statusTxt + '</span>' +
                         '</div>' +
@@ -10814,6 +10814,10 @@ async function shareInvoiceWhatsApp(id) {
             }
         }
 
+
+        function escHtml(s) {
+            return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
 
         function escJsAttr(s) {
             return String(s == null ? '' : s)
@@ -10884,9 +10888,9 @@ async function shareInvoiceWhatsApp(id) {
                 }, 0);
                 return '<tr>' +
                     '<td>' + (i + 1) + '</td>' +
-                    '<td><strong>' + c.name + '</strong></td>' +
-                    '<td>' + (c.phone || 'N/A') + '</td>' +
-                    '<td>' + (c.location || 'N/A') + '</td>' +
+                    '<td><strong>' + escHtml(c.name) + '</strong></td>' +
+                    '<td>' + escHtml(c.phone || 'N/A') + '</td>' +
+                    '<td>' + escHtml(c.location || 'N/A') + '</td>' +
                     '<td>' + clientJobs.length + '</td>' +
                     '<td><strong>' + formatMoney(totalSpent) + '</strong></td>' +
                     '<td><div class="job-actions" onclick="event.stopPropagation()">' +
@@ -11040,8 +11044,8 @@ async function shareInvoiceWhatsApp(id) {
                         }
                         return '<tr>' +
                             '<td>' + (i + 1) + '</td>' +
-                            '<td><strong>' + (s.name || '') + '</strong></td>' +
-                            '<td>' + (s.phone || 'N/A') + '</td>' +
+                            '<td><strong>' + escHtml(s.name || '') + '</strong></td>' +
+                            '<td>' + escHtml(s.phone || 'N/A') + '</td>' +
                             '<td>' + (s.role || 'Cleaner') + '</td>' +
                             '<td><button type="button" class="btn btn-outline btn-sm" title="View assigned jobs" onclick="openStaffJobs(\'' + escJsAttr(s.id) + '\', \'' + escJsAttr(s.name || '') + '\')">' + count + '</button></td>' +
                             '<td><div class="job-actions" onclick="event.stopPropagation()">' +
@@ -11327,7 +11331,7 @@ async function shareInvoiceWhatsApp(id) {
                         return '<tr>' +
                             '<td>' + (i + 1) + '</td>' +
                             '<td><strong>' + (inv.number || inv.invoice_numb || 'N/A') + '</strong><br>' + pdfStatus + '</td>' +
-                            '<td>' + (inv.client || 'N/A') + '</td>' +
+                            '<td>' + escHtml(inv.client || 'N/A') + '</td>' +
                             '<td><strong>' + formatMoney(amountDue) + '</strong>' + paidLabel + '</td>' +
                             '<td><span style="padding:2px 10px;border-radius:100px;font-size:10px;font-weight:700;' + statusColor + '">' + status + '</span></td>' +
                             '<td>' + date + '</td>' +
@@ -11380,7 +11384,7 @@ async function shareInvoiceWhatsApp(id) {
                 '<input type="hidden" id="payInvoiceId" value="' + String(inv.id).replace(/"/g, '') + '" />' +
                 '<input type="hidden" id="payAmountDue" value="' + amountDue + '" />' +
                 '<input type="hidden" id="payAlreadyPaid" value="' + amountPaid + '" />' +
-                '<div class="form-group full-width"><label>Client</label><input type="text" value="' + (inv.client || '').replace(/"/g, '&quot;') + '" disabled /></div>' +
+                '<div class="form-group full-width"><label>Client</label><input type="text" value="' + escHtml(inv.client || '') + '" disabled /></div>' +
                 '<div class="form-group"><label>Amount due</label><input type="text" value="' + formatMoney(amountDue) + '" disabled /></div>' +
                 '<div class="form-group"><label>Already paid</label><input type="text" value="' + formatMoney(amountPaid) + '" disabled /></div>' +
                 '<div class="form-group"><label>Payment amount (' + moneySymbol() + ') *</label><input type="number" id="payAmount" min="0" step="any" value="' + remaining + '" required /></div>' +
@@ -11738,7 +11742,7 @@ async function shareInvoiceWhatsApp(id) {
             }).join('');
             container.innerHTML = laundryItems.map(function(item, i) {
                 return '<div class="laundry-item" style="flex-wrap:wrap;">' +
-                    '<input type="text" list="laundryPriceNames" placeholder="Item" value="' + (item.name || '').replace(/"/g, '&quot;') + '" ' +
+                    '<input type="text" list="laundryPriceNames" placeholder="Item" value="' + escHtml(item.name || '') + '" ' +
                     'oninput="laundryItems[' + i + '].name=this.value" onchange="onLaundryItemName(' + i + ', this.value)" onblur="onLaundryItemName(' + i + ', this.value)" style="flex:1;min-width:100px;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;" />' +
                     '<input type="number" min="1" value="' + (item.qty || 1) + '" ' +
                     'oninput="laundryItems[' + i + '].qty=parseInt(this.value,10)||1;updateLaundryTotals()" style="width:64px;padding:6px 8px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;" />' +
@@ -12702,7 +12706,7 @@ async function shareInvoiceWhatsApp(id) {
                 return;
             }
             tbody.innerHTML = messageData.map(function(m) {
-                return '<tr><td>' + (m.when || '') + '</td><td>' + (m.recipients || '') + '</td><td>' + (m.type || '') + '</td><td style="font-size:12px;color:var(--slate);">' + (m.note || 'Opened WhatsApp') + '</td></tr>';
+                return '<tr><td>' + (m.when || '') + '</td><td>' + (m.recipients || '') + '</td><td>' + (m.type || '') + '</td><td style="font-size:12px;color:var(--slate);">' + escHtml(m.note || 'Opened WhatsApp') + '</td></tr>';
             }).join('');
         }
 
@@ -12807,7 +12811,7 @@ async function shareInvoiceWhatsApp(id) {
                     clients.forEach(function(c) {
                         var name = c.name || 'Client';
                         var phone = c.phone ? ' · ' + c.phone : '';
-                        html += '<label><input type="checkbox" class="msg-recipient" value="' + name.replace(/"/g, '&quot;') + '" data-phone="' + (c.phone || '').replace(/"/g, '') + '" /> ' + name + phone + '</label>';
+                        html += '<label><input type="checkbox" class="msg-recipient" value="' + escHtml(name) + '" data-phone="' + escHtml(c.phone || '') + '" /> ' + escHtml(name) + escHtml(phone) + '</label>';
                     });
                     box.innerHTML = html;
                 })
@@ -12856,7 +12860,7 @@ async function shareInvoiceWhatsApp(id) {
                     '<td><strong>' + recipientCount + ' client(s)</strong><br><span style="font-size:11px;color:var(--slate);">' +
                     recipientNames + '</span></td>' +
                     '<td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + (m.body ?
-                        m.body.substring(0, 60) + (m.body.length > 60 ? '...' : '') : 'N/A') + '</td>' +
+                        escHtml(m.body.substring(0, 60) + (m.body.length > 60 ? '...' : '')) : 'N/A') + '</td>' +
                     '<td><span class="status-badge sent">✓ Sent</span></td>' +
                     '<td><div class="table-actions">' +
                     '<button class="btn btn-whatsapp btn-sm" onclick="resendMessage(' + i + ')"><svg class="icon"><use href="#ic-chat"/></svg></button>' +
@@ -13120,7 +13124,7 @@ async function shareInvoiceWhatsApp(id) {
                         if (empty) empty.style.display = 'none';
                         if (recent) {
                             recent.innerHTML = (d.recent_templates || []).map(function(t) {
-                                return '<div style="padding:6px 0;border-bottom:1px solid var(--border);">' + (t.name || 'Template') + '</div>';
+                                return '<div style="padding:6px 0;border-bottom:1px solid var(--border);">' + escHtml(t.name || 'Template') + '</div>';
                             }).join('') || '—';
                         }
                     }
@@ -13153,7 +13157,7 @@ async function shareInvoiceWhatsApp(id) {
                     tb.innerHTML = stdTemplatesCache.map(function(t) {
                         var steps = (t.steps && t.steps.length) || 0;
                         var badge = t.is_starter ? ' <span style="font-size:11px;color:var(--muted);">starter</span>' : '';
-                        return '<tr><td><strong>' + (t.name || '') + '</strong>' + badge + '</td><td>' + (t.business_type || '') + '</td><td>' + steps + '</td><td>' + (t.status || '') + '</td><td style="white-space:nowrap;">' +
+                        return '<tr><td><strong>' + escHtml(t.name || '') + '</strong>' + badge + '</td><td>' + (t.business_type || '') + '</td><td>' + steps + '</td><td>' + (t.status || '') + '</td><td style="white-space:nowrap;">' +
                             '<button type="button" class="btn btn-outline btn-sm" onclick="stdOpenTemplateEditor(\'' + t.id + '\')">Edit</button> ' +
                             '<button type="button" class="btn btn-outline btn-sm" onclick="stdDuplicateTemplate(\'' + t.id + '\')">Copy</button> ' +
                             '<button type="button" class="btn btn-outline btn-sm" onclick="stdArchiveTemplate(\'' + t.id + '\')">Archive</button></td></tr>';
@@ -13283,7 +13287,7 @@ async function shareInvoiceWhatsApp(id) {
                     steps.forEach(function(s) {
                         html += '<label style="display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;">' +
                             '<input type="checkbox" ' + (s.status === 'done' ? 'checked' : '') + ' onchange="stdToggleStep(\'' + s.id + '\', this.checked)"/>' +
-                            '<span><strong>' + (s.title || '') + '</strong>' + (s.is_mandatory ? ' <span style="color:#b45309;font-size:11px;">required</span>' : '') +
+                            '<span><strong>' + escHtml(s.title || '') + '</strong>' + (s.is_mandatory ? ' <span style="color:#b45309;font-size:11px;">required</span>' : '') +
                             (s.instruction ? '<br><span style="color:var(--muted);">' + s.instruction + '</span>' : '') + '</span></label>';
                     });
                     html += '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;">' +
@@ -13828,6 +13832,48 @@ function strip(){
  vis();try{new MutationObserver(vis).observe(row,{subtree:true,attributes:true,attributeFilter:["hidden","style","class"]})}catch(e){}
 }
 function init(){patch();strip()}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
+
+<style id="cc-sheets-v3">
+/* skeleton loaders */
+.cc-skel{display:grid;gap:10px;padding:4px 0}
+.cc-skel i{display:block;height:46px;border-radius:12px;background:linear-gradient(90deg,color-mix(in srgb,var(--slate) 10%,transparent) 25%,color-mix(in srgb,var(--slate) 20%,transparent) 50%,color-mix(in srgb,var(--slate) 10%,transparent) 75%);background-size:200% 100%}
+.cc-skel i:nth-child(2){width:88%}.cc-skel i:nth-child(3){width:72%}
+@media(prefers-reduced-motion:no-preference){.cc-skel i{animation:ccShim 1.3s linear infinite}}
+@keyframes ccShim{to{background-position:-200% 0}}
+/* mode pill next to the title */
+.cc-mode{display:inline-flex;gap:4px;margin-top:10px;padding:4px;border-radius:999px;background:color-mix(in srgb,var(--slate) 12%,transparent)}
+.cc-mode button{border:0;background:transparent;color:var(--slate);font:700 12.5px inherit;font-family:inherit;padding:7px 14px;border-radius:999px;cursor:pointer;min-height:34px;transition:background .2s,color .2s,box-shadow .2s}
+.cc-mode button.on{background:var(--white);color:var(--mode-accent,#1A6DDB);box-shadow:0 2px 8px rgba(11,21,38,.14)}
+html body .mode-switch-wrap{border-radius:999px}
+/* modals become bottom sheets on phones */
+@media(max-width:700px){
+ html body .modal-overlay.active{align-items:flex-end!important;justify-content:center!important;padding:0!important}
+ html body .modal-overlay.active .modal-box{width:100%!important;max-width:none!important;margin:0!important;max-height:92vh!important;overflow-y:auto;border-radius:26px 26px 0 0!important;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));animation:ccSheet .34s cubic-bezier(.22,.8,.3,1) both}
+ html body .modal-overlay.active .modal-box::before{content:"";display:block;width:42px;height:5px;border-radius:3px;background:color-mix(in srgb,var(--slate) 35%,transparent);margin:0 auto 12px}
+ body:has(.modal-overlay.active) .cc-bnav{display:none}
+}
+@keyframes ccSheet{from{transform:translateY(100%)}to{transform:none}}
+@media(prefers-reduced-motion:reduce){html body .modal-overlay.active .modal-box{animation:none!important}}
+</style>
+<script>
+/* Mode pill beside the greeting: mirrors the existing mode buttons and calls setServiceType(). */
+(function(){
+"use strict";
+var M=[["cleaning","Cleaning"],["laundry","Laundry"],["auto","Auto"]];
+function sync(){var wrap=document.getElementById("ccMode");if(!wrap)return;
+ [].forEach.call(wrap.querySelectorAll("button"),function(b){var src=document.getElementById("mode"+b.dataset.m.charAt(0).toUpperCase()+b.dataset.m.slice(1));
+  var on=src?src.classList.contains("active"):false;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on)})}
+function init(){
+ var sub=document.getElementById("dashGreetingSub");if(!sub||document.getElementById("ccMode"))return;
+ var w=document.createElement("div");w.id="ccMode";w.className="cc-mode";w.setAttribute("role","group");w.setAttribute("aria-label","Business mode");
+ w.innerHTML=M.map(function(m){return '<button type="button" data-m="'+m[0]+'">'+m[1]+"</button>"}).join("");
+ w.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;try{setServiceType(b.dataset.m)}catch(x){}setTimeout(sync,50)});
+ sub.parentNode.insertBefore(w,sub.nextSibling);sync();
+ M.forEach(function(m){var s=document.getElementById("mode"+m[1]);if(s)try{new MutationObserver(sync).observe(s,{attributes:true,attributeFilter:["class"]})}catch(e){}});
+}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
 })();
 </script>
