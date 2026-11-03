@@ -13886,5 +13886,47 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 .cc-col{display:flex;flex-direction:column;gap:16px;min-width:0}
 .cc-col>.card{margin:0}
 </style>
+<style id="cc-fixes-v5">
+/* 1) Hero KPI card follows the active mode colour in every mode, light and dark */
+html body{--rd-hero:linear-gradient(135deg,color-mix(in srgb,var(--mode-accent,#1A6DDB) 72%,#fff) 0%,var(--mode-accent,#1A6DDB) 46%,color-mix(in srgb,var(--mode-accent,#1A6DDB) 55%,#000) 100%)}
+html:root body[class*="mode-"] .stat-card.primary{background:var(--rd-hero)!important;border-color:transparent!important}
+html:root body[class*="mode-"] .stat-card.primary::before{background:transparent!important}
+/* 2) Getting-started cards: compact, no stretching, completed steps tucked away */
+.cc-start .cc-start-row>*{align-self:start!important}
+.cc-start .onboarding-card{padding:16px 18px}
+.cc-start .onboarding-card>p{display:none}
+.cc-start .ob-mascot-row h3{font-size:15px;margin:0 0 8px}
+.cc-start .onboarding-steps li.done{display:none}
+.cc-start .onboarding-steps li{padding:8px 12px;min-height:0}
+.cc-start .pc-card{padding:16px 18px}
+.cc-start .pc-card p{margin:4px 0 10px}
+/* 3) Sidebar footer: Help folds away, Logout stays */
+.sidebar-footer{display:grid;gap:6px}
+.cc-help summary{list-style:none;cursor:pointer;padding:10px 12px;border-radius:12px;font-weight:600;font-size:13.5px;color:var(--slate);display:flex;justify-content:space-between;align-items:center}
+.cc-help summary::-webkit-details-marker{display:none}
+.cc-help summary::after{content:"";width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);margin-top:-3px;transition:transform .2s}
+.cc-help[open] summary::after{transform:rotate(-135deg);margin-top:3px}
+.cc-help summary:hover{background:var(--blue-mist)}
+.cc-help .cc-help-in{display:grid;gap:2px;padding:0 0 6px}
+.cc-help .cc-help-in>*{background:transparent!important;border:0!important;box-shadow:none!important;text-align:left;justify-content:flex-start;width:100%;padding:9px 12px;font-size:13px!important;font-weight:600;color:var(--slate)!important;border-radius:10px;min-height:0;text-decoration:none;font-family:inherit;cursor:pointer}
+.cc-help .cc-help-in>*:hover{background:var(--blue-mist)!important}
+.cc-help .cc-help-in .sidebar-support-link{color:#0F9F6E!important}
+.sidebar-footer .btn-logout{background:transparent!important;border:0!important;border-top:1px solid var(--border)!important;border-radius:0!important;box-shadow:none!important;padding:12px!important;font-size:13.5px!important;text-align:left;color:#DC2626!important}
+</style>
+<script>
+/* Folds Theme, Tour and WhatsApp into one "Help & preferences" row. Moves the existing nodes, so IDs and handlers stay intact. */
+(function(){
+"use strict";
+function fold(){
+ var f=document.querySelector(".sidebar-footer");if(!f)return;
+ var d=f.querySelector(".cc-help");
+ if(!d){d=document.createElement("details");d.className="cc-help";d.innerHTML='<summary>Help &amp; preferences</summary><div class="cc-help-in"></div>';f.insertBefore(d,f.firstChild)}
+ var box=d.querySelector(".cc-help-in");
+ [document.getElementById("ccThemeBtn"),f.querySelector(".sidebar-tour-btn"),document.getElementById("sidebarSupportLink")].forEach(function(e){if(e&&e.parentNode!==box)box.appendChild(e)});
+}
+function init(){fold();var f=document.querySelector(".sidebar-footer");if(f)try{new MutationObserver(function(){fold()}).observe(f,{childList:true})}catch(e){}}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
 </body>
 </html>
