@@ -5562,13 +5562,22 @@ html[data-theme="dark"] #websiteBookingsBox p {
         </div>
 
         <div class="ops-main">
-            <div class="card">
+            <div class="cc-col">
+<div class="card">
                 <div class="card-header">
                     <h3 style="margin:0;font-size:15px;">Today's jobs</h3>
                     <button type="button" class="btn btn-outline btn-sm" onclick="switchTab('jobs')">View all</button>
                 </div>
                 <div id="todayJobsList"><div class="cc-skel"><i></i><i></i><i></i></div></div>
             </div>
+<div class="card" id="recentJobsCard">
+                <div class="card-header">
+                    <h3 id="recentJobsTitle" style="margin:0;font-size:15px;">Recent activity</h3>
+                    <button class="btn btn-outline btn-sm" onclick="switchTab('jobs')">All jobs</button>
+                </div>
+                <div id="recentJobs"><div class="empty-state" style="padding:12px;"><strong>No jobs yet</strong><span>Create your first job to see it here.</span></div></div>
+            </div>
+</div>
             <div class="card">
                 <div class="card-header">
                     <h3 style="margin:0;font-size:15px;">Quick actions</h3>
@@ -5647,14 +5656,6 @@ html[data-theme="dark"] #websiteBookingsBox p {
             </div>
 
             
-<div class="card" id="recentJobsCard">
-                <div class="card-header">
-                    <h3 id="recentJobsTitle" style="margin:0;font-size:15px;">Recent activity</h3>
-                    <button class="btn btn-outline btn-sm" onclick="switchTab('jobs')">All jobs</button>
-                </div>
-                <div id="recentJobs"><div class="empty-state" style="padding:12px;"><strong>No jobs yet</strong><span>Create your first job to see it here.</span></div></div>
-            </div>
-
             <!-- Subscription status (no rate cards) -->
             
 <div id="plansSection" style="display:none;" aria-hidden="true">
@@ -13878,5 +13879,12 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 })();
 </script>
 
+<style id="cc-overview-v4">
+/* The greeting pill is the only visible mode switch. The original header buttons stay in the DOM (hidden) because setServiceType() reads and updates them. */
+.mode-switch-wrap{display:none!important}
+.ops-main{align-items:start}
+.cc-col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.cc-col>.card{margin:0}
+</style>
 </body>
 </html>
