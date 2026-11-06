@@ -13715,14 +13715,14 @@ html body .btn{border-radius:12px}
 "use strict";
 var MAIN=["overview","jobs","clients"];
 var ic={overview:'<path d="M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z"/>',jobs:'<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/>',plus:'<path d="M12 5v14M5 12h14"/>',clients:'<path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M21 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>',more:'<circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/>'};
-function btn(k,label,cls){return '<button type="button" data-t="'+k+'"'+(cls?' class="'+cls+'"':'')+' aria-label="'+label+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+ic[k]+'</svg>'+(cls?'':'<span>'+label+'</span>')+'</button>'}
+function btn(k,label,cls){return '<button type="button" data-t="'+k+'"'+(cls?' class="'+cls+'"':'')+' aria-label="'+label+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+ic[k]+'</svg>'+'<span>'+label+'</span>'+'</button>'}
 function current(){var a=document.querySelector(".tab-content.active");return a?a.id.replace("tab-",""):"overview"}
 function sync(){var bar=document.getElementById("ccBnav");if(!bar)return;var c=current(),k=MAIN.indexOf(c)>-1?c:"more";
  [].forEach.call(bar.querySelectorAll("button[data-t]"),function(b){b.classList.toggle("on",b.getAttribute("data-t")===k)})}
 function build(){
  if(document.getElementById("ccBnav"))return;
  var n=document.createElement("nav");n.id="ccBnav";n.className="cc-bnav";n.setAttribute("aria-label","Main");
- n.innerHTML=btn("overview","Home")+btn("jobs","Jobs")+btn("plus","New job","cc-plus")+btn("clients","Clients")+btn("more","More");
+ n.innerHTML=btn("overview","Home")+btn("jobs","Jobs")+btn("plus","New","cc-plus")+btn("clients","Clients")+btn("more","More");
  n.addEventListener("click",function(e){var b=e.target.closest("button[data-t]");if(!b)return;var t=b.getAttribute("data-t");
   try{if(t==="plus"){openModal("job")}else if(t==="more"){openSidebar()}else{switchTab(t)}}catch(x){}
   setTimeout(sync,60)});
@@ -13987,6 +13987,32 @@ body:has(.sidebar.open) .cc-bnav{display:none}
  html body .quick-actions{gap:12px}
  html body .today-job-row{padding:14px 12px}
  html body .header{padding-top:12px;padding-bottom:12px}
+}
+</style>
+<style id="cc-fixes-v8">
+/* Work calendar in dark mode: dark card, readable month, consistent day tiles */
+html[data-theme="dark"] body .work-cal-card{background:var(--white)!important;border-color:var(--border)!important;box-shadow:none!important}
+html[data-theme="dark"] body .work-cal-card .work-cal-toggle-meta,html[data-theme="dark"] body .work-cal-card .work-cal-dow{color:var(--slate)!important}
+html[data-theme="dark"] body .work-cal-card #workCalTitle,html[data-theme="dark"] body .work-cal-card .work-cal-nav strong{color:var(--ink)!important}
+html[data-theme="dark"] body .work-cal-card .work-cal-nav .btn{background:transparent!important;color:var(--ink)!important;border:1px solid var(--border)!important}
+html[data-theme="dark"] body .work-cal-card .work-cal-body{border-color:var(--border)!important}
+html[data-theme="dark"] body .work-cal-card .work-cal-grid .work-cal-day{background:color-mix(in srgb,var(--slate) 14%,transparent)!important;color:var(--ink)!important;border:1px solid transparent!important;box-shadow:none!important}
+html[data-theme="dark"] body .work-cal-card .work-cal-grid .work-cal-day.empty{background:transparent!important}
+html[data-theme="dark"] body .work-cal-card .work-cal-grid .work-cal-day.lvl1{background:color-mix(in srgb,#3B82F6 18%,transparent)!important}
+html[data-theme="dark"] body .work-cal-card .work-cal-grid .work-cal-day.lvl2{background:color-mix(in srgb,#3B82F6 32%,transparent)!important}
+html[data-theme="dark"] body .work-cal-card .work-cal-grid .work-cal-day.lvl3{background:color-mix(in srgb,#3B82F6 50%,transparent)!important}
+html[data-theme="dark"] body .work-cal-card .work-cal-grid .work-cal-day.today{border-color:var(--blue)!important}
+html[data-theme="dark"] body .work-cal-card .work-cal-grid .work-cal-day.selected{border-color:#10B981!important;background:color-mix(in srgb,#10B981 22%,transparent)!important}
+html[data-theme="dark"] body .work-cal-card .work-cal-detail{background:transparent!important;border-color:var(--border)!important;color:var(--ink)!important}
+/* Light mode calendar: keep day tiles consistent with the card */
+html:not([data-theme="dark"]) .work-cal-grid .work-cal-day:not(.empty){color:var(--ink)}
+/* Bottom nav: five equal slots, shared label baseline, raised New button */
+@media(max-width:900px){
+ html body .cc-bnav{padding:6px 8px 8px;align-items:stretch}
+ html body .cc-bnav button{justify-content:flex-end;gap:4px;min-height:58px;padding:8px 2px 6px}
+ html body .cc-bnav button span{line-height:1}
+ html body .cc-bnav .cc-plus{flex:1 1 0!important;margin:0!important;height:auto!important;min-height:58px!important;border-radius:16px!important;background:transparent!important;box-shadow:none!important;color:var(--slate)!important}
+ html body .cc-bnav .cc-plus svg{box-sizing:border-box;width:52px;height:52px;padding:14px;margin-top:-28px;border-radius:50%;background:var(--rd-hero);color:#fff;box-shadow:0 12px 24px -6px rgba(15,79,168,.6);stroke-width:2.6}
 }
 </style>
 </body>
