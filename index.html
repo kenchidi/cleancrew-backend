@@ -149,9 +149,10 @@ footer nav{height:auto;gap:20px}
 <header>
  <div class="wrap"><nav aria-label="Main">
   <a class="logo" href="index.html">CleanCrew</a>
-  <ul><li><a href="#how">How it works</a></li><li><a href="#booking">Bookings</a></li><li><a href="#profit">Profit</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#faq">FAQ</a></li></ul>
+  <ul><li><a href="#how">How it works</a></li><li><a href="#features">Features</a></li><li><a href="#profit">Profit</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#faq">FAQ</a></li></ul>
   <a class="nl" href="login.html">Log in</a>
   <a class="btn btn-p" href="signup.html">Start free</a>
+  <button class="mb" type="button" aria-label="Menu" aria-expanded="false"><i></i></button>
  </nav></div>
 </header>
 
@@ -159,20 +160,20 @@ footer nav{height:auto;gap:20px}
 <section class="hero">
  <div class="wrap">
   <div>
-   <h1>Know what every job earns you.</h1>
-   <p class="lead">CleanCrew runs your cleaning, laundry or car detailing business from your phone: jobs, invoices, customer bookings, and the profit left after staff, supplies and transport.</p>
+   <div class="mp" role="group" aria-label="Business type"><button type="button" data-m="cleaning" class="on">Cleaning</button><button type="button" data-m="laundry">Laundry</button><button type="button" data-m="auto">Auto</button></div>
+   <h1>Know what every <span class="hw">cleaning</span> job earns you.</h1>
+   <p class="lead">Run your business from your phone: jobs, invoices, bookings, who owes you, and the profit left after staff, supplies and transport.</p>
    <div class="cta"><a class="btn btn-p" href="signup.html">Start free</a><a class="btn btn-o" href="https://wa.me/2347057295546">Chat on WhatsApp</a></div>
    <p class="fine">25 free jobs for the life of your account. No card needed.</p>
-   <div class="modes" aria-label="Works for"><span>Cleaning</span><span>Laundry</span><span>Auto detailing</span></div>
   </div>
-  <div class="phone" aria-label="CleanCrew dashboard preview">
-   <div class="screen">
+  <div class="pv">
+   <div class="art" id="art" aria-hidden="true"></div>
+   <div class="phone" aria-label="CleanCrew dashboard preview"><div class="screen">
     <small>Good morning</small><h4>Today's work</h4>
-    <div class="kpis"><div class="kpi hi"><small>Revenue this week</small><b>₦185,000</b></div><div class="kpi"><small>Still unpaid</small><b>₦42,000</b></div></div>
-    <div class="job"><div><b>Mrs Okeke</b><span>Deep clean, 9:00 AM</span></div><span class="tag t-d">Done</span></div>
-    <div class="job"><div><b>FreshFold drop-off</b><span>Laundry, 12 items</span></div><span class="tag t-i">In progress</span></div>
-    <div class="job"><div><b>Office suite</b><span>Cleaning, 2:00 PM</span></div><span class="tag t-p">Pending</span></div>
-   </div>
+    <div class="kpis"><div class="kpi hi"><small>Jobs today</small><b>8</b></div><div class="kpi"><small>Who owes me</small><b>₦135,000</b></div></div>
+    <div id="rows"></div>
+    <div class="job" style="background:#FFF7E6;border-color:#FDE7B0"><div><b>6-day streak</b><span>Finish a job today to keep it</span></div><span class="tag t-p">Keep going</span></div>
+   </div></div>
   </div>
  </div>
 </section>
@@ -201,36 +202,18 @@ footer nav{height:auto;gap:20px}
  </div>
 </section>
 
-<section id="booking" class="wash">
- <div class="wrap feat">
-  <div>
-   <h2>Let customers book you directly.</h2>
-   <p class="lead">Share your booking link on WhatsApp, Instagram or your door. Requests land in your dashboard, ready to turn into jobs.</p>
-   <ul><li>Customers send their name, number and the service they need</li><li>Review each request and move it into your job list</li><li>Fewer back-and-forth messages to pin down a time</li></ul>
-  </div>
-  <div class="vis card" aria-label="Booking requests preview">
-   <h4>New booking requests</h4>
-   <div class="row"><span><b>Adaeze N.</b><br><small style="color:var(--muted)">Sofa and carpet clean</small></span><span class="tag t-p">New</span></div>
-   <div class="row"><span><b>Tunde A.</b><br><small style="color:var(--muted)">Full car detail</small></span><span class="tag t-p">New</span></div>
-   <div class="row"><span><b>Grace E.</b><br><small style="color:var(--muted)">Laundry pickup, 20 items</small></span><span class="tag t-d">Added to jobs</span></div>
-  </div>
- </div>
-</section>
-
-<section>
- <div class="wrap feat rev">
-  <div>
-   <h2>Price jobs so you actually make money.</h2>
-   <p class="lead">Pricing Coach works out a fair price from your own costs, so you stop guessing and stop undercharging.</p>
-   <ul><li>Enter hours, staff, supplies, transport and the margin you want</li><li>Get a recommended price for the job</li><li>Use it straight on a new job or invoice</li></ul>
-  </div>
-  <div class="vis card" aria-label="Pricing Coach example">
-   <h4>Example: 3-bedroom deep clean</h4>
-   <div class="row"><span>Labour, 2 cleaners</span><b>₦24,000</b></div>
-   <div class="row"><span>Supplies</span><b>₦4,500</b></div>
-   <div class="row"><span>Transport</span><b>₦3,000</b></div>
-   <div class="row"><span><b>Suggested price</b></span><b style="color:var(--blue)">₦46,000</b></div>
-   <p style="font-size:.82rem;color:var(--muted);margin-top:10px">Example only. Your numbers will differ.</p>
+<section id="features" class="wash">
+ <div class="wrap">
+  <h2>Everything your business runs on.</h2>
+  <p class="lead">Swipe through what's inside. Every piece works together, on your phone.</p>
+  <div class="bento">
+   <article class="tile k1"><h3>Who owes me</h3><p>See every unpaid invoice and send a WhatsApp reminder in one tap.</p><div class="mini"><div class="mr2"><b>Tunde A.</b><span>₦80,000 <u>Remind</u></span></div><div class="mr2"><b>Mrs Okeke</b><span>₦55,000 <u>Remind</u></span></div></div></article>
+   <article class="tile k2"><h3>Streaks and goals</h3><p>Finish a job a day, earn badges and watch your monthly goal fill.</p><div class="mini"><b class="bg2">7-day streak</b><i class="gb"><s></s></i><span class="sm">64% of your goal</span></div></article>
+   <article class="tile k3"><h3>Weekly recap</h3><p>Turn your week into a Story or post. Revenue stays hidden unless you show it.</p><div class="mini rc2"><b>My week in jobs</b><span>18 jobs · 11 clients · 6-day streak</span></div></article>
+   <article class="tile k4"><h3>WhatsApp, one tap</h3><p>Confirm, start and finish jobs with a ready-written message.</p><div class="mini"><div class="bub2">Hi Adaeze, your laundry is ready for pickup. Thank you!</div></div></article>
+   <article class="tile k5"><h3>Online bookings</h3><p>Share your booking link. Requests land in your dashboard.</p><div class="mini"><div class="mr2"><b>Adaeze N.</b><span>Sofa and carpet <em>New</em></span></div><div class="mr2"><b>Tunde A.</b><span>Full car detail <em>New</em></span></div></div></article>
+   <article class="tile k6"><h3>Pricing Coach</h3><p>A fair price from your own costs, so you stop undercharging.</p><div class="mini"><div class="mr2"><b>Suggested price</b><span>₦46,000</span></div><span class="sm">Example: 3-bedroom deep clean</span></div></article>
+   <article class="tile k7"><h3>Built for Nigeria</h3><p>Agbada, Ankara, event cleaning and a landmark for every address.</p><div class="mini chp"><span>Agbada</span><span>Ankara</span><span>After-party</span><span>Landmark</span></div></article>
   </div>
  </div>
 </section>
@@ -329,6 +312,90 @@ footer nav{height:auto;gap:20px}
   document.getElementById("obr").style.width=Math.max(0,Math.min(100,mg))+"%";
  }
  [j,p,c].forEach(function(e){e.addEventListener("input",go)});go();
+})();
+</script>
+<style id="home-v2">
+:root{--acc:#1A6DDB}
+.hw{color:var(--acc);transition:color .3s}
+.mp{display:inline-flex;gap:4px;padding:4px;border-radius:999px;background:var(--wash);border:1px solid var(--line);margin-bottom:22px}
+.mp button{border:0;background:transparent;font:700 14px inherit;font-family:inherit;color:var(--muted);padding:9px 18px;border-radius:999px;cursor:pointer;min-height:40px;transition:background .2s,color .2s}
+.mp button.on{background:#fff;color:var(--acc);box-shadow:0 2px 10px rgba(11,31,63,.14)}
+.pv{position:relative}
+.art{position:absolute;right:2%;top:-34px;width:130px;z-index:2;animation:bob 3.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px)}}
+.kpi.hi{background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 75%,#fff),var(--acc) 50%,color-mix(in srgb,var(--acc) 55%,#000));border-color:transparent;transition:background .3s}
+.kpi.hi b{font-size:1.6rem}
+#rows .job{animation:rise .45s both}@keyframes rise{from{opacity:0;transform:translateY(8px)}}
+.bento{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:36px}
+.tile{border-radius:24px;padding:26px;display:flex;flex-direction:column;gap:8px;border:1px solid rgba(11,31,63,.06);transition:transform .25s}
+.tile:hover{transform:translateY(-4px)}
+.tile p{font-size:.98rem}
+.k1{background:#FFEDDC}.k2{background:#FFF1C9}.k3{background:#DCEBFF}.k4{background:#D8F5E5}.k5{background:#D9F3F2}.k6{background:#EADFFD}.k7{background:#FDE3EC}
+.mini{margin-top:auto;padding-top:14px;display:grid;gap:8px}
+.mini>*{background:#fff;border-radius:14px;padding:12px 14px;font-size:.9rem;color:var(--ink)}
+.mini .mr2{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.mr2 span{font-weight:800;display:flex;gap:8px;align-items:center}
+.mr2 u{text-decoration:none;background:#25D366;color:#fff;font-size:.72rem;padding:4px 10px;border-radius:999px}
+.mr2 em{font-style:normal;background:#FEF3E2;color:var(--amber);font-size:.72rem;padding:3px 9px;border-radius:999px}
+.bg2{font-size:1.15rem}.gb{display:block;height:12px;padding:0!important;overflow:hidden;background:#E2E8F0!important}.gb s{display:block;height:100%;width:64%;background:linear-gradient(90deg,#1A6DDB,#FBBF24)}
+.sm{font-size:.8rem;color:var(--muted)}
+.rc2{background:linear-gradient(150deg,#1A6DDB,#0B1F3F)!important;color:#fff!important}.rc2 b,.rc2 span{color:#fff;display:block}.rc2 span{opacity:.85;font-size:.82rem;margin-top:4px}
+.bub2{background:#DCF8C6!important;border-radius:16px 16px 4px 16px!important;font-weight:600}
+.chp{display:flex!important;flex-wrap:wrap;gap:8px}.chp span{background:#fff;border-radius:999px;padding:7px 14px;font-weight:700;font-size:.85rem}
+.mb{display:none;width:44px;height:44px;border:0;background:transparent;cursor:pointer;place-items:center}
+.mb i,.mb i::before,.mb i::after{display:block;width:22px;height:2.5px;border-radius:2px;background:var(--ink);content:"";position:relative}
+.mb i::before{position:absolute;top:-7px}.mb i::after{position:absolute;top:7px}
+.stick{transform:translateY(170%);transition:transform .3s}.stick.show{transform:none}
+footer nav{flex-wrap:wrap}footer nav a{white-space:nowrap}
+@media(max-width:900px){
+ section{padding:clamp(44px,12vw,64px) 0}
+ .wrap{width:min(1120px,100% - 36px)}
+ h1{font-size:clamp(2.1rem,9.4vw,2.8rem)}h2{font-size:clamp(1.6rem,7vw,2.1rem)}
+ .lead{font-size:1.02rem}
+ .hero{padding-top:22px}
+ .hero .wrap{gap:30px}
+ .mp{display:flex;width:100%;margin-bottom:18px}.mp button{flex:1;padding:9px 6px}
+ .cta{flex-direction:column}.cta .btn{width:100%}
+ .pv{margin-top:6px;padding-bottom:10px}
+ .art{width:92px;right:6%;top:-30px}
+ .phone{width:min(300px,86%);transform:none}
+ .mb{display:grid}nav{position:relative}
+ header nav ul{display:none;position:absolute;left:-18px;right:-18px;top:68px;margin:0;flex-direction:column;gap:2px;background:#fff;padding:10px 18px 16px;border-bottom:1px solid var(--line);box-shadow:0 18px 30px -16px rgba(11,31,63,.25)}
+ header nav.open ul{display:flex}header nav ul a{display:block;padding:12px 4px;font-size:1.02rem}
+ .nl{display:none}nav .btn{margin-left:auto}
+ .bento{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:14px;margin:28px -18px 0;padding:4px 18px 18px;scrollbar-width:none}
+ .bento::-webkit-scrollbar{display:none}.tile{flex:0 0 80%;scroll-snap-align:center}
+ .pain{gap:10px}.pain div{padding:16px 18px}
+ .steps{grid-template-columns:1fr 1fr;gap:26px 14px;margin-top:30px}.steps li{padding:0}
+ .price{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:14px;margin:28px -18px 0;padding:4px 18px 22px;scrollbar-width:none}
+ .price::-webkit-scrollbar{display:none}.plan{flex:0 0 84%;scroll-snap-align:center}
+ .three{gap:12px}.three div{padding:20px}
+ .calc{padding:20px}
+ summary{font-size:1rem}
+ footer{padding-bottom:calc(36px + 84px)}footer nav{gap:12px 20px}
+ .stick .btn{min-height:48px}
+}
+</style>
+<script>
+(function(){
+var SV={cleaning:"<svg viewBox='0 0 104 76'><circle cx='30' cy='42' r='20' fill='#DCEBFF' stroke='#1A6DDB' stroke-width='3'/><circle cx='74' cy='30' r='13' fill='#E7F8F1' stroke='#0F9F6E' stroke-width='3'/><circle cx='62' cy='58' r='8' fill='#FEF3E2' stroke='#F59E0B' stroke-width='3'/><path d='M30 30l2 5 5 2-5 2-2 5-2-5-5-2 5-2z' fill='#1A6DDB'/><path d='M88 8l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5z' fill='#FBBF24'/></svg>",
+laundry:"<svg viewBox='0 0 104 76'><path d='M52 31v-6l6-5a6 6 0 1 0-6-6' fill='none' stroke='#0F9F6E' stroke-width='3.5' stroke-linecap='round'/><path d='M52 31L14 54h76z' fill='#E7F8F1' stroke='#0F9F6E' stroke-width='3.5' stroke-linejoin='round'/><circle cx='86' cy='16' r='5' fill='#FBBF24'/><circle cx='18' cy='18' r='3' fill='#8CC8FF'/></svg>",
+auto:"<svg viewBox='0 0 104 76'><path d='M10 56V46l10-4 12-14h38l14 14 10 4v10z' fill='#FFEDE0' stroke='#EA580C' stroke-width='3.5' stroke-linejoin='round'/><path d='M36 30l-8 12h50L66 30z' fill='#fff' stroke='#EA580C' stroke-width='3'/><circle cx='30' cy='58' r='8' fill='#0B1F3F' stroke='#fff' stroke-width='3'/><circle cx='76' cy='58' r='8' fill='#0B1F3F' stroke='#fff' stroke-width='3'/><circle cx='92' cy='14' r='4' fill='#FBBF24'/></svg>"};
+var M={cleaning:{c:"#1A6DDB",w:"cleaning",r:[["Mrs Okeke","Deep clean, 9:00 AM","Done","t-d"],["Office suite","Cleaning, 2:00 PM","In progress","t-i"],["Adaeze N.","Sofa and carpet, 4:30 PM","Pending","t-p"]]},
+laundry:{c:"#0F9F6E",w:"laundry",r:[["FreshFold drop-off","Laundry, 12 items","In progress","t-i"],["Tunde A.","Agbada and suits, 8 items","Ready","t-d"],["School uniforms","40 pieces","Pending","t-p"]]},
+auto:{c:"#EA580C",w:"car wash",r:[["Toyota Camry","Wash and wax","Done","t-d"],["Fleet vehicles","6 cars","In progress","t-i"],["Honda CR-V","Interior vacuum","Pending","t-p"]]}};
+function set(m){var d=M[m];document.documentElement.style.setProperty("--acc",d.c);
+ document.querySelector(".hw").textContent=d.w;document.getElementById("art").innerHTML=SV[m];
+ document.getElementById("rows").innerHTML=d.r.map(function(r){return'<div class="job"><div><b>'+r[0]+'</b><span>'+r[1]+'</span></div><span class="tag '+r[3]+'">'+r[2]+'</span></div>'}).join("");
+ [].forEach.call(document.querySelectorAll(".mp button"),function(b){b.classList.toggle("on",b.dataset.m===m)})}
+document.querySelector(".mp").addEventListener("click",function(e){var b=e.target.closest("button");if(b)set(b.dataset.m)});
+set("cleaning");var order=["cleaning","laundry","auto"],i=0,t=setInterval(function(){i=(i+1)%3;set(order[i])},4200);
+document.querySelector(".mp").addEventListener("click",function(){clearInterval(t)});
+var nav=document.querySelector("header nav"),mb=document.querySelector(".mb");
+mb.addEventListener("click",function(){var o=nav.classList.toggle("open");mb.setAttribute("aria-expanded",o)});
+nav.querySelectorAll("ul a").forEach(function(a){a.addEventListener("click",function(){nav.classList.remove("open");mb.setAttribute("aria-expanded","false")})});
+var st=document.querySelector(".stick");function sc(){if(st)st.classList.toggle("show",window.scrollY>560)}addEventListener("scroll",sc,{passive:true});sc();
+if(matchMedia("(prefers-reduced-motion:reduce)").matches)clearInterval(t);
 })();
 </script>
 </body>
