@@ -14015,5 +14015,166 @@ html:not([data-theme="dark"]) .work-cal-grid .work-cal-day:not(.empty){color:var
  html body .cc-bnav .cc-plus svg{box-sizing:border-box;width:52px;height:52px;padding:14px;margin-top:-28px;border-radius:50%;background:var(--rd-hero);color:#fff;box-shadow:0 12px 24px -6px rgba(15,79,168,.6);stroke-width:2.6}
 }
 </style>
+<style id="cc-owes-v9">
+.owe-total{font-weight:800;font-size:15px;color:var(--orange,#EA580C);letter-spacing:-.02em}
+.owe-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:13px 0;border-top:1px solid var(--border)}
+.owe-row:first-of-type{border-top:0}
+.owe-main{min-width:0;flex:1}
+.owe-main strong{display:block;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.owe-main span{display:block;font-size:12.5px;color:var(--slate);margin-top:2px}
+.owe-bar{display:block;height:6px;border-radius:3px;background:color-mix(in srgb,var(--slate) 18%,transparent);margin-top:8px;overflow:hidden}
+.owe-bar b{display:block;height:100%;background:var(--green);border-radius:3px}
+.owe-side{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex:none}
+.owe-side>strong{font-size:15px;letter-spacing:-.02em}
+.owe-btn{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 14px;border-radius:999px;border:0;background:#25D366;color:#fff;font:700 12.5px inherit;font-family:inherit;cursor:pointer;transition:transform .15s}
+.owe-btn:active{transform:scale(.95)}
+.owe-btn svg{width:16px;height:16px}
+.today-job-row .tj-top{align-items:center}
+.cc-wa{width:36px;height:36px;border-radius:50%;border:0;background:#25D366;color:#fff;display:inline-grid;place-items:center;cursor:pointer;flex:none;margin-left:8px;transition:transform .15s}
+.cc-wa:active{transform:scale(.92)}
+</style>
+<script>
+/* "Who owes me" card and one-tap WhatsApp on today's jobs. Reads invoicesData/jobsData only; opens wa.me, no API calls. */
+(function(){
+"use strict";
+var WA='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>';
+function money(n){return typeof formatMoney==="function"?formatMoney(n):"\u20A6"+Math.round(n).toLocaleString()}
+function esc(s){return typeof escHtml==="function"?escHtml(s):String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function digits(p){try{return typeof normalizeWaPhone==="function"?normalizeWaPhone(p):null}catch(e){return null}}
+function first(n){return String(n||"there").trim().split(/\s+/)[0]}
+function go(d,msg){window.open("https://wa.me/"+d+"?text="+encodeURIComponent(msg),"_blank");if(typeof showToast==="function")showToast("Opening WhatsApp...","whatsapp")}
+function byName(list,name){var k=String(name).trim().toLowerCase();return(list||[]).find(function(c){return String(c.name||"").trim().toLowerCase()===k})}
+function phoneFor(name,inv){var p=inv&&inv.phone||"";if(!p&&typeof clientsData!=="undefined"){var m=byName(clientsData,name);p=m?m.phone||"":""}return p}
+function owed(){var map={},out=[],k;
+ ((typeof invoicesData!=="undefined"&&invoicesData)||[]).forEach(function(inv){
+  if(typeof isQuotation==="function"&&isQuotation(inv))return;
+  var due=Number(inv.amount_due!=null?inv.amount_due:inv.amount)||0,paid=Number(inv.amount_paid)||0,left=Math.max(0,due-paid),st=String(inv.status||"").toLowerCase();
+  if(st==="paid"||left<=0)return;
+  var key=String(inv.client||"Customer").trim().toLowerCase();
+  var g=map[key]||(map[key]={name:String(inv.client||"Customer").trim(),left:0,due:0,paid:0,n:0,invs:[],oldest:null});
+  g.left+=left;g.due+=due;g.paid+=paid;g.n++;g.invs.push(inv);
+  var d=inv.date?new Date(inv.date):null;if(d&&!isNaN(d)&&(!g.oldest||d<g.oldest))g.oldest=d});
+ for(k in map)out.push(map[k]);out.sort(function(a,b){return b.left-a.left});return out}
+function age(d){if(!d)return"";var n=Math.floor((Date.now()-d)/864e5);return n<=0?"today":n===1?"1 day ago":n+" days ago"}
+async function remind(e){
+ var b=e.target.closest(".owe-btn");if(!b)return;var g=(this.__L||[])[+b.dataset.i];if(!g)return;
+ var p=phoneFor(g.name,g.invs[0]);
+ if(!digits(p)&&typeof getClients==="function"){try{var m=byName(await getClients(),g.name);p=m?m.phone||"":""}catch(x){}}
+ var d=digits(p);
+ if(!d){if(typeof showToast==="function")showToast("No WhatsApp number for "+g.name+". Add a phone on the invoice or Clients tab.","error");return}
+ var msg="Hi "+first(g.name)+", hope you're well. This is a friendly reminder that "+money(g.left)+" is still outstanding";
+ if(g.n===1){var inv=g.invs[0],num=inv.number||inv.invoice_numb;if(num)msg+=" on invoice "+num;msg+=".";
+  var u=typeof getPublicInvoiceUrl==="function"?getPublicInvoiceUrl(inv.id):"";if(u)msg+="\n\nYou can view it here: "+u}
+ else msg+=" across "+g.n+" invoices.";
+ go(d,msg+"\n\nThank you!")}
+function card(){var col=document.querySelector(".cc-col");if(!col)return null;var c=document.getElementById("ccOwes");
+ if(!c){c=document.createElement("div");c.className="card";c.id="ccOwes";col.insertBefore(c,col.children[1]||null);c.addEventListener("click",remind)}return c}
+function render(){var c=card();if(!c)return;var L=owed(),tot=L.reduce(function(s,g){return s+g.left},0);
+ var h='<div class="card-header"><h3 style="margin:0;font-size:15px;">Who owes me</h3>'+(L.length?'<span class="owe-total">'+money(tot)+'</span>':'')+'</div>';
+ if(!L.length){c.innerHTML=h+'<div class="empty-state" style="padding:12px 8px;text-align:center;"><strong>Nobody owes you</strong><span>Every invoice is paid. Nice work.</span></div>';c.__L=[];return}
+ h+=L.slice(0,5).map(function(g,i){var pct=g.due>0?Math.round(g.paid/g.due*100):0,a=age(g.oldest);
+  var sub=g.n>1?g.n+" invoices":(a?"Issued "+a:"Unpaid");if(g.paid>0)sub+=" \u00B7 "+money(g.paid)+" paid";
+  return '<div class="owe-row"><div class="owe-main"><strong>'+esc(g.name)+'</strong><span>'+esc(sub)+'</span>'+(g.paid>0?'<i class="owe-bar"><b style="width:'+pct+'%"></b></i>':'')+'</div><div class="owe-side"><strong>'+money(g.left)+'</strong><button type="button" class="owe-btn" data-i="'+i+'">'+WA+' Remind</button></div></div>'}).join("");
+ if(L.length>5)h+='<button type="button" class="btn btn-outline btn-sm" style="margin-top:10px;" onclick="switchTab(\'invoices\')">View all '+L.length+' clients</button>';
+ c.innerHTML=h;c.__L=L}
+function jobMsg(j){var n=first(j.client),svc=j.service||"service",st=String(j.status||"").toLowerCase(),lau=typeof getJobMode==="function"&&getJobMode(j)==="laundry";
+ if(st==="completed"||st==="collected")return lau?"Hi "+n+", your laundry is ready for pickup. Thank you!":"Hi "+n+", your "+svc+" is complete. Thank you for choosing us!";
+ if(st==="in-progress")return"Hi "+n+", we've started your "+svc+". We'll let you know when it's done.";
+ return"Hi "+n+", just confirming your "+svc+" today. Let us know if anything changes."}
+function decorate(){var L=document.getElementById("todayJobsList");if(!L)return;
+ [].forEach.call(L.querySelectorAll(".today-job-row"),function(r){if(r.querySelector(".cc-wa"))return;
+  var m=/openJobDetail\('([^']+)'/.exec(r.getAttribute("onclick")||"");if(!m)return;
+  var j=(typeof jobsData!=="undefined"?jobsData:[]).find(function(x){return String(x.id)===m[1]});if(!j||!digits(j.phone))return;
+  var b=document.createElement("button");b.type="button";b.className="cc-wa";b.setAttribute("aria-label","WhatsApp "+(j.client||"customer"));b.innerHTML=WA;
+  b.addEventListener("click",function(e){e.stopPropagation();go(digits(j.phone),jobMsg(j))});
+  (r.querySelector(".tj-top")||r).appendChild(b)})}
+function hook(n){var o=window[n];if(typeof o!=="function"||o.__ow)return;window[n]=function(){var r=o.apply(this,arguments);try{render();decorate()}catch(e){}return r};window[n].__ow=1}
+function init(){["renderAll","renderOverview","renderInvoices"].forEach(hook);render();decorate();
+ var L=document.getElementById("todayJobsList");if(L)try{new MutationObserver(decorate).observe(L,{childList:true})}catch(e){}}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
+<style id="cc-goals-v10">
+.goal-top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:10px}
+.goal-top strong{font-size:1.5rem;letter-spacing:-.03em;line-height:1}
+.goal-top span{font-size:12.5px;color:var(--slate)}
+.goal-bar{height:12px;border-radius:6px;background:color-mix(in srgb,var(--slate) 18%,transparent);overflow:hidden}
+.goal-bar b{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--mode-accent,#1A6DDB),#FBBF24);transition:width .8s cubic-bezier(.22,.8,.3,1)}
+.goal-streak{display:flex;align-items:center;gap:10px;margin:16px 0 12px;font-weight:700}
+.goal-streak i{font-style:normal;font-size:1.6rem}
+.goal-badges{display:flex;flex-wrap:wrap;gap:8px}
+.goal-badges span{padding:6px 12px;border-radius:999px;font-size:12px;font-weight:700;background:color-mix(in srgb,var(--slate) 12%,transparent);color:var(--slate);opacity:.55}
+.goal-badges span.on{opacity:1;background:color-mix(in srgb,#FBBF24 28%,transparent);color:var(--ink)}
+#ccRecap{position:fixed;inset:0;z-index:99990;background:rgba(8,15,30,.72);display:grid;place-items:center;padding:16px;overflow:auto}
+#ccRecap .rc{background:var(--white);border-radius:22px;padding:18px;width:min(420px,100%);display:grid;gap:12px}
+#ccRecap canvas{width:100%;height:auto;border-radius:14px;display:block}
+#ccRecap label{display:flex;gap:8px;align-items:center;font-size:13.5px;font-weight:600}
+#ccRecap .acts{display:flex;gap:8px}#ccRecap .acts .btn{flex:1}
+</style>
+<script>
+/* Goals and streaks, weekly recap image, Nigerian service options and landmark field. Uses existing globals; landmark is saved at the top of the job notes. */
+(function(){
+"use strict";
+function money(n){return typeof formatMoney==="function"?formatMoney(n):"\u20A6"+Math.round(n).toLocaleString()}
+function jobs(){return typeof jobsData!=="undefined"&&jobsData?jobsData:[]}
+function done(j){return typeof isCompletedJobStatus==="function"?isCompletedJobStatus(j.status):j.status==="completed"}
+function key(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function unlocked(){return typeof revenueUnlocked!=="undefined"&&(revenueUnlocked||!hasOwnerPin)}
+function days(){var s={};jobs().forEach(function(j){if(done(j)){var k=jobDateKey(j);if(k)s[k]=1}});return s}
+function streak(){var s=days(),d=new Date(),n=0;if(!s[key(d)])d.setDate(d.getDate()-1);while(s[key(d)]){n++;d.setDate(d.getDate()-1)}return n}
+function monthRev(){var m=key(new Date()).slice(0,7),t=0;jobs().forEach(function(j){if(done(j)&&String(jobDateKey(j)).slice(0,7)===m)t+=Number(j.amount)||0});return t}
+function week(){var out={n:0,clients:{},rev:0},from=new Date();from.setDate(from.getDate()-6);var a=key(from),b=key(new Date());
+ jobs().forEach(function(j){var k=jobDateKey(j);if(done(j)&&k>=a&&k<=b){out.n++;out.clients[String(j.client||"").toLowerCase()]=1;out.rev+=Number(j.amount)||0}});out.c=Object.keys(out.clients).length;return out}
+/* goal card */
+function goalCard(){var r=document.getElementById("recentJobsCard"),c=document.getElementById("ccGoal");
+ if(!c){if(!r||!r.parentNode)return null;c=document.createElement("div");c.className="card";c.id="ccGoal";r.parentNode.insertBefore(c,r);
+  c.addEventListener("click",function(e){if(!e.target.closest("[data-goal]"))return;var v=prompt("Monthly revenue goal in naira (for example 500000)",localStorage.getItem("cc_goal")||"");
+   if(v===null)return;v=Number(String(v).replace(/[^\d.]/g,""));try{localStorage.setItem("cc_goal",v>0?v:"")}catch(x){}renderGoal()})}return c}
+function renderGoal(){var c=goalCard();if(!c)return;var g=Number(localStorage.getItem("cc_goal"))||0,st=streak(),n=jobs().filter(done).length,h;
+ h='<div class="card-header"><h3 style="margin:0;font-size:15px;">Monthly goal</h3><button type="button" class="btn btn-outline btn-sm" data-goal>'+(g?"Change":"Set goal")+'</button></div>';
+ if(!g)h+='<p style="font-size:13px;color:var(--slate);margin:0;">Set a monthly target and watch it fill as jobs are completed.</p>';
+ else if(!unlocked())h+='<p style="font-size:13px;color:var(--slate);margin:0;">Unlock revenue with your PIN to see progress toward '+money(g)+'.</p>';
+ else{var r=monthRev(),p=Math.min(100,Math.round(r/g*100));h+='<div class="goal-top"><strong>'+money(r)+'</strong><span>of '+money(g)+' ('+p+'%)</span></div><div class="goal-bar"><b style="width:'+p+'%"></b></div>'+(r>=g?'<p style="margin:8px 0 0;font-weight:700;">Goal reached. Well done!</p>':'<p style="margin:8px 0 0;font-size:12.5px;color:var(--slate);">'+money(g-r)+' to go this month.</p>')}
+ h+='<div class="goal-streak"><i>\uD83D\uDD25</i><span>'+(st?st+"-day streak. Keep it going!":"Complete a job today to start a streak.")+'</span></div><div class="goal-badges">'+
+  [[n>=1,"First job"],[n>=10,"10 jobs"],[n>=50,"50 jobs"],[n>=100,"100 jobs"],[st>=3,"3-day streak"],[st>=7,"7-day streak"]].map(function(b){return'<span class="'+(b[0]?"on":"")+'">'+b[1]+"</span>"}).join("")+"</div>";
+ c.innerHTML=h}
+/* weekly recap image */
+function draw(cv,showRev){var W=1080,H=1350,x=cv.getContext("2d"),w=week(),st=streak(),F="'Plus Jakarta Sans','Poppins',sans-serif";cv.width=W;cv.height=H;
+ var g=x.createLinearGradient(0,0,W*.6,H);g.addColorStop(0,"#1A6DDB");g.addColorStop(.5,"#0F4FA8");g.addColorStop(1,"#0B1F3F");x.fillStyle=g;x.fillRect(0,0,W,H);
+ [[960,120,260,"#0F9F6E"],[80,1230,300,"#EA580C"],[1010,820,170,"#FBBF24"]].forEach(function(c){x.globalAlpha=.8;x.fillStyle=c[3];x.beginPath();x.arc(c[0],c[1],c[2],0,6.3);x.fill()});x.globalAlpha=1;
+ x.fillStyle="#fff";x.textAlign="left";x.font="800 40px "+F;x.fillText("CleanCrew.",80,120);
+ x.font="800 96px "+F;x.fillText("My week",80,300);x.fillStyle="#FBBF24";x.fillText("in jobs",80,400);
+ var items=[[w.n,"jobs completed"],[w.c,"happy clients"],[st,"day streak"]];if(showRev&&unlocked())items.push([money(w.rev),"earned"]);
+ items.forEach(function(it,i){var y=500+i*170;x.fillStyle="rgba(255,255,255,.14)";x.beginPath();x.roundRect(80,y,920,140,28);x.fill();x.fillStyle="#fff";x.font="800 80px "+F;x.fillText(String(it[0]),120,y+98);
+  x.font="600 38px "+F;x.fillStyle="rgba(255,255,255,.88)";x.textAlign="right";x.fillText(it[1],960,y+88);x.textAlign="left"});
+ x.fillStyle="#fff";x.font="700 34px "+F;x.fillText("Run your business with CleanCrew",80,1230);x.fillStyle="#FBBF24";x.fillText("cleancrewapp.com",80,1280)}
+function recap(){var o=document.createElement("div");o.id="ccRecap";var can=unlocked();
+ o.innerHTML='<div class="rc"><canvas></canvas><label><input type="checkbox" id="rcRev"'+(can?"":" disabled")+'> Show my revenue'+(can?"":" (unlock revenue first)")+'</label><div class="acts"><button type="button" class="btn btn-primary" id="rcShare">Share</button><button type="button" class="btn btn-outline" id="rcClose">Close</button></div></div>';
+ document.body.appendChild(o);var cv=o.querySelector("canvas"),cb=o.querySelector("#rcRev");draw(cv,false);
+ cb.addEventListener("change",function(){draw(cv,cb.checked)});o.querySelector("#rcClose").onclick=function(){o.remove()};
+ o.addEventListener("click",function(e){if(e.target===o)o.remove()});
+ o.querySelector("#rcShare").onclick=function(){cv.toBlob(function(b){var f=new File([b],"my-week-cleancrew.png",{type:"image/png"});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],text:"My week on CleanCrew"}).catch(function(){})}
+  else{var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=f.name;a.click()}})}}
+function addRecapBtn(){var q=document.querySelector(".quick-actions");if(!q||document.getElementById("ccRecapBtn"))return;
+ var b=document.createElement("button");b.type="button";b.id="ccRecapBtn";b.className="qa-btn";b.innerHTML="<strong>Weekly recap</strong><span>Share your week on WhatsApp Status</span>";b.onclick=recap;q.appendChild(b)}
+/* Nigerian services and landmark */
+var EX={cleaning:["After-party / event cleaning","Estate / compound cleaning","Sofa & carpet cleaning","Water tank cleaning"],laundry:["Agbada / native wear","Ankara & lace (gentle wash)","Wrapper & bedsheets","Duvet & blanket","School uniforms (bulk)","Suit & corporate wear"],auto:["Wash & wax","Interior vacuum","Fleet / company vehicles"]};
+function tweak(){var sel=document.getElementById("jService");if(!sel||sel.dataset.cc)return;sel.dataset.cc="1";
+ var mode=typeof currentServiceType!=="undefined"?currentServiceType:"cleaning",have={};[].forEach.call(sel.options,function(o){have[o.text.toLowerCase()]=1});
+ var list=(EX[mode]||[]).filter(function(t){return!have[t.toLowerCase()]});
+ if(list.length){var g=document.createElement("optgroup");g.label="Popular in Nigeria";list.forEach(function(t){var o=document.createElement("option");o.textContent=t;g.appendChild(o)});sel.appendChild(g)}
+ var n=document.getElementById("jNotes"),mt=typeof modalType!=="undefined"?modalType:"job";
+ if(n&&mt==="job"&&!document.getElementById("ccLandmark")){var d=document.createElement("div");d.className="form-group full-width";
+  d.innerHTML='<label>Landmark (how to find the address)</label><input type="text" id="ccLandmark" maxlength="120" placeholder="e.g. Beside Total filling station, Wuse 2" autocomplete="off">';n.parentNode.parentNode.insertBefore(d,n.parentNode)}}
+function wrap(name,fn){var o=window[name];if(typeof o!=="function"||o.__g)return;window[name]=function(){var r=fn(o,this,arguments);return r};window[name].__g=1}
+function init(){
+ wrap("openModal",function(o,t,a){var r=o.apply(t,a);try{tweak()}catch(e){}return r});
+ wrap("createJob",function(o,t,a){var j=a[0],el=document.getElementById("ccLandmark"),lm=el&&el.value.trim();if(lm&&j)j.notes="Landmark: "+lm+(j.notes?"\n"+j.notes:"");return o.apply(t,a)});
+ ["renderAll","renderOverview"].forEach(function(n){wrap(n,function(o,t,a){var r=o.apply(t,a);try{renderGoal();addRecapBtn()}catch(e){}return r})});
+ try{renderGoal();addRecapBtn()}catch(e){}}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
 </body>
 </html>
