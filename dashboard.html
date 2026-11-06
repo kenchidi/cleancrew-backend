@@ -14107,7 +14107,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 .goal-badges span.on{opacity:1;background:color-mix(in srgb,#FBBF24 28%,transparent);color:var(--ink)}
 #ccRecap{position:fixed;inset:0;z-index:99990;background:rgba(8,15,30,.72);display:grid;place-items:center;padding:16px;overflow:auto}
 #ccRecap .rc{background:var(--white);border-radius:22px;padding:18px;width:min(420px,100%);display:grid;gap:12px}
-#ccRecap canvas{width:100%;height:auto;border-radius:14px;display:block}
+#ccRecap canvas{max-width:100%;max-height:56vh;width:auto;height:auto;margin:0 auto;border-radius:14px;display:block}#ccRecap .seg{display:flex;gap:6px}#ccRecap .seg button{flex:1;padding:10px 8px;border-radius:999px;border:2px solid var(--border);background:transparent;color:var(--ink);font:700 12.5px inherit;font-family:inherit;cursor:pointer}#ccRecap .seg button.on{border-color:var(--blue);background:color-mix(in srgb,var(--blue) 14%,transparent)}#ccRecap .th{display:flex;gap:10px;align-items:center;font-size:13px;font-weight:700}#ccRecap .th button{width:32px;height:32px;border-radius:50%;border:3px solid transparent;cursor:pointer}#ccRecap .th button.on{border-color:var(--ink)}
 #ccRecap label{display:flex;gap:8px;align-items:center;font-size:13.5px;font-weight:600}
 #ccRecap .acts{display:flex;gap:8px}#ccRecap .acts .btn{flex:1}
 </style>
@@ -14139,21 +14139,23 @@ function renderGoal(){var c=goalCard();if(!c)return;var g=Number(localStorage.ge
   [[n>=1,"First job"],[n>=10,"10 jobs"],[n>=50,"50 jobs"],[n>=100,"100 jobs"],[st>=3,"3-day streak"],[st>=7,"7-day streak"]].map(function(b){return'<span class="'+(b[0]?"on":"")+'">'+b[1]+"</span>"}).join("")+"</div>";
  c.innerHTML=h}
 /* weekly recap image */
-function draw(cv,showRev){var W=1080,H=1350,x=cv.getContext("2d"),w=week(),st=streak(),F="'Plus Jakarta Sans','Poppins',sans-serif";cv.width=W;cv.height=H;
- var g=x.createLinearGradient(0,0,W*.6,H);g.addColorStop(0,"#1A6DDB");g.addColorStop(.5,"#0F4FA8");g.addColorStop(1,"#0B1F3F");x.fillStyle=g;x.fillRect(0,0,W,H);
- [[960,120,260,"#0F9F6E"],[80,1230,300,"#EA580C"],[1010,820,170,"#FBBF24"]].forEach(function(c){x.globalAlpha=.8;x.fillStyle=c[3];x.beginPath();x.arc(c[0],c[1],c[2],0,6.3);x.fill()});x.globalAlpha=1;
- x.fillStyle="#fff";x.textAlign="left";x.font="800 40px "+F;x.fillText("CleanCrew.",80,120);
- x.font="800 96px "+F;x.fillText("My week",80,300);x.fillStyle="#FBBF24";x.fillText("in jobs",80,400);
- var items=[[w.n,"jobs completed"],[w.c,"happy clients"],[st,"day streak"]];if(showRev&&unlocked())items.push([money(w.rev),"earned"]);
- items.forEach(function(it,i){var y=500+i*170;x.fillStyle="rgba(255,255,255,.14)";x.beginPath();x.roundRect(80,y,920,140,28);x.fill();x.fillStyle="#fff";x.font="800 80px "+F;x.fillText(String(it[0]),120,y+98);
-  x.font="600 38px "+F;x.fillStyle="rgba(255,255,255,.88)";x.textAlign="right";x.fillText(it[1],960,y+88);x.textAlign="left"});
- x.fillStyle="#fff";x.font="700 34px "+F;x.fillText("Run your business with CleanCrew",80,1230);x.fillStyle="#FBBF24";x.fillText("cleancrewapp.com",80,1280)}
-function recap(){var o=document.createElement("div");o.id="ccRecap";var can=unlocked();
- o.innerHTML='<div class="rc"><canvas></canvas><label><input type="checkbox" id="rcRev"'+(can?"":" disabled")+'> Show my revenue'+(can?"":" (unlock revenue first)")+'</label><div class="acts"><button type="button" class="btn btn-primary" id="rcShare">Share</button><button type="button" class="btn btn-outline" id="rcClose">Close</button></div></div>';
- document.body.appendChild(o);var cv=o.querySelector("canvas"),cb=o.querySelector("#rcRev");draw(cv,false);
- cb.addEventListener("change",function(){draw(cv,cb.checked)});o.querySelector("#rcClose").onclick=function(){o.remove()};
- o.addEventListener("click",function(e){if(e.target===o)o.remove()});
- o.querySelector("#rcShare").onclick=function(){cv.toBlob(function(b){var f=new File([b],"my-week-cleancrew.png",{type:"image/png"});
+var TH={blue:["#1A6DDB","#0F4FA8","#0B1F3F","#0F9F6E","#EA580C"],green:["#10B981","#047857","#064E3B","#FBBF24","#34D399"],orange:["#F97316","#C2410C","#7C2D12","#FBBF24","#FDBA74"]};
+function draw(cv,o){var s=o.fmt==="st",W=1080,H=s?1920:1350,x=cv.getContext("2d"),w=week(),st=streak(),t=TH[o.theme]||TH.blue,F="'Plus Jakarta Sans','Poppins',sans-serif";cv.width=W;cv.height=H;
+ var g=x.createLinearGradient(0,0,W*.6,H);g.addColorStop(0,t[0]);g.addColorStop(.5,t[1]);g.addColorStop(1,t[2]);x.fillStyle=g;x.fillRect(0,0,W,H);
+ [[960,s?200:120,260,t[3]],[s?40:80,H-(s?10:120),s?230:300,t[4]],[1010,H*.6,170,"#FBBF24"]].forEach(function(c){x.globalAlpha=.75;x.fillStyle=c[3];x.beginPath();x.arc(c[0],c[1],c[2],0,6.3);x.fill()});x.globalAlpha=1;
+ x.fillStyle="#fff";x.textAlign="left";x.font="800 40px "+F;x.fillText("CleanCrew.",80,s?240:120);
+ x.font="800 "+(s?112:96)+"px "+F;x.fillText("My week",80,s?430:300);x.fillStyle="#FBBF24";x.fillText("in jobs",80,s?550:400);
+ var items=[[w.n,"jobs completed"],[w.c,"happy clients"],[st,"day streak"]];if(o.rev&&unlocked())items.push([money(w.rev),"earned"]);
+ var y0=s?660:500,step=s?210:170,hh=s?170:140;
+ items.forEach(function(it,i){var y=y0+i*step;x.fillStyle="rgba(255,255,255,.16)";x.beginPath();x.roundRect(80,y,920,hh,28);x.fill();x.fillStyle="#fff";x.font="800 "+(s?92:80)+"px "+F;x.fillText(String(it[0]),120,y+hh*.7);
+  x.font="600 38px "+F;x.fillStyle="rgba(255,255,255,.9)";x.textAlign="right";x.fillText(it[1],960,y+hh*.64);x.textAlign="left"});
+ var fy=s?H-340:1230;x.fillStyle="#fff";x.font="700 34px "+F;x.fillText("Run your business with CleanCrew",80,fy);x.fillStyle="#FBBF24";x.fillText("cleancrewapp.com",80,fy+50)}
+function recap(){var o=document.createElement("div");o.id="ccRecap";var can=unlocked(),S={fmt:"st",theme:"blue",rev:false};
+ o.innerHTML='<div class="rc"><canvas></canvas><div class="seg" id="rcF"><button type="button" data-f="st" class="on">Story / Status 9:16</button><button type="button" data-f="fd">Instagram post 4:5</button></div><div class="th">Colour <button type="button" data-t="blue" class="on" style="background:#1A6DDB" aria-label="Blue"></button><button type="button" data-t="green" style="background:#10B981" aria-label="Green"></button><button type="button" data-t="orange" style="background:#F97316" aria-label="Orange"></button></div><label><input type="checkbox" id="rcRev"'+(can?"":" disabled")+'> Show my revenue'+(can?"":" (unlock revenue first)")+'</label><div class="acts"><button type="button" class="btn btn-primary" id="rcShare">Share</button><button type="button" class="btn btn-outline" id="rcClose">Close</button></div></div>';
+ document.body.appendChild(o);var cv=o.querySelector("canvas");function paint(){draw(cv,S)}paint();
+ o.addEventListener("click",function(e){var b=e.target.closest("button[data-f],button[data-t]");if(b){if(b.dataset.f){S.fmt=b.dataset.f;[].forEach.call(o.querySelectorAll("#rcF button"),function(n){n.classList.toggle("on",n===b)})}else{S.theme=b.dataset.t;[].forEach.call(o.querySelectorAll(".th button"),function(n){n.classList.toggle("on",n===b)})}paint();return}if(e.target===o)o.remove()});
+ o.querySelector("#rcRev").addEventListener("change",function(){S.rev=this.checked;paint()});o.querySelector("#rcClose").onclick=function(){o.remove()};
+ o.querySelector("#rcShare").onclick=function(){cv.toBlob(function(b){var f=new File([b],"my-week-cleancrew-"+(S.fmt==="st"?"story":"post")+".png",{type:"image/png"});
   if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],text:"My week on CleanCrew"}).catch(function(){})}
   else{var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=f.name;a.click()}})}}
 function addRecapBtn(){var q=document.querySelector(".quick-actions");if(!q||document.getElementById("ccRecapBtn"))return;
