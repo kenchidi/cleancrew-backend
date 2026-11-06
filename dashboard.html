@@ -10297,7 +10297,7 @@ async function shareInvoiceWhatsApp(id) {
             var ovJobs = document.getElementById('ovJobs');
             if (ovJobs) ovJobs.textContent = String(filteredJobs.length);
             var ovSub = document.getElementById('ovJobsSub');
-            if (ovSub) ovSub.textContent = filteredJobs.length ? (filteredJobs.length + ' total ' + modeLabel + ' jobs') : 'No jobs yet';
+            if (ovSub) ovSub.textContent = filteredJobs.length ? (filteredJobs.length + ' total ' + modeLabel + ' jobs') : 'Add your first job';
             realRevenueValue = revenue;
             if (typeof applyRevenueDisplay === 'function') applyRevenueDisplay();
             var ovP = document.getElementById('ovPending');
@@ -10329,10 +10329,10 @@ async function shareInvoiceWhatsApp(id) {
                         todayEl.innerHTML = '<div class="empty-state" style="padding:20px 8px;text-align:center;">' +
                             mascotHtml('md') +
                             '<strong style="display:block;margin-bottom:6px;">You\'re all caught up</strong>' +
-                            '<span style="font-size:13px;color:var(--slate);">No jobs scheduled for today. Create a job or share your booking page.</span>' +
+                            '<span style="font-size:13px;color:var(--slate);">A quiet one so far. Create a job or share your booking page to bring customers in.</span>' +
                             '<div style="margin-top:12px;"><button type="button" class="btn btn-primary btn-sm" onclick="openModal(\'job\')">+ New Job</button></div></div>';
                     } else {
-                        todayEl.innerHTML = '<p style="color:var(--slate);font-size:13px;margin:0;">No jobs scheduled for today.</p>' +
+                        todayEl.innerHTML = '<p style="color:var(--slate);font-size:13px;margin:0;">Nothing booked for today. See what\'s coming up.</p>' +
                             '<button type="button" class="btn btn-outline btn-sm" style="margin-top:10px;" onclick="switchTab(\'jobs\')">View upcoming jobs</button>';
                     }
                 } else {
@@ -13925,6 +13925,46 @@ function fold(){
  [document.getElementById("ccThemeBtn"),f.querySelector(".sidebar-tour-btn"),document.getElementById("sidebarSupportLink")].forEach(function(e){if(e&&e.parentNode!==box)box.appendChild(e)});
 }
 function init(){fold();var f=document.querySelector(".sidebar-footer");if(f)try{new MutationObserver(function(){fold()}).observe(f,{childList:true})}catch(e){}}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+</script>
+<style id="cc-fun-v6">
+/* Friendly mode illustrations in empty states */
+.empty-state::before{content:"";display:block;width:104px;height:76px;margin:0 auto 10px;background:var(--cc-illus) center/contain no-repeat}
+body.mode-cleaning{--cc-illus:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 76'%3E%3Ccircle cx='30' cy='42' r='20' fill='%23DCEBFF' stroke='%231A6DDB' stroke-width='3'/%3E%3Ccircle cx='74' cy='30' r='13' fill='%23E7F8F1' stroke='%230F9F6E' stroke-width='3'/%3E%3Ccircle cx='62' cy='58' r='8' fill='%23FEF3E2' stroke='%23F59E0B' stroke-width='3'/%3E%3Cpath d='M30 30l2 5 5 2-5 2-2 5-2-5-5-2 5-2z' fill='%231A6DDB'/%3E%3Cpath d='M88 8l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5z' fill='%23FBBF24'/%3E%3C/svg%3E")}
+body.mode-laundry{--cc-illus:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 76'%3E%3Cpath d='M52 31v-6l6-5a6 6 0 1 0-6-6' fill='none' stroke='%230F9F6E' stroke-width='3.5' stroke-linecap='round'/%3E%3Cpath d='M52 31L14 54h76z' fill='%23E7F8F1' stroke='%230F9F6E' stroke-width='3.5' stroke-linejoin='round'/%3E%3Ccircle cx='86' cy='16' r='5' fill='%23FBBF24'/%3E%3Ccircle cx='18' cy='18' r='3' fill='%238CC8FF'/%3E%3C/svg%3E")}
+body.mode-auto{--cc-illus:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 76'%3E%3Cpath d='M10 56V46l10-4 12-14h38l14 14 10 4v10z' fill='%23FFEDE0' stroke='%23EA580C' stroke-width='3.5' stroke-linejoin='round'/%3E%3Cpath d='M36 30l-8 12h50L66 30z' fill='%23fff' stroke='%23EA580C' stroke-width='3'/%3E%3Ccircle cx='30' cy='58' r='8' fill='%230B1F3F' stroke='%23fff' stroke-width='3'/%3E%3Ccircle cx='76' cy='58' r='8' fill='%230B1F3F' stroke='%23fff' stroke-width='3'/%3E%3Ccircle cx='92' cy='14' r='4' fill='%23FBBF24'/%3E%3Ccircle cx='16' cy='16' r='5' fill='none' stroke='%238CC8FF' stroke-width='3'/%3E%3C/svg%3E")}
+@media(prefers-reduced-motion:no-preference){.empty-state::before{animation:ccBob 3.2s ease-in-out infinite}}
+@keyframes ccBob{50%{transform:translateY(-5px)}}
+</style>
+<script>
+/* Celebrations and playful toasts. Wraps showToast/renderAll only; no data or API changes. */
+(function(){
+"use strict";
+var RM=window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches;
+var COL=["#FBBF24","#0F9F6E","#EA580C","#1A6DDB","#8CC8FF","#F472B6"];
+function confetti(n,pw){
+ if(RM)return;var c=document.createElement("canvas");c.setAttribute("aria-hidden","true");
+ c.style.cssText="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:99999";
+ var w=c.width=innerWidth,h=c.height=innerHeight,x=c.getContext("2d");document.body.appendChild(c);
+ var P=[],i;for(i=0;i<n;i++)P.push({x:w/2+(Math.random()-.5)*w*.3,y:h*.62,vx:(Math.random()-.5)*pw,vy:-(Math.random()*pw+6),r:Math.random()*6.28,vr:(Math.random()-.5)*.4,s:6+Math.random()*7,c:COL[i%COL.length],k:i%3});
+ var t=0;(function f(){x.clearRect(0,0,w,h);t++;P.forEach(function(p){p.vy+=.42;p.x+=p.vx;p.y+=p.vy;p.vx*=.992;p.r+=p.vr;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.globalAlpha=Math.max(0,1-t/110);
+  if(p.k===0)x.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);else{x.beginPath();x.arc(0,0,p.s/3,0,6.3);x.fill()}x.restore()});
+  if(t<110)requestAnimationFrame(f);else c.remove()})();
+}
+var DONE="Marked complete \u2014 ready for pickup",V={"Job completed":["Job done. Nice work!","Another one done. Well done!","Sparkling clean. Job completed!"]};
+V[DONE]=["Fresh and folded. Ready for pickup!"];V["Job started"]=["Let's go! Job started."];
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+function wrapToast(){var o=window.showToast;if(typeof o!=="function"||o.__cc)return;
+ window.showToast=function(m,t){var done=m==="Job completed"||m===DONE;if(V[m])m=pick(V[m]);var r=o.call(this,m,t);if(done)confetti(90,15);return r};window.showToast.__cc=1}
+var MS=[1,10,25,50,100,250,500];
+function check(){try{var n=jobsData.length,last=localStorage.getItem("cc_jobcount");
+ if(n===0&&last&&+last>0)return;localStorage.setItem("cc_jobcount",n);
+ if(last===null)return;last=+last;if(n<=last||n-last>2)return;
+ var hit=MS.filter(function(m){return n>=m&&last<m}).pop();
+ if(hit){confetti(170,20);showToast(hit===1?"First job on the board! Welcome to the crew.":hit+" jobs and counting. Keep it up!","success")}}catch(e){}}
+function wrapAll(){var o=window.renderAll;if(typeof o!=="function"||o.__cc)return;window.renderAll=function(){var r=o.apply(this,arguments);check();return r};window.renderAll.__cc=1}
+function init(){wrapToast();wrapAll()}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
 })();
 </script>
