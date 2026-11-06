@@ -5297,10 +5297,6 @@ html[data-theme="dark"] #websiteBookingsBox p {
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                     Jobs
                 </button>
-                <button type="button" data-tab="standards" onclick="switchTab('standards')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-                    Standards
-                </button>
                 <button type="button" data-tab="clients" onclick="switchTab('clients')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
                     Clients
@@ -13968,5 +13964,30 @@ function init(){wrapToast();wrapAll()}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
 })();
 </script>
+<style id="cc-mobile-v7">
+/* Legacy header mode switch is fully hidden (the pill under the greeting replaces it) */
+html:root body .mode-switch-wrap,html:root body .header .service-toggle{display:none!important}
+/* Bottom nav must never cover the slide-out menu */
+body:has(.sidebar.open) .cc-bnav{display:none}
+@media(max-width:700px){
+ html body{padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))}
+ html body .main-shell .container{padding:20px 20px 32px}
+ html body .dash-greeting{margin-bottom:22px}
+ html body .dash-greeting h2{font-size:1.7rem}
+ html body .cc-mode{margin-top:14px}
+ html body .loc-filter-row{margin-top:14px}
+ html body #dashGreeting .btn-primary{display:none}
+ html body .cc-start{margin-bottom:26px}
+ html body .ops-kpi{gap:14px!important;margin-bottom:26px}
+ html body .stat-card{padding:20px 18px}
+ html body .ops-main,html body .cc-col{gap:22px}
+ html body .card{padding:20px;margin-bottom:0}
+ html body .card-header{display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+ html body .card-header .btn{width:auto!important;flex:none}
+ html body .quick-actions{gap:12px}
+ html body .today-job-row{padding:14px 12px}
+ html body .header{padding-top:12px;padding-bottom:12px}
+}
+</style>
 </body>
 </html>
