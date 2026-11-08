@@ -374,7 +374,33 @@
         }).filter(Boolean).slice(0, 6);
       }
 
-      fetch(API + '/public/business/' + encodeURIComponent(slug))
+      var slow = setTimeout(function () {
+        var a = document.getElementById('app');
+        if (a && a.classList.contains('state') && /^(Loading|Still loading)/.test(a.textContent)) a.textContent = 'Still loading. The first visit can take up to a minute. Thanks for waiting.';
+      }, 4000);
+      function getBiz() {
+        var tries = 0;
+        return new Promise(function (resolve, reject) {
+          (function go() {
+            var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+            var to = ctl ? setTimeout(function () { ctl.abort(); }, 45000) : null;
+            fetch(API + '/public/business/' + encodeURIComponent(slug), ctl ? { signal: ctl.signal } : {})
+              .then(function (r) {
+                clearTimeout(to);
+                if (r.status >= 500) throw new Error('server');
+                clearTimeout(slow);
+                resolve(r);
+              })
+              .catch(function (e) {
+                clearTimeout(to);
+                tries++;
+                if (tries < 4) setTimeout(go, 2500 * tries);
+                else reject(new Error('We could not load this page. Check your connection and try again.'));
+              });
+          })();
+        });
+      }
+      getBiz()
         .then(function (r) {
           return r.json().then(function (body) {
             if (!r.ok) throw new Error((body && body.error) || 'Page not found');
@@ -382,7 +408,7 @@
           });
         })
         .then(function (b) {
-          document.title = (b.business_name || 'Business') + ' — Cleaning & Laundry';
+          document.title = (b.business_name || 'Business') + ' | Book online';
           var tpl = (b.template_id || 'modern').toLowerCase();
           if (['modern', 'vibrant', 'elegant'].indexOf(tpl) < 0) tpl = 'modern';
           document.body.className = 'tpl-' + tpl;
@@ -447,8 +473,8 @@
               '<label>Your name *</label><input name="client_name" required autocomplete="name" />' +
               '<label>Phone / WhatsApp *</label><input name="client_phone" type="tel" required />' +
               '<label>Service *</label><select name="service_type" required>' + opts() + '</select>' +
-              '<label>Preferred date</label><input name="booking_date" type="date" />' +
-              '<label>Address</label><input name="client_address" />' +
+              '<label>Preferred date</label><input name="booking_date" type="date" min="' + new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10) + '" />' +
+              '<label>Address and landmark</label><input name="client_address" placeholder="e.g. Beside Total filling station, Wuse 2" />' +
               '<label>Notes</label><textarea name="notes" rows="3" placeholder="Anything the business should know?"></textarea>' +
               '<button type="submit" class="btn btn-primary btn-wide">Request booking</button>' +
               '</form></div></div></div></section>';
@@ -614,6 +640,12 @@
         .catch(function (e) {
           app.className = 'state error';
           app.textContent = (e && e.message) || 'Page not found';
+          var rb = document.createElement('button');
+          rb.type = 'button';
+          rb.textContent = 'Try again';
+          rb.style.cssText = 'display:block;margin:18px auto 0;padding:12px 26px;border:0;border-radius:12px;background:#1A6DDB;color:#fff;font:700 15px inherit;font-family:inherit;cursor:pointer';
+          rb.onclick = function () { location.reload(); };
+          app.appendChild(rb);
         });
     })();
   </script>
